@@ -109,15 +109,14 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
   top:14px;
   left:50%;
   transform:translate(-50%, -120%);
-  max-width:calc(100vw - 32px);
+  width:calc(100vw - 32px);
+  max-width:400px;
   background:#fdfdfd;
   color:#1a1a1a;
-  font-size:13px;
-  line-height:1.5;
-  padding:12px 16px;
-  border-radius:14px;
-  border:1px solid #1a1a1a;
-  box-shadow:none;
+  padding:12px 14px;
+  border-radius:16px;
+  border:0.7px solid rgba(0,0,0,.08);
+  box-shadow:0 4px 20px rgba(0,0,0,.08);
   z-index:99998;
   pointer-events:none;
   opacity:0;
@@ -125,32 +124,41 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
   display:flex;
   align-items:center;
   gap:12px;
+  box-sizing:border-box;
   font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",serif;
 }
 .msg-notify.show{
   transform:translate(-50%, 0);
   opacity:1;
 }
-.msg-notify .nn{
-  font-weight:600;
-  letter-spacing:.5px;
-  flex:none;
-  color:#1a1a1a;
+.msg-notify .mn-av{
+  width:38px;height:38px;flex:0 0 38px;
+  border-radius:var(--avatar-radius,12%);
+  overflow:hidden;background:#f0f0f0;
+  position:relative;
 }
-.msg-notify .nt{
-  flex:1;
-  min-width:0;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  color:rgba(0,0,0,.55);
+.msg-notify .mn-av svg{position:absolute;inset:0;width:100%;height:100%}
+.msg-notify .mn-av .silhouette{fill:#c8c8c8}
+.msg-notify .mn-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.msg-notify .mn-main{
+  flex:1;min-width:0;
+  display:flex;flex-direction:column;gap:3px;
+}
+.msg-notify .mn-name{
+  font-size:13px;font-weight:600;color:#1a1a1a;
+  letter-spacing:.3px;line-height:1.2;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.msg-notify .mn-text{
+  font-size:12.5px;color:rgba(0,0,0,.6);
+  line-height:1.3;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   font-weight:400;
 }
-.msg-notify .ni{
-  flex:none;
-  color:rgba(0,0,0,.4);
-  font-size:11px;
-  margin-left:2px;
+.msg-notify .mn-time{
+  font-size:11px;color:rgba(0,0,0,.4);
+  flex:none;align-self:flex-start;
+  margin-top:2px;
 }
 /* ===== 统一输入弹窗 · 方案 A ===== */
 .uni-mask{
@@ -420,25 +428,26 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
 .read-flush.unread{color:#bbb}
 .read-flush.noreply{color:#999;font-style:italic}
 .read-flush.active-mark{color:#c8c8c8;font-size:9px;letter-spacing:1.5px;font-style:normal}
-/* 主动标记：气泡上方一行小灰字「—— 主动」 */
-.active-head{
+/* 主动标记：气泡上方一行小灰字「— 主动」 */
+.active-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:6px;
+  align-self:flex-start;
+}
+.active-line{
+  width:8px;
+  height:1px;
+  background:#d0d0d0;
+  flex:none;
+}
+.active-text{
   font-size:9.5px;
   color:#c8c8c8;
   letter-spacing:3px;
   font-family:Georgia,serif;
-  padding:0 4px 4px;
-  align-self:flex-start;
   line-height:1;
-}
-.active-head::before{
-  content:"";
-  display:inline-block;
-  width:8px;
-  height:1px;
-  background:#d8d8d8;
-  vertical-align:middle;
-  margin-right:6px;
-  margin-bottom:2px;
 }
 .quote-block{
   padding:0 0 0 10px;margin-bottom:8px;
@@ -5264,7 +5273,7 @@ body[data-bubble="custom"] .preview-bubble{
           <div class="t1">后台通知</div>
           <div class="t2">切到其它应用或锁屏时，用系统通知提醒</div>
         </div>
-        <label class="switch"><input type="checkbox" id="notifyBack"><span class="slider"></span></label>
+        <label class="switch"><input type="checkbox" id="notifySys"><span class="slider"></span></label>
       </div>
       <div class="sw-row">
         <div class="sw-main">
@@ -7834,9 +7843,9 @@ function renderChat(forceBottom){
 		readFlush = `<div class="read-flush">已读</div>`;
 	  }
 	}
-	/* 主动发消息：气泡上方加一行小字「主动」 */
+	/* 主动发消息：气泡上方加一行小标签「— 主动」 */
 	if(!isUser && m.active && !m.recalled && !m.sys && !m.namecard){
-	  readFlush = `<div class="active-head">主动</div>`;
+	  readFlush = `<div class="active-row"><span class="active-line"></span><span class="active-text">主动</span></div>`;
 	}
 	const msgHTML = `<div class="msg ${isUser?'user':'char'}" data-id="${m.id}">${av}<div class="msg-body">${timeSep}${quote}${body}${readFlush}</div></div>`;
 	// 给气泡本身补上通用别名：message-sent / message-received
@@ -8190,6 +8199,22 @@ function appendMsgToRole(roleId, msg){
     /* 消息不是当前角色 → 记未读 */
     bumpUnread(roleId);
   }
+  /* 无论是不是当前角色，只要不是系统/撤回消息，都弹顶部提示 */
+  try{
+    if(msg && !msg.sys && !msg.recalled){
+      const role = getRoleById(roleId) || {};
+      let notifyText = '';
+      if(msg.text) notifyText = msg.text;
+      else if(msg.sticker) notifyText = '[表情图]';
+      else if(msg.voice) notifyText = '[语音]';
+      else if(msg.namecard && msg.namecard.name) notifyText = '[名片] ' + msg.namecard.name;
+      else if(msg.videoCard) notifyText = '[视频] ' + (msg.videoCard.title || '');
+      else if(msg.divine) notifyText = '[占卜] ' + (msg.divine.q || '');
+      if(notifyText){
+        showMsgNotify(role.name || '角色', notifyText);
+      }
+    }
+  }catch(e){ console.error('消息提示出错', e); }
 }
 
 /* 顶部滑下的小提示条 */
@@ -8222,26 +8247,34 @@ function getNotifyMoment(){ return lsGet(NOTIFY_MOMENT_KEY, true); }
 function setNotifyMoment(v){ lsSet(NOTIFY_MOMENT_KEY, !!v); }
 
 let _msgNotifyTimer = null;
-function showMsgNotify(roleName, text){
+function showMsgNotify(roleName, text, roleAvatar){
   /* 聊天界面通知总开关：关了就直接不弹 */
   if(!getNotifyChat()) return;
   const el = document.getElementById('msgNotify');
   if(!el) return;
-  const nameEl = document.createElement('span'); nameEl.className = 'nn';
-  const textEl = document.createElement('span'); textEl.className = 'nt';
-  nameEl.textContent = roleName + '：';
-  textEl.textContent = String(text || '').slice(0, 30);
-  el.innerHTML = '';
-  el.appendChild(nameEl);
-  el.appendChild(textEl);
+
+  /* 头像：优先用传入的，没传就用当前角色的 */
+  let avHTML = '';
+  if(roleAvatar){
+    avHTML = avatarHTML(roleAvatar);
+  } else {
+    const r = getRole();
+    avHTML = avatarHTML(r && r.avatar);
+  }
+
+  el.innerHTML =
+    '<div class="mn-av">' + avHTML + '</div>' +
+    '<div class="mn-main">' +
+      '<div class="mn-name">' + escapeHTML(roleName || '角色') + '</div>' +
+      '<div class="mn-text">' + escapeHTML(String(text || '').slice(0, 40)) + '</div>' +
+    '</div>' +
+    '<div class="mn-time">现在</div>';
+
   el.classList.add('show');
   clearTimeout(_msgNotifyTimer);
   _msgNotifyTimer = setTimeout(() => {
     el.classList.remove('show');
   }, 2000);
-
-  /* 同时尝试发系统通知（切后台时才会真的弹出来） */
-  showSystemNotify(roleName, text);
 
   /* 同时尝试发系统通知（切后台时才会真的弹出来） */
   showSystemNotify(roleName, text);
@@ -8368,7 +8401,7 @@ function fireActiveMessage(roleId){
   /* 用户不在看这个角色 → 顶部弹提示条 */
   if(!isViewingRole(roleId)){
     const role = getRoleById(roleId) || {};
-    showMsgNotify(role.name || '角色', text);
+    showMsgNotify(role.name || '角色', text, role.avatar);
   }
 
   cfg.activeLastFireAt = Date.now();
@@ -8620,6 +8653,11 @@ function triggerReply(){
   const delay = (r.minDelay||800) + Math.random()*Math.max(0,(r.maxDelay||2200)-(r.minDelay||800));
   const box = $('#chatList'); if(!box) return;
 
+  /* 工具：如果中途切了角色，就放弃这次回复 */
+  function stillSameRole(){
+    return getCurrentRoleId() === targetRoleId;
+  }
+
   const lastUserMsg = [...msgs].reverse().find(x=>x.role==='user' && !x.recalled && !x.sys && !x.namecard);
 
   const res = genReply();
@@ -8632,6 +8670,7 @@ function triggerReply(){
 
   if(!res.length || res[0].kind === 'recall'){
     setTimeout(()=>{
+      if(!stillSameRole()) return;
       if(!res.length){
         markLastUserNoReply();
         saveMsgs();
@@ -8645,6 +8684,7 @@ function triggerReply(){
 
   const typingDelay = Math.min(delay, 800 + Math.random()*1200);
   setTimeout(()=>{
+    if(!stillSameRole()) return;
     const typing = document.createElement('div'); typing.className='typing-hint'; typing.id='typingMsg';
     typing.innerHTML = `对方正在输入 <span class="dots"><span></span><span></span><span></span></span>`;
     box.appendChild(typing); box.scrollTop=box.scrollHeight;
@@ -8676,6 +8716,7 @@ function triggerReply(){
         renderChat();
         return;
       }
+      if(!stillSameRole()) return;
       const box2 = $('#chatList');
       const typing2 = document.createElement('div'); typing2.className='typing-hint'; typing2.id='typingMsg';
       typing2.innerHTML = `对方正在输入 <span class="dots"><span></span><span></span><span></span></span>`;
@@ -8688,6 +8729,7 @@ function triggerReply(){
   let gapDoneCb = null;
 
   setTimeout(()=>{
+	if(!stillSameRole()) return;
 	try{
 	  const t=document.getElementById('typingMsg'); if(t) t.remove();
 	  if(res[0].kind==='bubbles'){
@@ -12776,6 +12818,32 @@ function openSettingsPanel(){
   renderSettingsCounts();
   updateFullscreenState();
 }
+/* 设置页：返回按钮（事件委托，任何时刻都能点） */
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  if(t.closest('#setBack')){
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    document.querySelectorAll('.screen.on').forEach(s => s.classList.remove('on'));
+    if(typeof goToPage === 'function') goToPage('me');
+    return;
+  }
+}, true);
+/* 设置页：返回按钮（事件委托，任何时刻都能点） */
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  if(t.closest('#setBack')){
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    document.querySelectorAll('.screen.on').forEach(s => s.classList.remove('on'));
+    if(typeof goToPage === 'function') goToPage('me');
+    return;
+  }
+}, true);
 function renderSettingsCounts(){
   try{
     const friends = getFriends();
@@ -12880,7 +12948,7 @@ document.addEventListener('click', function(e){
     if(key === 'notify'){
       /* 打开通知页前先同步三个开关的真实状态 */
       const cb1 = document.getElementById('notifyChat');
-      const cb2 = document.getElementById('notifyBack');
+      const cb2 = document.getElementById('notifySys');       /* ← 改这里 */
       const cb3 = document.getElementById('notifyMoment');
       if(cb1) cb1.checked = getNotifyChat();
       if(cb2) cb2.checked = getSysNotifyOn();
@@ -12896,20 +12964,9 @@ document.addEventListener('click', function(e){
     return;
   }
 
-  /* 三个通知开关 */
-  if(t.closest('#notifyChat')){
-    const cb = document.getElementById('notifyChat');
-    if(cb) setTimeout(()=>{ setNotifyChat(cb.checked); }, 0);
-    return;
-  }
-  if(t.closest('#notifyBack')){
-    const cb = document.getElementById('notifyBack');
+  if(t.closest('#notifySys')){
+    const cb = document.getElementById('notifySys');
     if(cb) setTimeout(()=>{ setSysNotifyOn(cb.checked); }, 0);
-    return;
-  }
-  if(t.closest('#notifyMoment')){
-    const cb = document.getElementById('notifyMoment');
-    if(cb) setTimeout(()=>{ setNotifyMoment(cb.checked); }, 0);
     return;
   }
 }, true);
@@ -18139,6 +18196,131 @@ function goToPage(name){
         oranges.push('有 ' + emptyRoleGroups.length + ' 个角色专有字卡是全空的：' + emptyRoleGroups.slice(0,3).join('、'));
       } else {
         greens.push('角色专有字卡都有内容');
+      }
+    } catch(e){}
+
+    /* ============================================================
+       加强检查 19：重复 id 精确定位
+       ============================================================ */
+    try {
+      var idMap2 = {};
+      var allEls2 = document.body.querySelectorAll('[id]');
+      for (var ei2 = 0; ei2 < allEls2.length; ei2++) {
+        var el2 = allEls2[ei2];
+        var idv2 = el2.id;
+        if (!idv2) continue;
+        if (!idMap2[idv2]) idMap2[idv2] = [];
+        idMap2[idv2].push(el2);
+      }
+      var dupIds = Object.keys(idMap2).filter(function(k){ return idMap2[k].length > 1; });
+      if (dupIds.length) {
+        var lines = [];
+        dupIds.forEach(function(dup){
+          var els = idMap2[dup];
+          var parts = [];
+          els.forEach(function(el){
+            var chain = [];
+            var p = el.parentElement;
+            while (p) {
+              var s = p.tagName.toLowerCase();
+              if (p.id) s += '#' + p.id;
+              else if (p.className && typeof p.className === 'string') {
+                var c = p.className.trim().split(/\s+/)[0];
+                if (c) s += '.' + c;
+              }
+              chain.unshift(s);
+              if (p.tagName === 'BODY') break;
+              p = p.parentElement;
+            }
+            parts.push(el.tagName.toLowerCase() + '（父：' + chain.slice(-2).join(' > ') + '）');
+          });
+          lines.push('  #' + dup + ' ×' + els.length + '：' + parts.join(' / '));
+        });
+        reds.push('重复 id 明细：\n' + lines.join('\n'));
+      } else {
+        greens.push('无重复 id（已精确定位）');
+      }
+    } catch(e){}
+
+    /* ============================================================
+       加强检查 20：点击无响应全面检查
+       ============================================================ */
+    try {
+      var clickables = document.body.querySelectorAll('button, [role="button"], [onclick], .d-icon, .send-btn, .topbar-btn, .tb-item, .desk-app, .me-row, .set-row, .bp-row, .friend-menu-btn, .cd-tab, .mood-act, .cl-act');
+      var blockedBtns = [];
+      var deadBtns = [];
+      var hiddenBtns = [];
+      var vw2 = window.innerWidth;
+      var vh2 = window.innerHeight;
+      var diagMaskEl2 = document.getElementById('diagMask');
+
+      clickables.forEach(function(el){
+        /* 跳过诊断面板自身 */
+        if (diagMaskEl2 && diagMaskEl2.contains(el)) return;
+        if (el.closest && el.closest('.diag-fab')) return;
+        /* 跳过默认隐藏的弹窗（比如 #uniMask） */
+        if (el.closest && el.closest('.uni-mask:not(.show)')) return;
+        if (el.closest && el.closest('.modal:not(.show)')) return;
+        if (el.closest && el.closest('.rd-modal:not(.show)')) return;
+        if (el.closest && el.closest('.beauty-panel:not(.show)')) return;
+        if (el.closest && el.closest('.sub-panel:not(.show)')) return;
+        if (el.closest && el.closest('.chat-info-panel:not(.show)')) return;
+        if (el.closest && el.closest('.crop-mask:not(.show)')) return;
+        if (el.closest && el.closest('.sel-overlay:not(.show)')) return;
+
+        var cs = getComputedStyle(el);
+        var rect = el.getBoundingClientRect();
+
+        /* 跳过：display none / visibility hidden */
+        if (cs.display === 'none' || cs.visibility === 'hidden') return;
+
+        /* 跳过：尺寸为 0 */
+        if (rect.width < 1 || rect.height < 1) return;
+
+        /* 跳过：不在可视区（避免误判浮层上的按钮） */
+        if (rect.bottom < 0 || rect.top > vh2 || rect.right < 0 || rect.left > vw2) return;
+
+        /* 跳过：需要 .show 类才显示的按钮（比如 #scrollBottomBtn 默认是 pointer-events:none） */
+        if (el.id === 'scrollBottomBtn' && !el.classList.contains('show')) return;
+
+        /* 1. pointer-events:none 检测 */
+        if (cs.pointerEvents === 'none') {
+          hiddenBtns.push(el.id ? ('#' + el.id) : el.tagName.toLowerCase() + '.' + (el.className || '').split(' ')[0]);
+          return;
+        }
+
+        /* 2. 被遮挡检测 */
+        var cx = Math.round(rect.left + rect.width / 2);
+        var cy = Math.round(rect.top + rect.height / 2);
+        if (cx < 0 || cy < 0 || cx > vw2 || cy > vh2) return;
+
+        var top = document.elementFromPoint(cx, cy);
+        if (top && !el.contains(top) && top !== el) {
+          /* 点在子元素上也算命中自己，但点在完全不相干的元素上就是被遮挡 */
+          if (!el.contains(top)) {
+            /* 如果遮挡它的是诊断面板本身，跳过（诊断面板自己也是浮层） */
+            if (diagMaskEl2 && diagMaskEl2.contains(top)) return;
+            /* 如果遮挡它的是默认隐藏的弹窗，跳过 */
+            if (top.closest && (
+              top.closest('.uni-mask:not(.show)') ||
+              top.closest('.modal:not(.show)') ||
+              top.closest('.rd-modal:not(.show)')
+            )) return;
+            var label = el.id ? ('#' + el.id) : el.tagName.toLowerCase() + '.' + (el.className || '').split(' ')[0];
+            var blockerLabel = top.id ? ('#' + top.id) : (top.tagName.toLowerCase() + (top.className ? '.' + String(top.className).split(' ')[0] : ''));
+            blockedBtns.push(label + '  被 ' + blockerLabel + ' 遮挡');
+          }
+        }
+      });
+
+      if (hiddenBtns.length) {
+        oranges.push('有 ' + hiddenBtns.length + ' 个可点击元素 pointer-events:none（点不动）：\n  ' + hiddenBtns.slice(0, 5).join('\n  '));
+      }
+      if (blockedBtns.length) {
+        oranges.push('有 ' + blockedBtns.length + ' 个可点击元素被遮挡：\n  ' + blockedBtns.slice(0, 5).join('\n  '));
+      }
+      if (!hiddenBtns.length && !blockedBtns.length) {
+        greens.push('所有可点击元素都没被遮挡/禁用（共 ' + clickables.length + ' 个）');
       }
     } catch(e){}
 
