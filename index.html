@@ -19837,6 +19837,274 @@ window.__memoDebug = function(){
     box.style.display = 'flex';
   };
 })();
+
+  /* ===== 诊断增强模块 v3：元素体检 + 视口模拟 ===== */
+  (function(){
+    if(window.__diagV3Loaded) return;
+    window.__diagV3Loaded = true;
+
+    function inspectElement(sel, label){
+      var el = document.querySelector(sel);
+      if(!el){
+        return { label: label, sel: sel, status: 'missing', note: '元素不存在' };
+      }
+      var rect = el.getBoundingClientRect();
+      var cs = getComputedStyle(el);
+      var issues = [];
+      if(cs.display === 'none') issues.push('display:none');
+      if(cs.visibility === 'hidden') issues.push('visibility:hidden');
+      if(parseFloat(cs.opacity) === 0) issues.push('opacity:0');
+      if(rect.width === 0 && cs.display !== 'none') issues.push('宽度=0');
+      if(rect.height === 0 && cs.display !== 'none') issues.push('高度=0');
+      if(rect.bottom < 0) issues.push('完全在视口上方');
+      if(rect.top > window.innerHeight) issues.push('完全在视口下方');
+      if(rect.right < 0) issues.push('完全在视口左侧');
+      if(rect.left > window.innerWidth) issues.push('完全在视口右侧');
+      return {
+        label: label, sel: sel,
+        status: issues.length ? 'warn' : 'ok',
+        note: issues.join('、') || '正常',
+        x: Math.round(rect.x), y: Math.round(rect.y),
+        w: Math.round(rect.width), h: Math.round(rect.height),
+        display: cs.display, visibility: cs.visibility,
+        opacity: cs.opacity, overflow: cs.overflow
+      };
+    }
+
+    function getKeyElements(){
+      var list = [
+        ['#app', '主容器'],
+        ['#pageStack', '页面栈'],
+        ['#page-friends', '好友页'],
+        ['#page-chat', '聊天页'],
+        ['#page-desk', '功能页'],
+        ['#page-me', '我的页'],
+        ['#chatList', '聊天列表'],
+        ['#chatInput', '聊天输入框'],
+        ['#sendBtn', '发送按钮'],
+        ['.tabbar', '底部 tabbar'],
+        ['#groupList', '字卡分组列表'],
+        ['#cdTabs', '字卡分类 tab'],
+        ['#chatTopbar', '聊天顶部栏'],
+        ['#msgNotify', '消息提示条'],
+        ['#toast', 'toast'],
+        ['#meTags', '我的页标签'],
+        ['.me-big-name', '我的页大名字'],
+        ['.me-avatar', '我的页头像']
+      ];
+      var detail = document.getElementById('cardDetailScreen');
+      if(detail && detail.classList.contains('on')){
+        list.push(['.cd-tab', '第一个字卡分类 tab']);
+        list.push(['.cd-list', '字卡列表']);
+        list.push(['.cd-line', '第一条字卡']);
+      }
+      var lib = document.getElementById('cardLibScreen');
+      if(lib && lib.classList.contains('on')){
+        list.push(['.group-card', '第一个分组卡片']);
+        list.push(['[data-open="g-tags"]', '标签分组']);
+      }
+      return list;
+    }
+
+    window.__buildInspectText = function(){
+      var lines = [];
+      lines.push('========== 元素体检报告 ==========');
+      lines.push('时间: ' + new Date().toLocaleString('zh-CN'));
+      lines.push('视口: ' + window.innerWidth + ' × ' + window.innerHeight);
+      lines.push('');
+      var els = getKeyElements();
+      els.forEach(function(pair){
+        var r = inspectElement(pair[0], pair[1]);
+        if(r.status === 'missing'){
+          lines.push('❓ ' + r.label + ' (' + r.sel + ') : 不存在');
+          return;
+        }
+        var mark = r.status === 'warn' ? '⚠️' : '✅';
+        lines.push(mark + ' ' + r.label + ' (' + r.sel + ')');
+        lines.push('    位置: x=' + r.x + ' y=' + r.y + ' 宽=' + r.w + ' 高=' + r.h);
+        lines.push('    样式: display=' + r.display + ' visibility=' + r.visibility + ' opacity=' + r.opacity + ' overflow=' + r.overflow);
+        if(r.status === 'warn') lines.push('    ⚠️ 问题: ' + r.note);
+      });
+      lines.push('');
+      lines.push('========== 报告结束 ==========');
+      return lines.join('\n');
+    };
+
+    function addInspectButton(){
+      var panel = document.getElementById('diagFullPanel');
+      if(!panel) return;
+      if(panel.querySelector('#diagInspectBtn')) return;
+      var btnBox = panel.querySelector('#diagFullBody');
+      if(!btnBox) return;
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap';
+      wrap.innerHTML = '<button id="diagInspectBtn" style="flex:1;min-width:100px;padding:9px 0;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:#1a1a1a;color:#fff;font-size:12px;font-family:inherit;cursor:pointer">🔍 元素体检</button>'
+        + '<button id="diagNarrowBtn" style="flex:1;min-width:100px;padding:9px 0;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:#1a1a1a;color:#fff;font-size:12px;font-family:inherit;cursor:pointer">📐 模拟窄屏</button>'
+        + '<button id="diagExportBtn" style="flex:1;min-width:100px;padding:9px 0;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:#fff;color:#111;font-size:12px;font-family:inherit;font-weight:700;cursor:pointer">📦 一键导出全部</button>';
+      btnBox.insertBefore(wrap, btnBox.firstChild);
+
+      /* ===== 一键导出全部 ===== */
+      wrap.querySelector('#diagExportBtn').addEventListener('click', function(){
+        var all = [];
+        all.push('========================================');
+        all.push('  梦角 · 完整诊断报告');
+        all.push('  时间: ' + new Date().toLocaleString('zh-CN'));
+        all.push('========================================');
+        all.push('');
+
+        /* 1. 原有诊断内容（复用它自己的报告生成） */
+        try {
+          if(typeof window.__buildDiagText === 'function'){
+            all.push('---------- 基础诊断 ----------');
+            all.push(window.__buildDiagText());
+            all.push('');
+          }
+        } catch(e){ all.push('基础诊断生成失败: ' + e.message); }
+
+        /* 2. 元素体检报告 */
+        try {
+          if(typeof window.__buildInspectText === 'function'){
+            all.push('---------- 元素体检 ----------');
+            all.push(window.__buildInspectText());
+            all.push('');
+          }
+        } catch(e){ all.push('元素体检生成失败: ' + e.message); }
+
+        /* 3. 所有关键元素的完整清单（更详细，含 DOM 结构） */
+        try {
+          all.push('---------- 关键元素详细 ----------');
+          var ids = ['app','pageStack','page-friends','page-chat','page-desk','page-me',
+                     'chatList','chatInput','sendBtn','chatTopbar','msgNotify','toast',
+                     'groupList','cdTabs','cdTabsWrap','cdList','meTags','meAvatar'];
+          ids.forEach(function(id){
+            var el = document.getElementById(id);
+            if(!el){ all.push('  #' + id + ' : 不存在'); return; }
+            var r = el.getBoundingClientRect();
+            var cs = getComputedStyle(el);
+            all.push('  #' + id);
+            all.push('    位置: x=' + Math.round(r.x) + ' y=' + Math.round(r.y) + ' 宽=' + Math.round(r.width) + ' 高=' + Math.round(r.height));
+            all.push('    样式: display=' + cs.display + ' visibility=' + cs.visibility + ' opacity=' + cs.opacity);
+            all.push('    overflow=' + cs.overflow + ' position=' + cs.position);
+          });
+          all.push('');
+        } catch(e){ all.push('详细元素生成失败: ' + e.message); }
+
+        /* 4. 所有 .screen 的状态 */
+        try {
+          all.push('---------- 所有 .screen ----------');
+          document.querySelectorAll('.screen').forEach(function(s){
+            var r = s.getBoundingClientRect();
+            all.push('  ' + (s.classList.contains('on') ? '✅ ON ' : '   off') + ' #' + s.id + ' 宽=' + Math.round(r.width) + ' 高=' + Math.round(r.height));
+          });
+          all.push('');
+        } catch(e){}
+
+        /* 5. 所有 script 标签的统计 */
+        try {
+          all.push('---------- 所有 script 标签 ----------');
+          document.querySelectorAll('script').forEach(function(s, i){
+            var t = s.textContent || '';
+            all.push('  [' + i + '] 长度=' + t.length + ' src=' + (s.src || '(内联)'));
+            /* 检查语法 */
+            try { new Function(t); all.push('      ✅ 语法通过'); }
+            catch(err){
+              if(err.message.indexOf('Unexpected end of input') < 0){
+                all.push('      ❌ 语法错: ' + err.message);
+              } else {
+                all.push('      (被截断，跳过检查)');
+              }
+            }
+          });
+          all.push('');
+        } catch(e){}
+
+        /* 6. 视口 + 屏幕信息 */
+        try {
+          all.push('---------- 视口 ----------');
+          all.push('  视口: ' + window.innerWidth + ' × ' + window.innerHeight);
+          all.push('  屏幕: ' + screen.width + ' × ' + screen.height);
+          all.push('  DPR: ' + window.devicePixelRatio);
+          all.push('  方向: ' + (window.innerWidth > window.innerHeight ? '横屏' : '竖屏'));
+          all.push('  UA: ' + navigator.userAgent);
+          all.push('');
+        } catch(e){}
+
+        /* 7. 所有 localStorage 键 */
+        try {
+          all.push('---------- localStorage 键 ----------');
+          for(var k in localStorage){
+            if(localStorage.hasOwnProperty(k)){
+              all.push('  ' + k + ' (' + ((localStorage[k] || '').length) + ' 字符)');
+            }
+          }
+          all.push('');
+        } catch(e){}
+
+        all.push('========================================');
+        all.push('  报告结束');
+        all.push('========================================');
+
+        var text = all.join('\n');
+
+        /* 用 Blob 下载成文件 */
+        try {
+          var blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          var d = new Date();
+          var p = function(n){ return String(n).padStart(2, '0'); };
+          a.href = url;
+          a.download = '诊断报告_' + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + '_' + p(d.getHours()) + p(d.getMinutes()) + '.txt';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+          /* 按钮反馈 */
+          var b = document.getElementById('diagExportBtn');
+          if(b){ b.textContent = '✅ 已下载'; setTimeout(function(){ b.textContent = '📦 一键导出全部'; }, 1500); }
+        } catch(e){
+          alert('下载失败：' + e.message + '\n\n请用控制台手动执行：\nconsole.log(window.__buildInspectText())');
+        }
+      });
+
+      wrap.querySelector('#diagInspectBtn').addEventListener('click', function(){
+        var text = window.__buildInspectText();
+        var reportBox = panel.querySelector('#diagV3Report');
+        if(!reportBox){
+          reportBox = document.createElement('div');
+          reportBox.id = 'diagV3Report';
+          reportBox.style.cssText = 'margin-top:12px;padding:10px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.15);border-radius:8px;font-size:11px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto;color:#ddd';
+          btnBox.appendChild(reportBox);
+        }
+        reportBox.textContent = text;
+      });
+
+      wrap.querySelector('#diagNarrowBtn').addEventListener('click', function(){
+        var isNarrow = document.body.hasAttribute('data-narrow');
+        if(isNarrow){
+          document.body.removeAttribute('data-narrow');
+          document.body.style.height = '';
+          document.body.style.overflow = '';
+          document.documentElement.style.height = '';
+          this.textContent = '📐 模拟窄屏';
+        } else {
+          document.body.setAttribute('data-narrow', '1');
+          document.body.style.height = '369px';
+          document.body.style.overflow = 'hidden';
+          document.documentElement.style.height = '369px';
+          this.textContent = '📐 恢复正常';
+        }
+      });
+    }
+
+    var _origOpen = window.__openDiagPanel;
+    if(typeof _origOpen === 'function'){
+      window.__openDiagPanel = function(){
+        _origOpen.apply(null, arguments);
+        setTimeout(addInspectButton, 50);
+      };
+    }
+  })();
 </script>
 
 </body>
