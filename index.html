@@ -19943,6 +19943,130 @@ window.__memoDebug = function(){
         + '<button id="diagExportBtn" style="flex:1;min-width:100px;padding:9px 0;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:#fff;color:#111;font-size:12px;font-family:inherit;font-weight:700;cursor:pointer">📦 一键导出全部</button>';
       btnBox.insertBefore(wrap, btnBox.firstChild);
 
+      /* ===== 环境指纹 ===== */
+      (function(){
+        var btn = document.createElement('button');
+        btn.id = 'diagFingerprintBtn';
+        btn.textContent = '📊 环境指纹';
+        btn.style.cssText = 'flex:1;min-width:100px;padding:9px 0;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:#1a1a1a;color:#fff;font-size:12px;font-family:inherit;cursor:pointer';
+        wrap.insertBefore(btn, wrap.firstChild);
+        btn.addEventListener('click', function(){
+          var out = [];
+          out.push('========== 环境指纹 ==========');
+          out.push('时间: ' + new Date().toLocaleString('zh-CN'));
+          out.push('UA: ' + navigator.userAgent);
+          out.push('视口: ' + window.innerWidth + ' × ' + window.innerHeight);
+          out.push('DPR: ' + window.devicePixelRatio);
+          out.push('');
+
+          /* 关键元素清单 */
+          var keys = [
+            ['#app', '主容器'],
+            ['#page-chat', '聊天页'],
+            ['#chatTopbar', '聊天顶部栏'],
+            ['#chatList', '聊天列表'],
+            ['#chatAvatar', '聊天头像'],
+            ['#chatName', '聊天名字'],
+            ['#tbStatusEmoji', '状态emoji'],
+            ['#tbStatusText', '状态文字'],
+            ['#tbMood', '心情'],
+            ['.d-bar', '输入栏'],
+            ['#chatInput', '输入框'],
+            ['#sendBtn', '发送按钮'],
+            ['#page-me', '我的页'],
+            ['.me-big-name', '我的名字'],
+            ['.me-avatar', '我的头像'],
+            ['.me-quote', '我的签名'],
+            ['.me-divider', '我的分隔线'],
+            ['#meTags', '我的标签'],
+            ['.me-row', '我的菜单行'],
+            ['#groupList', '字卡分组列表'],
+            ['.group-card', '第一个分组卡片'],
+            ['[data-open="g-tags"]', '标签分组'],
+            ['#cdTabs', '字卡分类tab'],
+            ['.cd-tab', '第一个分类tab']
+          ];
+          out.push('---------- 元素位置/尺寸 ----------');
+          keys.forEach(function(pair){
+            var el = document.querySelector(pair[0]);
+            if(!el){ out.push('  ❓ ' + pair[1] + ' (' + pair[0] + ') 不存在'); return; }
+            var r = el.getBoundingClientRect();
+            var cs = getComputedStyle(el);
+            out.push('  ' + pair[1] + ' (' + pair[0] + ')');
+            out.push('    x=' + Math.round(r.x) + ' y=' + Math.round(r.y) + ' w=' + Math.round(r.width) + ' h=' + Math.round(r.height));
+            out.push('    display=' + cs.display + ' visibility=' + cs.visibility + ' opacity=' + cs.opacity);
+            out.push('    font-size=' + cs.fontSize + ' color=' + cs.color + ' bg=' + cs.backgroundColor);
+            out.push('    overflow=' + cs.overflow + ' position=' + cs.position);
+          });
+          out.push('');
+
+          /* 关键 CSS 支持 */
+          out.push('---------- CSS 支持 ----------');
+          if(window.CSS && CSS.supports){
+            var cssTests = [
+              ['100dvh', 'height', '100dvh'],
+              ['100vh', 'height', '100vh'],
+              ['dvh unit', 'height', 'calc(100dvh - 80px)'],
+              [':has()', 'selector', ':has(.x)'],
+              ['aspect-ratio', 'aspect-ratio', '1/1'],
+              ['gap flex', 'gap', '1px'],
+              ['backdrop-filter', 'backdrop-filter', 'blur(1px)'],
+              ['inset', 'inset', '0'],
+              ['position:sticky', 'position', 'sticky'],
+              ['clamp()', 'width', 'clamp(1px,2px,3px)']
+            ];
+            cssTests.forEach(function(t){
+              var ok = false;
+              try { ok = CSS.supports(t[1], t[2]); } catch(e){}
+              out.push('  ' + (ok ? '✅' : '❌') + ' ' + t[0]);
+            });
+          }
+          out.push('');
+
+          /* 关键 JS 语法支持 */
+          out.push('---------- JS 语法支持 ----------');
+          var jsTests = [
+            ['可选链 ?.', 'var a = {}; a?.b;'],
+            ['空值合并 ??', 'var a = null ?? 1;'],
+            ['逻辑赋值 ||=', 'var a = 1; a ||= 2;'],
+            ['Array.at()', '[1].at(0);'],
+            ['String.replaceAll', '"a".replaceAll("a","b");'],
+            ['Object.hasOwn', 'Object.hasOwn({}, "x");'],
+            ['structuredClone', 'typeof structuredClone;']
+          ];
+          jsTests.forEach(function(t){
+            var ok = false;
+            try { new Function(t[1]); ok = true; } catch(e){}
+            out.push('  ' + (ok ? '✅' : '❌') + ' ' + t[0]);
+          });
+          out.push('');
+
+          /* 关键 CSS 变量 */
+          out.push('---------- CSS 变量 ----------');
+          var root = getComputedStyle(document.documentElement);
+          var vars = ['--th-bg0', '--th-text', '--th-accent', '--avatar-radius'];
+          vars.forEach(function(v){
+            var val = root.getPropertyValue(v).trim();
+            out.push('  ' + v + ' = ' + (val || '(空)'));
+          });
+          out.push('');
+
+          out.push('========== 结束 ==========');
+
+          var text = out.join('\n');
+
+          /* 显示在面板下方 */
+          var reportBox = document.querySelector('#diagV3Report');
+          if(!reportBox){
+            reportBox = document.createElement('div');
+            reportBox.id = 'diagV3Report';
+            reportBox.style.cssText = 'margin-top:12px;padding:10px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.15);border-radius:8px;font-size:11px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto;color:#ddd';
+            btnBox.appendChild(reportBox);
+          }
+          reportBox.textContent = text;
+        });
+      })();
+
       /* ===== 渲染检测 ===== */
       (function(){
         var btn = document.createElement('button');
