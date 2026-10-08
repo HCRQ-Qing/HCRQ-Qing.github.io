@@ -19943,6 +19943,146 @@ window.__memoDebug = function(){
         + '<button id="diagExportBtn" style="flex:1;min-width:100px;padding:9px 0;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:#fff;color:#111;font-size:12px;font-family:inherit;font-weight:700;cursor:pointer">📦 一键导出全部</button>';
       btnBox.insertBefore(wrap, btnBox.firstChild);
 
+      /* ===== 渲染检测 ===== */
+      (function(){
+        var btn = document.createElement('button');
+        btn.id = 'diagRenderBtn';
+        btn.textContent = '🎨 渲染检测';
+        btn.style.cssText = 'flex:1;min-width:100px;padding:9px 0;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:#1a1a1a;color:#fff;font-size:12px;font-family:inherit;cursor:pointer';
+        wrap.insertBefore(btn, wrap.firstChild);
+        btn.addEventListener('click', function(){
+          var report = [];
+          report.push('========== 渲染检测报告 ==========');
+          report.push('时间: ' + new Date().toLocaleString('zh-CN'));
+          report.push('');
+
+          /* 1. 尺寸异常 */
+          report.push('---------- 1. 尺寸异常（显示但宽/高=0） ----------');
+          var sels = ['#app', '#pageStack', '#page-friends', '#page-chat', '#page-desk', '#page-me',
+                      '#chatList', '#chatInput', '#sendBtn', '#chatTopbar',
+                      '.tabbar', '.d-bar', '.msg', '.bubble', '.me-row', '.me-avatar', '.me-big-name',
+                      '.group-card', '.cd-tab', '.cd-line', '.friend'];
+          sels.forEach(function(sel){
+            var els = document.querySelectorAll(sel);
+            if(!els.length){ report.push('  (空) ' + sel); return; }
+            var el = els[0];
+            var cs = getComputedStyle(el);
+            var r = el.getBoundingClientRect();
+            var hidden = cs.display === 'none' || cs.visibility === 'hidden';
+            var parentHidden = false;
+            var p = el.parentElement;
+            while(p && p !== document.body){
+              var pcs = getComputedStyle(p);
+              if(pcs.display === 'none'){ parentHidden = true; break; }
+              p = p.parentElement;
+            }
+            if(hidden || parentHidden){
+              report.push('  ✅ ' + sel + ' (父级隐藏，跳过)');
+            } else if(r.width === 0 || r.height === 0){
+              report.push('  ⚠️ ' + sel + ' 宽=' + Math.round(r.width) + ' 高=' + Math.round(r.height) + ' 但样式显示');
+            } else {
+              report.push('  ✅ ' + sel + ' 宽=' + Math.round(r.width) + ' 高=' + Math.round(r.height));
+            }
+          });
+          report.push('');
+
+          /* 2. 文字背景同色 */
+          report.push('---------- 2. 文字与背景同色（看不见） ----------');
+          var textSels = ['.me-big-name', '.me-quote', '.me-row .name', '.chat-name', '.bubble',
+                          '.group-card .g-name', '.cd-tab', '.friend .f-name', '.tabbar .tb-item .tb-lb'];
+          textSels.forEach(function(sel){
+            var el = document.querySelector(sel);
+            if(!el){ report.push('  (空) ' + sel); return; }
+            var cs = getComputedStyle(el);
+            var fg = cs.color;
+            var realBg = cs.backgroundColor;
+            var p = el.parentElement;
+            while(p && realBg === 'rgba(0, 0, 0, 0)'){
+              var pcs = getComputedStyle(p);
+              if(pcs.backgroundColor !== 'rgba(0, 0, 0, 0)'){ realBg = pcs.backgroundColor; break; }
+              p = p.parentElement;
+            }
+            if(fg === realBg && fg !== 'rgba(0, 0, 0, 0)'){
+              report.push('  ⚠️ ' + sel + ' 文字色=' + fg + ' 背景色=' + realBg + ' 一样，看不见！');
+            } else if(parseFloat(cs.opacity) === 0){
+              report.push('  ⚠️ ' + sel + ' opacity=0，看不见！');
+            } else {
+              report.push('  ✅ ' + sel + ' 文字色=' + fg + ' 背景色=' + realBg);
+            }
+          });
+          report.push('');
+
+          /* 3. 视口中心遮挡 */
+          report.push('---------- 3. 视口中心遮挡检测 ----------');
+          var cx = Math.floor(window.innerWidth / 2);
+          var cy = Math.floor(window.innerHeight / 2);
+          var centerEl = document.elementFromPoint(cx, cy);
+          if(centerEl){
+            var path = [];
+            var cur = centerEl;
+            while(cur && cur !== document.body && path.length < 5){
+              var tag = cur.tagName.toLowerCase();
+              if(cur.id) tag += '#' + cur.id;
+              else if(cur.className && typeof cur.className === 'string'){
+                tag += '.' + cur.className.split(/\s+/).slice(0,2).join('.');
+              }
+              path.unshift(tag);
+              cur = cur.parentElement;
+            }
+            report.push('  屏幕中心 (' + cx + ',' + cy + ') 落点: ' + path.join(' > '));
+          }
+          report.push('');
+
+          /* 4. 溢出被裁 */
+          report.push('---------- 4. 溢出裁剪检测 ----------');
+          var clipSels = ['#app', '#page-chat', '#chatList', '.screen.on'];
+          clipSels.forEach(function(sel){
+            var el = document.querySelector(sel);
+            if(!el){ report.push('  (空) ' + sel); return; }
+            var cs = getComputedStyle(el);
+            var r = el.getBoundingClientRect();
+            if(cs.overflow === 'hidden' || cs.overflowY === 'hidden'){
+              var kids = el.querySelectorAll('*');
+              var outCount = 0;
+              kids.forEach(function(k){
+                var kr = k.getBoundingClientRect();
+                if(kr.bottom > r.bottom + 2 || kr.top < r.top - 2){
+                  outCount++;
+                }
+              });
+              if(outCount > 0){
+                report.push('  ⚠️ ' + sel + ' (overflow:hidden) 有 ' + outCount + ' 个子元素溢出');
+              } else {
+                report.push('  ✅ ' + sel + ' (overflow:hidden) 无溢出');
+              }
+            }
+          });
+          report.push('');
+
+          /* 5. 弹层堆叠 */
+          report.push('---------- 5. 弹层堆叠检测 ----------');
+          var layers = document.querySelectorAll('.screen.on, .modal.show, .beauty-panel.show, .sub-panel.show, .drawer.open, .profile-screen.on, .chat-info-panel.show, #diagFullPanel, .cip-mask.show, .cip-confirm-mask.show');
+          report.push('  当前屏幕上可见浮层: ' + layers.length + ' 个');
+          layers.forEach(function(l){
+            var z = getComputedStyle(l).zIndex;
+            report.push('    ' + (l.id || l.className) + ' z-index=' + z);
+          });
+
+          report.push('');
+          report.push('========== 报告结束 ==========');
+
+          var text = report.join('\n');
+          var reportBox = document.querySelector('#diagV3Report');
+          if(!reportBox){
+            reportBox = document.createElement('div');
+            reportBox.id = 'diagV3Report';
+            reportBox.style.cssText = 'margin-top:12px;padding:10px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.15);border-radius:8px;font-size:11px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto;color:#ddd';
+            btnBox.appendChild(reportBox);
+          }
+          reportBox.textContent = text;
+        });
+      })();
+
       /* ===== 一键导出全部 ===== */
       wrap.querySelector('#diagExportBtn').addEventListener('click', function(){
         var all = [];
