@@ -51,7 +51,7 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
 .page-stack{position:absolute;inset:0;display:flex;transition:transform .38s cubic-bezier(.22,1,.36,1);will-change:transform;transform:translateX(-100%)}
 .page{position:relative;flex:none;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden}
 
-.screen{position:fixed;inset:0;max-width:780px;margin:0 auto;height:100dvh;overflow:hidden;display:none;flex-direction:column;background:var(--th-bg0);z-index:100}
+.screen{position:fixed;inset:0;max-width:780px;margin:0 auto;height:100vh;height:100dvh;overflow:hidden;display:none;flex-direction:column;background:var(--th-bg0);z-index:100}
 .screen.on{display:flex}
 #cardLibScreen,#cardDetailScreen,#moodScreen,#chatSearchScreen,#behaviorScreen{
   background:var(--th-bg0);
@@ -3333,7 +3333,7 @@ body.bl-compact .bl-tl-item{padding-bottom:12px}
 body.bl-compact .bl-text{font-size:12.5px}
 
 /* ===== 个人主页 · 极简细体版 ===== */
-.profile-screen{position:fixed;inset:0;max-width:520px;margin:0 auto;height:100dvh;overflow-y:auto;display:none;flex-direction:column;z-index:150;background:#ffffff;transition:transform .25s cubic-bezier(.22,1,.36,1),opacity .25s ease}
+.profile-screen{position:fixed;inset:0;max-width:520px;margin:0 auto;height:100vh;height:100dvh;overflow-y:auto;display:none;flex-direction:column;z-index:150;background:#ffffff;transition:transform .25s cubic-bezier(.22,1,.36,1),opacity .25s ease}
 .profile-screen.on{display:flex}
 .profile-wrap{max-width:520px;margin:0 auto;padding:0 22px 60px;width:100%;display:block;flex:none;position:relative}
 .profile-top{display:flex;align-items:center;padding:16px 2px 4px;flex:none;height:auto}
@@ -17569,1466 +17569,7 @@ function goToPage(name){
 .diag-trace-src{color:#777;word-break:break-all;margin-top:3px;font-size:10.5px}
 </style>
 
-<script>
-/* ========== 日志 & 屏幕诊断（独立模块，不影响原功能） ========== */
-(function(){
-  'use strict';
 
-  var LOG_KEY = 'mj_diag_log_v1';
-  var MAX_LOG = 600;
-
-  var logs = [];
-  var seq = 0;
-  var panelOpen = false;
-  var curTab = 'info';
-  var saveTimer = null;
-  var errCount = 0;
-
-  var TYPE_COLOR = {
-    '错误':    '#ffffff',
-    'Promise': '#ffffff',
-    '资源':    '#cccccc',
-    '警告':    '#aaaaaa',
-    '点击':    '#999999',
-    '日志':    '#888888',
-    '信息':    '#888888',
-    '系统':    '#bbbbbb'
-  };
-
-  function pad(n, len){
-    n = String(n); len = len || 2;
-    while (n.length < len) n = '0' + n;
-    return n;
-  }
-  function timeStr(ts){
-    var d = new Date(ts);
-    return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + pad(d.getMilliseconds(), 3);
-  }
-  function esc(s){
-    return String(s).replace(/[&<>"]/g, function(c){
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
-    });
-  }
-  function toText(v){
-    if (v === undefined) return 'undefined';
-    if (v === null) return 'null';
-    if (typeof v === 'string') return v;
-    if (typeof v === 'number' || typeof v === 'boolean') return String(v);
-    if (v instanceof Error) return (v.name || 'Error') + ': ' + v.message + (v.stack ? '\n' + v.stack : '');
-    if (typeof v === 'function') return '[函数]';
-    if (typeof v === 'object'){
-      try {
-        var s = JSON.stringify(v);
-        if (!s) s = String(v);
-        if (s.length > 400) s = s.slice(0, 400) + ' …';
-        return s;
-      } catch(e){ return '[对象]'; }
-    }
-    return String(v);
-  }
-  function safeGet(fn, def){
-    try {
-      var v = fn();
-      if (v === undefined || v === null || v === '') return def;
-      return v;
-    } catch(e){ return def; }
-  }
-  function fmtKB(b){
-    if (b < 1024) return b + ' B';
-    if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
-    return (b / 1048576).toFixed(2) + ' MB';
-  }
-  try {
-    var savedLogs = JSON.parse(localStorage.getItem(LOG_KEY) || 'null');
-    if (Array.isArray(savedLogs) && savedLogs.length){
-      logs = savedLogs.slice(-300);
-      seq = logs[logs.length - 1].n || logs.length;
-    }
-  } catch(e){}
-
-  function addLog(type, parts){
-    var text;
-    try { text = parts.map(toText).join(' '); }
-    catch(e){ text = '[日志格式化失败]'; }
-
-    var entry = { n: ++seq, t: Date.now(), time: timeStr(Date.now()), type: type, text: text };
-    logs.push(entry);
-    if (logs.length > MAX_LOG) logs.splice(0, logs.length - MAX_LOG);
-
-    if (type === '错误' || type === 'Promise' || type === '资源'){
-      errCount++;
-      updateFab();
-    }
-    scheduleSave();
-    if (panelOpen && curTab === 'log') prependLogItem(entry);
-  }
-  window.__diagLog = addLog;
-
-  function scheduleSave(){
-    if (saveTimer) return;
-    saveTimer = setTimeout(function(){
-      saveTimer = null;
-      try { localStorage.setItem(LOG_KEY, JSON.stringify(logs.slice(-300))); }
-      catch(e){}
-    }, 1200);
-  }
-
-  window.addEventListener('error', function(ev){
-    var tgt = ev.target;
-    if (tgt && tgt !== window && tgt.tagName){
-      var url = tgt.src || tgt.href || '';
-      addLog('资源', ['<' + tgt.tagName.toLowerCase() + '> 加载失败：' + url]);
-      return;
-    }
-    var msg = ev.message || '未知错误';
-    var file = ev.filename ? ev.filename.split('/').pop() : '?';
-    var loc = file + ':' + (ev.lineno || 0) + ':' + (ev.colno || 0);
-    var stack = (ev.error && ev.error.stack) ? '\n' + ev.error.stack : '';
-    addLog('错误', [msg + '  @' + loc + stack]);
-  }, true);
-
-  window.addEventListener('unhandledrejection', function(ev){
-    var r = ev.reason;
-    addLog('Promise', ['未处理的异步错误：' + ((r && r.stack) || toText(r))]);
-  });
-
-  (function(){
-    var names = { log:'日志', info:'信息', warn:'警告', error:'错误' };
-    ['log', 'info', 'warn', 'error'].forEach(function(k){
-      var orig = console[k] ? console[k].bind(console) : function(){};
-      console[k] = function(){
-        try { addLog(names[k], Array.prototype.slice.call(arguments)); } catch(e){}
-        orig.apply(null, arguments);
-      };
-    });
-  })();
-
-  function elPath(el){
-    var parts = [], cur = el, depth = 0;
-    while (cur && cur !== document.body && depth < 4){
-      var s = cur.tagName ? cur.tagName.toLowerCase() : '?';
-      if (cur.id){ parts.unshift(s + '#' + cur.id); break; }
-      if (cur.className && typeof cur.className === 'string'){
-        var cls = cur.className.trim().split(/\s+/).slice(0, 2).join('.');
-        if (cls) s += '.' + cls;
-      }
-      parts.unshift(s);
-      cur = cur.parentElement;
-      depth++;
-    }
-    return parts.join(' > ') || '(未知元素)';
-  }
-  document.addEventListener('click', function(ev){
-    var t = ev.target;
-    if (!t || (t.closest && t.closest('#diagMask'))) return;
-    addLog('点击', [elPath(t)]);
-  }, true);
-
-  var fab = document.getElementById('diagFabStatic');
-  if (!fab) {
-    fab = document.createElement('div');
-    fab.className = 'diag-fab';
-    fab.textContent = '🩺';
-    document.body.appendChild(fab);
-  }
-
-  function updateFab(){
-    if (!fab) return;
-    if (errCount > 0){
-      fab.classList.add('err');
-      fab.textContent = '🩺';
-    } else {
-      fab.classList.remove('err');
-    }
-  }
-  /* ===== 诊断按钮：可拖动 ===== */
-  (function makeDraggable(el){
-    if (!el) return;
-    // 读取上次保存的位置
-    var pos = lsGet('mj_diag_fab_pos', null);
-    if (pos && typeof pos === 'object' && typeof pos.left === 'number' && typeof pos.top === 'number'){
-      el.style.left = pos.left + 'px';
-      el.style.top = pos.top + 'px';
-      el.style.right = 'auto';
-      el.style.bottom = 'auto';
-    }
-
-    var dragging = false;
-    var moved = false;
-    var startX = 0, startY = 0;
-    var startLeft = 0, startTop = 0;
-
-    function getPos(){
-      var r = el.getBoundingClientRect();
-      return { left: r.left, top: r.top };
-    }
-
-    function onDown(e){
-      var p = e.touches ? e.touches[0] : e;
-      if (!p) return;
-      dragging = true;
-      moved = false;
-      startX = p.clientX;
-      startY = p.clientY;
-      var cur = getPos();
-      startLeft = cur.left;
-      startTop = cur.top;
-      el.style.transition = 'none';
-      if (e.type === 'mousedown'){
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp);
-        e.preventDefault();
-      }
-    }
-
-    function onMove(e){
-      if (!dragging) return;
-      var p = e.touches ? e.touches[0] : e;
-      if (!p) return;
-      var dx = p.clientX - startX;
-      var dy = p.clientY - startY;
-      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
-      var vw = window.innerWidth;
-      var vh = window.innerHeight;
-      var size = el.offsetWidth || 36;
-      var nl = Math.max(0, Math.min(vw - size, startLeft + dx));
-      var nt = Math.max(0, Math.min(vh - size, startTop + dy));
-      el.style.left = nl + 'px';
-      el.style.top = nt + 'px';
-      el.style.right = 'auto';
-      el.style.bottom = 'auto';
-      if (e.cancelable) e.preventDefault();
-    }
-
-    function onUp(e){
-      if (!dragging) return;
-      dragging = false;
-      el.style.transition = '';
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      if (moved){
-        var r = el.getBoundingClientRect();
-        lsSet('mj_diag_fab_pos', { left: Math.round(r.left), top: Math.round(r.top) });
-      }
-    }
-
-    el.addEventListener('touchstart', onDown, { passive: true });
-    el.addEventListener('touchmove', onMove, { passive: false });
-    el.addEventListener('touchend', onUp);
-    el.addEventListener('touchcancel', onUp);
-    el.addEventListener('mousedown', onDown);
-
-    // 点击：只有在没拖动过的情况下才打开面板
-    el.addEventListener('click', function(e){
-      e.stopPropagation();
-      if (moved){ moved = false; return; }
-      openPanel();
-    });
-  })(fab);
-
-  function curPageName(){
-    var names = ['好友页', '聊天页', '功能页', '我的页'];
-    try {
-      var st = document.getElementById('pageStack');
-      if (!st) return '未知';
-      var w = window.innerWidth || 1;
-      var idx = Math.round(-st.getBoundingClientRect().left / w);
-      idx = Math.max(0, Math.min(3, idx));
-      return names[idx] + '（第' + (idx + 1) + '页）';
-    } catch(e){ return '未知'; }
-  }
-  function openedLayers(){
-    var out = [];
-    var pairs = [
-      ['.screen.on', '页面层'],
-      ['.profile-screen.on', '个人主页'],
-      ['.modal.show', '弹窗'],
-      ['.rd-modal.show', '弹窗'],
-      ['.sub-panel.show', '设置子面板'],
-      ['.beauty-panel.show', '美化面板'],
-      ['.drawer.open', '底部抽屉'],
-      ['.chat-info-panel.show', '聊天信息面板'],
-      ['.crop-mask.show', '裁剪面板'],
-      ['.sel-overlay.show', '引用选择层']
-    ];
-    pairs.forEach(function(p){
-      try {
-        var n = document.querySelectorAll(p[0]).length;
-        if (n) out.push(p[1] + '×' + n);
-      } catch(e){}
-    });
-    return out.join('、');
-  }
-  function storageRows(){
-    var rows = [], total = 0;
-    try {
-      for (var i = 0; i < localStorage.length; i++){
-        var k = localStorage.key(i);
-        var v = localStorage.getItem(k) || '';
-        var bytes = (k.length + v.length) * 2;
-        total += bytes;
-        rows.push({ k: k, bytes: bytes, len: v.length });
-      }
-    } catch(e){}
-    rows.sort(function(a, b){ return b.bytes - a.bytes; });
-    return { rows: rows, total: total };
-  }
-
-  /* ============ 健康检查 ============ */
-  var HEALTH_TARGETS_VAR = [
-    'APPLY_KEY', 'BUILTIN_APPLY_CARD_GROUP', 'INTRO_AGREE_PROB',
-    'INTRO_TRIGGER_PROB', 'INTRO_INTERVAL',
-    'INTRO_MAX_PER_WEEK', 'WEEK', 'CARD_GROUPS_KEY', 'POOL_RATE_KEY',
-    'REPLY_KEY', 'FRIENDS_KEY', 'ROLE_KEY', 'GROUPS_KEY', 'USER_KEY',
-    'MOOD_CFG_KEY', 'MOOD_STATE_KEY', 'BEAUTY_KEY', 'SORT_KEY',
-    'NAME_CARD_PROB', 'DEFAULT_CARD_GROUPS', 'DEFAULT_REPLY'
-  ];
-  var HEALTH_TARGETS_FN = [
-    'getFriends','saveFriends','getRole','getRoleById','getCurrentRoleId',
-    'getCurrentRoleName','getApplyList','saveApplyList','renderFriends',
-    'renderNewFriends','openNewFriends','closeNewFriends','pushApply',
-    'applyAccept','applyReject','openYouKnow','closeYouKnow','refreshYouKnow',
-    'addFromYouKnow','doSendFriendRequest','scheduleFriendRequestResult',
-    'settleFriendRequest','renderChat','renderCdList','renderGroupList',
-    'openCardLib','openProfile','openChatInfo','closeChatInfo',
-    'applyBeautyCfg','applyTheme','applyMoodUI','scheduleMood','scheduleStatus',
-    'scheduleApplyTick','runApplyTick','scheduleBuiltinTick','runBuiltinTick',
-    'openMoments','openRoleMomentsPage','toast','uid','lsGet','lsSet'
-  ];
-  var HEALTH_TARGETS_ID = [
-    'pageStack','page-friends','page-chat','page-desk','page-me',
-    'friendList','chatList','chatInput','sendBtn',
-    'newFriendsScreen','nfBack','nfYouKnow','nfSearchInput','nfList',
-    'youKnowScreen','ykBack','ykRefresh','ykList',
-    'mAdd','mNewFriend','mNewBuiltin','mNewGroup','mFriendMenu',
-    'mAddFriendNote','afNote','afOk',
-    'cardLibScreen','cardDetailScreen','cdList','cdTabs',
-    'moodScreen','chatSearchScreen','behaviorScreen',
-    'chatInfoPanel','cipMoreMask','cipConfirmMask',
-    'momentsScreen','mmBody','mmPostBtn',
-    'toast','diagFab'
-  ];
-
-  function countDeclarations(name){
-    try {
-      var pat = new RegExp('\\b(?:var|let|const|function)\\s+' + name + '\\b', 'g');
-      var src = document.documentElement.outerHTML;
-      var m = src.match(pat);
-      return m ? m.length : 0;
-    } catch(e){ return -1; }
-  }
-
-  function checkHealth(){
-    var reds = [], oranges = [], greens = [];
-
-    /* 1) 重复声明的全局变量/函数（只报真正定义在脚本里的） */
-    var dupNames = [];
-    HEALTH_TARGETS_VAR.forEach(function(n){
-      var c = countDeclarations(n);
-      if (c > 1) dupNames.push(n + ' ×' + c);
-    });
-    if (dupNames.length){
-      reds.push('变量重复声明：' + dupNames.join('、'));
-    } else {
-      greens.push('全局变量无重复');
-    }
-
-    /* 2) 关键函数是否存在 */
-    var missingFn = [];
-    HEALTH_TARGETS_FN.forEach(function(n){
-      if (typeof window[n] !== 'function'){
-        try {
-          var f = eval(n);
-          if (typeof f !== 'function') missingFn.push(n);
-        } catch(e){ missingFn.push(n); }
-      }
-    });
-    if (missingFn.length){
-      reds.push('函数缺失/未定义：' + missingFn.join('、'));
-    } else {
-      greens.push('关键函数都在');
-    }
-
-    /* 3) 关键 id 是否还在 DOM（忽略不存在于 HTML 里的）
-     * 只检查当前 HTML 里真正应该存在的关键 id */
-    var CORE_IDS = [
-      'pageStack','page-friends','page-chat','page-desk','page-me',
-      'friendList','chatList','chatInput','sendBtn',
-      'cardLibScreen','cardDetailScreen','cdList','cdTabs',
-      'moodScreen','chatSearchScreen','behaviorScreen',
-      'chatInfoPanel','momentsScreen','mmBody','mmPostBtn','toast'
-    ];
-    var missingId = [];
-    CORE_IDS.forEach(function(id){
-      if (!document.getElementById(id)) missingId.push('#' + id);
-    });
-    if (missingId.length){
-      reds.push('核心 id 缺失：' + missingId.join('、'));
-    } else {
-      greens.push('核心 id 都在 DOM 里');
-    }
-
-    /* 4) 浮层堆积 */
-    var layers = openedLayers();
-    var layerCount = 0;
-    try {
-      layerCount = document.querySelectorAll('.screen.on, .modal.show, .rd-modal.show, .beauty-panel.show, .sub-panel.show, .drawer.open, .chat-info-panel.show, .crop-mask.show, .sel-overlay.show, .profile-screen.on').length;
-    } catch(e){}
-    if (layerCount >= 4){
-      oranges.push('浮层堆积：' + layerCount + ' 层同时打开（' + (layers || '无') + '）');
-    } else {
-      greens.push('浮层数量正常（当前 ' + layerCount + ' 层）');
-    }
-
-    /* 5) 横向溢出 */
-    var vw = window.innerWidth;
-    var de = document.documentElement;
-    if (de.scrollWidth > vw + 2){
-      oranges.push('页面横向溢出：多出 ' + (de.scrollWidth - vw) + 'px');
-    } else {
-      greens.push('页面无横向溢出');
-    }
-
-    /* 6) 关键按钮能否点到（只检查「当前页面上真正可见」的那些）
-     * - 不在 DOM 里：跳过（不算问题）
-     * - 尺寸 0：跳过（多半是隐藏了）
-     * - 不在可视区域：跳过
-     * - 被遮挡：报一次
-     */
-     var testIds = ['#btnAdd', '#sendBtn', '#chatInput'];
-    var blocked = [];
-    var diagMaskEl = document.getElementById('diagMask');
-    testIds.forEach(function(sel){
-      try {
-        var el = document.querySelector(sel);
-        if (!el) return;
-        var r = el.getBoundingClientRect();
-        if (r.width < 1 || r.height < 1) return;
-        if (el.offsetParent === null && getComputedStyle(el).position !== 'fixed') return;
-        var cx = Math.round(r.left + r.width/2);
-        var cy = Math.round(r.top + r.height/2);
-        if (cx < 0 || cy < 0 || cx > vw || cy > window.innerHeight) return;
-        var top = document.elementFromPoint(cx, cy);
-        if (top && !el.contains(top) && top !== el){
-          // 诊断按钮自己、诊断面板自己 → 不算遮挡
-          if (top.id === 'diagFabStatic' || (top.closest && top.closest('#diagFabStatic'))
-              || (top.classList && top.classList.contains('diag-fab'))){
-            return;
-          }
-          if (diagMaskEl && (top === diagMaskEl || diagMaskEl.contains(top))) return;
-          blocked.push(sel + ' 被遮挡（' + (top.tagName + (top.id ? '#'+top.id : '')) + '）');
-        }
-      } catch(e){}
-    });
-    if (blocked.length){
-      oranges.push('按钮被遮挡：' + blocked.join('；'));
-    } else {
-      greens.push('关键按钮可点');
-    }
-
-    /* ============================================================
-       以下为增强检查项
-       ============================================================ */
-
-    /* 7) JS 运行时错误计数 */
-    try {
-      var errCountNow = (typeof errCount === 'number') ? errCount : 0;
-      if (errCountNow > 0){
-        oranges.push('页面出现 ' + errCountNow + ' 次 JS 错误（看运行日志标签）');
-      } else {
-        greens.push('无 JS 运行时错误');
-      }
-    } catch(e){}
-
-    /* 8) localStorage 是否可写 */
-    try {
-      var testKey = '__diag_test_' + Date.now();
-      localStorage.setItem(testKey, '1');
-      localStorage.removeItem(testKey);
-      greens.push('localStorage 可写');
-    } catch(e){
-      reds.push('localStorage 不可写：' + e.message + '（可能是隐私模式或配额已满）');
-    }
-
-    /* 9) localStorage 是否超限 */
-    try {
-      var st2 = storageRows();
-      if (st2.total > 4 * 1024 * 1024){
-        oranges.push('localStorage 接近 5MB 上限（当前 ' + (st2.total/1024/1024).toFixed(2) + 'MB），可能写入失败');
-      } else if (st2.total > 2 * 1024 * 1024){
-        oranges.push('localStorage 偏大（当前 ' + (st2.total/1024/1024).toFixed(2) + 'MB）');
-      } else {
-        greens.push('localStorage 容量正常（' + (st2.total/1024).toFixed(0) + ' KB）');
-      }
-    } catch(e){}
-
-    /* 10) 好友数据完整性 */
-    try {
-      var fList = getFriends();
-      var fids = fList.map(function(f){ return f.id; });
-      var fDup = fids.filter(function(id, i){ return fids.indexOf(id) !== i; });
-      if (fDup.length){
-        reds.push('好友列表有重复 id：' + fDup.join('、'));
-      }
-      var fBad = fList.filter(function(f){ return !f.id || !f.name; });
-      if (fBad.length){
-        reds.push('好友列表有 ' + fBad.length + ' 个数据不完整（缺 id 或 name）');
-      }
-      if (!fDup.length && !fBad.length){
-        greens.push('好友数据完整（' + fList.length + ' 个）');
-      }
-    } catch(e){}
-
-    /* 11) 当前角色是否有效 */
-    try {
-      var curId = getCurrentRoleId();
-      var curRole = getFriends().find(function(f){ return f.id === curId; });
-      if (!curRole){
-        reds.push('当前角色 id（' + curId + '）在好友列表里不存在，可能导致聊天页空白');
-      } else {
-        greens.push('当前角色有效：' + curRole.name);
-      }
-    } catch(e){}
-
-    /* 12) 聊天记录数据完整性 */
-    try {
-      var badMsg = 0;
-      (msgs || []).forEach(function(m){
-        if (!m.id) badMsg++;
-        else if (!m.role && !m.sys && !m.namecard) badMsg++;
-      });
-      if (badMsg > 0){
-        oranges.push('聊天记录有 ' + badMsg + ' 条数据异常（缺 id 或缺 role）');
-      } else {
-        greens.push('聊天记录数据完整（' + (msgs||[]).length + ' 条）');
-      }
-    } catch(e){}
-
-    /* 13) 字卡空分类 */
-    try {
-      var emptyCats = [];
-      (cardStore.public || []).forEach(function(g){
-        (g.cats || []).forEach(function(c){
-          if (!c.list || !c.list.length) emptyCats.push(g.name + ' / ' + c.name);
-        });
-      });
-      if (emptyCats.length){
-        oranges.push('有 ' + emptyCats.length + ' 个空字卡分类：' + emptyCats.slice(0,3).join('、') + (emptyCats.length>3?'…':''));
-      } else {
-        greens.push('字卡分类都有内容');
-      }
-    } catch(e){}
-
-    /* 14) DOM 重复 id */
-    try {
-      var idMap = {};
-      var dupIds = [];
-      var allEls = document.body.querySelectorAll('[id]');
-      for (var ei = 0; ei < allEls.length; ei++){
-        var idv = allEls[ei].id;
-        if (!idv) continue;
-        if (idMap[idv]){ if (dupIds.indexOf(idv) < 0) dupIds.push(idv); }
-        else idMap[idv] = 1;
-      }
-      if (dupIds.length){
-        reds.push('DOM 里有重复 id：' + dupIds.slice(0,5).join('、') + (dupIds.length>5?'…':''));
-      } else {
-        greens.push('DOM 无重复 id');
-      }
-    } catch(e){}
-
-    /* 15) CSS 主题变量是否完整 */
-    try {
-      var rootStyle = getComputedStyle(document.documentElement);
-      var needVars = ['--th-bg0','--th-text','--th-accent'];
-      var missVars = needVars.filter(function(v){
-        var val = rootStyle.getPropertyValue(v).trim();
-        return !val;
-      });
-      if (missVars.length){
-        oranges.push('CSS 变量缺失：' + missVars.join('、') + '（可能主题加载失败）');
-      } else {
-        greens.push('CSS 主题变量完整');
-      }
-    } catch(e){}
-
-    /* 16) 图片是否加载失败 */
-    try {
-      var brokenImgs = [];
-      var imgs = document.body.querySelectorAll('img');
-      for (var ii = 0; ii < imgs.length; ii++){
-        var im = imgs[ii];
-        if (im.complete && im.naturalWidth === 0 && im.src && im.src.indexOf('data:') !== 0){
-          brokenImgs.push(im.src.slice(0, 60));
-        }
-      }
-      if (brokenImgs.length){
-        oranges.push('有 ' + brokenImgs.length + ' 张图片加载失败');
-      } else {
-        greens.push('图片加载正常');
-      }
-    } catch(e){}
-
-    /* 17) 定时器泄漏（估算） */
-    try {
-      var timerCount = 0;
-      var maxId = setTimeout(function(){}, 0);
-      clearTimeout(maxId);
-      for (var ti = 1; ti <= maxId; ti++){ timerCount++; }
-      if (timerCount > 500){
-        oranges.push('定时器 id 数值偏大（' + timerCount + '），可能有定时器未清理');
-      } else {
-        greens.push('定时器数量正常（id 上限 ' + timerCount + '）');
-      }
-    } catch(e){}
-
-    /* 18) 角色专有字卡是否有空分组 */
-    try {
-      var emptyRoleGroups = [];
-      Object.keys(cardStore.roles || {}).forEach(function(rid){
-        var arr = cardStore.roles[rid] || [];
-        var total = arr.reduce(function(n,g){
-          return n + (g.cats||[]).reduce(function(m,c){ return m + (c.list||[]).length; }, 0);
-        }, 0);
-        if (total === 0) emptyRoleGroups.push(getRoleNameById(rid) || rid);
-      });
-      if (emptyRoleGroups.length){
-        oranges.push('有 ' + emptyRoleGroups.length + ' 个角色专有字卡是全空的：' + emptyRoleGroups.slice(0,3).join('、'));
-      } else {
-        greens.push('角色专有字卡都有内容');
-      }
-    } catch(e){}
-
-    /* ============================================================
-       加强检查 19：重复 id 精确定位
-       ============================================================ */
-    try {
-      var idMap2 = {};
-      var allEls2 = document.body.querySelectorAll('[id]');
-      for (var ei2 = 0; ei2 < allEls2.length; ei2++) {
-        var el2 = allEls2[ei2];
-        var idv2 = el2.id;
-        if (!idv2) continue;
-        if (!idMap2[idv2]) idMap2[idv2] = [];
-        idMap2[idv2].push(el2);
-      }
-      var dupIds = Object.keys(idMap2).filter(function(k){ return idMap2[k].length > 1; });
-      if (dupIds.length) {
-        var lines = [];
-        dupIds.forEach(function(dup){
-          var els = idMap2[dup];
-          var parts = [];
-          els.forEach(function(el){
-            var chain = [];
-            var p = el.parentElement;
-            while (p) {
-              var s = p.tagName.toLowerCase();
-              if (p.id) s += '#' + p.id;
-              else if (p.className && typeof p.className === 'string') {
-                var c = p.className.trim().split(/\s+/)[0];
-                if (c) s += '.' + c;
-              }
-              chain.unshift(s);
-              if (p.tagName === 'BODY') break;
-              p = p.parentElement;
-            }
-            parts.push(el.tagName.toLowerCase() + '（父：' + chain.slice(-2).join(' > ') + '）');
-          });
-          lines.push('  #' + dup + ' ×' + els.length + '：' + parts.join(' / '));
-        });
-        reds.push('重复 id 明细：\n' + lines.join('\n'));
-      } else {
-        greens.push('无重复 id（已精确定位）');
-      }
-    } catch(e){}
-
-    /* ============================================================
-       加强检查 20：点击无响应全面检查
-       ============================================================ */
-    try {
-      var clickables = document.body.querySelectorAll('button, [role="button"], [onclick], .d-icon, .send-btn, .topbar-btn, .tb-item, .desk-app, .me-row, .set-row, .bp-row, .friend-menu-btn, .cd-tab, .mood-act, .cl-act');
-      var blockedBtns = [];
-      var deadBtns = [];
-      var hiddenBtns = [];
-      var vw2 = window.innerWidth;
-      var vh2 = window.innerHeight;
-      var diagMaskEl2 = document.getElementById('diagMask');
-
-      clickables.forEach(function(el){
-        /* 跳过诊断面板自身 */
-        if (diagMaskEl2 && diagMaskEl2.contains(el)) return;
-        if (el.closest && el.closest('.diag-fab')) return;
-        /* 跳过默认隐藏的弹窗（比如 #uniMask） */
-        if (el.closest && el.closest('.uni-mask:not(.show)')) return;
-        if (el.closest && el.closest('.modal:not(.show)')) return;
-        if (el.closest && el.closest('.rd-modal:not(.show)')) return;
-        if (el.closest && el.closest('.beauty-panel:not(.show)')) return;
-        if (el.closest && el.closest('.sub-panel:not(.show)')) return;
-        if (el.closest && el.closest('.chat-info-panel:not(.show)')) return;
-        if (el.closest && el.closest('.crop-mask:not(.show)')) return;
-        if (el.closest && el.closest('.sel-overlay:not(.show)')) return;
-
-        var cs = getComputedStyle(el);
-        var rect = el.getBoundingClientRect();
-
-        /* 跳过：display none / visibility hidden */
-        if (cs.display === 'none' || cs.visibility === 'hidden') return;
-
-        /* 跳过：尺寸为 0 */
-        if (rect.width < 1 || rect.height < 1) return;
-
-        /* 跳过：不在可视区（避免误判浮层上的按钮） */
-        if (rect.bottom < 0 || rect.top > vh2 || rect.right < 0 || rect.left > vw2) return;
-
-        /* 跳过：需要 .show 类才显示的按钮（比如 #scrollBottomBtn 默认是 pointer-events:none） */
-        if (el.id === 'scrollBottomBtn' && !el.classList.contains('show')) return;
-
-        /* 1. pointer-events:none 检测 */
-        if (cs.pointerEvents === 'none') {
-          hiddenBtns.push(el.id ? ('#' + el.id) : el.tagName.toLowerCase() + '.' + (el.className || '').split(' ')[0]);
-          return;
-        }
-
-        /* 2. 被遮挡检测 */
-        var cx = Math.round(rect.left + rect.width / 2);
-        var cy = Math.round(rect.top + rect.height / 2);
-        if (cx < 0 || cy < 0 || cx > vw2 || cy > vh2) return;
-
-        var top = document.elementFromPoint(cx, cy);
-        if (top && !el.contains(top) && top !== el) {
-          /* 点在子元素上也算命中自己，但点在完全不相干的元素上就是被遮挡 */
-          if (!el.contains(top)) {
-            /* 如果遮挡它的是诊断面板本身，跳过（诊断面板自己也是浮层） */
-            if (diagMaskEl2 && diagMaskEl2.contains(top)) return;
-            /* 如果遮挡它的是默认隐藏的弹窗，跳过 */
-            if (top.closest && (
-              top.closest('.uni-mask:not(.show)') ||
-              top.closest('.modal:not(.show)') ||
-              top.closest('.rd-modal:not(.show)')
-            )) return;
-            var label = el.id ? ('#' + el.id) : el.tagName.toLowerCase() + '.' + (el.className || '').split(' ')[0];
-            var blockerLabel = top.id ? ('#' + top.id) : (top.tagName.toLowerCase() + (top.className ? '.' + String(top.className).split(' ')[0] : ''));
-            blockedBtns.push(label + '  被 ' + blockerLabel + ' 遮挡');
-          }
-        }
-      });
-
-      if (hiddenBtns.length) {
-        oranges.push('有 ' + hiddenBtns.length + ' 个可点击元素 pointer-events:none（点不动）：\n  ' + hiddenBtns.slice(0, 5).join('\n  '));
-      }
-      if (blockedBtns.length) {
-        oranges.push('有 ' + blockedBtns.length + ' 个可点击元素被遮挡：\n  ' + blockedBtns.slice(0, 5).join('\n  '));
-      }
-      if (!hiddenBtns.length && !blockedBtns.length) {
-        greens.push('所有可点击元素都没被遮挡/禁用（共 ' + clickables.length + ' 个）');
-      }
-    } catch(e){}
-
-    return { reds: reds, oranges: oranges, greens: greens };
-  }
-
-  function healthHTML(){
-    var r = checkHealth();
-    var h = '';
-    h += '<div class="diag-sec">健康检查</div>';
-    if (!r.reds.length && !r.oranges.length){
-      h += '<div class="diag-empty">✅ 一切正常</div>';
-    } else {
-      if (r.reds.length){
-        h += '<div style="color:#fff;font-size:12px;line-height:1.8;padding:6px 0">🔴 ' + r.reds.length + ' 项严重问题：</div>';
-        r.reds.forEach(function(t){ h += '<div class="diag-kv"><span class="diag-v bad" style="text-align:left">· ' + esc(t) + '</span></div>'; });
-      }
-      if (r.oranges.length){
-        h += '<div style="color:#bbb;font-size:12px;line-height:1.8;padding:10px 0 6px">🟠 ' + r.oranges.length + ' 项警告：</div>';
-        r.oranges.forEach(function(t){ h += '<div class="diag-kv"><span class="diag-v" style="text-align:left">· ' + esc(t) + '</span></div>'; });
-      }
-    }
-    h += '<div style="color:#666;font-size:11px;line-height:1.7;padding:14px 0 0">🟢 ' + r.greens.length + ' 项正常</div>';
-    h += '<div style="margin-top:14px"><button class="diag-fbtn" id="diagRerunHealth">🔄 重新检查</button></div>';
-    return h;
-  }
-
-  /* ============ 面板 UI ============ */
-  var mask = document.createElement('div');
-  mask.className = 'diag-mask';
-  mask.id = 'diagMask';
-  mask.innerHTML =
-    '<div class="diag-head">' +
-      '<span class="diag-title">🩺 诊断面板</span>' +
-      '<div>' +
-        '<button class="diag-hbtn" data-act="clear">清日志</button>' +
-        '<button class="diag-hbtn" data-act="close">✕</button>' +
-      '</div>' +
-    '</div>' +
-    '<div class="diag-tabs">' +
-      '<button class="diag-tab on" data-tab="health">健康检查</button>' +
-      '<button class="diag-tab" data-tab="style">样式</button>' +
-      '<button class="diag-tab" data-tab="info">屏幕信息</button>' +
-      '<button class="diag-tab" data-tab="log">运行日志</button>' +
-      '<button class="diag-tab" data-tab="data">数据</button>' +
-      '<button class="diag-tab" data-tab="event">事件</button>' +
-    '</div>' +
-    '<div class="diag-body" id="diagBody"></div>' +
-    '<div class="diag-foot">' +
-      '<button class="diag-fbtn" data-act="refresh">刷新</button>' +
-      '<button class="diag-fbtn" data-act="export">📦 导出报告</button>' +
-      '<button class="diag-fbtn primary" data-act="copy">复制全部报告</button>' +
-    '</div>';
-  document.body.appendChild(mask);
-
-  /* ===== 事件追踪：包装 uni 函数 + 监听 #uniMask 的 class 变化 ===== */
-  (function bindEventTrace(){
-    /* 1) 事件记录数组（只存内存，不写 localStorage，避免刷屏） */
-    var eventLog = [];
-    var MAX_EVENT = 300;
-    function pushEvent(type, text){
-      var d = new Date();
-      function p(n){ n = String(n); return n.length < 2 ? '0' + n : n; }
-      var t = p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()) + '.' + p(d.getMilliseconds()).slice(0,3);
-      eventLog.push({ t: t, type: type, text: text });
-      if(eventLog.length > MAX_EVENT) eventLog.splice(0, eventLog.length - MAX_EVENT);
-      /* 如果当前正在看「事件」标签，实时刷新 */
-      if(panelOpen && curTab === 'event'){
-        renderEventTab();
-      }
-    }
-    window.__diagEvent = pushEvent;
-
-    /* 2) 包装 uniAsk / uniClose / uniCancel */
-    try {
-      if(typeof window.uniAsk === 'function' && !window.__uniAskWrapped){
-        var _origUniAsk = window.uniAsk;
-        window.uniAsk = function(opts){
-          try {
-            var title = (opts && opts.title) ? String(opts.title) : '（无标题）';
-            pushEvent('uniAsk', '打开：' + title);
-          } catch(e){}
-          return _origUniAsk.apply(this, arguments);
-        };
-        window.__uniAskWrapped = true;
-      }
-      if(typeof window.uniClose === 'function' && !window.__uniCloseWrapped){
-        var _origUniClose = window.uniClose;
-        window.uniClose = function(){
-          try { pushEvent('uniClose', '关闭（不 resolve）'); } catch(e){}
-          return _origUniClose.apply(this, arguments);
-        };
-        window.__uniCloseWrapped = true;
-      }
-      if(typeof window.uniCancel === 'function' && !window.__uniCancelWrapped){
-        var _origUniCancel = window.uniCancel;
-        window.uniCancel = function(){
-          try { pushEvent('uniCancel', '取消（resolve null）'); } catch(e){}
-          return _origUniCancel.apply(this, arguments);
-        };
-        window.__uniCancelWrapped = true;
-      }
-    } catch(e){
-      pushEvent('错误', '包装 uni 函数失败：' + e.message);
-    }
-
-    /* 3) MutationObserver 监听 #uniMask 的 class 变化 */
-    try {
-      var um = document.getElementById('uniMask');
-      if(um && window.MutationObserver && !um.__diagObserved){
-        um.__diagObserved = true;
-        var mo = new MutationObserver(function(muts){
-          muts.forEach(function(m){
-            if(m.attributeName === 'class'){
-              var has = um.classList.contains('show');
-              pushEvent('uniMask', has ? '新增 show（弹窗出现）' : '移除 show（弹窗消失）');
-            }
-          });
-        });
-        mo.observe(um, { attributes: true, attributeFilter: ['class'] });
-        pushEvent('系统', '#uniMask 已开始监听 class 变化');
-      } else if(!um){
-        pushEvent('错误', '找不到 #uniMask，无法监听');
-      }
-    } catch(e){
-      pushEvent('错误', '监听 #uniMask 失败：' + e.message);
-    }
-
-    /* 4) 也监听其他几个常见弹窗，方便定位 */
-    try {
-      ['cipMoreMask','cipConfirmMask','mAdd','mFriendMenu'].forEach(function(id){
-        var el = document.getElementById(id);
-        if(!el || !window.MutationObserver) return;
-        var mo = new MutationObserver(function(muts){
-          muts.forEach(function(m){
-            if(m.attributeName === 'class'){
-              var has = el.classList.contains('show');
-              pushEvent('弹窗', '#' + id + (has ? ' 显示' : ' 隐藏'));
-            }
-          });
-        });
-        mo.observe(el, { attributes: true, attributeFilter: ['class'] });
-      });
-    } catch(e){}
-
-    /* 5) 提供渲染函数 */
-    function renderEventTab(){
-      var body = document.getElementById('diagBody');
-      if(!body) return;
-      if(!eventLog.length){
-        body.innerHTML = '<div class="diag-sec">事件追踪</div><div class="diag-empty">还没有事件<br>点一下弹窗、按钮，这里就会出现记录</div>';
-        return;
-      }
-      var h = '<div class="diag-sec">事件追踪（新 → 旧，共 ' + eventLog.length + ' 条）</div>';
-      for(var i = eventLog.length - 1; i >= 0; i--){
-        var e = eventLog[i];
-        var color = '#999';
-        if(e.type === 'uniAsk') color = '#7dd3fc';
-        else if(e.type === 'uniClose') color = '#fbbf24';
-        else if(e.type === 'uniCancel') color = '#f87171';
-        else if(e.type === 'uniMask') color = '#a78bfa';
-        else if(e.type === '弹窗') color = '#4ade80';
-        else if(e.type === '错误') color = '#ff4d6d';
-        h += '<div class="diag-logitem">'
-          + '<span class="diag-lt">' + e.t + '</span>'
-          + '<span class="diag-ltag" style="color:' + color + ';border-color:' + color + '">' + e.type + '</span>'
-          + '<span class="diag-lmsg">' + e.text + '</span>'
-          + '</div>';
-      }
-      body.innerHTML = h;
-      body.scrollTop = 0;
-    }
-    window.__diagRenderEvent = renderEventTab;
-    window.__diagClearEvent = function(){ eventLog.length = 0; renderEventTab(); };
-  })();
-  var flashEl = document.createElement('div');
-  flashEl.className = 'diag-flash';
-  document.body.appendChild(flashEl);
-
-  function flash(msg){
-    flashEl.textContent = msg;
-    flashEl.classList.add('show');
-    setTimeout(function(){ flashEl.classList.remove('show'); }, 1800);
-  }
-
-  function kv(k, v, bad){
-    return '<div class="diag-kv"><span class="diag-k">' + esc(k) + '</span>'
-         + '<span class="diag-v' + (bad ? ' bad' : '') + '">' + esc(v) + '</span></div>';
-  }
-
-  function infoHTML(){
-    var vw = window.innerWidth, vh = window.innerHeight;
-    var de = document.documentElement;
-    var h = '';
-    h += '<div class="diag-sec">屏幕 / 视口</div>';
-    h += kv('视口宽 × 高', vw + ' × ' + vh);
-    h += kv('屏幕分辨率', window.screen.width + ' × ' + window.screen.height);
-    h += kv('设备像素比', window.devicePixelRatio);
-    h += kv('方向', vw > vh ? '横屏' : '竖屏');
-    h += kv('可视高度(visualViewport)',
-      window.visualViewport ? Math.round(window.visualViewport.height) : '不支持');
-    h += '<div class="diag-sec">页面尺寸</div>';
-    h += kv('内容宽度', de.scrollWidth, de.scrollWidth > vw + 1);
-    if (de.scrollWidth > vw + 1){
-      h += kv('横向溢出', '⚠️ 多出 ' + (de.scrollWidth - vw) + 'px', true);
-    }
-    h += kv('内容高度', de.scrollHeight);
-    h += '<div class="diag-sec">运行状态</div>';
-    h += kv('当前角色', safeGet(function(){ return getCurrentRoleName(); }, '未知'));
-    h += kv('当前页面', curPageName());
-    h += kv('打开的浮层', openedLayers() || '无');
-    h += kv('日志条数', logs.length + (errCount ? '（其中报错 ' + errCount + ' 条）' : ''));
-    h += kv('在线状态', navigator.onLine ? '在线' : '离线');
-    h += '<div class="diag-sec">环境</div>';
-    h += kv('语言', navigator.language);
-    h += kv('浏览器', navigator.userAgent);
-    h += '<div style="margin-top:16px">'
-       + '<button class="diag-fbtn" id="diagScan">🔍 扫描超出屏幕的元素</button>'
-       + '</div><div id="diagScanResult"></div>';
-    h += '<div style="margin-top:14px">'
-       + '<button class="diag-trace-btn" id="diagTraceBtn">🔍 样式溯源（查输入框为何变粗）</button>'
-       + '</div><div id="diagTraceResult"></div>';
-    return h;
-  }
-
-  /* ===== 样式溯源：查某个元素到底被哪些 CSS 规则命中 ===== */
-  function traceStyleOf(targetSelector, propFilter){
-    var out = [];
-    var el = document.querySelector(targetSelector);
-    if(!el){
-      out.push({ sel:'（找不到元素）', prop:'选择器：' + targetSelector, src:'', win:false });
-      return out;
-    }
-    var sheets = document.styleSheets;
-    var hits = [];
-    for(var si = 0; si < sheets.length; si++){
-      var rules = null;
-      try { rules = sheets[si].cssRules; } catch(e){ continue; }
-      if(!rules) continue;
-      for(var ri = 0; ri < rules.length; ri++){
-        var r = rules[ri];
-        if(!r.selectorText) continue;
-        // 拆逗号分隔的选择器，逐个测
-        var sels = r.selectorText.split(',');
-        for(var k = 0; k < sels.length; k++){
-          var s = sels[k].trim();
-          var matched = false;
-          try { matched = el.matches(s); } catch(e){}
-          if(!matched) continue;
-          var props = [];
-          for(var pi = 0; pi < r.style.length; pi++){
-            var pn = r.style[pi];
-            if(propFilter && propFilter.length){
-              var hit = propFilter.some(function(p){ return pn.indexOf(p) === 0; });
-              if(!hit) continue;
-            }
-            var pv = r.style.getPropertyValue(pn);
-            var pri = r.style.getPropertyPriority(pn);
-            props.push(pn + ':' + pv + (pri ? ' !' + pri : ''));
-          }
-          if(!props.length) continue;
-          var href = sheets[si].href ? sheets[si].href.split('/').pop() : '（内嵌 <style>）';
-          hits.push({
-            sel: s,
-            prop: props.join('  |  '),
-            src: '第 ' + (si + 1) + ' 个 stylesheet · ' + href,
-            win: false
-          });
-        }
-      }
-    }
-    // 标记「最后生效」的那条：因为后写的赢，取最后一条
-    if(hits.length) hits[hits.length - 1].win = true;
-    return hits;
-  }
-
-  function renderTraceResult(){
-    var box = document.getElementById('diagTraceResult');
-    if(!box) return;
-    var hits = traceStyleOf('#readText', ['border','background','box-shadow','padding','border-radius','font-size','color','outline']);
-    if(!hits.length){
-      box.innerHTML = '<div class="diag-trace-wrap"><div class="diag-trace-head">结果</div><div class="diag-trace-row">没有命中任何规则（说明它是默认样式）</div></div>';
-      return;
-    }
-    var h = '<div class="diag-trace-wrap">';
-    h += '<div class="diag-trace-head">「写下你的理解」输入框 命中 ' + hits.length + ' 条（越往下越强，红色那条是最终生效的）</div>';
-    hits.forEach(function(x){
-      h += '<div class="diag-trace-row' + (x.win ? ' win' : '') + '">';
-      h += '<div class="diag-trace-sel">' + esc(x.sel) + '</div>';
-      h += '<div class="diag-trace-prop">' + esc(x.prop) + '</div>';
-      h += '<div class="diag-trace-src">' + esc(x.src) + '</div>';
-      h += '</div>';
-    });
-    h += '</div>';
-    box.innerHTML = h;
-  }
-
-  function scanOverflow(){
-    var vw = window.innerWidth;
-    var res = [];
-    var all = document.body.querySelectorAll('*');
-    for (var i = 0; i < all.length; i++){
-      var el = all[i];
-      if (el.closest && el.closest('#diagMask')) continue;
-      var cs = getComputedStyle(el);
-      if (cs.display === 'none' || cs.visibility === 'hidden') continue;
-      if (el.offsetParent === null && cs.position !== 'fixed') continue;
-      var r = el.getBoundingClientRect();
-      if (r.width < 1 || r.height < 1) continue;
-      if (r.right > vw + 2 || r.left < -2){
-        res.push(elPath(el) + '  (左' + Math.round(r.left) + ' 右' + Math.round(r.right) + ')');
-      }
-      if (res.length >= 25) break;
-    }
-    return res;
-  }
-  function logHTML(){
-    if (!logs.length) return '<div class="diag-empty" id="diagLogList" data-empty="1">还没有日志</div>';
-    var h = '<div id="diagLogList">';
-    for (var i = logs.length - 1; i >= 0; i--){
-      var e = logs[i];
-      var c = TYPE_COLOR[e.type] || '#aaa';
-      h += '<div class="diag-logitem">'
-         + '<span class="diag-lt">' + e.time + '</span>'
-         + '<span class="diag-ltag" style="color:' + c + ';border-color:' + c + '">' + esc(e.type) + '</span>'
-         + '<span class="diag-lmsg">' + esc(e.text) + '</span>'
-         + '</div>';
-    }
-    h += '</div>';
-    return h;
-  }
-
-  function prependLogItem(e){
-    var box = document.getElementById('diagLogList');
-    if (!box) return;
-    if (box.dataset.empty === '1'){
-      box.dataset.empty = '0';
-      box.className = '';
-      box.textContent = '';
-    }
-    var c = TYPE_COLOR[e.type] || '#aaa';
-    var div = document.createElement('div');
-    div.className = 'diag-logitem';
-    div.innerHTML = '<span class="diag-lt">' + e.time + '</span>'
-      + '<span class="diag-ltag" style="color:' + c + ';border-color:' + c + '">' + esc(e.type) + '</span>'
-      + '<span class="diag-lmsg">' + esc(e.text) + '</span>';
-    box.insertBefore(div, box.firstChild);
-  }
-
-  function dataHTML(){
-    var st = storageRows();
-    var h = '<div class="diag-sec">本地存储（共约 ' + fmtKB(st.total) + '）</div>';
-    if (!st.rows.length){
-      h += '<div class="diag-empty">空的</div>';
-    } else {
-      st.rows.forEach(function(r){
-        h += kv(r.k, fmtKB(r.bytes));
-      });
-    }
-    h += '<div class="diag-sec">数据量</div>';
-    h += kv('好友数量', safeGet(function(){ return getFriends().length; }, '?'));
-    h += kv('当前角色消息数', safeGet(function(){ return msgs.length; }, '?'));
-    h += kv('当前角色', safeGet(function(){ return getCurrentRoleName(); }, '?'));
-    h += kv('公用字卡分组', safeGet(function(){ return (cardStore.public || []).length; }, '?'));
-    h += kv('专属字卡角色数', safeGet(function(){ return Object.keys(cardStore.roles || {}).length; }, '?'));
-    h += kv('行为记录条数', safeGet(function(){ return getBehaviorLog().length; }, '?'));
-    h += kv('占卜记录条数', safeGet(function(){ return getDivineRecords(getCurrentRoleId()).length; }, '?'));
-    return h;
-  }
-
-  function styleHTML(){
-    var h = '';
-    var rows = [];
-    var reds = 0, oranges = 0, greens = 0;
-
-    function add(level, text){
-      if(level === 'red'){ reds++; h += '<div class="diag-kv"><span class="diag-v bad" style="text-align:left">🔴 ' + esc(text) + '</span></div>'; }
-      else if(level === 'orange'){ oranges++; h += '<div class="diag-kv"><span class="diag-v" style="text-align:left">🟠 ' + esc(text) + '</span></div>'; }
-      else { greens++; h += '<div class="diag-kv"><span class="diag-v" style="text-align:left">🟢 ' + esc(text) + '</span></div>'; }
-    }
-
-    /* ① body 上的 data-bubble */
-    var db = document.body.getAttribute('data-bubble');
-    if(db === null){
-      add('orange', 'body 上没有 data-bubble 属性（有自定义 CSS 时正常，没自定义 CSS 就是异常）');
-    } else {
-      add('green', 'body[data-bubble="' + db + '"] 已设置');
-    }
-
-    /* ② 自定义 CSS 是否注入 */
-    var cssEl = document.getElementById('customCssStyle');
-    var customCss = '';
-    try { customCss = (typeof getCustomCss === 'function') ? getCustomCss() : ''; } catch(e){}
-    if(!customCss || !customCss.trim()){
-      add('green', '没有自定义 CSS（内置样式应该正常生效）');
-    } else {
-      if(cssEl && cssEl.textContent.trim()){
-        add('orange', '自定义 CSS 已注入（' + cssEl.textContent.length + ' 字符），会覆盖内置样式');
-      } else {
-        add('red', '有自定义 CSS 文本，但 <style id="customCssStyle"> 不存在或为空 → injectCustomCss 没跑');
-      }
-    }
-
-    /* ③ 关键 CSS 变量是否存在 */
-    var root = getComputedStyle(document.documentElement);
-    var needVars = [
-      '--th-bg0','--th-bg1','--th-card','--th-text',
-      '--th-text-soft','--th-text-mute','--th-accent',
-      '--th-accent-soft','--th-accent-line',
-      '--bubble-font-size','--bubble-pad-v','--bubble-pad-h'
-    ];
-    var missing = needVars.filter(function(v){ return !root.getPropertyValue(v).trim(); });
-    if(missing.length){
-      add('red', 'CSS 变量缺失：' + missing.join('、'));
-    } else {
-      add('green', '关键 CSS 变量都齐全（' + needVars.length + ' 个）');
-    }
-
-    /* ④ 气泡样式实际命中测试 */
-    var bubble = document.querySelector('#chatList .msg .bubble');
-    if(!bubble){
-      add('orange', '当前聊天页没有气泡，无法实测气泡样式（发一条消息再看）');
-    } else {
-      var cs = getComputedStyle(bubble);
-      var report = [];
-      report.push('background=' + cs.backgroundColor);
-      report.push('border=' + cs.borderTopWidth + ' ' + cs.borderTopStyle + ' ' + cs.borderTopColor);
-      report.push('border-radius=' + cs.borderTopLeftRadius);
-      report.push('font-size=' + cs.fontSize);
-      report.push('color=' + cs.color);
-      h += '<div class="diag-sec">气泡实测</div>';
-      h += '<div class="diag-kv"><span class="diag-k" style="width:auto;flex:1;color:#aaa;font-size:11px;text-align:left">' + esc(report.join('  |  ')) + '</span></div>';
-      if(cs.backgroundColor === 'rgba(0, 0, 0, 0)' && cs.borderTopStyle === 'none'){
-        add('orange', '气泡当前是无边框透明底 → 说明尖角/方括号没命中，或自定义 CSS 清空了它');
-      } else {
-        add('green', '气泡有实际样式命中');
-      }
-    }
-
-    /* ⑤ .bubble 规则是否被自定义 CSS 覆盖 */
-    if(cssEl && cssEl.textContent.trim()){
-      var t = cssEl.textContent;
-      var coversBubble = /\.bubble/.test(t);
-      if(coversBubble){
-        add('orange', '自定义 CSS 里写了 .bubble 选择器，内置气泡样式会被覆盖（这是设计如此）');
-      }
-    }
-
-    /* ⑥ 主题是否应用 */
-    var themeId = document.documentElement.getAttribute('data-theme');
-    if(!themeId){
-      add('orange', 'html 上没有 data-theme 属性（applyTheme 没跑）');
-    } else {
-      add('green', '当前主题：' + themeId);
-    }
-
-    /* ⑦ CSS 规则总数（判断内置 <style> 有没有被吃掉） */
-    var styleSheets = document.styleSheets;
-    var ruleCount = 0, sheetCount = 0;
-    for(var i = 0; i < styleSheets.length; i++){
-      sheetCount++;
-      try { ruleCount += styleSheets[i].cssRules ? styleSheets[i].cssRules.length : 0; } catch(e){}
-    }
-    if(ruleCount < 100){
-      add('red', '页面 CSS 规则总数只有 ' + ruleCount + ' 条（正常应该几百条）→ 内置 <style> 可能没解析成功');
-    } else {
-      add('green', 'CSS 规则总数 ' + ruleCount + ' 条，' + sheetCount + ' 个 stylesheet');
-    }
-
-    /* ⑧ 关键的类有没有命中 */
-    var checks = [
-      ['.chat-topbar', '聊天顶栏'],
-      ['.d-bar', '输入栏'],
-      ['.msg-body', '消息体'],
-      ['#page-chat', '聊天页']
-    ];
-    var missClasses = [];
-    checks.forEach(function(p){
-      if(!document.querySelector(p[0])) missClasses.push(p[1] + '(' + p[0] + ')');
-    });
-    if(missClasses.length){
-      add('orange', '当前 DOM 里没有：' + missClasses.join('、') + '（可能不在聊天页）');
-    } else {
-      add('green', '关键布局元素都在 DOM 里');
-    }
-
-    var summary = '<div class="diag-sec">样式体检</div>';
-    if(reds === 0 && oranges === 0){
-      summary += '<div class="diag-empty">✅ 一切正常</div>';
-    } else {
-      if(reds) summary += '<div style="color:#fff;font-size:12px;padding:6px 0">🔴 ' + reds + ' 项严重</div>';
-      if(oranges) summary += '<div style="color:#bbb;font-size:12px;padding:6px 0">🟠 ' + oranges + ' 项警告</div>';
-    }
-    return summary + h + '<div style="color:#666;font-size:11px;padding:14px 0 0">🟢 ' + greens + ' 项正常</div>' +
-      '<div style="margin-top:14px"><button class="diag-fbtn" id="diagRerunStyle">🔄 重新检查</button></div>';
-  }
-
-  function renderTab(){
-    var body = document.getElementById('diagBody');
-    if (!body) return;
-    if (curTab === 'info') body.innerHTML = infoHTML();
-    else if (curTab === 'log') body.innerHTML = logHTML();
-    else if (curTab === 'health') body.innerHTML = healthHTML();
-    else if (curTab === 'style') body.innerHTML = styleHTML();
-    else if (curTab === 'event'){
-      if(typeof window.__diagRenderEvent === 'function') window.__diagRenderEvent();
-      else body.innerHTML = '<div class="diag-empty">事件追踪未初始化</div>';
-      return;
-    }
-    else body.innerHTML = dataHTML();
-    body.scrollTop = 0;
-
-    var scanBtn = document.getElementById('diagScan');
-    if (scanBtn){
-      scanBtn.addEventListener('click', function(){
-        var box = document.getElementById('diagScanResult');
-        var list = scanOverflow();
-        if (!list.length){
-          box.innerHTML = '<div class="diag-sec">扫描结果</div><div class="diag-empty">✅ 没有发现超出屏幕的元素</div>';
-        } else {
-          box.innerHTML = '<div class="diag-sec">扫描结果（' + list.length + ' 个）</div>'
-            + list.map(function(t){ return '<div class="diag-kv"><span class="diag-v" style="text-align:left">' + esc(t) + '</span></div>'; }).join('');
-        }
-      });
-    }
-    var rerun = document.getElementById('diagRerunHealth');
-    if (rerun){
-      rerun.addEventListener('click', function(){
-        renderTab();
-        flash('已重新检查');
-      });
-    }
-    var rerunStyle = document.getElementById('diagRerunStyle');
-    if (rerunStyle){
-      rerunStyle.addEventListener('click', function(){
-        renderTab();
-        flash('已重新检查');
-      });
-    }
-  }
-
-  function openPanel(){
-    panelOpen = true;
-    mask.classList.add('show');
-    errCount = 0;
-    updateFab();
-    curTab = 'health';
-    Array.prototype.forEach.call(mask.querySelectorAll('.diag-tab'), function(b){
-      b.classList.toggle('on', b.dataset.tab === 'health');
-    });
-    renderTab();
-  }
-  function closePanel(){
-    panelOpen = false;
-    mask.classList.remove('show');
-  }
-
-  mask.addEventListener('click', function(e){
-    var t = e.target;
-    if (t.dataset && t.dataset.tab){
-      curTab = t.dataset.tab;
-      Array.prototype.forEach.call(mask.querySelectorAll('.diag-tab'), function(b){
-        b.classList.toggle('on', b === t);
-      });
-      renderTab();
-      return;
-    }
-    var act = t.dataset ? t.dataset.act : '';
-    if (act === 'close') closePanel();
-    else if (act === 'refresh') renderTab();
-    else if (act === 'clear'){
-      logs = [];
-      seq = 0;
-      errCount = 0;
-      try { localStorage.removeItem(LOG_KEY); } catch(e){}
-      updateFab();
-      renderTab();
-      flash('日志已清空');
-    }
-    else if (act === 'copy') copyReport();
-    else if (act === 'export') exportReport();
-  });
-
-  function buildReport(){
-    var out = [];
-    var vw = window.innerWidth, vh = window.innerHeight;
-    var de = document.documentElement;
-    out.push('===== 梦角 · 诊断报告 =====');
-    out.push('生成时间：' + new Date().toLocaleString('zh-CN'));
-    out.push('');
-
-    out.push('--- 健康检查 ---');
-    var hr = checkHealth();
-    if (hr.reds.length) hr.reds.forEach(function(t){ out.push('[🔴] ' + t); });
-    if (hr.oranges.length) hr.oranges.forEach(function(t){ out.push('[🟠] ' + t); });
-    hr.greens.forEach(function(t){ out.push('[🟢] ' + t); });
-    out.push('');
-
-    out.push('--- 屏幕 / 设备 ---');
-    out.push('视口宽高：' + vw + ' x ' + vh);
-    out.push('屏幕分辨率：' + window.screen.width + ' x ' + window.screen.height);
-    out.push('设备像素比：' + window.devicePixelRatio);
-    out.push('方向：' + (vw > vh ? '横屏' : '竖屏'));
-    out.push('内容宽高：' + de.scrollWidth + ' x ' + de.scrollHeight);
-    if (de.scrollWidth > vw + 1) out.push('⚠️ 横向溢出：多出 ' + (de.scrollWidth - vw) + 'px');
-    out.push('当前角色：' + safeGet(function(){ return getCurrentRoleName(); }, '未知'));
-    out.push('当前页面：' + curPageName());
-    out.push('打开的浮层：' + (openedLayers() || '无'));
-    out.push('浏览器：' + navigator.userAgent);
-    out.push('');
-    out.push('--- 数据量 ---');
-    out.push('好友数量：' + safeGet(function(){ return getFriends().length; }, '?'));
-    out.push('当前角色消息数：' + safeGet(function(){ return msgs.length; }, '?'));
-    out.push('');
-    var st = storageRows();
-    out.push('--- 本地存储（共约 ' + fmtKB(st.total) + '）---');
-    st.rows.forEach(function(r){ out.push('  ' + r.k + ' ：' + fmtKB(r.bytes)); });
-    out.push('');
-    out.push('--- 运行日志（新 → 旧，最多 200 条）---');
-    if (!logs.length) out.push('  （无）');
-    logs.slice(-200).reverse().forEach(function(e){
-      out.push('[' + e.time + '][' + e.type + '] ' + e.text);
-    });
-    return out.join('\n');
-  }
-
-  function copyReport(){
-    var text = buildReport();
-    function ok(){ flash('✅ 已复制，去粘贴吧'); }
-    function fail(){ showManualCopy(text); }
-    if (navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(text).then(ok, function(){
-        if (legacyCopy(text)) ok(); else fail();
-      });
-    } else {
-      if (legacyCopy(text)) ok(); else fail();
-    }
-  }
-  function exportReport(){
-    var text = buildReport();
-    var d = new Date();
-    function p(n){ return String(n).padStart(2, '0'); }
-    var name = '诊断报告_'
-      + d.getFullYear()
-      + p(d.getMonth() + 1)
-      + p(d.getDate()) + '_'
-      + p(d.getHours())
-      + p(d.getMinutes()) + '.txt';
-
-    try {
-      var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = name;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
-      flash('📦 已开始下载：' + name);
-    } catch(e){
-      flash('下载失败，改用复制');
-      showManualCopy(text);
-    }
-  }
-
-  function legacyCopy(text){
-    try {
-      var ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.left = '-9999px';
-      document.body.appendChild(ta);
-      ta.select();
-      ta.setSelectionRange(0, ta.value.length);
-      var ok = document.execCommand('copy');
-      document.body.removeChild(ta);
-      return ok;
-    } catch(e){ return false; }
-  }
-  function showManualCopy(text){
-    var m = document.createElement('div');
-    m.style.cssText = 'position:fixed;inset:0;z-index:9800;background:rgba(0,0,0,.92);'
-      + 'display:flex;flex-direction:column;padding:16px;gap:10px';
-    m.innerHTML =
-      '<div style="color:#fff;font-size:13px;text-align:center;font-family:sans-serif">'
-      + '自动复制失败，请长按下面内容 → 全选 → 复制</div>'
-      + '<textarea readonly style="flex:1;width:100%;background:#111;color:#eee;'
-      + 'border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:10px;'
-      + 'font-size:11px;font-family:monospace;resize:none;white-space:pre"></textarea>'
-      + '<button style="flex:none;padding:12px;border-radius:10px;border:none;'
-      + 'background:#fff;color:#111;font-size:14px;font-family:sans-serif">关 闭</button>';
-    document.body.appendChild(m);
-    var ta = m.querySelector('textarea');
-    ta.value = text;
-    setTimeout(function(){ ta.focus(); ta.select(); }, 100);
-    m.querySelector('button').onclick = function(){ document.body.removeChild(m); };
-  }
-
-  addLog('系统', ['诊断模块已就绪']);
-  window.addEventListener('load', function(){
-    setTimeout(function(){
-      addLog('系统', ['页面加载完成，视口 ' + window.innerWidth + '×' + window.innerHeight]);
-    }, 300);
-  });
-
-})();
-</script>
 <!-- ============ 聊天信息面板（D 宫格方案） ============ -->
 <div class="chat-info-panel" id="chatInfoPanel">
   <div class="cip-wrap">
@@ -20955,5 +19496,349 @@ window.__memoDebug = function(){
 };
 </script>
 
+<script>
+/* ===== 独立的诊断按钮 · 不依赖原 script[1] ===== */
+(function(){
+  if(document.getElementById('diagFabNew')) return;
+  var fab = document.createElement('div');
+  fab.id = 'diagFabNew';
+  fab.textContent = '🩺';
+  fab.style.cssText = 'position:fixed;right:10px;bottom:120px;width:36px;height:36px;border-radius:50%;background:#1a1a1a;color:#fff;font-size:16px;border:1px solid #fff;display:flex;align-items:center;justify-content:center;z-index:2147483647;line-height:1;box-shadow:0 2px 10px rgba(0,0,0,.35);cursor:pointer;opacity:.75;';
+  fab.onclick = function(){
+    if(typeof window.__openDiagPanel === 'function'){
+      window.__openDiagPanel();
+    } else {
+      alert('诊断面板未就绪，请刷新页面');
+    }
+  };
+  document.body.appendChild(fab);
+  /* 统计 JS 错误数 */
+  window.__errCount = window.__errCount || 0;
+  window.addEventListener('error', function(){ window.__errCount++; });
+  window.addEventListener('unhandledrejection', function(){ window.__errCount++; });
+  console.log('[诊断按钮] 已创建');
+})();
+</script>
+
+<script>
+/* ===== 独立诊断面板 v2 · 抓错误版 · 不依赖 script[1] ===== */
+(function(){
+  if(window.__openDiagPanel) return;
+
+  /* === 错误收集器（从脚本一执行就开始记） === */
+  var errList = [];
+  var MAX_ERR = 50;
+
+  function pushErr(item){
+    if(errList.length >= MAX_ERR) errList.shift();
+    errList.push(item);
+  }
+
+  window.addEventListener('error', function(ev){
+    /* 资源加载失败（img/script/link 等） */
+    var tgt = ev.target;
+    if(tgt && tgt !== window && tgt.tagName){
+      pushErr({
+        t: Date.now(),
+        kind: '资源',
+        msg: '<' + tgt.tagName.toLowerCase() + '> 加载失败：' + (tgt.src || tgt.href || '(无 url)')
+      });
+      return;
+    }
+    /* JS 运行时错误 */
+    pushErr({
+      t: Date.now(),
+      kind: 'JS',
+      msg: ev.message,
+      loc: (ev.filename ? ev.filename.split('/').pop() : '?') + ':' + ev.lineno + ':' + ev.colno,
+      stack: ev.error && ev.error.stack ? ev.error.stack : ''
+    });
+  }, true);
+
+  window.addEventListener('unhandledrejection', function(ev){
+    pushErr({
+      t: Date.now(),
+      kind: 'Promise',
+      msg: (ev.reason && (ev.reason.message || ev.reason)) || '(无内容)',
+      stack: ev.reason && ev.reason.stack ? ev.reason.stack : ''
+    });
+  });
+
+  window.__errCount = 0;
+
+  /* === 工具函数 === */
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function kv(k,v,bad){ return '<div class="diag-kv"><span class="diag-k">'+esc(k)+'</span><span class="diag-v'+(bad?' bad':'')+'">'+esc(v)+'</span></div>'; }
+  function safeGet(fn, def){ try{ var v = fn(); if(v===undefined||v===null||v==='') return def; return v; }catch(e){ return def; } }
+  function tStr(ts){
+    var d = new Date(ts);
+    var p = function(n){ n = String(n); return n.length < 2 ? '0' + n : n; };
+    return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+  }
+
+  window.__buildDiagText = function(){
+    var t = [];
+    function line(s){ t.push(s); }
+    function kv(k, v){ line(k + ': ' + v); }
+
+    line('========== 诊断报告 ==========');
+    line('时间: ' + new Date().toLocaleString('zh-CN'));
+    line('');
+
+    line('---------- 错误列表 (' + errList.length + ') ----------');
+    if(!errList.length) line('(无)');
+    errList.slice().reverse().forEach(function(e){
+      line('[' + tStr(e.t) + '][' + e.kind + '] ' + e.msg);
+      if(e.loc) line('  @ ' + e.loc);
+      if(e.stack) line('  ' + e.stack.split('\n').join('\n  '));
+    });
+    line('');
+
+    line('---------- script 标签 (' + document.scripts.length + ') ----------');
+    var scripts = document.querySelectorAll('script');
+    for(var i = 0; i < scripts.length; i++){
+      var s = scripts[i];
+      var len = (s.textContent || '').length;
+      var src = s.src || '(内联)';
+      var hasDiag = s.textContent.indexOf('diag-fab') >= 0 ? ' [诊断]' : '';
+      var syn = '';
+      try { new Function(s.textContent || ''); }
+      catch(err){
+        if(err.message.indexOf('Unexpected end of input') < 0) syn = ' ❌ 语法错: ' + err.message;
+      }
+      line('# ' + i + ' 长度 ' + len + hasDiag + syn);
+      line('    ' + src);
+    }
+    line('');
+
+    line('---------- 屏幕 / 视口 ----------');
+    kv('视口宽 × 高', window.innerWidth + ' × ' + window.innerHeight);
+    kv('屏幕分辨率', screen.width + ' × ' + screen.height);
+    kv('设备像素比', window.devicePixelRatio);
+    kv('方向', window.innerWidth > window.innerHeight ? '横屏' : '竖屏');
+    kv('内容宽度', document.documentElement.scrollWidth + (document.documentElement.scrollWidth > window.innerWidth + 1 ? ' (溢出!)' : ''));
+    line('');
+
+    line('---------- 环境 ----------');
+    kv('语言', navigator.language);
+    kv('在线状态', navigator.onLine ? '在线' : '离线');
+    kv('协议', location.protocol);
+    kv('UA', navigator.userAgent);
+    line('');
+
+    line('---------- API 支持 ----------');
+    var feats = [
+      ['localStorage', typeof localStorage !== 'undefined'],
+      ['sessionStorage', typeof sessionStorage !== 'undefined'],
+      ['fetch', typeof fetch === 'function'],
+      ['Notification', 'Notification' in window],
+      ['MediaRecorder', typeof MediaRecorder !== 'undefined'],
+      ['getUserMedia', !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)],
+      ['MutationObserver', typeof MutationObserver === 'function'],
+      ['IntersectionObserver', typeof IntersectionObserver === 'function'],
+      ['Clipboard', !!(navigator.clipboard && navigator.clipboard.writeText)],
+      ['Blob', typeof Blob === 'function'],
+      ['FileReader', typeof FileReader === 'function'],
+      ['URL.createObjectURL', typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'],
+      ['requestAnimationFrame', typeof requestAnimationFrame === 'function'],
+      ['visualViewport', !!window.visualViewport],
+      ['CSS.supports', !!(window.CSS && CSS.supports)]
+    ];
+    feats.forEach(function(f){
+      kv(f[0], f[1] ? '✅ 支持' : '❌ 不支持');
+    });
+    if(window.CSS && CSS.supports){
+      kv('100dvh', CSS.supports('height','100dvh') ? '✅' : '❌');
+      kv('backdrop-filter', CSS.supports('backdrop-filter','blur(1px)') ? '✅' : '❌');
+      kv('aspect-ratio', CSS.supports('aspect-ratio','1/1') ? '✅' : '❌');
+      kv('gap', CSS.supports('gap','1px') ? '✅' : '❌');
+      kv('position:sticky', CSS.supports('position','sticky') ? '✅' : '❌');
+    }
+    line('');
+
+    line('---------- 数据量 ----------');
+    kv('好友数', safeGet(function(){ return getFriends().length; }, '?'));
+    kv('当前角色消息数', safeGet(function(){ return msgs.length; }, '?'));
+    kv('当前角色', safeGet(function(){ return getCurrentRoleName(); }, '?'));
+    line('');
+
+    line('---------- localStorage ----------');
+    var total = 0, keys = 0;
+    try {
+      for(var k in localStorage){
+        if(localStorage.hasOwnProperty(k)){ total += (localStorage[k] || '').length * 2; keys++; }
+      }
+    } catch(e){}
+    kv('键数量', keys);
+    kv('总大小', (total / 1024).toFixed(1) + ' KB');
+    line('');
+
+    line('========== 报告结束 ==========');
+    return t.join('\n');
+  };
+
+  function buildPanelHTML(){
+    var h = '';
+
+    /* ===== 错误列表（放在最前面，最重要） ===== */
+    h += '<div class="diag-sec">⚠️ 捕获到的错误（' + errList.length + '）</div>';
+    if(!errList.length){
+      h += '<div style="color:#666;font-size:11px;padding:6px 0">暂无错误</div>';
+    } else {
+      errList.slice().reverse().forEach(function(e){
+        var kindColor = e.kind === 'JS' ? '#ff5c7a' : (e.kind === 'Promise' ? '#ffb454' : '#7dd3fc');
+        h += '<div style="border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:8px 10px;margin-bottom:6px;background:rgba(255,255,255,.03);font-size:11px;line-height:1.6">';
+        h += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px">';
+        h += '<span style="color:#888;font-size:10px">' + tStr(e.t) + '</span>';
+        h += '<span style="color:' + kindColor + ';border:1px solid ' + kindColor + ';border-radius:4px;padding:0 5px;font-size:10px">' + esc(e.kind) + '</span>';
+        h += '</div>';
+        h += '<div style="color:#fff;word-break:break-word">' + esc(e.msg) + '</div>';
+        if(e.loc) h += '<div style="color:#aaa;word-break:break-word;margin-top:3px">@ ' + esc(e.loc) + '</div>';
+        if(e.stack) h += '<div style="color:#888;word-break:break-word;margin-top:3px;font-size:10.5px;white-space:pre-wrap">' + esc(e.stack.slice(0, 600)) + '</div>';
+        h += '</div>';
+      });
+    }
+
+    /* ===== script 标签检查 ===== */
+    h += '<div class="diag-sec">📜 script 标签（' + document.scripts.length + '）</div>';
+    var scripts = document.querySelectorAll('script');
+    for(var i = 0; i < scripts.length; i++){
+      var s = scripts[i];
+      var len = (s.textContent || '').length;
+      var src = s.src || '(内联)';
+      var hasDiag = s.textContent.indexOf('diag-fab') >= 0 ? ' [诊断]' : '';
+      var hasSyntaxErr = '';
+      try { new Function(s.textContent || ''); }
+      catch(err){
+        if(err.message.indexOf('Unexpected end of input') < 0){
+          hasSyntaxErr = ' ❌ 语法错: ' + err.message;
+        }
+      }
+      h += '<div style="font-size:11px;padding:5px 0;border-bottom:1px dashed rgba(255,255,255,.08);color:#ddd;word-break:break-all">';
+      h += '# ' + i + ' 长度 ' + len + hasDiag;
+      if(hasSyntaxErr) h += '<span style="color:#ff5c7a;font-weight:700">' + esc(hasSyntaxErr) + '</span>';
+      h += '<br><span style="color:#888">' + esc(src) + '</span>';
+      h += '</div>';
+    }
+
+    /* ===== 屏幕 / 视口 ===== */
+    h += '<div class="diag-sec">📱 屏幕 / 视口</div>';
+    h += kv('视口宽 × 高', window.innerWidth + ' × ' + window.innerHeight);
+    h += kv('屏幕分辨率', screen.width + ' × ' + screen.height);
+    h += kv('设备像素比', window.devicePixelRatio);
+    h += kv('方向', window.innerWidth > window.innerHeight ? '横屏' : '竖屏');
+    h += kv('内容宽度', document.documentElement.scrollWidth, document.documentElement.scrollWidth > window.innerWidth + 1);
+
+    /* ===== 环境 ===== */
+    h += '<div class="diag-sec">🌐 环境</div>';
+    h += kv('语言', navigator.language);
+    h += kv('在线状态', navigator.onLine ? '在线' : '离线');
+    h += kv('协议', location.protocol);
+    h += kv('UA', navigator.userAgent);
+
+    /* ===== 功能支持 ===== */
+    h += '<div class="diag-sec">🧩 API 支持</div>';
+    var feats = [
+      ['localStorage', typeof localStorage !== 'undefined'],
+      ['sessionStorage', typeof sessionStorage !== 'undefined'],
+      ['fetch', typeof fetch === 'function'],
+      ['Notification', 'Notification' in window],
+      ['MediaRecorder', typeof MediaRecorder !== 'undefined'],
+      ['getUserMedia', !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)],
+      ['MutationObserver', typeof MutationObserver === 'function'],
+      ['IntersectionObserver', typeof IntersectionObserver === 'function'],
+      ['Clipboard', !!(navigator.clipboard && navigator.clipboard.writeText)],
+      ['Blob', typeof Blob === 'function'],
+      ['FileReader', typeof FileReader === 'function'],
+      ['URL.createObjectURL', typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'],
+      ['requestAnimationFrame', typeof requestAnimationFrame === 'function'],
+      ['visualViewport', !!window.visualViewport],
+      ['CSS.supports', !!(window.CSS && CSS.supports)]
+    ];
+    feats.forEach(function(f){
+      h += kv(f[0], f[1] ? '✅ 支持' : '❌ 不支持', !f[1]);
+    });
+    if(window.CSS && CSS.supports){
+      h += kv('100dvh', CSS.supports('height','100dvh') ? '✅' : '❌', !CSS.supports('height','100dvh'));
+      h += kv('backdrop-filter', CSS.supports('backdrop-filter','blur(1px)') ? '✅' : '❌', !CSS.supports('backdrop-filter','blur(1px)'));
+      h += kv('aspect-ratio', CSS.supports('aspect-ratio','1/1') ? '✅' : '❌', !CSS.supports('aspect-ratio','1/1'));
+      h += kv('gap', CSS.supports('gap','1px') ? '✅' : '❌', !CSS.supports('gap','1px'));
+      h += kv('position:sticky', CSS.supports('position','sticky') ? '✅' : '❌', !CSS.supports('position','sticky'));
+    }
+
+    /* ===== 数据量 ===== */
+    h += '<div class="diag-sec">📦 数据量</div>';
+    h += kv('好友数', safeGet(function(){ return getFriends().length; }, '?'));
+    h += kv('当前角色消息数', safeGet(function(){ return msgs.length; }, '?'));
+    h += kv('当前角色', safeGet(function(){      return getCurrentRoleName();
+    }, '?'));
+
+    /* ===== localStorage ===== */
+    h += '<div class="diag-sec">💾 localStorage</div>';
+    var total = 0, keys = 0;
+    try {
+      for(var k in localStorage){
+        if(localStorage.hasOwnProperty(k)){
+          total += (localStorage[k] || '').length * 2;
+          keys++;
+        }
+      }
+    } catch(e){}
+    h += kv('键数量', keys);
+    h += kv('总大小', (total / 1024).toFixed(1) + ' KB');
+
+    return h;
+  }
+
+  window.__openDiagPanel = function(){
+    var box = document.getElementById('diagFullPanel');
+    if(!box){
+      box = document.createElement('div');
+      box.id = 'diagFullPanel';
+      box.style.cssText = 'position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:14px;';
+      box.innerHTML = '<div style="background:#0b0508;color:#f0e6ea;border-radius:14px;max-width:440px;width:100%;max-height:88vh;display:flex;flex-direction:column;padding:16px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px">'
+        + '<div style="font-size:14px;font-weight:700;letter-spacing:1px;color:#fff;text-align:center;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.15);margin-bottom:12px;flex:none">🩺 诊断面板 v2</div>'
+        + '<div id="diagFullBody" style="flex:1;overflow-y:auto"></div>'
+        + '<div style="display:flex;gap:8px;margin-top:14px;flex:none">'
+        +   '<button id="diagFullCopy" style="flex:1;padding:11px 0;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:#1a1a1a;color:#fff;font-size:13px;font-family:inherit;font-weight:700;cursor:pointer">📋 复制全部报告</button>'
+        +   '<button id="diagFullClose" style="flex:1;padding:11px 0;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:#fff;color:#111;font-size:13px;font-family:inherit;font-weight:700;cursor:pointer">关 闭</button>'
+        + '</div>'
+        + '</div>';
+      document.body.appendChild(box);
+      box.addEventListener('click', function(e){ if(e.target === box) box.style.display = 'none'; });
+      box.querySelector('#diagFullClose').addEventListener('click', function(){ box.style.display = 'none'; });
+      box.querySelector('#diagFullCopy').addEventListener('click', function(){
+        var text = window.__buildDiagText ? window.__buildDiagText() : '报告生成失败';
+        function ok(){ var b = box.querySelector('#diagFullCopy'); b.textContent = '✅ 已复制'; setTimeout(function(){ b.textContent = '📋 复制全部报告'; }, 1500); }
+        function fail(){ 
+          /* 兜底：弹出可选文本 */
+          var w = document.createElement('div');
+          w.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.92);display:flex;flex-direction:column;padding:16px;gap:10px';
+          w.innerHTML = '<div style="color:#fff;font-size:13px;text-align:center">长按下面内容 → 全选 → 复制</div>'
+            + '<textarea readonly style="flex:1;width:100%;background:#111;color:#eee;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:10px;font-size:11px;font-family:monospace"></textarea>'
+            + '<button style="padding:12px;border-radius:10px;border:none;background:#fff;color:#111;font-size:14px">关 闭</button>';
+          document.body.appendChild(w);
+          var ta = w.querySelector('textarea'); ta.value = text;
+          setTimeout(function(){ ta.focus(); ta.select(); }, 100);
+          w.querySelector('button').onclick = function(){ document.body.removeChild(w); };
+        }
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(text).then(ok, function(){
+            try { var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px'; document.body.appendChild(ta); ta.select(); var okk = document.execCommand('copy'); document.body.removeChild(ta); if(okk) ok(); else fail(); }
+            catch(e){ fail(); }
+          });
+        } else {
+          try { var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px'; document.body.appendChild(ta); ta.select(); var okk = document.execCommand('copy'); document.body.removeChild(ta); if(okk) ok(); else fail(); }
+          catch(e){ fail(); }
+        }
+      });
+    }
+    box.querySelector('#diagFullBody').innerHTML = buildPanelHTML();
+    box.style.display = 'flex';
+  };
+})();
+</script>
+
 </body>
+
 </html>
