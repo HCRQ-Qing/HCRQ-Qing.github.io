@@ -921,7 +921,7 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
 .owner-chips{display:flex;gap:8px;flex-wrap:wrap;padding:0 20px 14px;flex:none}
 .owner-chip{padding:8px 16px;border-radius:14px;font-size:12.5px;color:#999;background:transparent;border:0.7px solid rgba(0,0,0,.2);cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .18s;box-shadow:none}
 .owner-chip.on{color:#ffffff;font-weight:500;background:#1a1a1a;border-color:#1a1a1a}
-.group-list{flex:1;overflow-y:auto;padding:0 20px 40px;scrollbar-width:none}
+.group-list{flex:1 1 0;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 20px 40px;scrollbar-width:none}
 .group-list::-webkit-scrollbar{display:none}
 .group-card{
   display:flex;align-items:center;gap:14px;
@@ -7773,16 +7773,10 @@ function renderChat(forceBottom){
 	const avInner = `<div class="msg-av-inner">${isUser?userAvHTML(userProfile.avatar):avatarHTML(role.avatar)}</div>`;
 	const mb = isUser ? '' : `<div class="mb"></div>`;
 	const av = `<div class="msg-av ${isUser?'usr-av':''}" data-id="${m.id}">${avInner}${mb}</div>`;
-	// 时间戳：微信风，同一天只在第一条上方显示一次
+	// 时间戳：每条消息上方都显示时间（同一天只显示 HH:MM）
 	let timeSep = '';
 	if(!m.recalled && !m.sys){
-	  const prev = msgs[idx - 1];
-	  const isNewDay = !prev
-	    || isPrevRecalledOrSys(prev)
-	    || !isSameDay(prev.time, m.time);
-	  if(isNewDay){
-	    timeSep = `<div class="time-sep">${formatDaySep(m.time)}</div>`;
-	  }
+	  timeSep = `<div class="time-sep">${formatMsgTime(m.time)}</div>`;
 	}
 	if(m.recalled){ return `<div class="recalled-line">${isUser?userName():role.name}撤回了一条消息</div>`; }
 	if(m.sys){ return `<div class="sys-notice"><span>${m.sys}</span></div>`; }
@@ -7844,10 +7838,11 @@ function renderChat(forceBottom){
 	  }
 	}
 	/* 主动发消息：气泡上方加一行小标签「— 主动」 */
+	let activeMark = '';
 	if(!isUser && m.active && !m.recalled && !m.sys && !m.namecard){
-	  readFlush = `<div class="active-row"><span class="active-line"></span><span class="active-text">主动</span></div>`;
+	  activeMark = `<div class="active-row"><span class="active-line"></span><span class="active-text">主动</span></div>`;
 	}
-	const msgHTML = `<div class="msg ${isUser?'user':'char'}" data-id="${m.id}">${av}<div class="msg-body">${timeSep}${quote}${body}${readFlush}</div></div>`;
+	const msgHTML = `<div class="msg ${isUser?'user':'char'}" data-id="${m.id}">${av}<div class="msg-body">${timeSep}${quote}${activeMark}${body}${readFlush}</div></div>`;
 	// 给气泡本身补上通用别名：message-sent / message-received
 	// （放在这里是因为 bubble 是动态拼进去的，用字符串替换最稳）
 	if(isUser){
@@ -13790,12 +13785,17 @@ function renderGroupList(){
   if(!groups.length){ box.innerHTML = `<div class="cl-empty">这里还没有分组</div>`; return; }
   box.innerHTML = groups.map(g=>{
 	const total = (g.cats||[]).reduce((n,c)=>n+(c.list||[]).length,0);
-	return `<div class="group-card" data-open="${g.id}"><div class="g-ic">${iconSVG(g.icon)}</div><div class="g-name">${escapeHTML(g.name)}<span class="g-sub">${escapeHTML(g.sub||'')}</span></div><div class="g-count">${total}</div><div class="g-arrow">›</div></div>`;
+	const iconKey = (g && g.icon) ? g.icon : 'doc';
+	const gid = (g && g.id) ? g.id : '';
+	const gname = (g && g.name) ? g.name : '未命名';
+	const gsub = (g && g.sub) ? g.sub : '';
+	return `<div class="group-card" data-open="${escapeHTML(gid)}"><div class="g-ic">${iconSVG(iconKey)}</div><div class="g-name">${escapeHTML(gname)}<span class="g-sub">${escapeHTML(gsub)}</span></div><div class="g-count">${total}</div><div class="g-arrow">›</div></div>`;
   }).join('');
   box.querySelectorAll('[data-open]').forEach(el=>{
 	el.addEventListener('click',()=>{
 	  const gid = el.dataset.open; curGroupId = gid;
-	  const g = getGroup(curOwner,gid); if(!g) return;
+	  const g = getGroup(curOwner,gid);
+	  if(!g){ toast('分组不存在或已损坏'); return; }
 	  if(isMoodGroup(g) && curOwner==='public'){ openMoodScreen(); return; }
 	  curCatId = (g.cats && g.cats[0]) ? g.cats[0].id : '';
 	  $('#cdTitle').textContent = g.name;
