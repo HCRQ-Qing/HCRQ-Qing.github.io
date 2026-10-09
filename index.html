@@ -1753,6 +1753,24 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .chk-row .nm{flex:1;font-size:12.5px;color:var(--th-text)}
 
 .confirm-sheet{position:relative;z-index:1;width:100%;max-width:340px;background:var(--th-card);border-radius:20px;border:1.5px solid var(--th-accent-line);overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.75);animation:pop .24s cubic-bezier(.22,1,.36,1);padding:22px 20px 18px;text-align:center}
+/* ===== 删除好友弹窗 · 方案3 头像横向版 ===== */
+.del-dlg{width:100%;max-width:340px;background:var(--th-card);border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.18);padding:22px 20px 16px;text-align:left;animation:pop .28s cubic-bezier(.22,1,.36,1);box-sizing:border-box}
+.del-dlg .del-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.del-dlg .del-av{width:46px;height:46px;border-radius:var(--avatar-radius,12%);background:#f0f0f0;display:flex;align-items:center;justify-content:center;flex:none;overflow:hidden;position:relative}
+.del-dlg .del-av svg{position:absolute;inset:0;width:100%;height:100%}
+.del-dlg .del-av .silhouette{fill:#c8c8c8}
+.del-dlg .del-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.del-dlg .del-txts{flex:1;min-width:0}
+.del-dlg .del-tt{font-size:15px;font-weight:500;letter-spacing:2px;color:var(--th-text);margin-bottom:5px;font-family:inherit}
+.del-dlg .del-sb{font-size:11.5px;color:var(--th-text-mute);line-height:1.6;letter-spacing:.2px;font-weight:300;font-family:inherit}
+.del-dlg .del-body{font-size:12.5px;color:var(--th-text-soft);line-height:1.8;font-weight:300;letter-spacing:.3px;padding:0 2px 18px;border-bottom:0.6px dashed rgba(0,0,0,.06);font-family:inherit;text-align:left}
+.del-dlg .del-body b{color:var(--th-text);font-weight:400}
+.del-dlg .del-acts{display:flex;gap:10px;margin-top:16px}
+.del-dlg .del-acts button{flex:1;padding:12px 0;border-radius:14px;font-size:13.5px;font-family:inherit;letter-spacing:2px;cursor:pointer;border:none;transition:all .18s ease}
+.del-dlg .del-cancel{background:transparent;border:0.7px solid rgba(0,0,0,.14)!important;color:var(--th-text-soft);font-weight:300}
+.del-dlg .del-cancel:active{background:rgba(0,0,0,.03)}
+.del-dlg .del-ok{background:var(--th-accent);color:#fff;font-weight:400}
+.del-dlg .del-ok:active{opacity:.85;transform:scale(.98)}
 /* 删除分组弹窗层级抬高，避免被分组管理遮住 */
 #mDelGroup{z-index:400}
 #mRenameGroup{z-index:400}
@@ -4875,6 +4893,14 @@ body[data-bubble="custom"] .preview-bubble{
 </head>
 <body>
 
+<script>
+/* ===== 开屏版本提醒 · 版本号 =====
+   每次你更新 index.html，把这个数字 +1（或改成日期）
+   用户刷新页面时，如果发现版本号变了，就弹提醒让他再刷新一次。
+*/
+window.__APP_VERSION__ = '1.0.1';
+</script>
+
 <div id="app">
   <div class="page-stack" id="pageStack">
 	<div class="page" id="page-friends">
@@ -5732,13 +5758,20 @@ body[data-bubble="custom"] .preview-bubble{
 <!-- 删除好友确认 -->
 <div class="modal" id="mDelFriend">
   <div class="overlay" data-close></div>
-  <div class="confirm-sheet">
-    <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg></div>
-    <div class="tt">删除好友？</div>
-    <div class="sb" id="delFriendText">删除后无法恢复，聊天记录也会一起清空。</div>
-    <div class="acts">
-      <button class="cancel-btn" data-close>取 消</button>
-      <button class="ok-btn" id="delFriendOk">删 除</button>
+  <div class="del-dlg">
+    <div class="del-head">
+      <div class="del-av" id="delFriendAv">
+        <svg viewBox="0 0 100 100"><circle class="silhouette" cx="50" cy="38" r="19"/><path class="silhouette" d="M12 100 C12 74 28 62 50 62 C72 62 88 74 88 100 Z"/></svg>
+      </div>
+      <div class="del-txts">
+        <div class="del-tt">删除好友</div>
+        <div class="del-sb">无法恢复，请谨慎</div>
+      </div>
+    </div>
+    <div class="del-body" id="delFriendText">确定删除好友 <b>「。」</b> ？<br>聊天记录也会一起清空。</div>
+    <div class="del-acts">
+      <button class="del-cancel" data-close type="button">取 消</button>
+      <button class="del-ok" id="delFriendOk" type="button">删 除</button>
     </div>
   </div>
 </div>
@@ -7842,7 +7875,7 @@ function renderChat(forceBottom){
 	if(!isUser && m.active && !m.recalled && !m.sys && !m.namecard){
 	  activeMark = `<div class="active-row"><span class="active-line"></span><span class="active-text">主动</span></div>`;
 	}
-	const msgHTML = `<div class="msg ${isUser?'user':'char'}" data-id="${m.id}">${av}<div class="msg-body">${timeSep}${quote}${activeMark}${body}${readFlush}</div></div>`;
+	const msgHTML = `<div class="msg ${isUser?'user':'char'}" data-id="${m.id}">${av}<div class="msg-body">${timeSep}${activeMark}${quote}${body}${readFlush}</div></div>`;
 	// 给气泡本身补上通用别名：message-sent / message-received
 	// （放在这里是因为 bubble 是动态拼进去的，用字符串替换最稳）
 	if(isUser){
@@ -12154,10 +12187,12 @@ document.addEventListener('click', function(e){
     e.preventDefault(); e.stopPropagation();
     const friends = getFriends();
     if(friends.length <= 1){ toast('至少保留一个角色，无法删除'); return; }
+    const curRole = getRole();
     openCipConfirm({
-      title: '删除好友？',
-      desc: '删除后对方还在你的好友列表里（消息保留，可被加回）。',
+      title: '删除好友',
+      desc: '确定删除好友 <b>「' + escapeHTML((curRole.remark && String(curRole.remark).trim()) || curRole.name) + '」</b> ？<br>聊天记录也会一起清空。',
       okText: '删 除',
+      avatar: curRole.avatar || '',
       onOk: function(){
         const curId = getCurrentRoleId();
         const friends2 = getFriends();
@@ -12166,12 +12201,12 @@ document.addEventListener('click', function(e){
         f.hidden = true;
         f.blocked = false;
         f.deletedAt = Date.now();
-        f.applyStage = 0;        // 0=申请阶段，1=长冷却阶段
-        f.applyCount = 0;        // 已经申请过几次（不含第 1 次）
-        f.rejectCount = 0;       // 被拒绝次数
-        f.lastApplyAt = 0;       // 上次申请时间
-        f.cooldownIndex = 0;     // 长冷却摇了几次
-        f.nextCooldownAt = 0;    // 下一次长冷却摇号时间
+        f.applyStage = 0;
+        f.applyCount = 0;
+        f.rejectCount = 0;
+        f.lastApplyAt = 0;
+        f.cooldownIndex = 0;
+        f.nextCooldownAt = 0;
         saveFriends(friends2);
         scheduleApplyTick();
 
@@ -12193,10 +12228,12 @@ document.addEventListener('click', function(e){
     e.preventDefault(); e.stopPropagation();
     const friends = getFriends();
     if(friends.length <= 1){ toast('至少保留一个角色，无法拉黑'); return; }
+    const curRole = getRole();
     openCipConfirm({
-      title: '加入黑名单？',
+      title: '加入黑名单',
       desc: '拉黑后不再接收对方消息，且对方不可被加回。',
       okText: '拉 黑',
+      avatar: curRole.avatar || '',
       onOk: function(){
         const curId = getCurrentRoleId();
         const friends2 = getFriends();
@@ -12768,10 +12805,22 @@ on('#cipDanger','click',()=>{
 
 /* ===== 通用二次确认弹窗 ===== */
 let cipConfirmOkHandler = null;
-function openCipConfirm({title, desc, okText, onOk}){
+function openCipConfirm({title, desc, okText, onOk, avatar}){
   $('#cipConfirmTitle').textContent = title;
-  $('#cipConfirmDesc').textContent = desc;
+  /* ★ 支持 HTML，让角色名能加粗 */
+  $('#cipConfirmDesc').innerHTML = desc;
   $('#cipConfirmOk').textContent = okText || '确 定';
+  /* ★ 有头像就塞进头像框，没有就隐藏 */
+  const avBox = document.getElementById('cipConfirmAv');
+  if(avBox){
+    if(avatar){
+      avBox.innerHTML = avatarHTML(avatar);
+      avBox.style.display = 'flex';
+    } else {
+      avBox.innerHTML = '';
+      avBox.style.display = 'none';
+    }
+  }
   cipConfirmOkHandler = onOk;
   $('#cipConfirmMask').classList.add('show');
 }
@@ -15629,6 +15678,17 @@ on('#fmDelete','click',()=>{
   const txt = $('#delFriendText');
   if(txt) txt.innerHTML = `确定删除好友「<b>${escapeHTML(f.name)}</b>」？<br>删除后无法恢复，聊天记录也会一起清空。`;
   $('#delFriendOk').dataset.fid = friendMenuId;
+  // ★ 把该角色的头像和名字塞进弹窗
+  const delTarget = getRoleById(friendMenuId);
+  const delAvBox = document.getElementById('delFriendAv');
+  if(delAvBox){
+    delAvBox.innerHTML = avatarHTML(delTarget ? delTarget.avatar : '');
+  }
+  const delTxtBox = document.getElementById('delFriendText');
+  if(delTxtBox){
+    const showName = delTarget ? ((delTarget.remark && String(delTarget.remark).trim()) || delTarget.name) : '该角色';
+    delTxtBox.innerHTML = '确定删除好友 <b>「' + escapeHTML(showName) + '」</b> ？<br>聊天记录也会一起清空。';
+  }
   $('#mFriendMenu').classList.remove('show');
   setTimeout(()=>{ $('#mDelFriend').classList.add('show'); }, 100);
 });
@@ -17705,6 +17765,7 @@ function goToPage(name){
 <!-- 删除 / 拉黑 二次确认弹窗 -->
 <div class="cip-confirm-mask" id="cipConfirmMask">
   <div class="cip-confirm-sheet">
+    <div class="cip-confirm-av" id="cipConfirmAv"></div>
     <div class="cip-confirm-title" id="cipConfirmTitle">删除好友？</div>
     <div class="cip-confirm-desc" id="cipConfirmDesc">删除后对方还在你的好友列表里（消息保留，可被加回）。</div>
     <div class="cip-confirm-acts">
@@ -18308,6 +18369,19 @@ function goToPage(name){
   letter-spacing:3px;
 }
 /* 确认弹窗也统一细体 */
+.cip-confirm-av{
+  width:46px;height:46px;
+  border-radius:var(--avatar-radius,12%);
+  background:#f0f0f0;
+  display:none;
+  align-items:center;justify-content:center;
+  margin:0 auto 14px;
+  overflow:hidden;position:relative;
+  flex:none;
+}
+.cip-confirm-av svg{position:absolute;inset:0;width:100%;height:100%}
+.cip-confirm-av .silhouette{fill:#c8c8c8}
+.cip-confirm-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .cip-confirm-title{
   font-weight:300;
   letter-spacing:2px;
@@ -20397,6 +20471,91 @@ window.__memoDebug = function(){
       };
     }
   })();
+</script>
+
+<script>
+/* ===== 开屏版本提醒 · 逻辑 =====
+   逻辑：拿 window.__APP_VERSION__ 和 localStorage 里的旧版本比。
+   - 首次打开（本地没存）：只记录，不弹窗。
+   - 版本变了：弹窗，告诉用户“有新版本”，点“立即更新”走一次强刷。
+   - 版本没变：什么都不做。
+*/
+(function(){
+  var LS_KEY = 'mj_app_version_seen';
+  var CUR = String(window.__APP_VERSION__ || '0');
+
+  var old = '';
+  try { old = localStorage.getItem(LS_KEY) || ''; } catch(e){ old = ''; }
+
+  // 版本一致，或首次打开 → 不弹
+  if(old === CUR){
+    return;
+  }
+
+  // 首次打开：只记录，不弹
+  if(!old){
+    try { localStorage.setItem(LS_KEY, CUR); } catch(e){}
+    return;
+  }
+
+  // 到这里说明：本地有旧版本，且和当前版本不同 → 弹提醒
+  function showUpdateNotice(){
+    var mask = document.createElement('div');
+    mask.id = 'verUpdateMask';
+    mask.style.cssText =
+      'position:fixed;inset:0;z-index:2147483647;' +
+      'background:rgba(0,0,0,.45);' +
+      'display:flex;align-items:center;justify-content:center;' +
+      'padding:24px;';
+
+    mask.innerHTML =
+      '<div style="width:100%;max-width:320px;background:#fff;border-radius:18px;' +
+      'box-shadow:0 20px 60px rgba(0,0,0,.22);padding:26px 22px 18px;text-align:center;' +
+      'font-family:\"PingFang SC\",\"Hiragino Sans GB\",\"Microsoft YaHei\",sans-serif;' +
+      'animation:verPop .28s cubic-bezier(.22,1,.36,1);">' +
+
+        '<div style="font-size:15px;font-weight:400;letter-spacing:4px;color:#1a1a1a;' +
+        'text-indent:4px;margin-bottom:10px;">发现新版本</div>' +
+
+        '<div style="font-size:11px;color:#bbb;letter-spacing:1px;margin-bottom:20px;">' +
+        '点击更新后页面会重新加载</div>' +
+
+        '<div style="display:flex;gap:10px;">' +
+          '<button id="verUpdateLater" style="flex:1;padding:12px 0;border-radius:22px;' +
+          'border:0.7px solid rgba(0,0,0,.15);background:transparent;color:#999;' +
+          'font-size:13px;font-family:inherit;letter-spacing:2px;cursor:pointer;">稍后</button>' +
+
+          '<button id="verUpdateNow" style="flex:1;padding:12px 0;border-radius:22px;' +
+          'border:none;background:#1a1a1a;color:#fff;' +
+          'font-size:13px;font-family:inherit;letter-spacing:2px;cursor:pointer;">立即更新</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<style>@keyframes verPop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}</style>';
+
+    document.body.appendChild(mask);
+
+    document.getElementById('verUpdateLater').onclick = function(){
+      // 稍后：只关窗，不记版本号 → 下次重新进来还会再弹
+      mask.remove();
+    };
+
+    document.getElementById('verUpdateNow').onclick = function(){
+      // 立即更新：记下当前版本号，再强刷 → 之后不再弹（直到你下次改版本号）
+      try { localStorage.setItem(LS_KEY, CUR); } catch(e){}
+      var url = location.href.split('#')[0];
+      var sep = url.indexOf('?') >= 0 ? '&' : '?';
+      location.replace(url + sep + '_v=' + Date.now());
+    };
+  }
+
+  // DOM 就绪后再弹，避免页面还没渲染出来就弹
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', showUpdateNotice);
+  } else {
+    showUpdateNotice();
+  }
+})();
 </script>
 
 </body>
