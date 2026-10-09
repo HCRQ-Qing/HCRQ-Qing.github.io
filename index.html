@@ -126,6 +126,10 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
   gap:12px;
   box-sizing:border-box;
   font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",serif;
+  cursor:pointer;
+}
+.msg-notify.show{
+  pointer-events:auto;
 }
 .msg-notify.show{
   transform:translate(-50%, 0);
@@ -1008,6 +1012,69 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
 .cd-more:active{opacity:1}
 .cd-search{display:flex;align-items:center;gap:10px;padding:10px 16px;margin:0 22px 22px;flex:none;background:transparent;border:0.7px solid #e8e8e8;border-radius:22px;box-shadow:none;transition:border-color .2s ease}
 .cd-search:focus-within{border-color:#1a1a1a}
+/* ===== 字卡搜索历史下拉 ===== */
+.cd-his-mask{
+  position:fixed;inset:0;z-index:60;display:none;
+}
+.cd-his-mask.show{display:block}
+.cd-his{
+  position:absolute;left:22px;right:22px;top:auto;
+  margin-top:-14px;
+  background:#ffffff;
+  border:0.7px solid rgba(0,0,0,.08);
+  border-radius:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.10);
+  padding:6px 0 4px;
+  display:none;
+  z-index:61;
+}
+.cd-his.show{display:block;animation:cdHisPop .2s cubic-bezier(.22,1,.36,1)}
+@keyframes cdHisPop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.cd-his-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px 6px;
+  font-size:10.5px;letter-spacing:2px;color:#bbb;
+  font-weight:300;
+  border-bottom:0.6px dashed #f2f2f2;
+  margin-bottom:2px;
+  -webkit-font-smoothing:antialiased;
+}
+.cd-his-clear{
+  color:#1a1a1a;
+  letter-spacing:1px;
+  cursor:pointer;
+  padding:2px 4px;
+}
+.cd-his-clear:active{opacity:.55}
+.cd-his-list{max-height:240px;overflow-y:auto;scrollbar-width:none}
+.cd-his-list::-webkit-scrollbar{display:none}
+.cd-his-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 14px;
+  cursor:pointer;
+  transition:background .15s ease;
+}
+.cd-his-item:active{background:#fafafa}
+.cd-his-txt{
+  flex:1;min-width:0;
+  font-size:13.5px;color:#1a1a1a;
+  letter-spacing:.5px;font-weight:300;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  -webkit-font-smoothing:antialiased;
+}
+.cd-his-del{
+  flex:none;width:18px;height:18px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:#ccc;
+  border-radius:50%;
+  transition:color .15s ease;
+}
+.cd-his-del:active{color:#1a1a1a}
+.cd-his-empty{
+  text-align:center;padding:24px 0;
+  font-size:12.5px;color:#ccc;letter-spacing:1px;font-weight:300;
+  -webkit-font-smoothing:antialiased;
+}
 .cd-search svg{flex:none;stroke:#c8c8c8;stroke-width:1.4}
 .cd-search input{flex:1;border:none;background:transparent;outline:none;font-size:13px;color:#1a1a1a;font-family:var(--app-font);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .cd-search input::placeholder{color:#d0d0d0;letter-spacing:1px}
@@ -5609,6 +5676,15 @@ window.__APP_VERSION__ = '1.0.2';
 	<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--th-accent)" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
 	<input type="text" id="cdSearchInput" placeholder="搜索字卡…">
   </div>
+  <!-- 搜索历史下拉 -->
+  <div class="cd-his-mask" id="cdHisMask"></div>
+  <div class="cd-his" id="cdHis">
+	<div class="cd-his-head">
+	  <span>最近搜索</span>
+	  <span class="cd-his-clear" id="cdHisClear">清空</span>
+	</div>
+	<div class="cd-his-list" id="cdHisList"></div>
+  </div>
   <div class="cd-tabs-wrap" id="cdTabsWrap"><div class="cd-tabs" id="cdTabs"></div></div>
   <div class="rename-hint">长按分类名可重命名</div>
   <div class="cd-list-wrap">
@@ -5811,6 +5887,10 @@ window.__APP_VERSION__ = '1.0.2';
       <div class="set-row" data-set="blocked">
         <span class="num">03</span><span class="name">已拉黑</span>
         <span class="val" id="setBlockedCount">0</span><span class="en">BLOCKED</span><span class="arr">→</span>
+      </div>
+      <div class="set-row" data-set="wipe">
+        <span class="num">04</span><span class="name">清除全部数据</span>
+        <span class="val">不可恢复</span><span class="en">WIPE</span><span class="arr">→</span>
       </div>
 
     </div>
@@ -8447,6 +8527,28 @@ function renderChatFull(forceBottom){
 		</div></div>
 	  </div>`;
 	}
+	/* ★ 视频卡片消息（角色刷视频 / 手动让 Ta 刷） */
+	if(m.videoCard && m.videoCard.url){
+	  const vc = m.videoCard;
+	  const dirCls = isUser ? 'user' : 'char';
+	  return `<div class="msg ${dirCls}" data-id="${m.id}">
+		${av}
+		<div class="msg-body" style="max-width:100%">
+		  ${timeSep}
+		  <div class="bubble wx-card-bubble">
+			<div class="video-card" data-vcurl="${esc(vc.url)}">
+			  <div class="vc-head">
+				<span class="vc-platform ${platformClass(vc.platform)}">${esc(vc.platformIcon||'🔗')} ${esc(vc.platformName||'链接')}</span>
+				<span>视频分享</span>
+			  </div>
+			  <div class="vc-title">${esc(vc.title||'')}</div>
+			  ${vc.desc ? `<div class="vc-desc">${esc(vc.desc)}</div>` : ''}
+			  <div class="vc-foot"><span>点击打开</span><span>›</span></div>
+			</div>
+		  </div>
+		</div>
+	  </div>`;
+	}
 	/* ★ 合并转发卡片 */
 	if(m.mergeCard && Array.isArray(m.mergeCard.items)){
 	  const items = m.mergeCard.items;
@@ -8650,7 +8752,12 @@ function showMsgMenu(msgEl,x,y){
     if(canRecall) html += `<div class="it" data-act="recall">撤回</div>`;
   }
 
-  // ⑥ 删除（最后，白色）
+  // ⑥ 发送失败 → 显示重发
+  if(isUser && m.sendFailed){
+    html += `<div class="it pink" data-act="resend">重发</div>`;
+  }
+
+  // ⑦ 删除（最后，白色）
   html += `<div class="it white" data-act="delete">删除</div>`;
 
   menu.innerHTML = html;
@@ -8698,28 +8805,6 @@ function showMsgMenu(msgEl,x,y){
 		  return c.card.name + rev;
 		}).join('、');
 		const text = `Q：${d.q}\n牌面：${cardText}`;
-		setQuote({name, text, msgId: m.id});
-
-	  } else if(act === 'edit'){
-		openEditChar(m);
-
-	  } else if(act === 'divine-save'){
-		saveDivineMsg(m);
-
-	  } else if(act === 'recall'){
-		// 用户撤回
-		if((Date.now() - m.time) >= 2*60*1000){
-		  toast('超过 2 分钟的消息不能撤回');
-		  return;
-		}
-		m.recalled = true;
-		m.recallBy = 'user';
-		// 撤回后清掉内容，避免被引用/复制
-		if(m.quote) delete m.quote;
-		saveMsgs();
-		renderChat();
-		toast('已撤回');
-
 	  } else if(act === 'delete'){
 		const i = msgs.indexOf(m);
 		if(i >= 0){ msgs.splice(i, 1); saveMsgs(); renderChat(); }
@@ -9202,7 +9287,7 @@ function appendMsgToRole(roleId, msg){
       else if(msg.videoCard) notifyText = '[视频] ' + (msg.videoCard.title || '');
       else if(msg.divine) notifyText = '[占卜] ' + (msg.divine.q || '');
       if(notifyText){
-        showMsgNotify(role.name || '角色', notifyText);
+        showMsgNotify(role.name || '角色', notifyText, role.avatar, roleId);
       }
     }
   }catch(e){ console.error('消息提示出错', e); }
@@ -9238,7 +9323,7 @@ function getNotifyMoment(){ return lsGet(NOTIFY_MOMENT_KEY, true); }
 function setNotifyMoment(v){ lsSet(NOTIFY_MOMENT_KEY, !!v); }
 
 let _msgNotifyTimer = null;
-function showMsgNotify(roleName, text, roleAvatar){
+function showMsgNotify(roleName, text, roleAvatar, targetRoleId){
   /* 聊天界面通知总开关：关了就直接不弹 */
   if(!getNotifyChat()) return;
   const el = document.getElementById('msgNotify');
@@ -9260,6 +9345,25 @@ function showMsgNotify(roleName, text, roleAvatar){
       '<div class="mn-text">' + escapeHTML(String(text || '').slice(0, 40)) + '</div>' +
     '</div>' +
     '<div class="mn-time">现在</div>';
+
+  /* 点这条提示 → 跳到该角色的聊天界面 */
+  el.onclick = function(){
+    /* 先收掉提示条 */
+    el.classList.remove('show');
+    clearTimeout(_msgNotifyTimer);
+    /* 没有角色 id 就啥也不做（比如手动调用没传的情况） */
+    if(!targetRoleId) return;
+    /* 已经在这个角色的聊天页？那就只是收掉提示 */
+    if(getCurrentRoleId() === targetRoleId){
+      /* 如果在聊天页，滚到底部就行 */
+      var box = document.getElementById('chatList');
+      if(box) box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+      return;
+    }
+    /* 切角色 + 跳到聊天页 */
+    try { switchToRole(targetRoleId); } catch(e){ console.error(e); }
+    try { goToPage('chat'); } catch(e){}
+  };
 
   el.classList.add('show');
   clearTimeout(_msgNotifyTimer);
@@ -9392,7 +9496,7 @@ function fireActiveMessage(roleId){
   /* 用户不在看这个角色 → 顶部弹提示条 */
   if(!isViewingRole(roleId)){
     const role = getRoleById(roleId) || {};
-    showMsgNotify(role.name || '角色', text, role.avatar);
+    showMsgNotify(role.name || '角色', text, role.avatar, roleId);
   }
 
   cfg.activeLastFireAt = Date.now();
@@ -9481,7 +9585,7 @@ function fireActiveDivine(roleId){
 
   if(!isViewingRole(roleId)){
     const role = getRoleById(roleId) || {};
-    showMsgNotify(role.name || '角色', '占卜：' + q);
+    showMsgNotify(role.name || '角色', '占卜：' + q, role.avatar, roleId);
   }
 
   r.divineLastFireAt = Date.now();
@@ -13857,6 +13961,34 @@ function openSettingsPanel(){
   renderSettingsCounts();
   updateFullscreenState();
 }
+
+/* ===== 清除全部数据（恢复出厂） ===== */
+function wipeAllData(){
+  uniAsk({
+    title: '清除全部数据',
+    sub: '所有好友 / 聊天 / 字卡 / 动态都会被删除，不可恢复',
+    value: '',
+    placeholder: '输入「删除」两个字确认',
+    maxlength: 4
+  }).then(function(v){
+    if(v === null) return;
+    if(String(v).trim() !== '删除'){
+      toast('未确认，已取消');
+      return;
+    }
+    try{
+      localStorage.clear();
+    }catch(e){
+      console.error('清空 localStorage 失败', e);
+      toast('清除失败：' + e.message);
+      return;
+    }
+    toast('已清除，正在刷新…');
+    setTimeout(function(){
+      location.reload();
+    }, 400);
+  });
+}
 /* 设置页：返回按钮（事件委托，任何时刻都能点） */
 document.addEventListener('click', function(e){
   const t = e.target;
@@ -14000,6 +14132,7 @@ document.addEventListener('click', function(e){
     else if(key === 'blocked') openHiddenList('blocked');
     else if(key === 'deleted') openHiddenList('deleted');
     else if(key === 'about')   showScreen('aboutScreen');
+    else if(key === 'wipe')    wipeAllData();
     return;
   }
 
@@ -14892,11 +15025,15 @@ function applyTopbarBg(){
   const topbar = $('#chatTopbar');
   if(!topbar) return;
   if(role.topbarBg){
-	topbar.style.backgroundImage = `linear-gradient(180deg, rgba(10,5,10,.35), rgba(10,5,10,.65)), url(${role.topbarBg})`;
+	topbar.style.backgroundImage = `linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.92)), url(${role.topbarBg})`;
 	topbar.style.backgroundSize = 'cover';
 	topbar.style.backgroundPosition = 'center';
+	topbar.style.backgroundRepeat = 'no-repeat';
   }else{
 	topbar.style.backgroundImage = '';
+	topbar.style.backgroundSize = '';
+	topbar.style.backgroundPosition = '';
+	topbar.style.backgroundRepeat = '';
   }
 }
 
@@ -16284,7 +16421,96 @@ if(scroller) scroller.addEventListener('scroll',refreshScrollbar);
 window.addEventListener('resize',refreshScrollbar);
 on('#clBack','click',()=>closeScreen());
 on('#cdBack','click',()=>{ if(selMode){ exitSelMode(); return; } showScreen('cardLibScreen'); renderGroupList(); });
-on('#cdSearchInput','input',function(){ cardKeyword=this.value; renderCdList(); });
+/* ===== 字卡搜索历史 ===== */
+var CD_HIS_KEY = 'mj_cd_search_his_v1';
+var cdHisMax = 10;
+
+function cdHisGet(){
+  var a = lsGet(CD_HIS_KEY, null);
+  if(!Array.isArray(a)) a = [];
+  return a;
+}
+function cdHisSave(a){ lsSet(CD_HIS_KEY, a); }
+function cdHisAdd(kw){
+  var t = String(kw || '').trim();
+  if(!t) return;
+  var a = cdHisGet().filter(function(x){ return x !== t; });
+  a.unshift(t);
+  if(a.length > cdHisMax) a.length = cdHisMax;
+  cdHisSave(a);
+}
+function cdHisDel(kw){
+  cdHisSave(cdHisGet().filter(function(x){ return x !== kw; }));
+}
+function cdHisRender(){
+  var box = document.getElementById('cdHisList');
+  if(!box) return;
+  var a = cdHisGet();
+  if(!a.length){
+    box.innerHTML = '<div class="cd-his-empty">还没有搜索记录</div>';
+    return;
+  }
+  box.innerHTML = a.map(function(kw){
+    return '<div class="cd-his-item" data-kw="' + escapeHTML(kw) + '">' +
+      '<span class="cd-his-txt">' + escapeHTML(kw) + '</span>' +
+      '<span class="cd-his-del" data-del="' + escapeHTML(kw) + '">✕</span>' +
+    '</div>';
+  }).join('');
+  box.querySelectorAll('.cd-his-item').forEach(function(item){
+    item.addEventListener('click', function(e){
+      if(e.target.closest('.cd-his-del')) return;
+      var kw = item.dataset.kw;
+      var inp = document.getElementById('cdSearchInput');
+      if(inp) inp.value = kw;
+      cardKeyword = kw;
+      cdHisClose();
+      renderCdList();
+    });
+  });
+  box.querySelectorAll('.cd-his-del').forEach(function(el){
+    el.addEventListener('click', function(e){
+      e.stopPropagation();
+      cdHisDel(el.dataset.del);
+      cdHisRender();
+    });
+  });
+}
+function cdHisOpen(){
+  var his = document.getElementById('cdHis');
+  var mask = document.getElementById('cdHisMask');
+  if(!his || !mask) return;
+  cdHisRender();
+  his.classList.add('show');
+  mask.classList.add('show');
+}
+function cdHisClose(){
+  var his = document.getElementById('cdHis');
+  var mask = document.getElementById('cdHisMask');
+  if(his) his.classList.remove('show');
+  if(mask) mask.classList.remove('show');
+}
+on('#cdHisClear','click',function(){
+  if(!cdHisGet().length) return;
+  cdHisSave([]);
+  cdHisRender();
+});
+on('#cdHisMask','click',cdHisClose);
+on('#cdSearchInput','focus',function(){ cdHisOpen(); });
+on('#cdSearchInput','input',function(){
+  cardKeyword = this.value;
+  renderCdList();
+});
+on('#cdSearchInput','keydown',function(e){
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    cdHisAdd(this.value);
+    cdHisClose();
+    this.blur();
+  }
+});
+/* 回字卡列表 / 换分类时，关掉历史 */
+on('#cdBack','click',function(){ cdHisClose(); });
+on('#clBack','click',function(){ cdHisClose(); });
 
 let editingMoodIndex = -1;
 let pendingMoodAnim = '1';
