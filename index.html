@@ -41,6 +41,11 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
 .tabbar{position:absolute;bottom:0;left:0;right:0;height:72px;background:#ffffff;border-top:0.7px solid #1a1a1a;display:flex;align-items:stretch;justify-content:space-around;padding:0 6px;z-index:50;transition:transform .2s ease}
 #app.kb-open .tabbar{transform:translateY(100%)}
 #app.kb-open .page-stack{inset:0}
+#app.kb-open{overflow:hidden}
+/* ★ 键盘弹起时输入栏不需要任何位移，浏览器会自动压缩 #app，
+   输入栏自然贴在键盘上方。这里只保证它不被聊天列表盖住。 */
+#app.kb-open-real .d-bar{position:relative;z-index:20}
+#app.kb-open-real .gch-bar{position:relative;z-index:20}
 .tb-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;padding:6px 0;border-radius:14px;transition:all .2s ease}
 .tb-item .tb-ic{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;transition:all .22s ease;background:transparent;border:0.7px solid transparent}
 .tb-item .tb-ic svg{width:20px;height:20px;stroke:#1a1a1a;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;transition:all .22s}
@@ -472,6 +477,25 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
 .sys-notice span{display:inline-block;padding:5px 16px;border-radius:20px;background:var(--th-accent-soft-2);border:1px solid var(--th-accent-line);color:var(--th-text);font-size:11.5px;letter-spacing:1px;line-height:1.55;max-width:88%}
 .sys-notice b{color:var(--th-accent)}
 
+/* ===== 选择结果卡片 ===== */
+.choice-card-msg{
+  border:0.7px dashed #1a1a1a;
+  border-radius:14px;
+  padding:16px 18px;
+  display:flex;flex-direction:column;gap:6px;
+  max-width:240px;
+  background:#fff;
+}
+.choice-card-msg .ccm-q{
+  font-size:12.5px;color:#999;font-style:italic;
+  line-height:1.6;font-weight:400;
+}
+.choice-card-msg .ccm-ans{
+  font-size:18px;color:#1a1a1a;font-weight:500;
+  letter-spacing:1px;padding-top:6px;
+  border-top:0.6px solid #f0f0f0;margin-top:4px;
+  line-height:1.5;
+}
 /* ===== 合并转发卡片 ===== */
 .merge-card{
   width:240px;
@@ -546,9 +570,9 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
 .msg.char .voice-bubble{background:rgba(0,0,0,.04)}
 .voice-bubble .vb-play{width:18px;height:18px;flex:none;display:flex;align-items:center;justify-content:center}
 .voice-bubble .vb-play svg{width:12px;height:12px;fill:#1a1a1a;stroke:none;display:block}
-.voice-bubble .vb-play .icon-pause{display:none}
-.voice-bubble.playing .vb-play .icon-play{display:none}
-.voice-bubble.playing .vb-play .icon-pause{display:block}
+.voice-bubble .vb-play .icon-pause{display:none !important}
+.voice-bubble.playing .vb-play .icon-play{display:none !important}
+.voice-bubble.playing .vb-play .icon-pause{display:block !important}
 .voice-bubble .vb-wave{flex:1;display:flex;align-items:center;justify-content:center;gap:2px;height:16px;min-width:40px}
 .voice-bubble .vb-wave span{width:2px;background:#1a1a1a;border-radius:1px;opacity:.45;display:block}
 .voice-bubble .vb-wave span:nth-child(1){height:6px}
@@ -1489,6 +1513,36 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
   border-bottom:0.6px dashed rgba(0,0,0,.06) !important;
   background:transparent !important;
   margin-bottom:0 !important;
+}
+/* ★ 分组小标题：标题在左，内容在右同一行 */
+.rs-row{display:flex;align-items:center;gap:14px;padding:2px 0}
+.rs-row .rs-row-title{
+  font-size:14px;font-weight:500;letter-spacing:1.5px;color:#1a1a1a;
+  width:72px;flex:none;
+}
+.rs-row .rs-row-main{
+  flex:1;display:flex;align-items:center;gap:6px;
+  justify-content:flex-end;flex-wrap:wrap;
+}
+.rs-row .rs-row-main .lbl{font-size:12px;color:#888;letter-spacing:.5px;flex:none;font-weight:400}
+.rs-row .rs-row-main .unit{font-size:12px;color:#888;letter-spacing:.5px;flex:none;font-weight:400}
+.rs-row .rs-row-main .rs-num{
+  width:52px;border:none;border-bottom:0.8px solid rgba(0,0,0,.2);
+  background:transparent;font-size:15px;font-family:Georgia,serif;
+  color:#1a1a1a;text-align:center;outline:none;padding:2px 0;font-weight:400;
+}
+.rs-row .rs-row-main .rs-num:focus{border-bottom-color:#1a1a1a}
+.rs-row .rs-row-main .rs-slider{
+  flex:1;min-width:60px;-webkit-appearance:none;appearance:none;
+  height:2px;background:rgba(0,0,0,.12);outline:none;border-radius:2px;
+}
+.rs-row .rs-row-main .rs-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:12px;height:12px;border-radius:50%;
+  background:#1a1a1a;cursor:pointer;
+}
+.rs-row .rs-row-main .num{
+  font-size:11.5px;color:#1a1a1a;flex:none;min-width:40px;text-align:right;
+  font-family:Georgia,serif;letter-spacing:.5px;font-weight:400;
 }
 #mReply #replyBody .section:last-child{
   border-bottom:none !important;
@@ -3188,7 +3242,7 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .shape-btn .pv.sq{border-radius:12%}
 .shape-btn .pv.ci{border-radius:50%}
 
-.crop-mask{position:fixed;inset:0;z-index:999;background:rgba(8,4,8,.92);display:none;flex-direction:column}
+.crop-mask{position:fixed;inset:0;z-index:2147483646;background:rgba(8,4,8,.92);display:none;flex-direction:column}
 .crop-mask.show{display:flex}
 .crop-top{flex:none;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;color:var(--th-text);font-size:14px;font-weight:700;letter-spacing:2px;position:relative;z-index:20}
 .crop-top .cancel{color:var(--th-text-soft);font-size:13px;cursor:pointer;font-weight:400}
@@ -3471,8 +3525,9 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .tarot .t-name{font-size:8.5px;color:#1a1a1a;letter-spacing:.5px;text-align:center;line-height:1.1;font-weight:300;position:relative;z-index:2}
 .tarot .t-suit-en{font-size:5px;color:#c8c8c8;letter-spacing:.2px;font-family:Georgia,serif;text-transform:uppercase;line-height:1;position:relative;z-index:2}
 .tarot .t-rev-mark{position:absolute;top:4px;right:6px;font-size:6px;color:#DD1440;font-family:Georgia,serif;font-weight:400;letter-spacing:.5px;z-index:3}
-.tarot.reversed{transform:rotate(180deg)}
-.tarot.reversed .t-rev-mark{top:auto;bottom:4px;right:auto;left:6px;transform:rotate(180deg)}
+/* ★ 逆位不倒转，只保留右上角红色 REV */
+.tarot.reversed{transform:none}
+.tarot.reversed .t-rev-mark{top:4px;right:6px;bottom:auto;left:auto;transform:none}
 .tarot.theme-wand{border-color:rgba(255,140,80,.65)}
 .tarot.theme-wand .t-rank-num{color:#ffa96a}
 .tarot.theme-cup{border-color:rgba(120,180,255,.65)}
@@ -3693,10 +3748,17 @@ html[data-theme="bw"] .tarot .t-suit-en{
 .choice-head .mode-btn.on{background:var(--th-accent);color:#fff;border-color:var(--th-accent);font-weight:700}
 .choice-label{font-size:12px;color:var(--th-accent);letter-spacing:1.5px;margin:16px 0 8px}
 .choice-q{width:100%;border:1.5px solid var(--th-accent-line);border-radius:14px;padding:14px 16px;font-size:14px;font-family:inherit;color:var(--th-text);outline:none;background:var(--th-accent-soft);resize:none;line-height:1.6;transition:border-color .25s ease,background .25s ease}
-.choice-opts-row{display:flex;gap:8px;margin-bottom:8px}
+.choice-opts-row{display:flex;align-items:center;gap:10px;margin-bottom:4px;padding:10px 2px;border-bottom:0.6px dashed #ececec}
+.choice-opts-row:last-child{border-bottom:none}
+.choice-idx{width:22px;flex:none;font-size:11px;color:#bbb;font-family:Georgia,serif;letter-spacing:1px;font-weight:500}
+.choice-opts-row .choice-opt-input{flex:1;border:none;background:transparent;font-size:14px;font-family:inherit;color:#1a1a1a;outline:none;font-weight:400;letter-spacing:.5px;padding:4px 0}
+.choice-opts-row .choice-opt-input::placeholder{color:#ccc}
+.choice-opts-row .choice-del{width:22px;height:22px;flex:none;border:none;background:transparent;color:#ccc;font-size:12px;cursor:pointer;font-family:inherit;padding:0;border-radius:50%;font-weight:500}
+.choice-opts-row .choice-del:active{color:#1a1a1a;background:#f5f5f5}
 .choice-opt-input{flex:1;border:1.5px solid var(--th-accent-line);border-radius:12px;padding:11px 14px;font-size:13.5px;font-family:inherit;color:var(--th-text);outline:none;background:var(--th-accent-soft);transition:border-color .25s ease,background .25s ease}
 .choice-del{width:36px;height:36px;border-radius:12px;flex:none;border:1.5px solid var(--th-accent-line);background:rgba(255,77,109,.10);color:var(--th-danger);font-size:16px;cursor:pointer;font-family:inherit}
-.choice-add{padding:9px 14px;border-radius:12px;border:1.5px dashed var(--th-accent-line);background:transparent;color:var(--th-accent);font-size:12.5px;cursor:pointer;width:100%;margin-top:4px;font-family:inherit}
+.choice-add{padding:12px 14px;border-radius:12px;border:none;background:#f7f7f7;color:#1a1a1a;font-size:13px;cursor:pointer;width:100%;margin-top:12px;font-family:inherit;letter-spacing:1px;font-weight:500}
+.choice-add:active{background:#ededed}
 .choice-range{display:flex;align-items:center;gap:10px;padding:8px 0}
 .choice-range .lbl{font-size:12.5px;color:var(--th-text-soft);width:80px;flex:none}
 .choice-range input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:3px;background:var(--th-accent-soft-2);border-radius:2px;outline:none}
@@ -4459,6 +4521,30 @@ body[data-bubble="custom"] .preview-bubble{
 .s-row .num{font-size:12px;color:#1a1a1a;flex:none;min-width:42px;text-align:right;font-family:Georgia,serif;letter-spacing:.5px}
 .punc-grid{display:flex;flex-wrap:wrap;gap:6px}
 .punc-item{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:50px;min-height:40px;padding:10px 16px;border-radius:14px;background:#fff;border:0.6px solid rgba(0,0,0,.06);box-shadow:0 2px 8px rgba(0,0,0,.06);color:#1a1a1a;font-size:14px;letter-spacing:.5px;cursor:pointer;user-select:none;transition:box-shadow .18s ease, transform .12s ease}
+.punc-item.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a;box-shadow:0 3px 10px rgba(0,0,0,.18)}
+.punc-item.off{background:#fff;color:#dcdcdc;border:0.6px solid rgba(0,0,0,.08);box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.punc-item .p-del{
+  position:absolute;top:-6px;right:-6px;
+  width:16px;height:16px;border-radius:50%;
+  background:#1a1a1a;color:#fff;
+  font-size:10px;line-height:1;
+  display:none;align-items:center;justify-content:center;
+  border:1.5px solid #fff;cursor:pointer;font-family:inherit;
+  z-index:5;padding:0;
+}
+.punc-item.show-del .p-del{display:flex}
+.punc-item.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a;box-shadow:0 3px 10px rgba(0,0,0,.18)}
+.punc-item.off{background:#fff;color:#dcdcdc;border:0.6px solid rgba(0,0,0,.08);box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.punc-item .p-del{
+  position:absolute;top:-6px;right:-6px;
+  width:16px;height:16px;border-radius:50%;
+  background:#1a1a1a;color:#fff;
+  font-size:10px;line-height:1;
+  display:none;align-items:center;justify-content:center;
+  border:1.5px solid #fff;cursor:pointer;font-family:inherit;
+  z-index:5;padding:0;
+}
+.punc-item.show-del .p-del{display:flex}
 .punc-item:active{transform:scale(.96)}
 .punc-item.fixed{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
 .punc-item.fixed-toggle{background:#fff;color:#c8c8c8;border:0.6px solid rgba(0,0,0,.08);box-shadow:0 2px 8px rgba(0,0,0,.05);cursor:pointer}
@@ -5031,6 +5117,109 @@ body[data-bubble="custom"] .preview-bubble{
 }
 .memo-tpl-new:active{color:#999;background:transparent}
 
+/* ===== 收藏页 ===== */
+#collectScreen{
+  background:#ffffff;
+  flex-direction:column;
+  z-index:100;
+}
+#collectScreen.on{display:flex}
+#collectScreen .memo-wrap{
+  -webkit-overflow-scrolling:touch;
+}
+.col-body{
+  display:flex;
+  flex-direction:column;
+  padding-bottom:40px;
+}
+.col-item{
+  padding:14px 0;
+  border-bottom:0.6px dashed #f0f0f0;
+  position:relative;
+}
+.col-item:last-child{border-bottom:none}
+.col-item .col-txt{
+  font-size:13.5px;
+  color:#1a1a1a;
+  line-height:1.7;
+  letter-spacing:.3px;
+  word-break:break-word;
+  white-space:pre-wrap;
+  padding-right:36px;
+  font-weight:300;
+}
+.col-item .col-meta{
+  font-size:10.5px;
+  color:#bbb;
+  margin-top:6px;
+  letter-spacing:.5px;
+  font-weight:300;
+}
+.col-item .col-del{
+  position:absolute;
+  top:14px;
+  right:0;
+  width:24px;
+  height:24px;
+  border:none;
+  background:transparent;
+  color:#ccc;
+  font-size:13px;
+  cursor:pointer;
+  font-family:inherit;
+  padding:0;
+  border-radius:50%;
+}
+.col-item .col-del:active{color:#1a1a1a;background:#f5f5f5}
+.col-empty{
+  text-align:center;
+  color:#bbb;
+  font-size:13px;
+  padding:80px 30px;
+  line-height:2;
+  letter-spacing:.5px;
+  font-weight:300;
+}
+/* 消息长按菜单里的「收藏」项 */
+.msg-menu .it.collect-item{color:#1a1a1a;font-weight:600}
+/* ===== 拍一拍 ===== */
+.pat-notice{
+  width:100%;
+  text-align:center;
+  padding:6px 0;
+  animation:patPop .32s cubic-bezier(.22,1.4,.3,1);
+  user-select:none;
+}
+.pat-notice span{
+  display:inline-block;
+  font-size:11.5px;
+  color:#999;
+  letter-spacing:.5px;
+  line-height:1.6;
+  padding:5px 14px;
+  border-radius:20px;
+  background:rgba(0,0,0,.03);
+  max-width:88%;
+  word-break:break-word;
+}
+.pat-notice span b{color:#1a1a1a;font-weight:500}
+.pat-notice.me span{background:rgba(0,0,0,.05)}
+@keyframes patPop{
+  0%{opacity:0;transform:scale(.86)}
+  60%{opacity:1;transform:scale(1.04)}
+  100%{opacity:1;transform:scale(1)}
+}
+/* 头像被拍时抖一下 */
+.msg-av.pat-shake{
+  animation:patShake .4s cubic-bezier(.36,.07,.19,.97);
+}
+@keyframes patShake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-3px) rotate(-4deg)}
+  40%{transform:translateX(3px) rotate(4deg)}
+  60%{transform:translateX(-2px) rotate(-3deg)}
+  80%{transform:translateX(2px) rotate(3deg)}
+}
 /* ===== #mAddEmoji 专属美化 · 复刻 1b ===== */
 #mAddEmoji .sheet{
   position:relative;
@@ -6442,6 +6631,20 @@ window.__APP_VERSION__ = '1.0.2';
   </div>
 </div>
 
+<div class="screen" id="collectScreen">
+  <div class="memo-wrap">
+    <div class="memo-top">
+      <button class="memo-back" id="colBack" type="button">‹</button>
+      <div class="memo-title">收 藏</div>
+      <div class="memo-top-right"></div>
+    </div>
+    <div class="memo-tabs" id="colTabs">
+      <div class="memo-tab on" data-col-tab="mine" id="colTabMine">我的收藏</div>
+      <div class="memo-tab" data-col-tab="theirs" id="colTabTheirs">Ta 的收藏</div>
+    </div>
+    <div class="col-body" id="colBody"></div>
+  </div>
+</div>
 <div class="screen" id="memoScreen">
   <div class="memo-wrap">
     <div class="memo-top">
@@ -9381,6 +9584,98 @@ function updateScrollBottomBtn(){
   }
 }
 
+/* ============================================================
+   拍一拍
+   - 双击某个角色头像 → 发一条系统提示「我 拍了拍 XX 的 头像」
+   - 双击自己的头像 → 不处理（或也可以拍自己，看你要不要）
+   - 拍完，该头像抖一下
+   ============================================================ */
+function doPat(targetMsgEl, fromIsUser){
+  if(!targetMsgEl) return;
+  const av = targetMsgEl.querySelector('.msg-av');
+  if(!av) return;
+
+  /* 头像抖一下 */
+  av.classList.remove('pat-shake');
+  void av.offsetWidth;
+  av.classList.add('pat-shake');
+  setTimeout(function(){ av.classList.remove('pat-shake'); }, 450);
+
+  const role = getRole();
+  const meName = userName();
+  const taName = (role.remark && String(role.remark).trim()) || role.name;
+
+  /* 谁拍谁：双击的是对方的头像 → 我拍 Ta；双击的是自己的头像 → Ta 拍我 */
+  let html = '';
+  if(fromIsUser){
+    html = `<b>${escapeHTML(meName)}</b> 拍了拍 <b>${escapeHTML(taName)}</b> 的头像`;
+  } else {
+    html = `<b>${escapeHTML(taName)}</b> 拍了拍 <b>${escapeHTML(meName)}</b> 的头像`;
+  }
+
+  /* 存进聊天记录，用 sys 字段（跟已有的系统消息同款渲染） */
+  const msg = {
+    id: uid(),
+    time: Date.now(),
+    sys: html,
+    pat: true,
+    patFromUser: !!fromIsUser
+  };
+  msgs.push(msg);
+  saveMsgs();
+  renderChat(true);
+
+  /* 如果是我拍 Ta，Ta 有 60% 概率回拍一下 */
+  if(fromIsUser && Math.random() < 0.6){
+    const delay = 800 + Math.random() * 2200;
+    setTimeout(function(){
+      /* 中途切了角色就放弃 */
+      if(getCurrentRoleId() !== role.id) return;
+      const backMsg = {
+        id: uid(),
+        time: Date.now(),
+        sys: `<b>${escapeHTML(taName)}</b> 拍了拍 <b>${escapeHTML(meName)}</b> 的头像`,
+        pat: true,
+        patFromUser: false
+      };
+      appendMsgToRole(role.id, backMsg);
+    }, delay);
+  }
+}
+
+/* 给聊天列表绑双击头像事件 */
+(function bindPat(){
+  if(window.__patBound) return;
+  window.__patBound = true;
+  const list = document.getElementById('chatList');
+  if(!list) return;
+
+  let lastTapTime = 0;
+  let lastTapId = '';
+
+  list.addEventListener('click', function(e){
+    const av = e.target.closest('.msg-av');
+    if(!av) return;
+    const msgEl = av.closest('.msg');
+    if(!msgEl) return;
+    const id = msgEl.dataset.id;
+    const now = Date.now();
+    /* 双击判定：同一个头像，两次间隔 < 300ms */
+    if(id === lastTapId && now - lastTapTime < 300){
+      lastTapTime = 0;
+      lastTapId = '';
+      const m = msgs.find(x => x.id === id);
+      if(!m) return;
+      /* 对方消息 → 我拍 Ta；我方消息 → Ta 拍我 */
+      const fromIsUser = (m.role === 'char');
+      doPat(msgEl, fromIsUser);
+    } else {
+      lastTapTime = now;
+      lastTapId = id;
+    }
+  }, false);
+})();
+
 function renderChatFull(forceBottom){
   const box = $('#chatList'); if(!box) return;
   /* 跳转中：禁止自动滚到底 */
@@ -9400,7 +9695,30 @@ function renderChatFull(forceBottom){
 	  timeSep = `<div class="time-sep">${formatMsgTime(m.time)}</div>`;
 	}
 	if(m.recalled){ return `<div class="recalled-line">${isUser?userName():role.name}撤回了一条消息</div>`; }
-	if(m.sys){ return `<div class="sys-notice"><span>${m.sys}</span></div>`; }
+	if(m.sys){
+	  if(m.pat){
+		const cls = 'pat-notice' + (m.patFromUser ? ' me' : '');
+		return `<div class="${cls}"><span>${m.sys}</span></div>`;
+	  }
+	  return `<div class="sys-notice"><span>${m.sys}</span></div>`;
+	}
+	/* ★ 选择结果卡片 */
+	if(m.choiceCard){
+	  const cc = m.choiceCard;
+	  const dirCls = isUser ? 'user' : 'char';
+	  return `<div class="msg ${dirCls}" data-id="${m.id}">
+		${av}
+		<div class="msg-body" style="max-width:100%">
+		  ${timeSep}
+		  <div class="bubble" style="background:transparent;border:none;padding:0">
+			<div class="choice-card-msg">
+			  <div class="ccm-q">${escapeHTML(cc.q)}</div>
+			  <div class="ccm-ans">${escapeHTML(cc.answer)}</div>
+			</div>
+		  </div>
+		</div>
+	  </div>`;
+	}
 	if(m.namecard&&m.namecard.name){
 	  return `<div class="msg user" data-id="${m.id}">
 		<div class="msg-av">${avInner}</div>
@@ -9472,7 +9790,7 @@ function renderChatFull(forceBottom){
 	  const reads = m.divine.reads || [];
 	  const readsHTML = reads.length ? `<div class="dc-reads">${reads.map(r=>`<div class="dc-read-item"><span class="rt">${new Date(r.time).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>${escapeHTML(r.text)}</div>`).join('')}</div>` : '';
 	  const btnHTML = `<button class="dc-read-btn" data-divine-read="${m.divine.recordId||''}" data-divine-msg="${m.id}">${reads.length?'追加新的理解':'填写答案 / 解读'}</button>`;
-	  body = `<div class="divine-card"><div class="dc-head">DIVINE</div><div class="dc-q">${escapeHTML(m.divine.q)}</div><div class="dc-cards">${m.divine.cards.map(c=>tarotHTML(c.card,c.reversed)).join('')}</div>${readsHTML}${btnHTML}</div>`;
+	  body = `<div class="divine-card"><div class="dc-head">DIVINE</div><div class="dc-q">${escapeHTML(m.divine.q)}</div><div class="dc-cards">${m.divine.cards.map(c=>tarotHTML(c.card,c.reversed)).join('')}</div><div class="dc-cards-text" style="font-size:11.5px;color:#1a1a1a;line-height:1.8;padding:4px 2px 0;letter-spacing:.5px">${m.divine.cards.map(c=>escapeHTML(((c.card&&c.card.name)||'?') + (c.reversed?' 逆':''))).join('　')}</div>${readsHTML}${btnHTML}</div>`;
 	}else{
 	  const failedMark = m.sendFailed ? `<span class="send-failed-mark" title="发送失败">!</span>` : '';
 	  // ★ 兜底：如果 m.text 是对象（脏数据），自动解包成字符串
@@ -9491,7 +9809,7 @@ function renderChatFull(forceBottom){
 	  body = `<div class="bubble${m.sendFailed ? ' bubble-failed' : ''}">${escapeHTML(showText)}${failedMark}</div>`;
 	}
 
-	// 组装已读标签（仅用户消息）
+	// 组装已读标签（仅用户消息，含语音）
 	let readFlush = '';
 	if(isUser && !m.recalled && !m.sys && !m.namecard){
 	  if(m.readState === 'noReply' || m.readNoReply){
@@ -9611,6 +9929,174 @@ function bindMsgLongPress(){
   list.addEventListener('touchstart',onStart,{passive:true}); list.addEventListener('touchmove',onMove,{passive:true}); list.addEventListener('touchend',onEnd,{passive:true}); list.addEventListener('mousedown',onStart); list.addEventListener('mousemove',onMove); list.addEventListener('mouseup',onEnd);
   list._h={ts:onStart,tm:onMove,te:onEnd,md:onStart,mm:onMove,mu:onEnd};
 }
+/* ============================================================
+   消息收藏
+   数据结构：
+     mj_collect_mine_v1   = { [roleId]: [ { id, text, time, kind } ] }   // 我收藏的
+     mj_collect_theirs_v1 = { [roleId]: [ { id, text, time, kind } ] }   // Ta 收藏的（模拟）
+   ============================================================ */
+const COLLECT_MINE_KEY   = 'mj_collect_mine_v1';
+const COLLECT_THEIRS_KEY = 'mj_collect_theirs_v1';
+
+function getCollectMineMap(){
+  let m = lsGet(COLLECT_MINE_KEY, null);
+  if(!m || typeof m !== 'object') m = {};
+  return m;
+}
+function getCollectTheirsMap(){
+  let m = lsGet(COLLECT_THEIRS_KEY, null);
+  if(!m || typeof m !== 'object') m = {};
+  return m;
+}
+function saveCollectMineMap(m){ lsSet(COLLECT_MINE_KEY, m); }
+function saveCollectTheirsMap(m){ lsSet(COLLECT_THEIRS_KEY, m); }
+
+function getCollectMine(roleId){
+  const m = getCollectMineMap();
+  if(!Array.isArray(m[roleId])) m[roleId] = [];
+  return m[roleId];
+}
+function getCollectTheirs(roleId){
+  const m = getCollectTheirsMap();
+  if(!Array.isArray(m[roleId])) m[roleId] = [];
+  return m[roleId];
+}
+function setCollectMine(roleId, arr){
+  const m = getCollectMineMap();
+  m[roleId] = Array.isArray(arr) ? arr : [];
+  saveCollectMineMap(m);
+}
+function setCollectTheirs(roleId, arr){
+  const m = getCollectTheirsMap();
+  m[roleId] = Array.isArray(arr) ? arr : [];
+  saveCollectTheirsMap(m);
+}
+
+/* 把一条消息收藏进「我的收藏」 */
+function collectMsg(m){
+  if(!m) return;
+  const rid = getCurrentRoleId();
+  const text = extractCollectText(m);
+  if(!text){ toast('这条没什么可收藏的'); return; }
+  const arr = getCollectMine(rid);
+  if(arr.some(x => x.msgId === m.id)){ toast('已经收藏过了'); return; }
+  arr.unshift({
+    id: uid(),
+    msgId: m.id,
+    text: text,
+    kind: collectKindOf(m),
+    time: Date.now()
+  });
+  if(arr.length > 500) arr.length = 500;
+  setCollectMine(rid, arr);
+  toast('已收藏');
+}
+
+/* 抽一条消息的可收藏文本 */
+function extractCollectText(m){
+  if(!m) return '';
+  if(m.text) return String(m.text);
+  if(m.sticker) return '[表情图]';
+  if(m.voice) return '[语音 ' + (m.voice||0) + '"]';
+  if(m.namecard && m.namecard.name) return '[名片] ' + m.namecard.name;
+  if(m.videoCard) return '[视频] ' + (m.videoCard.title || '');
+  if(m.divine){
+    const cards = (m.divine.cards||[]).map(c => (c.card && c.card.name ? c.card.name : '') + (c.reversed?' 逆':'')).join('　');
+    return 'Q：' + (m.divine.q||'') + (cards ? '\n牌面：' + cards : '');
+  }
+  if(m.choiceCard) return 'Q：' + m.choiceCard.q + '\nTa 的选择：' + m.choiceCard.answer;
+  if(m.kind === 'pinyin') return (m.pinyin || '') + (m.han ? '\n拼音：' + m.han : '');
+  return '';
+}
+function collectKindOf(m){
+  if(!m) return 'text';
+  if(m.sticker) return 'sticker';
+  if(m.voice) return 'voice';
+  if(m.namecard) return 'namecard';
+  if(m.videoCard) return 'video';
+  if(m.divine) return 'divine';
+  if(m.choiceCard) return 'choice';
+  if(m.kind === 'pinyin') return 'pinyin';
+  return 'text';
+}
+
+/* Ta 的收藏：角色随机收藏我发的消息（每 30 分钟 tick 一次，摇中一条） */
+function runTheirsCollectTick(){
+  const ids = getAllRoleIds();
+  ids.forEach(function(rid){
+    const role = getRoleById(rid);
+    if(!role || role.hidden) return;
+    if(Math.random() >= 0.05) return;   /* 5% 概率 */
+    /* 从和这个角色的聊天记录里找一条我发的、有文字的 */
+    const key = 'mj_msgs_' + rid;
+    const arr = lsGet(key, null);
+    if(!Array.isArray(arr) || !arr.length) return;
+    const cands = arr.filter(m => m.role === 'user' && !m.recalled && !m.sys && extractCollectText(m));
+    if(!cands.length) return;
+    const pick = cands[Math.floor(Math.random() * cands.length)];
+    const text = extractCollectText(pick);
+    const list = getCollectTheirs(rid);
+    if(list.some(x => x.msgId === pick.id)) return;
+    list.unshift({
+      id: uid(),
+      msgId: pick.id,
+      text: text,
+      kind: collectKindOf(pick),
+      time: Date.now()
+    });
+    if(list.length > 500) list.length = 500;
+    setCollectTheirs(rid, list);
+  });
+}
+setInterval(function(){ try{ runTheirsCollectTick(); }catch(e){ console.error('Ta 收藏 tick 出错', e); } }, 30 * 60 * 1000);
+
+/* 打开收藏页 */
+function openCollectScreen(){
+  showScreen('collectScreen');
+  renderCollectScreen('mine');
+}
+function renderCollectScreen(tab){
+  const body = document.getElementById('colBody');
+  if(!body) return;
+  const rid = getCurrentRoleId();
+  const roleName = getCurrentRoleName();
+  const list = (tab === 'mine') ? getCollectMine(rid) : getCollectTheirs(rid);
+  if(!list.length){
+    body.innerHTML = '<div class="col-empty">' +
+      (tab === 'mine' ? '还没有收藏的消息<br>长按任意消息 → 收藏' : 'Ta 还没有收藏过你的消息') +
+      '</div>';
+    return;
+  }
+  body.innerHTML = list.map(function(it){
+    const d = new Date(it.time);
+    const stamp = d.getFullYear() + '-' +
+      String(d.getMonth()+1).padStart(2,'0') + '-' +
+      String(d.getDate()).padStart(2,'0') + ' ' +
+      String(d.getHours()).padStart(2,'0') + ':' +
+      String(d.getMinutes()).padStart(2,'0');
+    const from = (tab === 'mine') ? (it.kind === 'voice' ? '来自我' : '我') : roleName;
+    return '<div class="col-item" data-id="' + it.id + '">' +
+      '<div class="col-txt">' + escapeHTML(it.text) + '</div>' +
+      '<div class="col-meta">' + escapeHTML(stamp) + ' · ' + escapeHTML(from) + '</div>' +
+      (tab === 'mine' ? '<button class="col-del" data-del="' + it.id + '" type="button">✕</button>' : '') +
+    '</div>';
+  }).join('');
+  /* 我的收藏：支持删除 */
+  if(tab === 'mine'){
+    body.querySelectorAll('[data-del]').forEach(function(btn){
+      btn.onclick = function(e){
+        e.stopPropagation();
+        const id = btn.dataset.del;
+        if(!confirm('删除这条收藏？')) return;
+        const arr = getCollectMine(rid).filter(x => x.id !== id);
+        setCollectMine(rid, arr);
+        renderCollectScreen('mine');
+        toast('已删除');
+      };
+    });
+  }
+}
+
 function showMsgMenu(msgEl,x,y){
   hideMsgMenu();
   const id = msgEl.dataset.id; const m = msgs.find(a=>a.id===id); if(!m) return;
@@ -9656,6 +10142,13 @@ function showMsgMenu(msgEl,x,y){
   // ⑥ 发送失败 → 显示重发
   if(isUser && m.sendFailed){
     html += `<div class="it pink" data-act="resend">重发</div>`;
+  }
+
+  // ★ 收藏
+  if(!m.recalled && extractCollectText(m)){
+    const rid0 = getCurrentRoleId();
+    const already = getCollectMine(rid0).some(x => x.msgId === m.id);
+    html += `<div class="it collect-item" data-act="collect">${already ? '取消收藏' : '收藏'}</div>`;
   }
 
   // ⑦ 删除（最后，白色）
@@ -9706,6 +10199,18 @@ function showMsgMenu(msgEl,x,y){
 		  return c.card.name + rev;
 		}).join('、');
 		const text = `Q：${d.q}\n牌面：${cardText}`;
+	  } else if(act === 'collect'){
+		const rid0 = getCurrentRoleId();
+		const arr = getCollectMine(rid0);
+		const existIdx = arr.findIndex(x => x.msgId === m.id);
+		if(existIdx >= 0){
+		  arr.splice(existIdx, 1);
+		  setCollectMine(rid0, arr);
+		  toast('已取消收藏');
+		} else {
+		  collectMsg(m);
+		}
+
 	  } else if(act === 'delete'){
 		const i = msgs.indexOf(m);
 		if(i >= 0){ msgs.splice(i, 1); saveMsgs(); renderChat(); }
@@ -10040,11 +10545,18 @@ function sendMessage(){
 
 	const m = {id:uid(), role:'user', text, time:Date.now()};
 	if(curQuote){ m.quote = curQuote; curQuote=null; const iq=$('#inputQuote'); if(iq) iq.classList.remove('show'); }
+	/* ★ 发消息时，把「对方正在输入」也清掉，避免被打断后还挂着 */
+	document.querySelectorAll('#chatList .typing-hint').forEach(function(t){ t.remove(); });
 	msgs.push(m);
 	inp.value = ''; inp.style.height = 'auto';
 	// 【已读/未读】发出瞬间掷骰子：50% 未读 / 50% 已读
 	m.readState = (Math.random() < 0.5) ? 'unread' : 'read';
-	saveMsgs(); renderChat(true); triggerReply();
+	saveMsgs(); renderChat(true);
+	/* ★ 未读→已读的定时器：跟语音走同一套 */
+	if(m.readState === 'unread'){
+	  scheduleReadReceipt(m.id);
+	}
+	triggerReply();
   }catch(err){ console.error('sendMessage error:', err); toast('发送失败：'+err.message); }
 }
 /* ===== 已读状态机 ===== */
@@ -10606,6 +11118,8 @@ function runTimedReplyRounds(){
     const typingDelay = Math.min(delay, 800 + Math.random()*1200);
     setTimeout(()=>{
       if(!box) return;
+      /* ★ 加之前先清掉旧的，避免叠出两个 */
+      box.querySelectorAll('.typing-hint').forEach(function(t){ t.remove(); });
       const typing = document.createElement('div');
       typing.className='typing-hint'; typing.id='typingMsg';
       typing.innerHTML = `对方正在输入 <span class="dots"><span></span><span></span><span></span></span>`;
@@ -10701,6 +11215,8 @@ function runTimedReplyRounds(){
 
 function triggerReply(){
   const r = getReply(); const role = getRole();
+  /* ★ 打断上一轮「对方正在输入」：清掉所有残留 typing-hint */
+  document.querySelectorAll('#chatList .typing-hint').forEach(function(t){ t.remove(); });
   /* 把当前角色 id 锁住，防止后续 setTimeout 里 getCurrentRoleId() 已经变成别人 */
   const targetRoleId = role.id;
   const delay = (r.minDelay||800) + Math.random()*Math.max(0,(r.maxDelay||2200)-(r.minDelay||800));
@@ -12714,7 +13230,36 @@ function openReadDialog(recordId, msgId){
   }
 
   $('#readTitle').textContent = readsCount ? '追加新的理解' : '写下你的理解';
-  $('#readQPreview').textContent = 'Q：' + qText;
+
+  /* ★ 在 Q 下面加一行牌面描述 */
+  let cardsText = '';
+  try{
+	if(readingMsgId){
+	  const mm = msgs.find(x => x.id === readingMsgId);
+	  if(mm && mm.divine && Array.isArray(mm.divine.cards)){
+		cardsText = mm.divine.cards.map(function(c){
+		  const nm = (c.card && c.card.name) ? c.card.name : '?';
+		  return c.reversed ? (nm + ' 逆') : nm;
+		}).join('　');
+	  }
+	} else if(readingRecordId){
+	  const rec = getDivineRecords(getCurrentRoleId()).find(r => r.id === readingRecordId);
+	  if(rec && Array.isArray(rec.cards)){
+		cardsText = rec.cards.map(function(c){
+		  const nm = (c.card && c.card.name) ? c.card.name : '?';
+		  return c.reversed ? (nm + ' 逆') : nm;
+		}).join('　');
+	  }
+	}
+  }catch(e){ console.error('生成牌面描述失败', e); }
+
+  const qEl = $('#readQPreview');
+  if(cardsText){
+	qEl.innerHTML = 'Q：' + escapeHTML(qText) + '<div style="margin-top:6px;font-size:12px;color:#1a1a1a;font-style:normal;font-weight:400;letter-spacing:.5px">牌面：' + escapeHTML(cardsText) + '</div>';
+  } else {
+	qEl.textContent = 'Q：' + qText;
+  }
+
   $('#readText').value = '';
   $('#mRead').classList.add('show');
 
@@ -12777,7 +13322,18 @@ function openChoice(){
 	<div class="choice-head"><button class="mode-btn on" data-mode="pick">多选项</button><button class="mode-btn" data-mode="yn">Yes / No</button></div>
 	<div class="choice-label">问题</div>
 	<textarea class="choice-q" id="cq" rows="2" placeholder="比如：今晚吃什么？"></textarea>
-	<div id="optsWrap"><div class="choice-label">选项</div><div id="opts"></div><button class="choice-add" id="addOpt">＋ 添加选项</button><div class="choice-label">Ta 最多选几个</div><div class="choice-range"><span class="lbl">数量</span><input type="range" id="maxPick" min="1" max="5" value="1"><span class="val" id="maxPickVal">1 个</span></div></div>
+	<div id="optsWrap">
+	  <div class="choice-label">选项</div>
+	  <div id="opts"></div>
+	  <button class="choice-add" id="addOpt">＋ 添加选项</button>
+	  <div class="choice-label">Ta 最多选几个</div>
+	  <div class="choice-range">
+		<span class="lbl">最多</span>
+		<input type="number" id="maxPick" min="1" max="9" value="1" style="width:56px;border:none;border-bottom:1px solid #1a1a1a;background:transparent;font-size:15px;font-family:Georgia,serif;color:#1a1a1a;text-align:center;outline:none;padding:2px 0;font-weight:400">
+		<span class="lbl">个</span>
+		<span class="val" id="maxPickVal" style="flex:1;text-align:right;font-size:11.5px;color:#bbb;font-weight:400">不超过选项数</span>
+	  </div>
+	</div>
 	<div class="choice-label">Ta 思考多久</div>
 	<div class="choice-range"><span class="lbl">延迟</span><input type="range" id="think" min="0" max="5" step="0.5" value="1.5"><span class="val" id="thinkVal">1.5s</span></div>
 	<button class="choice-go" id="go">让 Ta 选</button>
@@ -12785,13 +13341,54 @@ function openChoice(){
   `;
   renderChoiceOpts();
   $('#addOpt').onclick=()=>{ choiceOpts.push(''); renderChoiceOpts(); };
-  $('#maxPick').oninput=function(){ $('#maxPickVal').textContent=this.value+' 个'; };
   $('#think').oninput=function(){ $('#thinkVal').textContent=this.value+'s'; };
   $$('#choiceBody .mode-btn').forEach(b=>{ b.onclick=()=>{ $$('#choiceBody .mode-btn').forEach(x=>x.classList.remove('on')); b.classList.add('on'); choiceMode=b.dataset.mode; if(choiceMode==='yn'){ choiceOpts=['yes','no','再说吧']; $('#optsWrap').style.display='none'; } else{ $('#optsWrap').style.display='block'; choiceOpts=['火锅','烧烤','日料']; } renderChoiceOpts(); }; });
-  $('#go').onclick=()=>{ const q=$('#cq').value.trim()||'（未填写问题）'; const maxPick=+$('#maxPick').value; const think=+$('#think').value; const valid=choiceOpts.filter(o=>o.trim()); if(!valid.length){ alert('至少写一个选项'); return; } $('#rAns').textContent='…'; $('#result').classList.add('show'); setTimeout(()=>{ if(choiceMode==='yn'){ const p=Math.random(); $('#rAns').textContent=p<0.4?'yes':(p<0.8?'no':'再说吧'); } else{ const shuffled=[...valid].sort(()=>Math.random()-0.5); $('#rAns').textContent=shuffled.slice(0,Math.min(maxPick,shuffled.length)).join(' / '); } },think*1000); };
+  $('#go').onclick=()=>{
+	const q=$('#cq').value.trim()||'（未填写问题）';
+	const maxPick=+$('#maxPick').value||1;
+	const think=+$('#think').value;
+	const valid=choiceOpts.filter(o=>o.trim());
+	if(!valid.length){ alert('至少写一个选项'); return; }
+	$('#rAns').textContent='…'; $('#result').classList.add('show');
+	setTimeout(()=>{
+	  let answer='';
+	  if(choiceMode==='yn'){
+		const p=Math.random();
+		answer = p<0.4?'yes':(p<0.8?'no':'再说吧');
+	  } else {
+		const shuffled=[...valid].sort(()=>Math.random()-0.5);
+		answer = shuffled.slice(0,Math.min(maxPick,shuffled.length)).join(' · ');
+	  }
+	  $('#rAns').textContent=answer;
+	  /* ★ 把结果当作一条「系统卡片」推给聊天记录 */
+	  try {
+		const cardMsg = {
+		  id: uid(),
+		  role: 'char',
+		  time: Date.now(),
+		  choiceCard: {
+			q: q,
+			answer: answer,
+			options: valid.slice()
+		  }
+		};
+		msgs.push(cardMsg);
+		saveMsgs();
+		renderChat(true);
+	  } catch(e){ console.error('选择结果发到聊天失败', e); }
+	},think*1000);
+  };
   $('#mChoice').classList.add('show');
 }
-function renderChoiceOpts(){ const box=$('#opts'); if(!box) return; box.innerHTML=choiceOpts.map((o,i)=>`<div class="choice-opts-row"><input class="choice-opt-input" data-i="${i}" value="${escapeHTML(o)}"><button class="choice-del" data-i="${i}">✕</button></div>`).join(''); box.querySelectorAll('.choice-opt-input').forEach(inp=>{ inp.oninput=()=>{ choiceOpts[+inp.dataset.i]=inp.value; }; }); box.querySelectorAll('.choice-del').forEach(b=>{ b.onclick=()=>{ choiceOpts.splice(+b.dataset.i,1); renderChoiceOpts(); }; }); }
+function renderChoiceOpts(){
+  const box=$('#opts'); if(!box) return;
+  box.innerHTML=choiceOpts.map((o,i)=>{
+	const canDel = choiceOpts.length > 1;
+	return `<div class="choice-opts-row"><span class="choice-idx">${String(i+1).padStart(2,'0')}</span><input class="choice-opt-input" data-i="${i}" value="${escapeHTML(o)}" placeholder="选项">${canDel?`<button class="choice-del" data-i="${i}" type="button">✕</button>`:''}</div>`;
+  }).join('');
+  box.querySelectorAll('.choice-opt-input').forEach(inp=>{ inp.oninput=()=>{ choiceOpts[+inp.dataset.i]=inp.value; }; });
+  box.querySelectorAll('.choice-del').forEach(b=>{ b.onclick=()=>{ choiceOpts.splice(+b.dataset.i,1); renderChoiceOpts(); }; });
+}
 
 const NAME_CARD_PROB = { agree:0.25, reject:0.55, hold:0.20 };
 const INTRO_AGREE_PROB = 0.30;
@@ -15520,6 +16117,44 @@ document.addEventListener('change', function(e){
   if(!files.length) return;
   handleVoiceLibUpload(files);
 }, true);
+
+/* ===== 收藏页 · 入口 / tab / 返回 ===== */
+(function bindCollectScreen(){
+  if(window.__collectBound) return;
+  window.__collectBound = true;
+
+  /* 「我的」页 → 收藏 */
+  document.addEventListener('click', function(e){
+    const row = e.target.closest && e.target.closest('#page-me .me-row[data-func="collect"]');
+    if(!row) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openCollectScreen();
+  }, true);
+
+  /* tab 切换 */
+  document.addEventListener('click', function(e){
+    const tab = e.target.closest && e.target.closest('#colTabs .memo-tab');
+    if(!tab) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const which = tab.dataset.colTab;
+    document.querySelectorAll('#colTabs .memo-tab').forEach(function(t){
+      t.classList.toggle('on', t === tab);
+    });
+    renderCollectScreen(which);
+  }, true);
+
+  /* 返回 */
+  document.addEventListener('click', function(e){
+    const back = e.target.closest && e.target.closest('#colBack');
+    if(!back) return;
+    e.preventDefault();
+    e.stopPropagation();
+    document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
+    if(typeof goToPage === 'function') goToPage('me');
+  }, true);
+})();
 
 /* ===== 备忘 ===== */
 document.addEventListener('click', function(e){
@@ -18783,23 +19418,51 @@ function renderReplyPanel(tab){
 	  </div>`;
   }else if(tab === 'reply'){
 	content = `
-	  <div class="section"><div class="sw-row"><div class="sw-main"><div class="t1">气泡</div></div></div>
-		<div class="n-row"><span class="lbl">最多</span><input type="number" id="rsMaxBubbles" min="1" max="5" value="${r.maxBubbles||3}"><span class="unit">个</span></div>
-		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsMultiBubble" min="0" max="100" value="${Math.round((r.multiBubbleProb||0)*100)}"><span class="num" id="rsMultiBubbleVal">${Math.round((r.multiBubbleProb||0)*100)}%</span></div>
+	  <div class="section">
+		<div class="rs-row">
+		  <div class="rs-row-title">气泡</div>
+		  <div class="rs-row-main">
+			<span class="lbl">最多</span><input type="number" id="rsMaxBubbles" min="1" max="5" value="${r.maxBubbles||3}" class="rs-num"><span class="unit">个</span>
+			<span class="lbl" style="margin-left:14px">概率</span><input type="range" id="rsMultiBubble" min="0" max="100" value="${Math.round((r.multiBubbleProb||0)*100)}" class="rs-slider"><span class="num" id="rsMultiBubbleVal">${Math.round((r.multiBubbleProb||0)*100)}%</span>
+		  </div>
+		</div>
 	  </div>
-	  <div class="section"><div class="sw-row"><div class="sw-main"><div class="t1">拼好卡</div></div></div>
-		<div class="n-row"><span class="lbl">最多</span><input type="number" id="rsMaxBlocks" min="1" max="5" value="${r.maxBlocks||3}"><span class="unit">张</span></div>
-		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsMultiBlock" min="0" max="100" value="${Math.round((r.multiBlockProb||0)*100)}"><span class="num" id="rsMultiBlockVal">${Math.round((r.multiBlockProb||0)*100)}%</span></div>
+	  <div class="section">
+		<div class="rs-row">
+		  <div class="rs-row-title">拼好卡</div>
+		  <div class="rs-row-main">
+			<span class="lbl">最多</span><input type="number" id="rsMaxBlocks" min="1" max="5" value="${r.maxBlocks||3}" class="rs-num"><span class="unit">张</span>
+			<span class="lbl" style="margin-left:14px">概率</span><input type="range" id="rsMultiBlock" min="0" max="100" value="${Math.round((r.multiBlockProb||0)*100)}" class="rs-slider"><span class="num" id="rsMultiBlockVal">${Math.round((r.multiBlockProb||0)*100)}%</span>
+		  </div>
+		</div>
 	  </div>
-	  <div class="section"><div class="sw-row"><div class="sw-main"><div class="t1">拼音</div></div><label class="switch"><input type="checkbox" id="rsPinyinOn" ${r.pinyinOn?'checked':''}><span class="slider"></span></label></div>
-		<div class="n-row"><span class="lbl">最多</span><input type="number" id="rsPinyinMax" min="1" max="5" value="${r.pinyinMax||3}"><span class="unit">条</span></div>
-		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsPinyinRate" min="0" max="100" value="${Math.round((r.pinyinRate||0)*100)}"><span class="num" id="rsPinyinRateVal">${Math.round((r.pinyinRate||0)*100)}%</span></div>
+	  <div class="section">
+		<div class="rs-row">
+		  <div class="rs-row-title">拼音</div>
+		  <div class="rs-row-main">
+			<span class="lbl">最多</span><input type="number" id="rsPinyinMax" min="1" max="5" value="${r.pinyinMax||3}" class="rs-num"><span class="unit">条</span>
+			<span class="lbl" style="margin-left:14px">概率</span><input type="range" id="rsPinyinRate" min="0" max="100" value="${Math.round((r.pinyinRate||0)*100)}" class="rs-slider"><span class="num" id="rsPinyinRateVal">${Math.round((r.pinyinRate||0)*100)}%</span>
+			<label class="switch" style="margin-left:10px"><input type="checkbox" id="rsPinyinOn" ${r.pinyinOn?'checked':''}><span class="slider"></span></label>
+		  </div>
+		</div>
 	  </div>
-	  <div class="section"><div class="sw-row"><div class="sw-main"><div class="t1">发表情（emoji）</div></div><label class="switch"><input type="checkbox" id="rsEmojiOn" ${r.emojiOn?'checked':''}><span class="slider"></span></label></div>
-		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsEmojiRate" min="0" max="100" value="${Math.round((r.emojiRate||0)*100)}"><span class="num" id="rsEmojiRateVal">${Math.round((r.emojiRate||0)*100)}%</span></div>
+	  <div class="section">
+		<div class="rs-row">
+		  <div class="rs-row-title">emoji</div>
+		  <div class="rs-row-main">
+			<span class="lbl">概率</span><input type="range" id="rsEmojiRate" min="0" max="100" value="${Math.round((r.emojiRate||0)*100)}" class="rs-slider"><span class="num" id="rsEmojiRateVal">${Math.round((r.emojiRate||0)*100)}%</span>
+			<label class="switch" style="margin-left:10px"><input type="checkbox" id="rsEmojiOn" ${r.emojiOn?'checked':''}><span class="slider"></span></label>
+		  </div>
+		</div>
 	  </div>
-	  <div class="section"><div class="sw-row"><div class="sw-main"><div class="t1">发颜文字</div></div><label class="switch"><input type="checkbox" id="rsKaoOn" ${r.kaoOn?'checked':''}><span class="slider"></span></label></div>
-		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsKaoRate" min="0" max="100" value="${Math.round((r.kaoRate||0)*100)}"><span class="num" id="rsKaoRateVal">${Math.round((r.kaoRate||0)*100)}%</span></div>
+	  <div class="section">
+		<div class="rs-row">
+		  <div class="rs-row-title">颜文字</div>
+		  <div class="rs-row-main">
+			<span class="lbl">概率</span><input type="range" id="rsKaoRate" min="0" max="100" value="${Math.round((r.kaoRate||0)*100)}" class="rs-slider"><span class="num" id="rsKaoRateVal">${Math.round((r.kaoRate||0)*100)}%</span>
+			<label class="switch" style="margin-left:10px"><input type="checkbox" id="rsKaoOn" ${r.kaoOn?'checked':''}><span class="slider"></span></label>
+		  </div>
+		</div>
 	  </div>
 	  `;
   }else if(tab === 'punct'){
@@ -18807,26 +19470,33 @@ function renderReplyPanel(tab){
 	  <div class="section"><div class="sw-row"><div class="sw-main"><div class="t1">标点符号</div></div><label class="switch"><input type="checkbox" id="rsPunctOn" ${r.punctOn?'checked':''}><span class="slider"></span></label></div></div>
 	  <div class="section"><div class="title">标点列表</div>
 		<div class="desc">长按标点可删除；输入框可添加新标点</div>
-		<div class="punc-grid" id="puncList">
+				<div class="punc-grid" id="puncList">
 		  ${(() => {
-			// 空格和合并永远排最前。若当前列表里没有它们，就在渲染时补一份「点灰」版本。
-			const hasBlank = r.punctList.indexOf(' ') >= 0;
-			const hasJoin  = r.punctList.indexOf('') >= 0;
-			const parts = [];
-			parts.push(`<span class="punc-item fixed-toggle ${hasBlank?'on':''}" data-fixed="blank">SP</span>`);
-			parts.push(`<span class="punc-item fixed-toggle ${hasJoin?'on':''}" data-fixed="join">合</span>`);
-			// 已经被关掉的普通标点：放到 disabledPunctList 里，渲染成灰态
-			const disabled = Array.isArray(r.disabledPunctList) ? r.disabledPunctList : [];
-			// 当前启用的标点：先渲染（黑底白字）
-			parts.push(...(r.punctList||[]).map((p,i)=>{
-			  if(p === ' ' || p === '') return '';   // 特殊项已经在最前面单独渲染了
-			  return `<span class="punc-item on" data-i="${i}">${escapeHTML(p)}</span>`;
-			}));
-			// 被关掉的标点：再渲染（白底灰字），用 data-disabled 标记
-			parts.push(...disabled.map((p,di)=>{
-			  return `<span class="punc-item off" data-disabled="${di}">${escapeHTML(p)}</span>`;
-			}));
-			return parts.join('');
+			const all = [];
+			all.push({ t:'SP',  key:' ', fixed:true, on: r.punctList.indexOf(' ') >= 0 });
+			all.push({ t:'合',  key:'',  fixed:true, on: r.punctList.indexOf('') >= 0 });
+			const seen = {};
+			const normal = [];
+			(r.punctList||[]).forEach(function(p){
+			  if(p === ' ' || p === '') return;
+			  if(seen[p]) return;
+			  seen[p] = 1;
+			  normal.push({ t:p, key:p, fixed:false, on:true });
+			});
+			(Array.isArray(r.disabledPunctList) ? r.disabledPunctList : []).forEach(function(p){
+			  if(p === ' ' || p === '') return;
+			  if(seen[p]) return;
+			  seen[p] = 1;
+			  normal.push({ t:p, key:p, fixed:false, on:false });
+			});
+			all.push.apply(all, normal);
+			return all.map(function(item){
+			  const cls = 'punc-item ' + (item.on ? 'on' : 'off');
+			  if(item.fixed){
+				return `<span class="${cls}" data-fixed="${item.key===' '?'blank':'join'}" data-key="${item.key}">${escapeHTML(item.t)}</span>`;
+			  }
+			  return `<span class="${cls}" data-key="${escapeHTML(item.key)}">${escapeHTML(item.t)}</span>`;
+			}).join('');
 		  })()}
 		</div>
 		<div class="add-punc"><input type="text" id="punctInput" placeholder="添加标点 / emoji"><button id="punctAddBtn">添加</button></div>
@@ -18884,218 +19554,124 @@ function renderReplyPanel(tab){
   $$('#puncList .del').forEach(el=>{
 	el.addEventListener('click', ()=>{ r.punctList.splice(+el.dataset.i,1); saveReply(); renderReplyPanel('punct'); });
   });
-  // ============================================================
-  // 标点开关 + 长按删除
-  //   短按：切换开/关（黑底白字 = 开，白底灰字 = 关）
-  //   长按 0.6 秒：弹气泡，可删除 / 取消
-  // ============================================================
-  (function bindPuncInteractions(){
-    var list = document.getElementById('puncList');
-    if(!list) return;
+  /* ============================================================
+     标点交互 v2
+       - 点一下：原位黑 ↔ 灰切换，位置永远不变
+       - 长按 0.6 秒：右上角出小 ✕，点它删除
+       - 点空白：收起所有 ✕
+     ============================================================ */
+  (function bindPuncV2(){
+	var list = document.getElementById('puncList');
+	if(!list) return;
 
-    var pressTimer = null;
-    var longPressed = false;
-    var curEl = null;
+	/* 每个标点先挂上小 ✕ */
+	list.querySelectorAll('.punc-item').forEach(function(el){
+	  if(el.querySelector('.p-del')) return;
+	  var del = document.createElement('span');
+	  del.className = 'p-del';
+	  del.textContent = '✕';
+	  el.appendChild(del);
+	});
 
-    /* ---- 气泡容器（单例） ---- */
-    var bubble = document.getElementById('puncBubble');
-    if(!bubble){
-      bubble = document.createElement('div');
-      bubble.id = 'puncBubble';
-      bubble.className = 'punc-bubble';
-      bubble.innerHTML = '<button class="del">删除</button><button class="cancel">取消</button>';
-      document.body.appendChild(bubble);
-      bubble.querySelector('.del').addEventListener('click', function(e){
-        e.stopPropagation();
-        if(!curEl) return;
-        var i = parseInt(curEl.dataset.i, 10);
-        if(!isNaN(i)){
-          r.punctList.splice(i, 1);
-          saveReply();
-        }
-        hideBubble();
-        renderReplyPanel('punct');
-      });
-      bubble.querySelector('.cancel').addEventListener('click', function(e){
-        e.stopPropagation();
-        hideBubble();
-      });
-      document.addEventListener('click', function(e){
-        if(bubble.contains(e.target)) return;
-        hideBubble();
-      }, true);
-      document.addEventListener('touchstart', function(e){
-        if(bubble.contains(e.target)) return;
-        hideBubble();
-      }, {passive:true, capture:true});
-    }
-    function showBubble(targetEl){
-      curEl = targetEl;
-      var rect = targetEl.getBoundingClientRect();
-      bubble.classList.add('show');
-      var r2 = bubble.getBoundingClientRect();
-      bubble.style.left = (rect.left + rect.width / 2 - r2.width / 2) + 'px';
-      bubble.style.top = (rect.top - r2.height - 10) + 'px';
-    }
-    function hideBubble(){
-      bubble.classList.remove('show');
-      curEl = null;
-    }
+	var holdTimer = null;
+	var longPressed = false;
 
-    /* ---- 切换开 / 关 ---- */
-    function toggleItem(el){
-      // 固定项：SP / 合并
-      if(el.dataset.fixed){
-        var kind = el.dataset.fixed;
-        var token = kind === 'blank' ? ' ' : '';
-        var idx = r.punctList.indexOf(token);
-        if(idx >= 0){
-          r.punctList.splice(idx, 1);
-        } else {
-          r.punctList.unshift(token);
-        }
-        saveReply();
-        renderReplyPanel('punct');
-        return;
-      }
+	function onStart(el){
+	  longPressed = false;
+	  clearTimeout(holdTimer);
+	  holdTimer = setTimeout(function(){
+		longPressed = true;
+		el.classList.add('show-del');
+		if(navigator.vibrate) navigator.vibrate(10);
+	  }, 600);
+	}
+	function onEnd(){
+	  clearTimeout(holdTimer);
+	}
+	function onMove(){
+	  clearTimeout(holdTimer);
+	}
 
-      if(!Array.isArray(r.disabledPunctList)) r.disabledPunctList = [];
+	list.querySelectorAll('.punc-item').forEach(function(el){
+	  /* 触摸 */
+	  el.addEventListener('touchstart', function(){ onStart(el); }, {passive:true});
+	  el.addEventListener('touchend', onEnd);
+	  el.addEventListener('touchmove', onMove);
+	  el.addEventListener('touchcancel', onEnd);
+	  /* 鼠标 */
+	  el.addEventListener('mousedown', function(){ onStart(el); });
+	  el.addEventListener('mouseup', onEnd);
+	  el.addEventListener('mouseleave', onEnd);
 
-      // 情况 A：点的是「已关」的标点（灰的）→ 恢复成启用
-      if(el.dataset.disabled !== undefined){
-        var di = parseInt(el.dataset.disabled, 10);
-        if(isNaN(di)) return;
-        var txt = r.disabledPunctList[di];
-        if(txt === undefined) return;
-        // 从 disabled 列表里删掉，加回 punctList
-        r.disabledPunctList.splice(di, 1);
-        r.punctList.push(txt);
-        saveReply();
-        renderReplyPanel('punct');
-        return;
-      }
+	  /* 点击：原位切换 on/off（长按后松手不触发） */
+	  el.addEventListener('click', function(e){
+		if(e.target.classList.contains('p-del')) return;
+		if(longPressed){ longPressed = false; return; }
 
-      // 情况 B：点的是「已启用」的标点（黑的）→ 关掉
-      var i = parseInt(el.dataset.i, 10);
-      if(isNaN(i)) return;
-      var t = r.punctList[i];
-      if(t === undefined) return;
-      r.punctList.splice(i, 1);
-      if(r.disabledPunctList.indexOf(t) < 0) r.disabledPunctList.push(t);
-      saveReply();
-      renderReplyPanel('punct');
-    }
+		/* 固定项：SP / 合并 —— 只改启停，不参与删除 */
+		if(el.dataset.fixed){
+		  var token = el.dataset.key === ' ' ? ' ' : '';
+		  var idx = r.punctList.indexOf(token);
+		  if(idx >= 0){
+			r.punctList.splice(idx, 1);
+		  } else {
+			r.punctList.unshift(token);
+		  }
+		  saveReply();
+		  /* 原位切换，不重绘整个面板 */
+		  el.classList.toggle('on');
+		  el.classList.toggle('off');
+		  return;
+		}
 
-    /* ---- 给每个标点挂事件 ---- */
-    list.querySelectorAll('.punc-item').forEach(function(el){
-      // 短按 / 长按 判定
-      el.addEventListener('touchstart', function(){
-        longPressed = false;
-        clearTimeout(pressTimer);
-        pressTimer = setTimeout(function(){
-          longPressed = true;
-          // 固定项不允许删
-          if(el.dataset.fixed) return;
-          showBubble(el);
-        }, 600);
-      }, {passive:true});
-      el.addEventListener('touchend', function(e){
-        clearTimeout(pressTimer);
-        if(longPressed){ e.preventDefault(); return; }
-        toggleItem(el);
-      });
-      el.addEventListener('touchmove', function(){ clearTimeout(pressTimer); });
-      el.addEventListener('touchcancel', function(){ clearTimeout(pressTimer); });
+		/* 普通标点 */
+		var key = el.dataset.key;
+		if(!Array.isArray(r.disabledPunctList)) r.disabledPunctList = [];
+		var wasOn = el.classList.contains('on');
+		if(wasOn){
+		  /* 启 → 关：从 punctList 拿掉，塞进 disabledPunctList，DOM 原位切类 */
+		  var i = r.punctList.indexOf(key);
+		  if(i >= 0) r.punctList.splice(i, 1);
+		  if(r.disabledPunctList.indexOf(key) < 0) r.disabledPunctList.push(key);
+		  el.classList.remove('on');
+		  el.classList.add('off');
+		} else {
+		  /* 关 → 启：从 disabledPunctList 拿掉，塞回 punctList，DOM 原位切类 */
+		  var di = r.disabledPunctList.indexOf(key);
+		  if(di >= 0) r.disabledPunctList.splice(di, 1);
+		  if(r.punctList.indexOf(key) < 0) r.punctList.push(key);
+		  el.classList.remove('off');
+		  el.classList.add('on');
+		}
+		saveReply();
+	  });
 
-      el.addEventListener('mousedown', function(){
-        longPressed = false;
-        clearTimeout(pressTimer);
-        pressTimer = setTimeout(function(){
-          longPressed = true;
-          if(el.dataset.fixed) return;
-          showBubble(el);
-        }, 600);
-      });
-      el.addEventListener('mouseup', function(){
-        clearTimeout(pressTimer);
-        if(longPressed) return;
-        toggleItem(el);
-      });
-      el.addEventListener('mouseleave', function(){ clearTimeout(pressTimer); });
-    });
-  })();
+	  /* 点小 ✕：删除这个标点 */
+	  var del = el.querySelector('.p-del');
+	  if(del){
+		del.addEventListener('click', function(e){
+		  e.stopPropagation();
+		  var key = el.dataset.key;
+		  /* 从两个数组里都删掉 */
+		  var i = r.punctList.indexOf(key);
+		  if(i >= 0) r.punctList.splice(i, 1);
+		  if(Array.isArray(r.disabledPunctList)){
+			var di = r.disabledPunctList.indexOf(key);
+			if(di >= 0) r.disabledPunctList.splice(di, 1);
+		  }
+		  saveReply();
+		  el.remove();
+		});
+	  }
+	});
 
-  /* ===== 长按标点 → 弹气泡删除 ===== */
-  (function bindPuncLongPress(){
-    const list = document.getElementById('puncList');
-    if(!list) return;
-    // 只处理真实标点（有 data-i），固定项（空格/合并）不参与删除
-    var timer = null;
-    var curEl = null;
-    var bubble = document.getElementById('puncBubble');
-    if(!bubble){
-      bubble = document.createElement('div');
-      bubble.id = 'puncBubble';
-      bubble.className = 'punc-bubble';
-      bubble.innerHTML = '<button class="del">删除</button><button class="cancel">取消</button>';
-      document.body.appendChild(bubble);
-      bubble.querySelector('.del').addEventListener('click', function(e){
-        e.stopPropagation();
-        if(!curEl) return;
-        var i = parseInt(curEl.dataset.i, 10);
-        if(!isNaN(i)){
-          r.punctList.splice(i, 1);
-          saveReply();
-        }
-        hideBubble();
-        renderReplyPanel('punct');
-      });
-      bubble.querySelector('.cancel').addEventListener('click', function(e){
-        e.stopPropagation();
-        hideBubble();
-      });
-      document.addEventListener('click', function(e){
-        if(bubble.contains(e.target)) return;
-        hideBubble();
-      }, true);
-      document.addEventListener('touchstart', function(e){
-        if(bubble.contains(e.target)) return;
-        hideBubble();
-      }, {passive:true, capture:true});
-    }
-
-    function showBubble(targetEl){
-      curEl = targetEl;
-      var rect = targetEl.getBoundingClientRect();
-      bubble.style.left = (rect.left + rect.width / 2) + 'px';
-      bubble.style.top = (rect.top - 6) + 'px';
-      bubble.classList.add('show');
-      var r2 = bubble.getBoundingClientRect();
-      bubble.style.left = (rect.left + rect.width / 2 - r2.width / 2) + 'px';
-      bubble.style.top = (rect.top - r2.height - 10) + 'px';
-    }
-    function hideBubble(){
-      bubble.classList.remove('show');
-      curEl = null;
-    }
-
-    function attach(el){
-      el.addEventListener('touchstart', function(){
-        clearTimeout(timer);
-        timer = setTimeout(function(){ showBubble(el); }, 600);
-      }, {passive:true});
-      el.addEventListener('touchend', function(){ clearTimeout(timer); });
-      el.addEventListener('touchmove', function(){ clearTimeout(timer); });
-      el.addEventListener('touchcancel', function(){ clearTimeout(timer); });
-      el.addEventListener('mousedown', function(){
-        clearTimeout(timer);
-        timer = setTimeout(function(){ showBubble(el); }, 600);
-      });
-      el.addEventListener('mouseup', function(){ clearTimeout(timer); });
-      el.addEventListener('mouseleave', function(){ clearTimeout(timer); });
-    }
-
-    list.querySelectorAll('.punc-item[data-i]').forEach(attach);
+	/* 点空白处收起所有 ✕ */
+	document.addEventListener('click', function(e){
+	  if(e.target.closest && e.target.closest('#puncList')) return;
+	  document.querySelectorAll('#puncList .show-del').forEach(function(el){
+		el.classList.remove('show-del');
+	  });
+	}, true);
   })();
 
   const aOn = $('#rsActiveOn');
@@ -20232,8 +20808,12 @@ function sendRecVoice(){
 
   /* 先把临时 URL 用起来，保证当次能立刻播；同时把 Blob 存进 IndexedDB */
   const msg = {id:uid(), role:'user', voice:dur, voiceUrl:tempUrl, voiceIdbKey:idbKey, time:Date.now()};
+  /* ★ 语音也走未读/已读/已读不回：发出瞬间掷骰子 */
+  msg.readState = (Math.random() < 0.5) ? 'unread' : 'read';
   msgs.push(msg);
   saveMsgs(); renderChat(true);
+  /* ★ 已读状态机：给这条语音安排未读→已读的定时器 */
+  scheduleReadReceipt(msg.id);
 
   __idb.set(idbKey, blob).catch(function(e){
     console.error('语音存 IndexedDB 失败', e);
@@ -20253,14 +20833,25 @@ $('#chatList').addEventListener('click', e=>{
   if(!vb) return;
   const url = vb.dataset.url;
   if(!url){ toast('这条语音没有音频数据'); return; }
-  if(vb._audio && !vb._audio.paused){ vb._audio.pause(); vb.classList.remove('playing'); return; }
+  if(vb._audio && !vb._audio.paused){
+	vb._audio.pause();
+	vb.classList.remove('playing');
+	return;
+  }
   if(!vb._audio){
 	vb._audio = new Audio(url);
 	vb._audio.onended = ()=>vb.classList.remove('playing');
 	vb._audio.onerror = ()=>{ toast('播放失败'); vb.classList.remove('playing'); };
   }
   vb._audio.currentTime = 0;
-  vb._audio.play().then(()=>{ vb.classList.add('playing'); }).catch(()=>{ toast('播放被拦截，请再点一次'); });
+  /* ★ 先加 playing 类，保证三角形立刻变暂停 */
+  vb.classList.add('playing');
+  vb._audio.play().then(()=>{
+	vb.classList.add('playing');
+  }).catch(()=>{
+	vb.classList.remove('playing');
+	toast('播放被拦截，请再点一次');
+  });
 });
 
 $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>m.classList.remove('show'))); const ov=m.querySelector('.overlay'); if(ov) ov.addEventListener('click',()=>m.classList.remove('show')); });
@@ -20385,15 +20976,18 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	  chatInput.addEventListener('click', function(){
 		if(chatInput.hasAttribute('readonly')){
 		  chatInput.removeAttribute('readonly');
-		  chatInput.focus();
 		}
+		/* ★ 无论是否 readonly，都主动 focus 一次，并延时再 focus 一次兜底 */
+		chatInput.focus();
+		setTimeout(function(){ if(document.activeElement !== chatInput){ chatInput.focus(); } }, 80);
 		if(contentOpen || funcOpen) closeAllDrawers();
 	  });
 	  chatInput.addEventListener('touchstart', function(){
 		if(chatInput.hasAttribute('readonly')){
 		  chatInput.removeAttribute('readonly');
-		  chatInput.focus();
 		}
+		chatInput.focus();
+		setTimeout(function(){ if(document.activeElement !== chatInput){ chatInput.focus(); } }, 80);
 		if(contentOpen || funcOpen) closeAllDrawers();
 	  }, {passive:true});
 	  // 失去焦点后立刻变回只读，避免下一次点表情按钮时被系统强聚焦
@@ -20531,32 +21125,64 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	  if(typeof openRoleSwitchMenu === 'function') openRoleSwitchMenu();
 	});
 	on('#searchInput','input',function(){ friendKeyword=this.value; renderFriends(); });
+	  // 键盘弹起时隐藏 Tab Bar（用 focus/blur 事件）
+	  (function(){
+		const app = document.getElementById('app');
+		function showKb(){ app.classList.add('kb-open'); }
+		function hideKb(){ app.classList.remove('kb-open'); }
+		// 所有 input / textarea 得到焦点时，隐藏 Tab Bar
+		document.addEventListener('focusin', function(e){
+		  const t = e.target;
+		  if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')){
+			showKb();
+		  }
+		});
+		document.addEventListener('focusout', function(e){
+		  const t = e.target;
+		  if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')){
+			// 延迟一点，防止失焦后立刻又聚焦到别的输入框
+			setTimeout(()=>{
+			  const active = document.activeElement;
+			  if(!active || (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA')){
+				hideKb();
+			  }
+			}, 100);
+		  }
+		});
 
-	// 键盘弹起时隐藏 Tab Bar（用 focus/blur 事件）
-	(function(){
-	  const app = document.getElementById('app');
-	  function showKb(){ app.classList.add('kb-open'); }
-	  function hideKb(){ app.classList.remove('kb-open'); }
-	  // 所有 input / textarea 得到焦点时，隐藏 Tab Bar
-	  document.addEventListener('focusin', function(e){
-		const t = e.target;
-		if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')){
-		  showKb();
-		}
-	  });
-	  document.addEventListener('focusout', function(e){
-		const t = e.target;
-		if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')){
-		  // 延迟一点，防止失焦后立刻又聚焦到别的输入框
-		  setTimeout(()=>{
-			const active = document.activeElement;
-			if(!active || (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA')){
-			  hideKb();
+		/* ★ 用 visualViewport 锁住 app 高度，避免输入法把整个页面往上推
+		   注意：不要动 #app 的 transform，也不要动 html/body 的高度，
+		   否则安卓浏览器会把整个页面往上顶。 */
+		(function lockViewportForKeyboard(){
+		  if(!window.visualViewport) return;
+		  var baseHeight = window.innerHeight;
+		  var appEl = document.getElementById('app');
+
+		  function apply(){
+			var vv = window.visualViewport;
+			var keyboardH = Math.max(0, baseHeight - vv.height);
+
+			if(keyboardH > 40){
+			  /* 键盘弹起：把 #app 高度锁到可视高度，去掉任何偏移 */
+			  appEl.classList.add('kb-open-real');
+			  appEl.style.height = vv.height + 'px';
+			  appEl.style.top = vv.offsetTop + 'px';
+			}else{
+			  appEl.classList.remove('kb-open-real');
+			  appEl.style.height = '';
+			  appEl.style.top = '';
 			}
-		  }, 100);
-		}
-	  });
-	})();
+		  }
+
+		  window.visualViewport.addEventListener('resize', apply);
+		  window.visualViewport.addEventListener('scroll', apply);
+
+		  window.addEventListener('orientationchange', function(){
+			baseHeight = window.innerHeight;
+			setTimeout(apply, 200);
+		  });
+		})();
+	  })();
 	function updateClock(){ const d=new Date(); const el=$('#deskClock'); if(el) el.textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
 	updateClock(); setInterval(updateClock,1000);
   }catch(err){
