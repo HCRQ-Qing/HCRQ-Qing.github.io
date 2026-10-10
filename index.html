@@ -2795,6 +2795,8 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .cip-av svg{position:absolute;inset:0;width:100%;height:100%}
 .cip-av .silhouette{fill:#c8c8c8}
 .cip-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cip-av{cursor:pointer}
+.cip-av:active{opacity:.85}
 
 .cip-hero-info{flex:1;min-width:0}
 .cip-hero-name{
@@ -2934,6 +2936,38 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
   font-size:13.5px;color:#1a1a1a;font-family:inherit;
 }
 #chatSearchScreen .cs-input input::placeholder{color:#bbb}
+
+/* ===== 搜索页 · 结果类型小标签 ===== */
+.cs-tag{
+  display:inline-block;
+  margin-left:6px;
+  padding:1px 7px;
+  border-radius:8px;
+  font-size:10px;
+  letter-spacing:.5px;
+  color:#999;
+  background:rgba(0,0,0,.04);
+  vertical-align:1px;
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* ===== 搜索页 · 结果类型小标签 ===== */
+.cs-tag{
+  display:inline-block;
+  margin-left:6px;
+  padding:1px 7px;
+  border-radius:8px;
+  font-size:10px;
+  letter-spacing:.5px;
+  color:#999;
+  background:rgba(0,0,0,.04);
+  vertical-align:1px;
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
 
 /* ===== 搜索页 · 双排筛选（D-6 下划线版） ===== */
 .cs-filter-row{
@@ -5465,6 +5499,451 @@ body[data-bubble="custom"] .preview-bubble{
 .ud-badge.on{background:#fff;color:#111;font-weight:700}
 .ud-rline{color:#aaa;word-break:break-all}
 .ud-prob{color:#ff9aae;margin-top:4px;font-weight:700}
+/* ===== 群聊列表页 ===== */
+#groupListScreen{background:#ffffff}
+.gc-top{
+  flex:none;display:flex;align-items:center;gap:12px;
+  padding:20px 22px 12px;
+}
+.gc-back{
+  width:38px;height:38px;flex:none;
+  border:none;background:transparent;
+  color:#1a1a1a;font-size:22px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 0 4px;font-family:inherit;cursor:pointer;
+  opacity:.55;transition:opacity .18s ease;
+}
+.gc-back:active{opacity:1}
+.gc-title{
+  flex:1;font-size:15px;font-weight:300;
+  letter-spacing:6px;text-align:center;color:#1a1a1a;
+  -webkit-text-stroke:.15px #1a1a1a;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+}
+.gc-add{
+  width:38px;height:38px;flex:none;
+  border:none;background:transparent;
+  color:#1a1a1a;font-size:22px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  padding:0;cursor:pointer;font-family:inherit;
+  transition:opacity .18s ease;
+}
+.gc-add:active{opacity:.5}
+.gc-body{
+  flex:1;overflow-y:auto;
+  padding:6px 22px 40px;
+  scrollbar-width:none;
+}
+.gc-body::-webkit-scrollbar{display:none}
+.gc-empty{
+  text-align:center;color:#bbb;
+  padding:80px 30px;font-size:13px;
+  line-height:2;letter-spacing:.5px;font-weight:300;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+}
+.gc-item{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 4px;
+  border-bottom:0.6px dashed rgba(0,0,0,.06);
+  cursor:pointer;
+  transition:background .18s ease;
+}
+.gc-item:last-child{border-bottom:none}
+.gc-item:active{background:rgba(0,0,0,.02)}
+.gc-av{
+  width:46px;height:46px;flex:none;
+  border-radius:14px;background:#f5f5f5;
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;color:#bbb;
+}
+.gc-main{flex:1;min-width:0}
+.gc-name{
+  font-size:15px;color:#1a1a1a;font-weight:300;
+  letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+}
+.gc-sub{
+  font-size:11.5px;color:#bbb;margin-top:5px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-weight:300;letter-spacing:.3px;
+}
+.gc-arrow{color:#e0e0e0;font-size:12px;flex:none}
+
+/* ===== 新建群聊 ===== */
+#groupCreateScreen{background:#ffffff;display:none;flex-direction:column}
+#groupCreateScreen.on{display:flex}
+.gcc-body{
+  flex:1;overflow-y:auto;
+  padding:6px 22px 20px;
+  scrollbar-width:none;
+}
+.gcc-body::-webkit-scrollbar{display:none}
+.gcc-pick{
+  display:flex;flex-direction:column;gap:2px;
+  margin-top:4px;
+}
+.gcc-row{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 4px;
+  border-bottom:0.6px dashed rgba(0,0,0,.06);
+  cursor:pointer;
+  transition:background .18s ease;
+}
+.gcc-row:last-child{border-bottom:none}
+.gcc-row:active{background:rgba(0,0,0,.02)}
+.gcc-av{
+  width:42px;height:42px;flex:none;
+  border-radius:var(--avatar-radius,12%);
+  background:#f2f2f2;position:relative;overflow:hidden;
+  display:flex;align-items:stretch;justify-content:center;
+}
+.gcc-av svg{position:absolute;inset:0;width:100%;height:100%}
+.gcc-av .silhouette{fill:#d4d4d4}
+.gcc-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.gcc-name{
+  flex:1;min-width:0;font-size:14.5px;color:#1a1a1a;
+  font-weight:300;letter-spacing:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+}
+.gcc-chk{
+  width:22px;height:22px;flex:none;
+  border-radius:50%;
+  border:0.7px solid rgba(0,0,0,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:transparent;
+  transition:all .18s ease;
+}
+.gcc-row.on .gcc-chk{
+  background:#1a1a1a;border-color:#1a1a1a;color:#fff;
+}
+.gcc-empty{
+  text-align:center;color:#bbb;font-size:12.5px;
+  padding:30px 20px;line-height:1.8;font-weight:300;
+}
+.gcc-foot{
+  flex:none;padding:12px 22px calc(18px + env(safe-area-inset-bottom));
+  background:#fff;
+}
+
+/* ===== 群聊页 ===== */
+#groupChatScreen{background:#ffffff;display:none;flex-direction:column}
+#groupChatScreen.on{display:flex}
+.gch-top{
+  flex:none;display:flex;align-items:center;gap:12px;
+  padding:16px 18px 10px;
+  border-bottom:0.6px solid #f2f2f2;
+}
+.gch-back{
+  width:36px;height:36px;flex:none;
+  border:none;background:transparent;
+  color:#1a1a1a;font-size:22px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 0 4px;font-family:inherit;cursor:pointer;
+  opacity:.55;
+}
+.gch-back:active{opacity:1}
+.gch-title{
+  flex:1;min-width:0;font-size:15px;font-weight:300;
+  letter-spacing:2px;color:#1a1a1a;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+}
+.gch-more{
+  width:36px;height:36px;flex:none;
+  border:none;background:transparent;
+  color:#1a1a1a;font-size:20px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;padding:0;opacity:.55;
+}
+.gch-more:active{opacity:1}
+.gch-members{
+  flex:none;display:flex;gap:8px;overflow-x:auto;
+  padding:10px 18px;
+  border-bottom:0.6px dashed #f2f2f2;
+  scrollbar-width:none;
+}
+.gch-members::-webkit-scrollbar{display:none}
+.gch-mem{
+  flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;
+  width:44px;
+}
+.gch-mem .gch-mav{
+  width:36px;height:36px;border-radius:50%;overflow:hidden;
+  background:#f0f0f0;position:relative;flex:none;
+}
+.gch-mem .gch-mav svg{position:absolute;inset:0;width:100%;height:100%}
+.gch-mem .gch-mav .silhouette{fill:#c8c8c8}
+.gch-mem .gch-mav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.gch-mem .gch-mn{
+  font-size:9.5px;color:#999;max-width:44px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-weight:300;text-align:center;
+}
+.gch-list{
+  flex:1;overflow-y:auto;
+  padding:16px 18px;
+  display:flex;flex-direction:column;gap:16px;
+  scrollbar-width:none;
+}
+.gch-list::-webkit-scrollbar{display:none}
+.gch-msg{display:flex;gap:10px;align-items:flex-start}
+.gch-msg.me{flex-direction:row-reverse}
+.gch-mav{
+  width:32px;height:32px;flex:none;border-radius:50%;
+  background:#f0f0f0;position:relative;overflow:hidden;
+}
+.gch-mav svg{position:absolute;inset:0;width:100%;height:100%}
+.gch-mav .silhouette{fill:#c8c8c8}
+.gch-mav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.gch-body{max-width:72%;display:flex;flex-direction:column}
+.gch-name{
+  font-size:10.5px;color:#999;margin-bottom:4px;letter-spacing:.5px;
+  font-weight:300;
+}
+.gch-msg.me .gch-name{text-align:right}
+.gch-bubble{
+  padding:8px 13px;font-size:13.5px;line-height:1.5;
+  color:#1a1a1a;
+  background:rgba(0,0,0,.04);
+  border-radius:16px 16px 16px 4px;
+  word-break:break-word;white-space:pre-wrap;
+}
+.gch-msg.me .gch-bubble{
+  background:rgba(0,0,0,.06);
+  border-radius:16px 16px 4px 16px;
+}
+.gch-bar{
+  flex:none;display:flex;gap:8px;align-items:center;
+  margin:0 14px 14px;padding:6px 10px;
+  background:#ffffff;border-radius:22px;
+  box-shadow:0 1px 5px rgba(0,0,0,.07);
+}
+.gch-bar textarea{
+  flex:1;min-width:0;border:none;background:transparent;
+  padding:6px 4px;font-size:13.5px;font-family:inherit;
+  color:#1a1a1a;outline:none;resize:none;max-height:110px;
+  line-height:1.5;
+}
+.gch-bar textarea::placeholder{color:#bbb}
+
+/* ===== 群聊引用块 ===== */
+.gch-quote{
+  padding:6px 10px;
+  margin-bottom:5px;
+  border-left:2px solid #d0d0d0;
+  font-size:11.5px;
+  line-height:1.55;
+  color:#999;
+  border-radius:0 4px 4px 0;
+  background:rgba(0,0,0,.02);
+  word-break:break-word;
+}
+.gch-quote b{
+  color:#1a1a1a;
+  font-weight:400;
+  margin-right:4px;
+}
+
+/* ===== 群聊输入栏扩展 ===== */
+.gch-func{
+  flex:none;height:0;overflow:hidden;
+  background:#fff;
+  border-top:0 solid transparent;
+  transition:height .28s cubic-bezier(.22,1,.36,1), border-top-width .3s ease;
+}
+.gch-func.open{height:180px;border-top-width:1px;border-top-color:#f0f0f0}
+.gch-func-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:22px 10px;
+  padding:22px 22px;
+}
+.gch-func-item{
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  cursor:pointer;transition:transform .18s ease;
+}
+.gch-func-item:active{transform:scale(.94)}
+.gch-func-item .gch-fi-box{
+  width:60px;height:60px;border-radius:18px;
+  background:#ffffff;
+  box-shadow:0 2px 10px rgba(0,0,0,.05);
+  display:flex;align-items:center;justify-content:center;
+}
+.gch-func-item .gch-fi-box svg{
+  width:26px;height:26px;stroke:#1a1a1a;fill:none;
+  stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;
+}
+.gch-func-item .gch-fi-label{
+  font-size:11.5px;color:#999;letter-spacing:1px;font-weight:300;
+}
+
+/* 群聊长按菜单 */
+.gch-menu{
+  position:fixed;z-index:99999;
+  background:#fff;border-radius:14px;
+  box-shadow:0 8px 32px rgba(0,0,0,.14);
+  padding:6px;min-width:132px;display:none;
+}
+.gch-menu.show{display:block;animation:menuPopIn .22s cubic-bezier(.22,1.2,.36,1)}
+.gch-menu .it{
+  padding:10px 14px;font-size:13px;color:#1a1a1a;
+  border-radius:10px;cursor:pointer;white-space:nowrap;letter-spacing:.5px;
+}
+.gch-menu .it:active{background:#f7f7f7}
+
+/* ===== 群聊详情 ===== */
+.gchd-mask{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,.45);
+  display:none;align-items:flex-end;justify-content:center;
+}
+.gchd-mask.show{display:flex}
+.gchd-sheet{
+  width:100%;max-width:520px;
+  background:#ffffff;
+  border-top-left-radius:22px;border-top-right-radius:22px;
+  padding:20px 22px calc(22px + env(safe-area-inset-bottom));
+  max-height:80vh;overflow-y:auto;
+  animation:gchdUp .28s cubic-bezier(.22,1,.36,1);
+}
+@keyframes gchdUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.gchd-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-bottom:16px;border-bottom:0.6px dashed rgba(0,0,0,.06);
+}
+.gchd-title{
+  font-size:14px;font-weight:300;letter-spacing:4px;color:#1a1a1a;
+  -webkit-text-stroke:.15px #1a1a1a;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+}
+.gchd-x{
+  width:28px;height:28px;border:none;background:transparent;
+  color:#ccc;font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-family:inherit;padding:0;
+}
+.gchd-x:active{color:#1a1a1a}
+.gchd-body{padding-top:8px}
+.gchd-row{
+  display:flex;align-items:center;gap:12px;
+  padding:16px 2px;
+  border-bottom:0.6px dashed rgba(0,0,0,.06);
+}
+.gchd-k{
+  font-size:12.5px;color:#999;letter-spacing:1px;flex:none;
+  font-weight:300;
+}
+.gchd-v{
+  flex:1;min-width:0;font-size:14px;color:#1a1a1a;
+  letter-spacing:.5px;text-align:right;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-weight:300;
+}
+.gchd-arr{color:#e0e0e0;font-size:12px;flex:none}
+.gchd-sw-main{flex:1;min-width:0}
+.gchd-sw-t1{
+  font-size:13.5px;color:#1a1a1a;letter-spacing:1px;
+  font-weight:300;
+}
+.gchd-sw-t2{
+  font-size:11px;color:#bbb;margin-top:4px;
+  letter-spacing:.3px;font-weight:300;
+}
+.gchd-sec{
+  font-size:10.5px;letter-spacing:4px;color:#bbb;
+  padding:16px 2px 8px;font-family:Georgia,serif;
+}
+.gchd-mems{
+  display:flex;flex-direction:column;
+}
+.gchd-mem{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 2px;
+  border-bottom:0.6px dashed rgba(0,0,0,.06);
+}
+.gchd-mem:last-child{border-bottom:none}
+.gchd-mav{
+  width:38px;height:38px;flex:none;border-radius:50%;
+  background:#f0f0f0;position:relative;overflow:hidden;
+}
+.gchd-mav svg{position:absolute;inset:0;width:100%;height:100%}
+.gchd-mav .silhouette{fill:#c8c8c8}
+.gchd-mav img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.gchd-mn{
+  flex:1;min-width:0;font-size:14px;color:#1a1a1a;
+  font-weight:300;letter-spacing:.5px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.gchd-mdel{
+  width:26px;height:26px;flex:none;border:none;background:transparent;
+  color:#ccc;font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  padding:0;border-radius:50%;
+}
+.gchd-mdel:active{color:#1a1a1a;background:#f5f5f5}
+.gchd-danger{
+  margin-top:22px;padding:14px 0;text-align:center;
+  font-size:13.5px;color:#999;letter-spacing:2px;
+  border:0.7px solid rgba(0,0,0,.12);border-radius:22px;
+  cursor:pointer;font-family:inherit;
+  transition:background .18s ease;
+}
+.gchd-danger:active{background:#fafafa;color:#1a1a1a}
+
+/* ===== 语音库页面 ===== */
+.vl-tip{
+  font-size:12px;color:#bbb;letter-spacing:.5px;line-height:1.7;
+  padding:4px 2px 16px;font-weight:300;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+}
+.vl-add{
+  display:flex;align-items:center;justify-content:center;
+  padding:14px 0;margin-bottom:18px;
+  border-radius:22px;border:0.7px dashed rgba(0,0,0,.18);
+  background:transparent;color:#1a1a1a;
+  font-size:13.5px;letter-spacing:3px;font-weight:300;
+  cursor:pointer;font-family:inherit;
+  transition:background .18s ease,border-color .18s ease;
+}
+.vl-add:active{background:#fafafa;border-color:#1a1a1a}
+.vl-list{display:flex;flex-direction:column;gap:10px;padding-bottom:40px}
+.vl-empty{
+  text-align:center;color:#ccc;font-size:12.5px;
+  padding:40px 20px;line-height:2;letter-spacing:1px;font-weight:300;
+}
+.vl-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;border-radius:16px;
+  border:0.7px solid rgba(0,0,0,.08);
+  background:#fdfdfd;
+}
+.vl-play{
+  width:34px;height:34px;flex:none;border-radius:50%;
+  border:none;background:#1a1a1a;color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;padding:0;font-size:12px;
+}
+.vl-play:active{opacity:.8}
+.vl-info{flex:1;min-width:0}
+.vl-name{
+  font-size:13.5px;color:#1a1a1a;letter-spacing:.5px;
+  font-weight:300;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+}
+.vl-meta{
+  font-size:10.5px;color:#bbb;letter-spacing:.5px;
+  margin-top:3px;font-weight:300;
+  font-family:Georgia,serif;
+}
+.vl-del{
+  width:28px;height:28px;flex:none;border-radius:50%;
+  border:none;background:transparent;color:#ccc;
+  font-size:13px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  padding:0;
+}
+.vl-del:active{color:#1a1a1a;background:#f5f5f5}
+
 /* ===== #mVideoUpload 弹窗 · 方案 A 细线美化 ===== */
 #mVideoUpload #vuUrl:focus{border-bottom-color:#1a1a1a;}
 #mVideoUpload #vuUrl::placeholder{color:#ccc;font-weight:300;}
@@ -5480,6 +5959,190 @@ body[data-bubble="custom"] .preview-bubble{
    用户刷新页面时，如果发现版本号变了，就弹提醒让他再刷新一次。
 */
 window.__APP_VERSION__ = '1.0.2';
+</script>
+
+<script>
+/* ============================================================
+   IndexedDB 底座
+   用途：把大文件（音频、图片、头像、背景）从 localStorage 挪到这里，
+         localStorage 从此只留文字配置。
+   说明：
+     - 只提供工具函数，不改任何现有功能
+     - 存的是 Blob（不转 base64，省 33%）
+     - 读出来会自动生成一个临时 URL 供 <img>/<audio> 用
+   ============================================================ */
+(function(){
+  if(window.__idbReady) return;
+  window.__idbReady = true;
+
+  var DB_NAME = 'mj_big_files';
+  var DB_VERSION = 1;
+  var STORE = 'files';
+
+  var _db = null;
+  var _dbPromise = null;
+
+  /* 打开（或首次创建）数据库 */
+  function openDB(){
+    if(_db) return Promise.resolve(_db);
+    if(_dbPromise) return _dbPromise;
+
+    _dbPromise = new Promise(function(resolve, reject){
+      var req;
+      try {
+        req = indexedDB.open(DB_NAME, DB_VERSION);
+      } catch(e){
+        reject(e);
+        return;
+      }
+      req.onupgradeneeded = function(ev){
+        var db = ev.target.result;
+        if(!db.objectStoreNames.contains(STORE)){
+          db.createObjectStore(STORE);
+        }
+      };
+      req.onsuccess = function(ev){
+        _db = ev.target.result;
+        _db.onclose = function(){ _db = null; _dbPromise = null; };
+        resolve(_db);
+      };
+      req.onerror = function(ev){
+        reject(ev.target.error || new Error('indexedDB open failed'));
+      };
+    });
+    return _dbPromise;
+  }
+
+  /* 通用：拿 store（读写模式） */
+  function tx(mode, fn){
+    return openDB().then(function(db){
+      return new Promise(function(resolve, reject){
+        var t = db.transaction(STORE, mode);
+        var store = t.objectStore(STORE);
+        var result;
+        try {
+          result = fn(store);
+        } catch(e){
+          reject(e);
+          return;
+        }
+        t.oncomplete = function(){ resolve(result && result.__req ? result.__req.result : result); };
+        t.onerror = function(ev){ reject(ev.target.error || new Error('tx failed')); };
+        t.onabort = function(ev){ reject(ev.target.error || new Error('tx aborted')); };
+      });
+    });
+  }
+
+  /* 存：key + Blob（或任意可结构化克隆的东西） */
+  function idbSet(key, value){
+    return openDB().then(function(db){
+      return new Promise(function(resolve, reject){
+        var t = db.transaction(STORE, 'readwrite');
+        var store = t.objectStore(STORE);
+        var req = store.put(value, key);
+        req.onsuccess = function(){ resolve(true); };
+        req.onerror = function(ev){ reject(ev.target.error); };
+      });
+    });
+  }
+
+  /* 读：拿回 Blob */
+  function idbGet(key){
+    return openDB().then(function(db){
+      return new Promise(function(resolve, reject){
+        var t = db.transaction(STORE, 'readonly');
+        var store = t.objectStore(STORE);
+        var req = store.get(key);
+        req.onsuccess = function(ev){
+          resolve(ev.target.result === undefined ? null : ev.target.result);
+        };
+        req.onerror = function(ev){ reject(ev.target.error); };
+      });
+    });
+  }
+
+  /* 删 */
+  function idbDel(key){
+    return openDB().then(function(db){
+      return new Promise(function(resolve, reject){
+        var t = db.transaction(STORE, 'readwrite');
+        var store = t.objectStore(STORE);
+        var req = store.delete(key);
+        req.onsuccess = function(){ resolve(true); };
+        req.onerror = function(ev){ reject(ev.target.error); };
+      });
+    });
+  }
+
+  /* 清空整个库 */
+  function idbClear(){
+    return openDB().then(function(db){
+      return new Promise(function(resolve, reject){
+        var t = db.transaction(STORE, 'readwrite');
+        var store = t.objectStore(STORE);
+        var req = store.clear();
+        req.onsuccess = function(){ resolve(true); };
+        req.onerror = function(ev){ reject(ev.target.error); };
+      });
+    });
+  }
+
+  /* 列所有 key（排查用） */
+  function idbKeys(){
+    return openDB().then(function(db){
+      return new Promise(function(resolve, reject){
+        var t = db.transaction(STORE, 'readonly');
+        var store = t.objectStore(STORE);
+        var req = store.getAllKeys();
+        req.onsuccess = function(ev){ resolve(Array.from(ev.target.result || [])); };
+        req.onerror = function(ev){ reject(ev.target.error); };
+      });
+    });
+  }
+
+  /* Blob → 可显示的 URL（缓存住，避免重复生成） */
+  var _urlCache = {};
+  function idbToURL(key){
+    if(_urlCache[key]) return Promise.resolve(_urlCache[key]);
+    return idbGet(key).then(function(blob){
+      if(!blob) return null;
+      var url = URL.createObjectURL(blob);
+      _urlCache[key] = url;
+      return url;
+    });
+  }
+  function idbRevokeURL(key){
+    if(_urlCache[key]){
+      try { URL.revokeObjectURL(_urlCache[key]); } catch(e){}
+      delete _urlCache[key];
+    }
+  }
+
+  /* 存 base64 dataURL → 转 Blob 存起来，省空间 */
+  function dataURLToBlob(dataURL){
+    var parts = String(dataURL || '').split(',');
+    if(parts.length < 2) return null;
+    var mimeMatch = parts[0].match(/:(.*?);/);
+    var mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+    var bin = atob(parts[1]);
+    var len = bin.length;
+    var arr = new Uint8Array(len);
+    for(var i = 0; i < len; i++) arr[i] = bin.charCodeAt(i);
+    return new Blob([arr], {type: mime});
+  }
+
+  /* 挂到 window，全局可用 */
+  window.__idb = {
+    set: idbSet,
+    get: idbGet,
+    del: idbDel,
+    clear: idbClear,
+    keys: idbKeys,
+    toURL: idbToURL,
+    revokeURL: idbRevokeURL,
+    dataURLToBlob: dataURLToBlob
+  };
+})();
 </script>
 
 <div id="app">
@@ -5591,6 +6254,7 @@ window.__APP_VERSION__ = '1.0.2';
 		<div class="desk-app" data-open="behavior"><div class="da-ic"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg></div><div class="da-name">角色行为</div></div>
 		<div class="desk-app" data-open="relation"><div class="da-ic"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="19" cy="19" r="2"/><path d="M6.7 11.3l10.6-5.6"/><path d="M6.7 12.7l10.6 5.6"/><path d="M12 12h0"/></svg></div><div class="da-name">关系网</div></div>
 		<div class="desk-app" data-open="moments"><div class="da-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><circle cx="8.5" cy="10" r="1.6"/><path d="M3.5 17l5-5 4 4 3-3 5 5"/></svg></div><div class="da-name">动态</div></div>
+		<div class="desk-app" data-open="groupchat"><div class="da-ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M3 19c0-2.8 2.2-5 5-5s5 2.2 5 5"/><path d="M13 19c0-2.8 2.2-5 5-5s3 .6 3 2"/></svg></div><div class="da-name">群聊</div></div>
 		<div class="desk-app" data-open="videopool"><div class="da-ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10 9l5 3-5 3z"/></svg></div><div class="da-name">共享池</div></div>
 		<div class="desk-app" data-open="forcevideo"><div class="da-ic"><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></div><div class="da-name">让Ta刷</div></div>
 		<div class="desk-app" data-open="gameres"><div class="da-ic"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 11v4"/><path d="M5 13h4"/><circle cx="16" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="18.5" cy="14" r="1" fill="currentColor" stroke="none"/></svg></div><div class="da-name">游戏资源</div></div>
@@ -5649,6 +6313,7 @@ window.__APP_VERSION__ = '1.0.2';
 	</div>
   </div>
   <div class="owner-chips" id="ownerChips"></div>
+  <div style="padding:0 20px 12px"><button class="vl-add" id="vlEntryBtn" type="button" style="margin-bottom:0">🎵 语音库（角色主动语音）</button></div>
   <div class="group-list" id="groupList"></div>
 </div>
 
@@ -5671,6 +6336,13 @@ window.__APP_VERSION__ = '1.0.2';
 	<button class="sel-btn danger" id="selDelBtn" type="button">删除</button>
 	<button class="sel-btn" id="selMoveBtn" type="button">移动</button>
 	<button class="sel-btn" id="selCancelBtn" type="button">取消</button>
+  </div>
+  <div id="cdGcStrategyBar" style="display:none;padding:0 22px 12px;flex:none">
+    <div id="cdGcStrategyBtn" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:14px;border:0.7px solid rgba(0,0,0,.12);background:#fff;cursor:pointer">
+      <span style="font-size:11px;color:#999;letter-spacing:1px">字卡策略</span>
+      <span id="cdGcStrategyVal" style="font-size:11.5px;color:#1a1a1a;letter-spacing:1px">只用角色专属</span>
+      <span style="font-size:9px;color:#ccc">▾</span>
+    </div>
   </div>
   <div class="cd-search" id="cdSearchWrap">
 	<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--th-accent)" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
@@ -5752,6 +6424,21 @@ window.__APP_VERSION__ = '1.0.2';
 	  <div class="cs-date-title">跳到某一天</div>
 	  <div class="cs-date-list" id="csDateList"></div>
 	</div>
+  </div>
+</div>
+
+<div class="screen" id="voiceLibScreen">
+  <div class="memo-wrap">
+    <div class="memo-top">
+      <button class="memo-back" id="vlBack" type="button">‹</button>
+      <div class="memo-title">语 音 库</div>
+      <div class="memo-top-right"></div>
+    </div>
+
+    <div class="vl-tip" id="vlTip">为「梦角」上传音频，Ta 主动发消息时会随机抽一条发给你。</div>
+    <div class="vl-add" id="vlAdd">＋ 上传音频</div>
+    <div class="vl-list" id="vlList"></div>
+    <input type="file" id="vlFile" accept="audio/*" multiple style="display:none">
   </div>
 </div>
 
@@ -5963,6 +6650,93 @@ window.__APP_VERSION__ = '1.0.2';
     </div>
 
     <div class="end">谢 谢 你 来 过 这 里</div>
+  </div>
+</div>
+
+<!-- ============ 群聊列表 ============ -->
+<div class="screen" id="groupListScreen">
+  <div class="gc-top">
+    <button class="gc-back" id="gcBack" type="button">‹</button>
+    <div class="gc-title">群 聊</div>
+    <button class="gc-add" id="gcAdd" type="button">＋</button>
+  </div>
+  <div class="gc-body" id="gcBody"></div>
+</div>
+
+<!-- ============ 新建群聊 ============ -->
+<div class="screen" id="groupCreateScreen">
+  <div class="gc-top">
+    <button class="gc-back" id="gccBack" type="button">‹</button>
+    <div class="gc-title">新 建 群 聊</div>
+    <div class="gc-add" style="opacity:0;pointer-events:none">＋</div>
+  </div>
+  <div class="gcc-body">
+    <div class="nf-form-row">
+      <label>群名</label>
+      <input type="text" id="gccName" placeholder="给这个群起个名字" maxlength="20">
+    </div>
+    <div class="nf-form-row">
+      <label>选择成员</label>
+      <div id="gccPick" class="gcc-pick"></div>
+    </div>
+  </div>
+  <div class="gcc-foot">
+    <button class="primary-btn" id="gccOk" type="button">创 建</button>
+  </div>
+</div>
+
+<!-- ============ 群聊页 ============ -->
+<div class="screen" id="groupChatScreen">
+  <div class="gch-top">
+    <button class="gch-back" id="gchBack" type="button">‹</button>
+    <div class="gch-title" id="gchTitle">群聊</div>
+    <button class="gch-more" id="gchMore" type="button">⋯</button>
+  </div>
+  <div class="gch-members" id="gchMembers"></div>
+  <div class="gch-list" id="gchList"></div>
+  <div class="gch-bar">
+    <button class="d-icon" id="gchSmileBtn" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/><path d="M8.5 14.5s1.2 1.8 3.5 1.8 3.5-1.8 3.5-1.8"/></svg></button>
+    <button class="d-icon" id="gchPlusBtn" type="button"><svg viewBox="0 0 24 24"><line x1="12" y1="6" x2="12" y2="18"/><line x1="6" y1="12" x2="18" y2="12"/></svg></button>
+    <textarea id="gchInput" rows="1" placeholder="说点什么…"></textarea>
+    <button class="d-icon" id="gchMicBtn" type="button" title="语音"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="21"/></svg></button>
+    <button class="send-btn" id="gchSend" type="button"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+  </div>
+
+  <!-- 群聊功能抽屉 -->
+  <div class="gch-func" id="gchFunc">
+    <div class="gch-func-grid">
+      <div class="gch-func-item" data-gfunc="divine"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><path d="M2.5 12 C5 7.5 8.5 5.5 12 5.5 C15.5 5.5 19 7.5 21.5 12 C19 16.5 15.5 18.5 12 18.5 C8.5 18.5 5 16.5 2.5 12 Z"/><circle cx="12" cy="12" r="3.2"/></svg></div><span class="gch-fi-label">占卜</span></div>
+      <div class="gch-func-item" data-gfunc="card"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 9h18"/></svg></div><span class="gch-fi-label">名片</span></div>
+      <div class="gch-func-item" data-gfunc="sticker"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg></div><span class="gch-fi-label">表情图</span></div>
+      <div class="gch-func-item" data-gfunc="kao"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><path d="M4 12s2-6 8-6 8 6 8 6-2 6-8 6-8-6-8-6z"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/></svg></div><span class="gch-fi-label">颜文字</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 群聊详情 ============ -->
+<div class="gchd-mask" id="gchdMask">
+  <div class="gchd-sheet">
+    <div class="gchd-head">
+      <div class="gchd-title">群 聊 详 情</div>
+      <button class="gchd-x" id="gchdClose" type="button">✕</button>
+    </div>
+    <div class="gchd-body">
+      <div class="gchd-row">
+        <span class="gchd-k">群名</span>
+        <span class="gchd-v" id="gchdName">群聊</span>
+        <span class="gchd-arr">›</span>
+      </div>
+      <div class="gchd-row">
+        <div class="gchd-sw-main">
+          <div class="gchd-sw-t1">同意拉好友进群</div>
+          <div class="gchd-sw-t2">关闭后群内角色不会自动拉人</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="gchdAllowInvite"><span class="slider"></span></label>
+      </div>
+      <div class="gchd-sec">成员（<span id="gchdMemCount">0</span>）</div>
+      <div class="gchd-mems" id="gchdMems"></div>
+      <div class="gchd-danger" id="gchdDisband">解散群聊</div>
+    </div>
   </div>
 </div>
 
@@ -7080,6 +7854,7 @@ window.__APP_VERSION__ = '1.0.2';
 
 <!-- ========== 动态模块结束 ========== -->
 
+<input type="file" id="cipAvFile" accept="image/*" style="display:none">
 <input type="file" id="stickerFile" accept="image/*" multiple style="display:none">
 <input type="file" id="editAvFile" accept="image/*" style="display:none">
 <input type="file" id="meAvFile" accept="image/*" style="display:none">
@@ -7337,6 +8112,11 @@ const DEFAULT_CARD_GROUPS = [
 	  '还没睡吗','早点休息','别熬夜了','夜深了','睡了吗','做个好梦'
 	] }
   ]},
+  { id:'g-groupchat', name:'群聊字卡', icon:'note', sub:'群聊里角色说话时从这里抽', cats:[
+	{ id:'cgc-chat', name:'闲聊', list:['在呢','怎么了','聊什么呢','我也在','来了来了','你们说什么呢'] },
+	{ id:'cgc-reply', name:'接话', list:['我也是','对对对','哈哈哈哈','确实','有道理','我也这么觉得','笑死'] },
+	{ id:'cgc-tease', name:'互怼', list:['你才傻','就你话多','少来','别闹','哼','你行你上'] }
+  ]},
   { id:'g-tags', name:'标签', icon:'star', sub:'角色互相贴标签时从这里抽', cats:[
 	{ id:'ctg-1', name:'性格', list:[
 	  '安静','话痨','粘人','慢热','高冷','温柔','开朗','闷骚','靠谱','靠谱','随和','内向','外向','直率','敏感','粗心','细心','固执','理性','感性','慢热','好相处','嘴硬','心软','自律','佛系','急性子','慢性子'
@@ -7359,6 +8139,11 @@ cardStore.public = cardStore.public.filter(g=>g && g.id !== 'g-open');
   if(!cardStore.public.some(g=>g.id==='g-namecard')) cardStore.public.push(JSON.parse(JSON.stringify(DEFAULT_CARD_GROUPS.find(g=>g.id==='g-namecard'))));
   if(!cardStore.public.some(g=>g.id==='g-divine'))   cardStore.public.push(JSON.parse(JSON.stringify(DEFAULT_CARD_GROUPS.find(g=>g.id==='g-divine'))));
   if(!cardStore.public.some(g=>g.id==='g-timed'))    cardStore.public.push(JSON.parse(JSON.stringify(DEFAULT_CARD_GROUPS.find(g=>g.id==='g-timed'))));
+  if(!cardStore.public.some(g=>g.id==='g-groupchat')) cardStore.public.push(JSON.parse(JSON.stringify(DEFAULT_CARD_GROUPS.find(g=>g.id==='g-groupchat'))));
+  /* 角色专属：把公用新增的分组补过去 */
+  Object.keys(cardStore.roles||{}).forEach(function(rid){
+    if(typeof syncRoleCardGroups === 'function') syncRoleCardGroups(rid);
+  });
 })();
 (function fixMoodData(){
   const mg = cardStore.public.find(g=>g.id==='g-mood');
@@ -7391,6 +8176,42 @@ function ensureCardTimes(){
   }
   walkGroups(cardStore.public);
   Object.values(cardStore.roles||{}).forEach(walkGroups);
+}
+
+/* 角色专属字卡：给每个角色补齐"公用那套"里新增的分组/分类
+   每次渲染字卡页时调一次，保证公用那边新加的分组，角色专属也能跟着有 */
+function syncRoleCardGroups(roleId){
+  if(!roleId) return;
+  const pub = cardStore.public || [];
+  if(!cardStore.roles[roleId]) cardStore.roles[roleId] = [];
+  const role = cardStore.roles[roleId];
+  let changed = false;
+
+  pub.forEach(function(pg){
+    let rg = role.find(function(g){ return g.id === pg.id; });
+    if(!rg){
+      rg = {
+        id: pg.id,
+        name: pg.name,
+        icon: pg.icon,
+        sub: pg.sub,
+        cats: (pg.cats || []).map(function(c){ return { id:c.id, name:c.name, list: [] }; })
+      };
+      role.push(rg);
+      changed = true;
+      return;
+    }
+    /* 分组已有：补齐里面缺的分类 */
+    if(!Array.isArray(rg.cats)){ rg.cats = []; changed = true; }
+    (pg.cats || []).forEach(function(pc){
+      if(!rg.cats.some(function(c){ return c.id === pc.id; })){
+        rg.cats.push({ id: pc.id, name: pc.name, list: [] });
+        changed = true;
+      }
+    });
+  });
+
+  if(changed) saveCardStore();
 }
 function cardText(item){
   if(typeof item === 'string') return item;
@@ -7740,7 +8561,26 @@ const PY_CHARS = {"de0":"的地得底","di2":"的敌迪笛涤嘀","di4":"的地�
 function toned(base,tone){ if(!tone||tone<1||tone>4) return base.replace(/v/g,'ü'); const T={a:'āáǎà',o:'ōóǒò',e:'ēéěè',i:'īíǐì',u:'ūúǔù',v:'ǖǘǚǜ'}; let key='',pos=-1; if(base.includes('v')){key='v';pos=base.indexOf('v');} else if(base.includes('a')){key='a';pos=base.lastIndexOf('a');} else if(base.includes('o')){key='o';pos=base.indexOf('o');} else if(base.includes('e')){key='e';pos=base.indexOf('e');} else{const iu=base.indexOf('iu'),ui=base.indexOf('ui'); if(iu>=0){key='u';pos=iu+1;} else if(ui>=0){key='i';pos=ui+1;} else{for(let k=base.length-1;k>=0;k--){const ch=base[k];if(ch==='i'||ch==='u'){key=ch;pos=k;break;}}}} if(pos<0) return base.replace(/v/g,'ü'); return base.slice(0,pos).replace(/v/g,'ü')+T[key][tone-1]+base.slice(pos+1).replace(/v/g,'ü'); }
 function randPinyin(){ const keys=Object.keys(PY_CHARS).filter(k=>PY_CHARS[k]&&PY_CHARS[k].length); const key=keys[Math.floor(Math.random()*keys.length)]; const tone=Number(key.slice(-1))||0; const base=key.slice(0,-1); const text=toned(base,tone); const str=PY_CHARS[key]; const han=str[Math.floor(Math.random()*str.length)]; return {base,tone,text,han}; }
 
-function getGroupsByOwner(owner){ if(owner==='public') return cardStore.public||[]; if(!cardStore.roles[owner]) cardStore.roles[owner] = []; return cardStore.roles[owner]; }
+function getGroupsByOwner(owner){
+  if(owner==='public') return cardStore.public||[];
+  if(!cardStore.roles[owner]){
+    /* 第一次访问这个角色的专属字卡：复制一份公用的分组结构（不含卡内容） */
+    const cloned = (cardStore.public || []).map(function(g){
+      return {
+        id: g.id,
+        name: g.name,
+        icon: g.icon,
+        sub: g.sub,
+        cats: (g.cats || []).map(function(c){
+          return { id: c.id, name: c.name, list: [] };
+        })
+      };
+    });
+    cardStore.roles[owner] = cloned;
+    saveCardStore();
+  }
+  return cardStore.roles[owner];
+}
 function isStatusGroup(g){
   if(!g) return false;
   if(g.id === 'g-status') return true;
@@ -7763,7 +8603,55 @@ function getAllNormalCards(owner){
   return arr;
 }
 function pickCardFrom(pool){ if(!pool.length) return '嗯，我在。'; return pool[Math.floor(Math.random()*pool.length)]; }
-function pickCard(){ const pub=getAllNormalCards('public'); const role=getAllNormalCards(getCurrentRoleId()); const pubRate = poolRate.public ?? 0.7; if(pub.length && role.length){ return Math.random()<pubRate ? pickCardFrom(pub) : pickCardFrom(role); } if(pub.length) return pickCardFrom(pub); if(role.length) return pickCardFrom(role); return '嗯，我在。'; }
+/* 从指定分组抽卡 */
+function getCardsFromGroup(owner, groupId){
+  const arr = [];
+  getGroupsByOwner(owner).forEach(function(g){
+    if(!g || g.id !== groupId) return;
+    (g.cats || []).forEach(function(c){
+      (c.list || []).forEach(function(line){
+        const text = String(cardText(line)).trim();
+        if(text) arr.push(text);
+      });
+    });
+  });
+  return arr;
+}
+
+function pickCard(){
+  const rid = getCurrentRoleId();
+  const strategy = getCardStrategy(rid);
+
+  /* A：只用群聊字卡（角色专属里的群聊字卡，没有就退回公用群聊字卡） */
+  if(strategy === 'A'){
+    let pool = getCardsFromGroup(rid, 'g-groupchat');
+    if(!pool.length) pool = getCardsFromGroup('public', 'g-groupchat');
+    if(pool.length) return pickCardFrom(pool);
+    return '嗯，我在。';
+  }
+
+  /* B：群聊字卡 + 角色专属字卡混用 */
+  if(strategy === 'B'){
+    let gc = getCardsFromGroup(rid, 'g-groupchat');
+    if(!gc.length) gc = getCardsFromGroup('public', 'g-groupchat');
+    const own = getAllNormalCards(rid);
+    if(gc.length && own.length){
+      return Math.random() < 0.5 ? pickCardFrom(gc) : pickCardFrom(own);
+    }
+    if(gc.length) return pickCardFrom(gc);
+    if(own.length) return pickCardFrom(own);
+    return '嗯，我在。';
+  }
+
+  /* C（默认）：沿用现有逻辑：公用 + 角色专属按比例混 */
+  const pub = getAllNormalCards('public');
+  const role = getAllNormalCards(rid);
+  const pubRate = poolRate.public ?? 0.7;
+  if(pub.length && role.length) return Math.random() < pubRate ? pickCardFrom(pub) : pickCardFrom(role);
+  if(pub.length) return pickCardFrom(pub);
+  if(role.length) return pickCardFrom(role);
+  return '嗯，我在。';
+}
 
 /* ===== 时间字卡 ===== */
 const TIMED_RATE_KEY = 'mj_timed_rate_v1';
@@ -8576,7 +9464,7 @@ function renderChatFull(forceBottom){
 	if(m.kind === 'pinyin'){
 	  body = `<div class="bubble">${esc(m.pinyin||'')}</div><div class="py-tag"><span class="pfx">拼音：</span><b><span class="py-word">${esc(m.han||'')}</span></b></div>`;
 	}else if(m.voice){
-	  body = `<div class="voice-bubble" data-url="${m.voiceUrl||''}" data-dur="${m.voice}"><div class="vb-play"><svg class="icon-play" viewBox="0 0 12 12"><path d="M3 1.5 L10 6 L3 10.5 Z"/></svg><svg class="icon-pause" viewBox="0 0 12 12"><rect x="3" y="2" width="2.5" height="8" rx="1"/><rect x="6.5" y="2" width="2.5" height="8" rx="1"/></svg></div><div class="vb-wave"><span></span><span></span><span></span><span></span><span></span><span></span></div><span class="vb-dur">${m.voice}"</span></div>`;
+	  body = `<div class="voice-bubble" data-url="${m.voiceUrl||''}" data-dur="${m.voice}" data-idbkey="${m.voiceIdbKey||''}"><div class="vb-play"><svg class="icon-play" viewBox="0 0 12 12"><path d="M3 1.5 L10 6 L3 10.5 Z"/></svg><svg class="icon-pause" viewBox="0 0 12 12"><rect x="3" y="2" width="2.5" height="8" rx="1"/><rect x="6.5" y="2" width="2.5" height="8" rx="1"/></svg></div><div class="vb-wave"><span></span><span></span><span></span><span></span><span></span><span></span></div><span class="vb-dur">${m.voice}"</span></div>`;
 	}else if(m.sticker){
 	  const stickerBubbleCls = isUser ? 'message-sent message-bubble-user' : 'message-received message-bubble-char';
 	  body = `<div class="bubble ${stickerBubbleCls}" data-side="${isUser?'user':'char'}" style="padding:4px"><img src="${m.sticker}" style="max-width:140px;border-radius:12px;display:block"></div>`;
@@ -8644,6 +9532,19 @@ function renderChatFull(forceBottom){
 	  if(qid) jumpToMsg(qid);
 	});
   });
+  /* ★ 语音：渲染后异步补 IndexedDB 里的音频地址 */
+  (function hydrateVoiceUrls(){
+    const list = document.getElementById('chatList');
+    if(!list) return;
+    list.querySelectorAll('.voice-bubble[data-idbkey]').forEach(function(vb){
+      const key = vb.dataset.idbkey;
+      if(!key) return;
+      __idb.toURL(key).then(function(url){
+        if(url) vb.dataset.url = url;
+      }).catch(function(){});
+    });
+  })();
+
   if(forceBottom || wasAtBottom) box.scrollTop = box.scrollHeight;
   bindMsgLongPress();
   applyBeautyCfg();
@@ -9463,6 +10364,62 @@ function fireActiveMessage(roleId){
     return;
   }
 
+  /* ===== 主动语音：独立掷骰子（选 C） =====
+     每次主动触发时，独立 30% 概率发一条语音（替代文字） */
+  let voiceMode = false;
+  let voicePick = null;
+  try{
+    const lib = getVoiceLib(roleId);
+    if(lib.length && Math.random() < 0.30){
+      voicePick = lib[Math.floor(Math.random() * lib.length)];
+      voiceMode = true;
+    }
+  }catch(e){}
+
+  /* 如果命中语音，就发语音；否则走原来的文字逻辑 */
+  if(voiceMode && voicePick){
+    __idb.toURL(voicePick.key).then(function(url){
+      if(!url){
+        /* 音频读不到 → 回退发文字 */
+        const fallback = {
+          id: uid(), role: 'char', text: text, time: Date.now(), active: true
+        };
+        appendMsgToRole(roleId, fallback);
+        if(!isViewingRole(roleId)){
+          const role = getRoleById(roleId) || {};
+          showMsgNotify(role.name || '角色', text, role.avatar);
+        }
+        cfg.activeLastFireAt = Date.now();
+        saveReply();
+        return;
+      }
+      const vMsg = {
+        id: uid(),
+        role: 'char',
+        voice: voicePick.dur || 0,
+        voiceUrl: url,
+        voiceIdbKey: voicePick.key,
+        time: Date.now(),
+        active: true
+      };
+      appendMsgToRole(roleId, vMsg);
+      if(!isViewingRole(roleId)){
+        const role = getRoleById(roleId) || {};
+        showMsgNotify(role.name || '角色', '[语音]', role.avatar);
+      }
+      cfg.activeLastFireAt = Date.now();
+      saveReply();
+    }).catch(function(){
+      const fallback = {
+        id: uid(), role: 'char', text: text, time: Date.now(), active: true
+      };
+      appendMsgToRole(roleId, fallback);
+      cfg.activeLastFireAt = Date.now();
+      saveReply();
+    });
+    return;
+  }
+
   const msg = {
     id: uid(),
     role: 'char',
@@ -9471,7 +10428,7 @@ function fireActiveMessage(roleId){
     active: true
   };
 
-  /* 随机引用旧消息：30% 概率引用一条，从该角色历史里随机挑 */
+  /* 随机引用旧消息：30% 概率引用一条，按"距今多久"加权（越远概率越小） */
   if(Math.random() < 0.30){
     const key = 'mj_msgs_' + roleId;
     const hist = lsGet(key, null);
@@ -9479,7 +10436,8 @@ function fireActiveMessage(roleId){
       /* 排除撤回、系统、名片，只引用有文字内容的 */
       const cands = hist.filter(m => !m.recalled && !m.sys && (m.text || m.sticker || m.voice));
       if(cands.length){
-        const pick = cands[Math.floor(Math.random() * cands.length)];
+        /* 用加权随机：私聊上限 2 个月，越远权重越低 */
+        const pick = pickQuoteTarget(cands, false, null) || cands[Math.floor(Math.random() * cands.length)];
         let quoteText = pick.text || '';
         if(!quoteText && pick.sticker) quoteText = '[表情图]';
         if(!quoteText && pick.voice)   quoteText = '[语音]';
@@ -10226,6 +11184,26 @@ function setStickerBucket(bucketKey, cats){
 
 let stickerMode=lsGet('mj_sticker_mode','send');
 function persistStickers(){ lsSet('mj_sticker_mode',stickerMode); }
+
+/* ============================================================
+   角色字卡策略
+   A = 只用群聊字卡
+   B = 群聊字卡 + 角色自己的混用
+   C = 只用角色专属字卡
+   默认 C（保持现有行为）
+   ============================================================ */
+const CARD_STRATEGY_KEY = 'mj_card_strategy_v1';
+function getCardStrategy(roleId){
+  if(!roleId) return 'C';
+  const m = lsGet(CARD_STRATEGY_KEY, {});
+  return m[roleId] || 'C';
+}
+function setCardStrategy(roleId, v){
+  if(!roleId) return;
+  const m = lsGet(CARD_STRATEGY_KEY, {});
+  m[roleId] = v || 'C';
+  lsSet(CARD_STRATEGY_KEY, m);
+}
 
 /* 允许角色用我的表情图：每个角色独立开关 */
 const STICKER_ALLOW_MINE_KEY = 'mj_sticker_allow_mine_v1';
@@ -13372,6 +14350,977 @@ document.addEventListener('click', function(e){
   }
 }, true); /* 捕获阶段，优先级更高 */
 
+/* ============================================================
+   群聊 · 数据层
+   localStorage 结构：
+     mj_group_list_v1 = {
+       [groupId]: {
+         id, name, members:[roleId...],
+         allowInvite: true/false,
+         createdAt, lastMsgAt
+       }
+     }
+     mj_group_msgs_[groupId] = [ 消息 ]
+   ============================================================ */
+const GROUP_LIST_KEY = 'mj_group_list_v1';
+function getGroupListMap(){
+  let m = lsGet(GROUP_LIST_KEY, null);
+  if(!m || typeof m !== 'object') m = {};
+  return m;
+}
+function saveGroupListMap(m){ lsSet(GROUP_LIST_KEY, m); }
+function getGroupList(){
+  const m = getGroupListMap();
+  return Object.keys(m).map(function(k){ return m[k]; }).sort(function(a,b){
+    return (b.lastMsgAt || b.createdAt || 0) - (a.lastMsgAt || a.createdAt || 0);
+  });
+}
+function getGroupById(gid){
+  if(!gid) return null;
+  const m = getGroupListMap();
+  return m[gid] || null;
+}
+function saveGroup(g){
+  if(!g || !g.id) return;
+  const m = getGroupListMap();
+  m[g.id] = g;
+  saveGroupListMap(m);
+}
+function deleteGroup(gid){
+  if(!gid) return;
+  const m = getGroupListMap();
+  if(m[gid]){
+    delete m[gid];
+    saveGroupListMap(m);
+  }
+  try { localStorage.removeItem('mj_group_msgs_' + gid); } catch(e){}
+}
+function getGroupMsgs(gid){
+  if(!gid) return [];
+  let a = lsGet('mj_group_msgs_' + gid, null);
+  if(!Array.isArray(a)) a = [];
+  return a;
+}
+function saveGroupMsgs(gid, arr){
+  if(!gid) return;
+  lsSet('mj_group_msgs_' + gid, Array.isArray(arr) ? arr : []);
+}
+
+/* ============================================================
+   引用概率：按"距今多久"给权重
+   刚刚（1 小时内） = 53
+   今天             = 40
+   昨天             = 10
+   三天前           = 5
+   一星期前         = 2
+   一个月多         = 1
+   超出上限         = 0（不引用）
+   私聊上限 = 2 个月，群聊上限 = 1 个月
+   ============================================================ */
+function quoteWeightOf(ts, isGroup){
+  if(!ts) return 0;
+  const now = Date.now();
+  const diff = now - ts;
+  const HOUR = 3600 * 1000;
+  const DAY = 24 * HOUR;
+  const LIMIT = isGroup ? (30 * DAY) : (60 * DAY);
+
+  if(diff > LIMIT) return 0;
+
+  if(diff <= HOUR) return 53;         /* 刚刚（1 小时内） */
+  if(diff <= DAY)  return 40;         /* 今天 */
+  if(diff <= 2*DAY) return 10;        /* 昨天 */
+  if(diff <= 4*DAY) return 5;         /* 三天前 */
+  if(diff <= 8*DAY) return 2;         /* 一星期前 */
+  return 1;                            /* 一个月多（但没超上限） */
+}
+
+/* 从消息数组里加权随机抽一条出来当引用对象
+   skipIds：要跳过的消息 id 集合（避免重复引用同一条）
+   excludeRoleId：不要引用这个角色自己发的消息（可选） */
+function pickQuoteTarget(arr, isGroup, excludeRoleId){
+  if(!Array.isArray(arr) || !arr.length) return null;
+  const cand = [];
+  let total = 0;
+  arr.forEach(function(m){
+    if(!m || m.sys) return;
+    if(m.recalled) return;
+    if(!m.text) return;
+    if(excludeRoleId && m.roleId === excludeRoleId) return;
+    const w = quoteWeightOf(m.time, isGroup);
+    if(w <= 0) return;
+    cand.push({ m: m, w: w });
+    total += w;
+  });
+  if(!cand.length || total <= 0) return null;
+  let r = Math.random() * total;
+  for(let i = 0; i < cand.length; i++){
+    r -= cand[i].w;
+    if(r <= 0) return cand[i].m;
+  }
+  return cand[cand.length - 1].m;
+}
+
+/* ===== 群聊字卡策略：显示 / 点击切换 ===== */
+const GC_STRATEGY_NAMES = {
+  A: '只用群聊字卡',
+  B: '群聊 + 专属混用',
+  C: '只用角色专属'
+};
+function renderGcStrategyVal(){
+  const el = document.getElementById('cdGcStrategyVal');
+  if(!el) return;
+  const rid = getCurrentRoleId();
+  const v = getCardStrategy(rid);
+  el.textContent = GC_STRATEGY_NAMES[v] || GC_STRATEGY_NAMES.C;
+}
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  if(!t.closest('#cdGcStrategyBtn')) return;
+  e.preventDefault(); e.stopPropagation();
+  const rid = getCurrentRoleId();
+  const cur = getCardStrategy(rid);
+  const order = ['A', 'B', 'C'];
+  const next = order[(order.indexOf(cur) + 1) % order.length];
+  setCardStrategy(rid, next);
+  renderGcStrategyVal();
+  toast('字卡策略：' + GC_STRATEGY_NAMES[next]);
+}, true);
+
+/* ===== 新建群聊 ===== */
+let gccSelected = new Set();
+/* ============================================================
+   群聊输入栏 · 按钮 / 功能抽屉 / emoji / kao / sticker / 名片
+   ============================================================ */
+window.__gchFuncOpen = false;
+
+function gchToggleFunc(open){
+  const box = document.getElementById('gchFunc');
+  if(!box) return;
+  window.__gchFuncOpen = !!open;
+  box.classList.toggle('open', window.__gchFuncOpen);
+}
+
+function gchAppendText(s){
+  const ta = document.getElementById('gchInput');
+  if(!ta) return;
+  ta.value = (ta.value || '') + s;
+  ta.focus();
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(ta.scrollHeight, 110) + 'px';
+}
+
+function gchOpenEmoji(){
+  const cats = (function(){
+    try {
+      const map = lsGet('mj_panel_map', null) || {};
+      const r = map[getCurrentRoleId()];
+      if(r && Array.isArray(r.emojiCats)) return r.emojiCats;
+    } catch(e){}
+    return null;
+  })();
+  if(!cats || !cats.length){ toast('请先在字卡页的表情面板里添加 emoji'); return; }
+  const pool = [];
+  cats.forEach(function(c){ (c.list || []).forEach(function(ch){ if(ch) pool.push(ch); }); });
+  if(!pool.length){ toast('没有可用的 emoji'); return; }
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  gchAppendText(pick);
+}
+function gchOpenKao(){
+  const map = lsGet('mj_panel_map', null) || {};
+  const r = map[getCurrentRoleId()] || {};
+  const cats = Array.isArray(r.kaoCats) ? r.kaoCats : [];
+  const pool = [];
+  cats.forEach(function(c){ (c.list || []).forEach(function(k){ if(k) pool.push(k); }); });
+  if(!pool.length){ toast('请先在字卡页的颜文字面板里添加内容'); return; }
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  gchAppendText(pick);
+}
+function gchOpenSticker(){
+  const store = (function(){
+    try {
+      const s = lsGet('mj_sticker_store_v2', null);
+      if(s && typeof s === 'object') return s;
+    } catch(e){}
+    return null;
+  })();
+  if(!store){ toast('还没有表情图'); return; }
+  const b = store[getCurrentRoleId()];
+  if(!b || !Array.isArray(b.cats)){ toast('还没有表情图'); return; }
+  const pool = [];
+  b.cats.forEach(function(c){ (c.list || []).forEach(function(src){ if(src) pool.push(src); }); });
+  if(!pool.length){ toast('还没有表情图'); return; }
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  /* 表情图直接当消息发出去 */
+  const g = getGroupById(window.__curGroupId);
+  if(!g) return;
+  const arr = getGroupMsgs(g.id);
+  arr.push({ id: uid(), role: 'user', sticker: pick, time: Date.now() });
+  saveGroupMsgs(g.id, arr);
+  g.lastMsgAt = Date.now();
+  saveGroup(g);
+  renderGroupChat();
+}
+function gchOpenCardPicker(){
+  const friends = getFriends().filter(function(f){ return !f.hidden && !f.builtin; });
+  if(!friends.length){ toast('没有可以发送的名片'); return; }
+  const f = friends[Math.floor(Math.random() * friends.length)];
+  const g = getGroupById(window.__curGroupId);
+  if(!g) return;
+  const arr = getGroupMsgs(g.id);
+  arr.push({
+    id: uid(), role: 'user', time: Date.now(),
+    namecard: { id: f.id, name: displayName(f), avatar: f.avatar }
+  });
+  saveGroupMsgs(g.id, arr);
+  g.lastMsgAt = Date.now();
+  saveGroup(g);
+  renderGroupChat();
+  toast('已发送 ' + displayName(f) + ' 的名片');
+}
+function gchOpenDivine(){
+  toast('群聊占卜 · 请用私聊发占卜再转发进来更方便');
+}
+
+/* 群聊输入栏 · 事件委托 */
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+
+  if(t.closest('#gchSmileBtn')){
+    e.preventDefault(); e.stopPropagation();
+    gchToggleFunc(false);
+    gchOpenEmoji();
+    return;
+  }
+  if(t.closest('#gchPlusBtn')){
+    e.preventDefault(); e.stopPropagation();
+    gchToggleFunc(!window.__gchFuncOpen);
+    return;
+  }
+  if(t.closest('#gchMicBtn')){
+    e.preventDefault(); e.stopPropagation();
+    toast('群聊语音 · 用输入栏语音不好管理，暂时用文字或表情图吧');
+    return;
+  }
+
+  const fi = t.closest('[data-gfunc]');
+  if(fi){
+    e.preventDefault(); e.stopPropagation();
+    const f = fi.dataset.gfunc;
+    gchToggleFunc(false);
+    if(f === 'divine')      gchOpenDivine();
+    else if(f === 'card')   gchOpenCardPicker();
+    else if(f === 'sticker')gchOpenSticker();
+    else if(f === 'kao')    gchOpenKao();
+    return;
+  }
+}, true);
+
+/* ===== 群聊长按菜单 ===== */
+function gchShowMenu(msgEl, x, y){
+  let menu = document.getElementById('gchMenu');
+  if(!menu){
+    menu = document.createElement('div');
+    menu.id = 'gchMenu';
+    menu.className = 'gch-menu';
+    document.body.appendChild(menu);
+  }
+  const id = msgEl.dataset.id;
+  const m = getGroupMsgs(window.__curGroupId).find(function(x){ return x.id === id; });
+  if(!m){ return; }
+  let html = '';
+  if(m.text){ html += '<div class="it" data-act="copy">复制</div>'; }
+  if(m.text){ html += '<div class="it" data-act="quote">引用</div>'; }
+  html += '<div class="it" data-act="delete">删除</div>';
+  menu.innerHTML = html;
+  menu.classList.add('show');
+  const rect = menu.getBoundingClientRect();
+  menu.style.left = Math.min(window.innerWidth - rect.width - 8, Math.max(8, x - rect.width/2)) + 'px';
+  menu.style.top = Math.min(window.innerHeight - rect.height - 8, Math.max(8, y - rect.height - 8)) + 'px';
+
+  menu.querySelectorAll('.it').forEach(function(it){
+    it.onclick = function(){
+      const act = it.dataset.act;
+      menu.classList.remove('show');
+      if(act === 'copy'){
+        copyText(m.text || '', '已复制');
+      } else if(act === 'quote'){
+        window.__gchQuote = {
+          msgId: m.id,
+          name: m.role === 'user' ? userName() : ((getRoleById(m.roleId) || {}).name || '?'),
+          text: m.text || ''
+        };
+        toast('已引用，去输入框写点什么吧');
+        const ta = document.getElementById('gchInput');
+        if(ta) ta.focus();
+      } else if(act === 'delete'){
+        const arr = getGroupMsgs(window.__curGroupId);
+        const i = arr.findIndex(function(x){ return x.id === m.id; });
+        if(i >= 0){ arr.splice(i, 1); saveGroupMsgs(window.__curGroupId, arr); renderGroupChat(); }
+      }
+    };
+  });
+  setTimeout(function(){
+    document.addEventListener('click', function hide(ev){
+      const mm = document.getElementById('gchMenu');
+      if(mm && !mm.contains(ev.target)){ mm.classList.remove('show'); document.removeEventListener('click', hide); }
+    });
+  }, 0);
+}
+
+(function bindGchLongPress(){
+  if(window.__gchLongPressBound) return;
+  window.__gchLongPressBound = true;
+  document.addEventListener('touchstart', function(e){
+    const el = e.target.closest && e.target.closest('#gchList .gch-msg');
+    if(!el) return;
+    const p = e.touches[0];
+    const sx = p.clientX, sy = p.clientY;
+    const timer = setTimeout(function(){
+      gchShowMenu(el, sx, sy);
+      if(navigator.vibrate) navigator.vibrate(15);
+    }, 550);
+    const en = function(){
+      clearTimeout(timer);
+      document.removeEventListener('touchmove', mv);
+      document.removeEventListener('touchend', en);
+    };
+    const mv = function(ev){
+      const q = ev.touches[0];
+      if(Math.abs(q.clientX - sx) > 8 || Math.abs(q.clientY - sy) > 8){
+        clearTimeout(timer);
+        document.removeEventListener('touchmove', mv);
+        document.removeEventListener('touchend', en);
+      }
+    };
+    document.addEventListener('touchmove', mv, {passive:true});
+    document.addEventListener('touchend', en);
+  }, {passive:true});
+})();
+
+/* ============================================================
+   群聊详情面板
+   ============================================================ */
+function openGroupDetail(){
+  const g = getGroupById(window.__curGroupId);
+  if(!g){ toast('群聊不存在'); return; }
+  const nameEl = document.getElementById('gchdName');
+  if(nameEl) nameEl.textContent = g.name || '群聊';
+  const sw = document.getElementById('gchdAllowInvite');
+  if(sw) sw.checked = g.allowInvite !== false;
+  const cnt = document.getElementById('gchdMemCount');
+  if(cnt) cnt.textContent = (g.members || []).length;
+  renderGchdMems(g);
+  const mask = document.getElementById('gchdMask');
+  if(mask) mask.classList.add('show');
+}
+
+function renderGchdMems(g){
+  const box = document.getElementById('gchdMems');
+  if(!box) return;
+  const mems = (g.members || []).filter(function(rid){ return getRoleById(rid); });
+  if(!mems.length){
+    box.innerHTML = '<div style="text-align:center;color:#bbb;font-size:12px;padding:20px 0">群里还没有人</div>';
+    return;
+  }
+  box.innerHTML = mems.map(function(rid){
+    const r = getRoleById(rid);
+    return '<div class="gchd-mem" data-rid="' + rid + '">' +
+      '<div class="gchd-mav">' + avatarHTML(r.avatar) + '</div>' +
+      '<div class="gchd-mn">' + escapeHTML(displayName(r)) + '</div>' +
+      '<button class="gchd-mdel" data-rm="' + rid + '" type="button">✕</button>' +
+    '</div>';
+  }).join('');
+  box.querySelectorAll('[data-rm]').forEach(function(btn){
+    btn.onclick = function(e){
+      e.stopPropagation();
+      const rid = btn.dataset.rm;
+      const gg = getGroupById(window.__curGroupId);
+      if(!gg) return;
+      if((gg.members || []).length <= 1){ toast('群里至少留一个人'); return; }
+      if(!confirm('把这个人移出群聊？')) return;
+      gg.members = (gg.members || []).filter(function(x){ return x !== rid; });
+      saveGroup(gg);
+      const cnt = document.getElementById('gchdMemCount');
+      if(cnt) cnt.textContent = gg.members.length;
+      renderGchdMems(gg);
+      renderGroupChat();
+    };
+  });
+}
+
+/* 群聊详情 · 事件委托 */
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  if(t.closest('#gchMore')){
+    e.preventDefault(); e.stopPropagation();
+    openGroupDetail();
+    return;
+  }
+  if(t.closest('#gchdClose')){
+    e.preventDefault(); e.stopPropagation();
+    const m = document.getElementById('gchdMask');
+    if(m) m.classList.remove('show');
+    return;
+  }
+  if(t.closest('#gchdDisband')){
+    e.preventDefault(); e.stopPropagation();
+    const g = getGroupById(window.__curGroupId);
+    if(!g) return;
+    if(!confirm('解散群聊「' + g.name + '」？聊天记录也会一起删除。')) return;
+    deleteGroup(window.__curGroupId);
+    const m = document.getElementById('gchdMask');
+    if(m) m.classList.remove('show');
+    document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
+    openGroupList();
+    toast('群聊已解散');
+    return;
+  }
+  /* 点遮罩关闭 */
+  if(t.id === 'gchdMask'){
+    t.classList.remove('show');
+    return;
+  }
+}, true);
+
+/* 群名：点一下改 */
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  if(!t.closest('#gchdName')) return;
+  e.preventDefault(); e.stopPropagation();
+  const g = getGroupById(window.__curGroupId);
+  if(!g) return;
+  uniAsk({
+    title: '修改群名',
+    sub: 'GROUP · 最多 20 字',
+    value: g.name || '',
+    placeholder: '给这个群起个名字',
+    maxlength: 20
+  }).then(function(v){
+    if(v === null) return;
+    const name = String(v).trim();
+    if(!name){ toast('群名不能为空'); return; }
+    g.name = name;
+    saveGroup(g);
+    const nameEl = document.getElementById('gchdName');
+    if(nameEl) nameEl.textContent = name;
+    const tEl = document.getElementById('gchTitle');
+    if(tEl) tEl.textContent = name;
+    toast('已更新');
+  });
+}, true);
+
+/* 同意拉好友开关 */
+document.addEventListener('change', function(e){
+  const t = e.target;
+  if(!t || t.id !== 'gchdAllowInvite') return;
+  const g = getGroupById(window.__curGroupId);
+  if(!g) return;
+  g.allowInvite = !!t.checked;
+  saveGroup(g);
+  toast(t.checked ? '已允许拉好友进群' : '已关闭拉好友');
+}, true);
+
+/* ============================================================
+   群聊页 · 核心（renderGroupChat / groupChatTriggerReply）
+   ============================================================ */
+function openGroupChat(gid){
+  const g = getGroupById(gid);
+  if(!g){ toast('群聊不存在'); return; }
+  window.__curGroupId = gid;
+  renderGroupChat();
+  showScreen('groupChatScreen');
+  setTimeout(function(){
+    const inp = document.getElementById('gchInput');
+    if(inp){ inp.value = ''; inp.style.height = 'auto'; }
+  }, 50);
+}
+
+function renderGroupChat(){
+  const g = getGroupById(window.__curGroupId);
+  if(!g){ return; }
+  const tEl = document.getElementById('gchTitle');
+  if(tEl) tEl.textContent = g.name;
+
+  const memBox = document.getElementById('gchMembers');
+  if(memBox){
+    memBox.innerHTML = (g.members || []).map(function(rid){
+      const r = getRoleById(rid);
+      if(!r) return '';
+      return '<div class="gch-mem">' +
+        '<div class="gch-mav">' + avatarHTML(r.avatar) + '</div>' +
+        '<div class="gch-mn">' + escapeHTML(displayName(r)) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  const list = document.getElementById('gchList');
+  if(!list) return;
+  const arr = getGroupMsgs(window.__curGroupId);
+  if(!arr.length){
+    list.innerHTML = '<div style="text-align:center;color:#ccc;font-size:12.5px;padding:60px 20px;letter-spacing:1px;font-weight:300">还没有消息，说点什么吧</div>';
+    return;
+  }
+  list.innerHTML = arr.map(function(m){
+    if(m.sys){
+      return '<div style="text-align:center;font-size:11.5px;color:#bbb;padding:4px 0">' + m.sys + '</div>';
+    }
+    if(m.divine){
+      const d = m.divine;
+      const rr = getRoleById(m.roleId) || {};
+      const readsHTML = (d.reads && d.reads.length) ? '<div style="margin-top:6px;padding-top:6px;border-top:0.6px dashed rgba(0,0,0,.06);font-size:11.5px;color:#666;line-height:1.7">' + d.reads.map(function(r2){ return escapeHTML(r2.text); }).join('<br>') + '</div>' : '';
+      const cardsHTML = (d.cards || []).map(function(c){ return tarotHTML(c.card, c.reversed); }).join('');
+      return '<div class="gch-msg" data-id="' + m.id + '">' +
+        '<div class="gch-mav">' + avatarHTML(rr.avatar || '') + '</div>' +
+        '<div class="gch-body"><div class="gch-name">' + escapeHTML(displayName(rr) || '?') + '</div>' +
+        '<div class="gch-bubble" style="background:transparent;padding:0"><div class="divine-card"><div class="dc-head">DIVINE</div><div class="dc-q">' + escapeHTML(d.q || '') + '</div><div class="dc-cards">' + cardsHTML + '</div>' + readsHTML + '</div></div></div>' +
+      '</div>';
+    }
+
+    const quoteHTML = m.quote
+      ? '<div class="gch-quote"><b>' + escapeHTML(m.quote.name || '') + '：</b>' + escapeHTML(m.quote.text || '') + '</div>'
+      : '';
+
+    const isMe = m.role === 'user';
+    if(isMe){
+      return '<div class="gch-msg me" data-id="' + m.id + '">' +
+        '<div class="gch-mav">' + userAvHTML(userProfile.avatar) + '</div>' +
+        '<div class="gch-body"><div class="gch-name">' + escapeHTML(userName()) + '</div>' +
+        quoteHTML +
+        '<div class="gch-bubble">' + escapeHTML(m.text || '') + '</div></div>' +
+      '</div>';
+    }
+    const r = getRoleById(m.roleId) || {};
+    return '<div class="gch-msg" data-id="' + m.id + '">' +
+      '<div class="gch-mav">' + avatarHTML(r.avatar || '') + '</div>' +
+      '<div class="gch-body"><div class="gch-name">' + escapeHTML(displayName(r) || '?') + '</div>' +
+      quoteHTML +
+      '<div class="gch-bubble">' + escapeHTML(m.text || '') + '</div></div>' +
+    '</div>';
+  }).join('');
+  list.scrollTop = list.scrollHeight;
+}
+
+function groupChatTriggerReply(){
+  const g = getGroupById(window.__curGroupId);
+  if(!g) return;
+  const members = (g.members || []).filter(function(rid){ return getRoleById(rid); });
+  if(!members.length) return;
+
+  if(!window.__gchTimers) window.__gchTimers = [];
+  window.__gchTimers.forEach(function(t){ clearTimeout(t); });
+  window.__gchTimers = [];
+
+  const r = getReply();
+
+  members.forEach(function(rid){
+    if(Math.random() > 0.30) return;
+    const delay = (r.minDelay || 1000) + Math.random() * Math.max(0, (r.maxDelay || 10000) - (r.minDelay || 1000));
+    const t = setTimeout(function(){
+      if(window.__curGroupId !== g.id) return;
+      let text = '';
+      try{
+        const gcPool = getCardsFromGroup(rid, 'g-groupchat');
+        const pubGcPool = getCardsFromGroup('public', 'g-groupchat');
+        const pool = gcPool.length ? gcPool : pubGcPool;
+        if(pool.length){
+          text = pool[Math.floor(Math.random() * pool.length)];
+        } else {
+          text = pickCard();
+        }
+      }catch(e){
+        text = pickCard();
+      }
+      const msg = {
+        id: uid(),
+        role: 'char',
+        roleId: rid,
+        text: text,
+        time: Date.now()
+      };
+      const arr = getGroupMsgs(g.id);
+      arr.push(msg);
+      saveGroupMsgs(g.id, arr);
+      g.lastMsgAt = Date.now();
+      g.lastMsgText = text.slice(0, 30);
+      saveGroup(g);
+
+      if(window.__curGroupId === g.id){
+        renderGroupChat();
+      } else {
+        const role = getRoleById(rid) || {};
+        showMsgNotify((role.name || '角色') + ' · ' + (g.name || '群聊'), text, role.avatar);
+      }
+    }, delay);
+    window.__gchTimers.push(t);
+  });
+}
+
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  if(t.closest('#gchBack')){
+    e.preventDefault(); e.stopPropagation();
+    if(window.__gchTimers) window.__gchTimers.forEach(function(t){ clearTimeout(t); });
+    window.__gchTimers = [];
+    document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
+    openGroupList();
+    return;
+  }
+  if(t.closest('#gchSend')){
+    e.preventDefault(); e.stopPropagation();
+    const inp = document.getElementById('gchInput');
+    const text = (inp ? inp.value : '').trim();
+    if(!text) return;
+    const g = getGroupById(window.__curGroupId);
+    if(!g) return;
+    const arr = getGroupMsgs(g.id);
+    const outMsg = { id: uid(), role: 'user', text: text, time: Date.now() };
+    if(window.__gchQuote){
+      outMsg.quote = window.__gchQuote;
+      window.__gchQuote = null;
+    }
+    arr.push(outMsg);
+    saveGroupMsgs(g.id, arr);
+    g.lastMsgAt = Date.now();
+    g.lastMsgText = text.slice(0, 30);
+    saveGroup(g);
+    if(inp){ inp.value = ''; inp.style.height = 'auto'; }
+    renderGroupChat();
+    groupChatTriggerReply();
+    return;
+  }
+}, true);
+
+document.addEventListener('input', function(e){
+  const t = e.target;
+  if(!t || t.id !== 'gchInput') return;
+  t.style.height = 'auto';
+  t.style.height = Math.min(t.scrollHeight, 110) + 'px';
+}, true);
+
+function openGroupCreate(){
+  gccSelected = new Set();
+  const nameEl = document.getElementById('gccName');
+  if(nameEl) nameEl.value = '';
+  renderGccPick();
+  showScreen('groupCreateScreen');
+}
+function renderGccPick(){
+  const box = document.getElementById('gccPick');
+  if(!box) return;
+  const friends = getFriends().filter(function(f){ return !f.hidden && !f.builtin; });
+  if(!friends.length){
+    box.innerHTML = '<div class="gcc-empty">还没有可以拉进来的角色</div>';
+    return;
+  }
+  box.innerHTML = friends.map(function(f){
+    const on = gccSelected.has(f.id) ? ' on' : '';
+    return '<div class="gcc-row' + on + '" data-rid="' + f.id + '">' +
+      '<div class="gcc-av">' + avatarHTML(f.avatar) + '</div>' +
+      '<div class="gcc-name">' + escapeHTML(displayName(f)) + '</div>' +
+      '<div class="gcc-chk">✓</div>' +
+    '</div>';
+  }).join('');
+  box.querySelectorAll('.gcc-row').forEach(function(el){
+    el.onclick = function(){
+      const rid = el.dataset.rid;
+      if(gccSelected.has(rid)) gccSelected.delete(rid);
+      else gccSelected.add(rid);
+      el.classList.toggle('on', gccSelected.has(rid));
+    };
+  });
+}
+
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  if(t.closest('#gccBack')){
+    e.preventDefault(); e.stopPropagation();
+    document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
+    openGroupList();
+    return;
+  }
+  if(t.closest('#gccOk')){
+    e.preventDefault(); e.stopPropagation();
+    const nameEl = document.getElementById('gccName');
+    const name = (nameEl ? nameEl.value : '').trim();
+    if(!name){ toast('请输入群名'); return; }
+    if(!gccSelected.size){ toast('至少选一个成员'); return; }
+    const gid = 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2,4);
+    const g = {
+      id: gid,
+      name: name,
+      members: Array.from(gccSelected),
+      allowInvite: true,
+      createdAt: Date.now(),
+      lastMsgAt: Date.now(),
+      lastMsgText: ''
+    };
+    saveGroup(g);
+    saveGroupMsgs(gid, []);
+    toast('群聊已创建');
+    openGroupList();
+    return;
+  }
+}, true);
+
+/* ============================================================
+   群活动：每个群每小时摇一次，15% 概率触发
+   触发后随机 1~3 个角色，各自独立掷一次动作
+   ============================================================ */
+function groupActivityOnce(gid){
+  const g = getGroupById(gid);
+  if(!g) return;
+  const members = (g.members || []).filter(function(rid){ return getRoleById(rid); });
+  if(!members.length) return;
+
+  const n = 1 + Math.floor(Math.random() * 3);
+  const picked = members.slice().sort(function(){ return Math.random() - 0.5; }).slice(0, n);
+
+  picked.forEach(function(rid){
+    const delay = 3000 + Math.random() * 17000;
+    setTimeout(function(){
+      try { runGroupActorAction(gid, rid); }catch(e){ console.error('群活动出错', e); }
+    }, delay);
+  });
+}
+
+function runGroupActorAction(gid, roleId){
+  const g = getGroupById(gid);
+  if(!g) return;
+  if(!(g.members || []).includes(roleId)) return;
+
+  const roll = Math.random();
+  let action = 'self';
+  if(roll < 0.40) action = 'self';        /* 40% 自己发一条 */
+  else if(roll < 0.65) action = 'reply';  /* 25% 接话 */
+  else if(roll < 0.85) action = 'at';     /* 20% @ 点名 */
+  else action = 'seen';                    /* 15% 已读不回（无痕） */
+
+  if(action === 'seen') return;
+
+  const arr = getGroupMsgs(gid);
+  let text = '';
+  let quote = null;
+
+  try {
+    let pool = getCardsFromGroup(roleId, 'g-groupchat');
+    if(!pool.length) pool = getCardsFromGroup('public', 'g-groupchat');
+    if(pool.length){
+      text = pool[Math.floor(Math.random() * pool.length)];
+    } else {
+      text = pickCard();
+    }
+  } catch(e){
+    text = pickCard();
+  }
+
+  if(action === 'reply'){
+    const target = pickQuoteTarget(arr, true, roleId);
+    if(target){
+      const tRole = target.role === 'user' ? null : getRoleById(target.roleId);
+      const tName = target.role === 'user' ? userName() : ((tRole && displayName(tRole)) || '?');
+      quote = { name: tName, text: target.text, msgId: target.id };
+    }
+  } else if(action === 'at'){
+    const others = (g.members || []).filter(function(x){ return x !== roleId && getRoleById(x); });
+    if(others.length){
+      const atId = others[Math.floor(Math.random() * others.length)];
+      const atR = getRoleById(atId) || {};
+      text = '@' + (displayName(atR) || '?') + ' ' + text;
+    }
+  }
+
+  const msg = {
+    id: uid(),
+    role: 'char',
+    roleId: roleId,
+    text: text,
+    time: Date.now()
+  };
+  if(quote) msg.quote = quote;
+
+  const cur = getGroupMsgs(gid);
+  cur.push(msg);
+  saveGroupMsgs(gid, cur);
+
+  g.lastMsgAt = Date.now();
+  g.lastMsgText = text.slice(0, 30);
+  saveGroup(g);
+
+  if(window.__curGroupId === gid){
+    renderGroupChat();
+  } else {
+    const r = getRoleById(roleId) || {};
+    showMsgNotify((r.name || '角色') + ' · ' + (g.name || '群聊'), text, r.avatar);
+  }
+}
+
+/* 群活动调度：每 60 分钟 tick 一次 */
+let _gcActTimer = null;
+function scheduleGroupActivity(){
+  if(_gcActTimer) clearInterval(_gcActTimer);
+  _gcActTimer = setInterval(function(){
+    try{
+      const list = getGroupList();
+      list.forEach(function(g){
+        if(Math.random() < 0.15){
+          groupActivityOnce(g.id);
+        }
+      });
+    }catch(e){ console.error('群活动 tick 出错', e); }
+  }, 60 * 60 * 1000);
+  setTimeout(function(){
+    try{
+      const list = getGroupList();
+      list.forEach(function(g){
+        if(Math.random() < 0.15) groupActivityOnce(g.id);
+      });
+    }catch(e){}
+  }, 30 * 1000);
+}
+
+/* ===== 群主动占卜 ===== */
+function groupDivineOnce(gid){
+  const g = getGroupById(gid);
+  if(!g) return;
+  const members = (g.members || []).filter(function(rid){ return getRoleById(rid); });
+  if(!members.length) return;
+  const rid = members[Math.floor(Math.random() * members.length)];
+  const delay = 3000 + Math.random() * 27000;
+  setTimeout(function(){
+    try{
+      const gg = getGroupById(gid);
+      if(!gg) return;
+      const gq = getGroupsByOwner('public').find(function(x){ return x.id === 'g-divine'; });
+      let q = '我对你的感情';
+      if(gq && gq.cats && gq.cats.length){
+        const pool = [];
+        gq.cats.forEach(function(c){ (c.list || []).forEach(function(line){
+          const t = String(cardText(line)).trim();
+          if(t) pool.push(t);
+        }); });
+        if(pool.length) q = pool[Math.floor(Math.random() * pool.length)];
+      }
+      const count = Math.random() < 0.5 ? 1 : 3;
+      const picked = [];
+      const deck = [...FULL_DECK];
+      for(let i = 0; i < count; i++){
+        const idx = Math.floor(Math.random() * deck.length);
+        const card = deck.splice(idx, 1)[0];
+        const reversed = Math.random() < 0.5;
+        picked.push({ card: card, reversed: reversed });
+      }
+      const recordId = uid();
+      const roleName = (getRoleById(rid) || {}).name || '?';
+      const msg = {
+        id: uid(),
+        role: 'char',
+        roleId: rid,
+        divine: {
+          head: roleName + '占卜',
+          q: q,
+          cards: picked,
+          recordId: recordId,
+          reads: [],
+          saved: false,
+          time: Date.now(),
+          who: 'role'
+        },
+        time: Date.now()
+      };
+      const arr = getGroupMsgs(gid);
+      arr.push(msg);
+      saveGroupMsgs(gid, arr);
+      if(window.__curGroupId === gid){
+        renderGroupChat();
+      } else {
+        const r = getRoleById(rid) || {};
+        showMsgNotify((r.name || '角色') + ' · ' + (g.name || '群聊'), '占卜：' + q, r.avatar);
+      }
+    }catch(e){ console.error('群占卜出错', e); }
+  }, delay);
+}
+let _gcDivineTimer = null;
+function scheduleGroupDivine(){
+  if(_gcDivineTimer) clearInterval(_gcDivineTimer);
+  _gcDivineTimer = setInterval(function(){
+    try{
+      const list = getGroupList();
+      list.forEach(function(g){
+        if(Math.random() < 0.05) groupDivineOnce(g.id);
+      });
+    }catch(e){ console.error('群占卜 tick 出错', e); }
+  }, 30 * 60 * 1000);
+}
+
+/* ===== 群聊列表页 ===== */
+function openGroupList(){
+  showScreen('groupListScreen');
+  renderGroupList();
+}
+function renderGroupList(){
+  const box = document.getElementById('gcBody');
+  if(!box) return;
+  const list = getGroupList();
+  if(!list.length){
+    box.innerHTML = '<div class="gc-empty">当前没有群聊<br>点右上角 ＋ 新建一个吧</div>';
+    return;
+  }
+  box.innerHTML = list.map(function(g){
+    const memberCount = (g.members || []).length;
+    const last = (g.lastMsgText || '').slice(0, 20);
+    const sub = memberCount + ' 人' + (last ? ' · ' + last : '');
+    return '<div class="gc-item" data-gid="' + g.id + '">' +
+      '<div class="gc-av">👥</div>' +
+      '<div class="gc-main">' +
+        '<div class="gc-name">' + escapeHTML(g.name || '群聊') + '</div>' +
+        '<div class="gc-sub">' + escapeHTML(sub) + '</div>' +
+      '</div>' +
+      '<div class="gc-arrow">›</div>' +
+    '</div>';
+  }).join('');
+  box.querySelectorAll('.gc-item').forEach(function(el){
+    el.onclick = function(){
+      const gid = el.dataset.gid;
+      if(typeof openGroupChat === 'function') openGroupChat(gid);
+    };
+  });
+}
+
+/* ===== 事件绑定 ===== */
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  if(t.closest('#gcBack')){
+    e.preventDefault(); e.stopPropagation();
+    document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
+    return;
+  }
+  if(t.closest('#gcAdd')){
+    e.preventDefault(); e.stopPropagation();
+    if(typeof openGroupCreate === 'function') openGroupCreate();
+    else toast('新建群聊功能还没接上');
+    return;
+  }
+}, true);
+
+/* ===== 语音库入口（字卡页） ===== */
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  if(t.closest('#vlEntryBtn')){
+    e.preventDefault(); e.stopPropagation();
+    openVoiceLib();
+    return;
+  }
+}, true);
+
 /* ===== 备注（点击名字修改） ===== */
 on('#cipName','click',(e)=>{
   if(e) e.stopPropagation();
@@ -13396,6 +15345,181 @@ on('#cipName','click',(e)=>{
     toast(t ? '备注已更新' : '已清除备注');
   });
 });
+
+/* ============================================================
+   语音库 · 每个角色独立，音频存在 IndexedDB（不占 localStorage）
+   数据结构（localStorage）：
+     mj_voice_lib_v1 = {
+       [roleId]: [ { id, name, dur, size, key }, ... ]
+     }
+     - key 是 IndexedDB 里的键名，真正 Blob 存在 IndexedDB
+   ============================================================ */
+const VOICE_LIB_KEY = 'mj_voice_lib_v1';
+function getVoiceLibMap(){
+  let m = lsGet(VOICE_LIB_KEY, null);
+  if(!m || typeof m !== 'object') m = {};
+  return m;
+}
+function saveVoiceLibMap(m){ lsSet(VOICE_LIB_KEY, m); }
+function getVoiceLib(roleId){
+  const m = getVoiceLibMap();
+  if(!Array.isArray(m[roleId])) m[roleId] = [];
+  return m[roleId];
+}
+function setVoiceLib(roleId, arr){
+  const m = getVoiceLibMap();
+  m[roleId] = Array.isArray(arr) ? arr : [];
+  saveVoiceLibMap(m);
+}
+
+/* 读取音频时长（塞进临时 audio 拿 metadata） */
+function readAudioDuration(file){
+  return new Promise(function(resolve){
+    try{
+      const url = URL.createObjectURL(file);
+      const a = new Audio();
+      a.preload = 'metadata';
+      a.onloadedmetadata = function(){
+        const d = isFinite(a.duration) ? Math.round(a.duration) : 0;
+        URL.revokeObjectURL(url);
+        resolve(d);
+      };
+      a.onerror = function(){
+        URL.revokeObjectURL(url);
+        resolve(0);
+      };
+      a.src = url;
+    }catch(e){ resolve(0); }
+  });
+}
+
+let vlPlayAudio = null;
+function renderVoiceLib(){
+  const list = document.getElementById('vlList');
+  const tip = document.getElementById('vlTip');
+  if(!list) return;
+  const roleId = getCurrentRoleId();
+  const roleName = getCurrentRoleName();
+  if(tip) tip.textContent = '为「' + roleName + '」上传音频，Ta 主动发消息时会随机抽一条发给你。';
+  const arr = getVoiceLib(roleId);
+  if(!arr.length){
+    list.innerHTML = '<div class="vl-empty">还没有音频<br>点上方「＋ 上传音频」添加</div>';
+    return;
+  }
+  list.innerHTML = arr.map(function(v, i){
+    return '<div class="vl-item" data-i="' + i + '">' +
+      '<button class="vl-play" data-play="' + i + '" type="button">▶</button>' +
+      '<div class="vl-info">' +
+        '<div class="vl-name">' + escapeHTML(v.name || ('音频 ' + (i+1))) + '</div>' +
+        '<div class="vl-meta">' + (v.dur || 0) + ' 秒 · ' + ((v.size||0)/1024).toFixed(0) + ' KB</div>' +
+      '</div>' +
+      '<button class="vl-del" data-del="' + i + '" type="button">✕</button>' +
+    '</div>';
+  }).join('');
+
+  list.querySelectorAll('[data-play]').forEach(function(btn){
+    btn.onclick = function(){
+      const i = +btn.dataset.play;
+      const v = getVoiceLib(roleId)[i];
+      if(!v) return;
+      if(vlPlayAudio && !vlPlayAudio.paused){
+        vlPlayAudio.pause();
+        if(vlPlayAudio._btn) vlPlayAudio._btn.textContent = '▶';
+        if(vlPlayAudio._btn === btn){ vlPlayAudio = null; return; }
+      }
+      __idb.toURL(v.key).then(function(url){
+        if(!url){ toast('音频丢失'); return; }
+        const a = new Audio(url);
+        a._btn = btn;
+        btn.textContent = '❚❚';
+        a.onended = function(){ btn.textContent = '▶'; };
+        a.onerror = function(){ btn.textContent = '▶'; toast('播放失败'); };
+        a.play().catch(function(){ btn.textContent = '▶'; toast('播放被拦截'); });
+        vlPlayAudio = a;
+      });
+    };
+  });
+
+  list.querySelectorAll('[data-del]').forEach(function(btn){
+    btn.onclick = function(){
+      const i = +btn.dataset.del;
+      const cur = getVoiceLib(roleId);
+      const v = cur[i];
+      if(!v) return;
+      if(!confirm('删除这条音频？')) return;
+      cur.splice(i, 1);
+      setVoiceLib(roleId, cur);
+      if(v.key) __idb.del(v.key).catch(function(){});
+      renderVoiceLib();
+      toast('已删除');
+    };
+  });
+}
+
+function openVoiceLib(){
+  showScreen('voiceLibScreen');
+  renderVoiceLib();
+}
+
+/* 上传：走 IndexedDB，不写 localStorage */
+function handleVoiceLibUpload(files){
+  const roleId = getCurrentRoleId();
+  const arr = files.slice();
+  if(!arr.length) return;
+  toast('正在处理 ' + arr.length + ' 个文件…');
+  let done = 0;
+  arr.forEach(function(file, idx){
+    const key = 'voice_' + roleId + '_' + Date.now().toString(36) + '_' + idx;
+    readAudioDuration(file).then(function(dur){
+      return __idb.set(key, file).then(function(){
+        const cur = getVoiceLib(roleId);
+        cur.push({
+          id: uid(),
+          key: key,
+          name: file.name || ('音频 ' + (cur.length + 1)),
+          dur: dur,
+          size: file.size,
+          t: Date.now()
+        });
+        setVoiceLib(roleId, cur);
+        done++;
+        if(done === arr.length){
+          renderVoiceLib();
+          toast('已上传 ' + done + ' 条');
+        }
+      });
+    }).catch(function(e){
+      console.error('上传失败', e);
+      toast('上传失败：' + e.message);
+    });
+  });
+}
+
+/* 事件绑定 */
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  if(t.closest('#vlBack')){
+    e.preventDefault(); e.stopPropagation();
+    document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
+    return;
+  }
+  if(t.closest('#vlAdd')){
+    e.preventDefault(); e.stopPropagation();
+    const f = document.getElementById('vlFile');
+    if(f){ f.value = ''; f.click(); }
+    return;
+  }
+}, true);
+
+document.addEventListener('change', function(e){
+  const t = e.target;
+  if(!t || t.id !== 'vlFile') return;
+  const files = Array.from(t.files || []);
+  t.value = '';
+  if(!files.length) return;
+  handleVoiceLibUpload(files);
+}, true);
 
 /* ===== 备忘 ===== */
 document.addEventListener('click', function(e){
@@ -15101,7 +17225,7 @@ function showScreen(id){
 function closeScreen(){ $$('.screen').forEach(s=>s.classList.remove('on')); }
 
 $$('#page-desk .desk-app').forEach(el=>{ el.addEventListener('click',()=>{ const k=el.dataset.open; if(k==='beauty') openBeauty(); else if(k==='divine') renderDivineRecords(),showScreen('divineRecordScreen'); else if(k==='behavior'){ behaviorKeyword=''; const si=$('#bhSearchInput'); if(si) si.value=''; renderBehavior(); showScreen('behaviorScreen'); }
-else if(k==='relation'){ relationKeyword=''; const ri=$('#relSearchInput'); if(ri) ri.value=''; openRelationScreen(); } else if(k==='music') toast('音乐 · 下一步补'); else if(k==='moments'){ if(typeof window.openMoments === 'function') window.openMoments(); } else if(k==='friends'){ if(window.__goPage) window.__goPage(0); } else if(k==='videopool'){ openVideoPool(); } else if(k==='forcevideo'){ forceSendVideo(); } else if(k==='memory'){ toast('回忆 · 下一步补'); } }); });
+else if(k==='relation'){ relationKeyword=''; const ri=$('#relSearchInput'); if(ri) ri.value=''; openRelationScreen(); } else if(k==='music') toast('音乐 · 下一步补'); else if(k==='moments'){ if(typeof window.openMoments === 'function') window.openMoments(); } else if(k==='friends'){ if(window.__goPage) window.__goPage(0); } else if(k==='videopool'){ openVideoPool(); } else if(k==='forcevideo'){ forceSendVideo(); } else if(k==='memory'){ toast('回忆 · 下一步补'); } else if(k==='groupchat'){ openGroupList(); } }); });
 $$('#page-me .me-row').forEach(el=>{ el.addEventListener('click',()=>{
   const fn = el.dataset.func;
   if(fn==='card') openCardLib();
@@ -15130,7 +17254,15 @@ function renderOwnerChips(){
   const box = $('#ownerChips'); if(!box) return;
   const roleName = getCurrentRoleName(); const roleId = getCurrentRoleId();
   box.innerHTML = `<button class="owner-chip ${curOwner==='public'?'on':''}" data-owner="public">公用</button><button class="owner-chip ${curOwner===roleId?'on':''}" data-owner="${roleId}">${escapeHTML(roleName)} 专属字卡</button>`;
-  box.querySelectorAll('.owner-chip').forEach(el=>{ el.addEventListener('click',()=>{ curOwner=el.dataset.owner; curGroupId=''; curCatId=''; renderOwnerChips(); renderGroupList(); }); });
+  box.querySelectorAll('.owner-chip').forEach(el=>{ el.addEventListener('click',()=>{
+    curOwner=el.dataset.owner;
+    /* 切到角色专属时，先补齐这个角色的字卡结构 */
+    if(curOwner !== 'public') syncRoleCardGroups(curOwner);
+    curGroupId='';
+    curCatId='';
+    renderOwnerChips();
+    renderGroupList();
+  }); });
 }
 function renderGroupList(){
   const box = $('#groupList'); if(!box) return;
@@ -15154,6 +17286,10 @@ function renderGroupList(){
 	  $('#cdTitle').textContent = g.name;
 	  const cdMoreBtn = document.getElementById('cdMore');
 	  if(cdMoreBtn) cdMoreBtn.textContent = (g.id === 'g-timed') ? '⚙' : '⋯';
+	  /* 群聊字卡：显示左上角「字卡策略」栏 */
+	  var gcBar = document.getElementById('cdGcStrategyBar');
+	  if(gcBar) gcBar.style.display = (g.id === 'g-groupchat') ? 'block' : 'none';
+	  if(g.id === 'g-groupchat') renderGcStrategyVal();
 	  exitSelMode(); showScreen('cardDetailScreen'); renderCdTabs(); renderCdList(); setTimeout(refreshScrollbar, 30);
 	  setTimeout(bindLongPress, 50);
 	});
@@ -17250,8 +19386,19 @@ function renderFriends(){
     html += `<div class="entry" id="entryNew"><div class="e-main"><div class="e-tt">新朋友${badge}</div><div class="e-sub">查看好友申请</div></div><span class="chev">›</span></div>`;
   }
   const defFriends = friends.filter(f=>!f.group||!groups.includes(f.group)).filter(match);
-  groups.forEach(g=>{ const members = friends.filter(f=>f.group===g).filter(match); html += `<div class="group-block open" data-group="${escapeHTML(g)}"><div class="group-head" data-toggle><span class="arrow">▶</span><span class="g-name">${escapeHTML(g)}</span><span class="g-count">${members.length}</span></div><div class="group-body">${members.map(friendHTML).join('')||'<div class="empty" style="padding:14px">暂无成员</div>'}</div></div>`; });
-  html += `<div class="group-block open" data-group=""><div class="group-head" data-toggle><span class="arrow" style="opacity:0">▶</span><span class="g-name">好友</span><span class="g-count">${defFriends.length}</span></div><div class="group-body">${defFriends.map(friendHTML).join('')||'<div class="empty" style="padding:14px">还没有好友</div>'}</div></div>`;
+  const pinnedFriends = friends.filter(f=>f.pinned).filter(match);
+
+  /* 置顶虚拟分组：有置顶的人时才出现 */
+  if(pinnedFriends.length){
+    html += `<div class="group-block open" data-group="__pinned__"><div class="group-head" data-toggle><span class="arrow">▶</span><span class="g-name">置顶</span><span class="g-count">${pinnedFriends.length}</span></div><div class="group-body">${pinnedFriends.map(friendHTML).join('')}</div></div>`;
+  }
+
+  groups.forEach(g=>{
+    const members = friends.filter(f=>f.group===g).filter(match).sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+    html += `<div class="group-block open" data-group="${escapeHTML(g)}"><div class="group-head" data-toggle><span class="arrow">▶</span><span class="g-name">${escapeHTML(g)}</span><span class="g-count">${members.length}</span></div><div class="group-body">${members.map(friendHTML).join('')||'<div class="empty" style="padding:14px">暂无成员</div>'}</div></div>`;
+  });
+  const defSorted = defFriends.slice().sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+  html += `<div class="group-block open" data-group=""><div class="group-head" data-toggle><span class="arrow" style="opacity:0">▶</span><span class="g-name">好友</span><span class="g-count">${defSorted.length}</span></div><div class="group-body">${defSorted.map(friendHTML).join('')||'<div class="empty" style="padding:14px">还没有好友</div>'}</div></div>`;
   box.innerHTML = html;
   box.querySelectorAll('[data-toggle]').forEach(h=>{ h.addEventListener('click',()=>h.closest('.group-block').classList.toggle('open')); });
   box.querySelectorAll('.friend').forEach(f=>{
@@ -17909,7 +20056,7 @@ on('#profileVoice','click',()=>toast('语音通话 · 待接入'));
 on('#profileVideo','click',()=>toast('视频通话 · 待接入'));
 on('#profileMoments','click',()=>{ if(typeof window.openRoleMomentsPage === 'function') window.openRoleMomentsPage(); });
 on('#profileStar','change',function(){ saveRoleField(window.__profileViewId || getCurrentRoleId(),'star',this.checked); toast(this.checked?'已设为特别关心':'已取消特别关心'); });
-on('#profilePin','change',function(){ saveRoleField(window.__profileViewId || getCurrentRoleId(),'pinned',this.checked); toast(this.checked?'已置顶':'已取消置顶'); });
+on('#profilePin','change',function(){ saveRoleField(window.__profileViewId || getCurrentRoleId(),'pinned',this.checked); renderFriends(); toast(this.checked?'已置顶':'已取消置顶'); });
 
 on('#chatAvatar','click',openProfile);
 on('#splitAvatar','click',openProfile);
@@ -18077,10 +20224,22 @@ function toggleRecConfirmPlay(){
 }
 function sendRecVoice(){
   if(!pendingBlob){ toast('没有可发送的语音'); return; }
-  const url = pendingUrl || URL.createObjectURL(pendingBlob);
   const dur = pendingDur;
-  msgs.push({id:uid(), role:'user', voice:dur, voiceUrl:url, time:Date.now()});
+  const blob = pendingBlob;
+  const tempUrl = pendingUrl || URL.createObjectURL(blob);
+  const roleId = getCurrentRoleId();
+  const idbKey = 'rec_' + roleId + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6);
+
+  /* 先把临时 URL 用起来，保证当次能立刻播；同时把 Blob 存进 IndexedDB */
+  const msg = {id:uid(), role:'user', voice:dur, voiceUrl:tempUrl, voiceIdbKey:idbKey, time:Date.now()};
+  msgs.push(msg);
   saveMsgs(); renderChat(true);
+
+  __idb.set(idbKey, blob).catch(function(e){
+    console.error('语音存 IndexedDB 失败', e);
+    /* 存失败也不影响当次播放，只是刷新后失效 */
+  });
+
   if(confirmAudio){ confirmAudio.pause(); confirmAudio=null; }
   pendingBlob=null; pendingDur=0; pendingUrl=null;
   resetRecUI();
@@ -18154,6 +20313,10 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	scheduleRelationTick();
 	scheduleActiveSend();
 	scheduleActiveDivine();
+	scheduleGroupActivity();
+	scheduleGroupDivine();
+	scheduleGroupActivity();
+	scheduleGroupDivine();
 
 	/* 时间字卡独立调度：每分钟 tick 一次，跨天自动重建计划 */
 	try{
@@ -18281,6 +20444,39 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	on('#cipSearch','click',()=>{ try{ openChatSearch(); }catch(e){ console.error('查找记录打开失败', e); toast('查找记录打开失败：' + e.message); } });
 	on('#cipMute','change',function(){ setRoleMute(getCurrentRoleId(), this.checked); toast(this.checked?'已开启免打扰':'已关闭免打扰'); });
 	on('#cipAutoAddSw','change',function(){ setRoleAutoAdd(getCurrentRoleId(), this.checked); toast(this.checked?'已开启自主加好友':'已关闭自主加好友'); });
+
+/* 点聊天信息面板大头像 → 直接上传 */
+(function bindCipAvatarUpload(){
+  if(window.__cipAvBound) return;
+  window.__cipAvBound = true;
+
+  /* 点头像：用事件委托，面板每次打开都能点 */
+  document.addEventListener('click', function(e){
+    var av = e.target.closest && e.target.closest('#cipAvatar');
+    if(!av) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var f = document.getElementById('cipAvFile');
+    if(f){ f.value = ''; f.click(); }
+  }, true);
+
+  /* 选完文件：裁切 → 写回当前聊天角色头像 */
+  document.addEventListener('change', function(e){
+    var t = e.target;
+    if(!t || t.id !== 'cipAvFile') return;
+    var file = t.files && t.files[0];
+    t.value = '';
+    if(!file) return;
+    openCrop(file, 'square', function(data){
+      var rid = getCurrentRoleId();
+      saveRoleField(rid, 'avatar', data);
+      var cipAv = document.getElementById('cipAvatar');
+      if(cipAv) cipAv.innerHTML = avatarHTML(data);
+      try { refreshChatRole(); } catch(err){}
+      toast('头像已更新');
+    });
+  }, true);
+})();
 	on('#cipTag','click',()=>{
 	  const role = getRole();
 	  uniAsk({
