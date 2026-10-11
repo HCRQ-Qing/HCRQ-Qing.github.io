@@ -72,21 +72,15 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
 }
 /* ===== 输入中尾巴 ===== */
 .typing-bar{
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:64px;
-  padding:6px 20px 8px;
+  display:none;
+  padding:2px 4px 4px;
   font-size:10.5px;
   color:#999;
   letter-spacing:1px;
   pointer-events:none;
-  opacity:0;
-  transition:opacity .2s ease;
   text-align:left;
-  z-index:5;
 }
-.typing-bar.show{opacity:1}
+.typing-bar.show{display:block}
 .typing-bar .dots{
   display:inline-flex;
   gap:2px;
@@ -1407,114 +1401,59 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .modal > .sheet > .sheet-head .x:hover{color:#1a1a1a}
 .modal > .sheet > .sheet-body{padding:14px 20px 20px}
 
-/* ===== #mReply 专属：限高 + 内部滚动 ===== */
-#mReply .sheet-head h3{
-  font-size:15px;
-  font-weight:300;
-  letter-spacing:3px;
+/* ===== 回复设置 · 整页 ===== */
+.screen#mReply{
+  background:#fff;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:flex-start;
+  padding:0;
+}
+.screen#mReply .reply-page{
+  max-width:420px;
+  margin:0 auto;
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+.screen#mReply .reply-top{
+  flex:none;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:20px 22px 12px;
+  background:#fff;
+}
+.screen#mReply .reply-back{
+  width:38px;height:38px;flex:none;
+  border:none;background:transparent;
+  color:#1a1a1a;font-size:22px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 0 4px;
+  font-family:inherit;cursor:pointer;
+  opacity:.55;
+  transition:opacity .18s ease;
+}
+.screen#mReply .reply-back:active{opacity:1}
+.screen#mReply .reply-title{
+  flex:1;
+  font-size:15px;font-weight:300;
+  letter-spacing:6px;
+  text-align:center;
   color:#1a1a1a;
-  font-family:var(--app-font);
+  -webkit-text-stroke:.15px #1a1a1a;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
 }
-/* 修复：回复设置弹窗右上角关闭按钮被压成 < 的残留 */
-#mReply .sheet-head .x{
-  width:28px;
-  height:28px;
-  flex:none;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:14px;
-  color:#ccc;
-  background:transparent;
-  border:none;
-  cursor:pointer;
-  padding:0;
-  line-height:1;
-  font-family:inherit;
-}
-#mReply .sheet-head .x:active{color:#1a1a1a}
-#mReply{
-  align-items:center !important;
-  padding:20px !important;
-  background:rgba(0,0,0,.12) !important;
-  backdrop-filter:none !important;
-  -webkit-backdrop-filter:none !important;
-}
-#mReply .sheet{
-  width:100%;
-  max-width:360px;
-  max-height:88vh;
-  max-height:88dvh;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  margin:0 auto;
-  border-radius:22px !important;
-  background:rgba(255,255,255,.94) !important;
-  backdrop-filter:blur(20px) saturate(1.4);
-  -webkit-backdrop-filter:blur(20px) saturate(1.4);
-  border:0.7px solid rgba(255,255,255,.7) !important;
-  box-shadow:0 20px 60px rgba(0,0,0,.08) !important;
-  animation:rpPop .28s cubic-bezier(.22,1,.36,1);
-}
-@keyframes rpPop{
-  from{opacity:0;transform:scale(.95)}
-  to{opacity:1;transform:scale(1)}
-}
-@keyframes rpUp{
-  from{transform:translateY(100%)}
-  to{transform:translateY(0)}
-}
-/* 新头部：把手 + 标题 */
-#mReply .rp-sheet-head{
-  flex:none;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:14px 22px 6px;
-}
-#mReply .rp-handle{
-  width:36px;
-  height:4px;
-  background:#ddd;
-  border-radius:2px;
-  margin-bottom:16px;
-  flex:none;
-}
-#mReply .rp-titlerow{
-  display:flex;
-  width:100%;
-  align-items:center;
-  justify-content:space-between;
-}
-#mReply .rp-title{
-  font-size:17px;
-  font-weight:300;
-  letter-spacing:4px;
-  color:#1a1a1a;
-}
-#mReply .rp-x{
-  width:30px;
-  height:30px;
-  border:none;
-  background:transparent;
-  color:#bbb;
-  font-size:16px;
-  cursor:pointer;
-  padding:0;
-  line-height:1;
-  font-family:inherit;
-}
-#mReply .rp-x:active{color:#1a1a1a}
+.screen#mReply .reply-top-right{width:38px;flex:none}
 #mReply #replyBody{
   flex:1 1 auto;
   min-height:0;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:none;
-  padding:14px 22px calc(24px + env(safe-area-inset-bottom));
+  padding:4px 22px calc(22px + env(safe-area-inset-bottom)) !important;
 }
 #mReply .rs-tabs{margin-bottom:0}
 #mReply #replyBody::-webkit-scrollbar{display:none}
@@ -6984,10 +6923,6 @@ window.__APP_VERSION__ = '1.0.2';
 	  </div>
 
         <div id="chatList"></div>
-        <div class="typing-bar" id="typingBar">
-          对方正在输入
-          <span class="dots"><span></span><span></span><span></span></span>
-        </div>
         <button class="scroll-bottom-btn" id="scrollBottomBtn" type="button" title="回到最新消息">
           <svg viewBox="0 0 24 24"><polyline points="6,9 12,15 18,9"/></svg>
         </button>
@@ -7873,15 +7808,12 @@ window.__APP_VERSION__ = '1.0.2';
   </div>
 </div>
 
-<div class="modal" id="mReply">
-  <div class="overlay" data-close></div>
-  <div class="sheet">
-    <div class="rp-sheet-head">
-      <div class="rp-handle"></div>
-      <div class="rp-titlerow">
-        <div class="rp-title">回复设置</div>
-        <button class="rp-x" data-close type="button">✕</button>
-      </div>
+<div class="screen" id="mReply">
+  <div class="reply-page">
+    <div class="reply-top">
+      <button class="reply-back" id="replyBack" type="button">‹</button>
+      <div class="reply-title">回 复 设 置</div>
+      <div class="reply-top-right"></div>
     </div>
     <div class="sheet-body" id="replyBody"></div>
   </div>
@@ -8856,7 +8788,6 @@ window.__APP_VERSION__ = '1.0.2';
       <div class="call-mini-time" id="callMiniTime">00:00</div>
     </div>
     <button class="call-mini-accept" id="callMiniAccept" type="button" style="display:none">✓</button>
-    <button class="call-mini-accept" id="callMiniAccept" type="button" style="display:none">✓</button>
     <button class="call-mini-hangup" id="callMiniHangup" type="button">✕</button>
   </div>
   <div class="call-mini-media" id="callMiniMedia" style="display:none">
@@ -8987,6 +8918,7 @@ const BEAUTY_KEY = 'mj_beauty_v1';
 let beautyCfg = lsGet(BEAUTY_KEY, null) || { avatarShape:'square', layout:'default', bubble:'gray' };
 if(!beautyCfg.bubble) beautyCfg.bubble = 'gray';
 function saveBeautyCfg(){ lsSet(BEAUTY_KEY, beautyCfg); }
+let _lastAvatarShape = '';
 function applyBeautyCfg(){
   // 默认值兜底（防止旧 localStorage 里字段缺失）
   if(typeof beautyCfg.fontSize !== 'number') beautyCfg.fontSize = 13.5;
@@ -9008,28 +8940,32 @@ function applyBeautyCfg(){
   const radius = shape === 'circle' ? '50%' : '14%';
   // 一劳永逸：全站所有头像统一由 CSS 变量控制
   document.documentElement.style.setProperty('--avatar-radius', radius);
-  // 清掉旧版本可能残留的内联 style，避免和变量打架
-  document.querySelectorAll('.msg-av, .msg-av-inner, .f-av, .chat-avatar, #meAvatar, #profileAvatar, .cip-av, .nf-av, .mm-av, .mp-av, .nc-av, .bl-av, .pick-av, .pav').forEach(el=>{
-    el.style.borderRadius = '';
-    const img = el.querySelector('img');
-    if(img) img.style.borderRadius = '';
-  });
+
+  // ★ 只有形状真的变化时，才遍历 DOM 清 inline style / 设 mm-av-radius
+  //   否则每次渲染消息都会跑一遍 querySelectorAll，聊天记录长了会明显变慢
+  if(_lastAvatarShape !== shape){
+    _lastAvatarShape = shape;
+    document.querySelectorAll('.msg-av, .msg-av-inner, .f-av, .chat-avatar, #meAvatar, #profileAvatar, .cip-av, .nf-av, .mm-av, .mp-av, .nc-av, .bl-av, .pick-av, .pav').forEach(el=>{
+      el.style.borderRadius = '';
+      const img = el.querySelector('img');
+      if(img) img.style.borderRadius = '';
+    });
+    const mmRadius = (shape === 'circle') ? '50%' : '12%';
+    document.documentElement.style.setProperty('--mm-av-radius', mmRadius);
+    document.querySelectorAll('#momentsScreen .mm-av').forEach(el=>{
+      el.style.borderRadius = mmRadius;
+    });
+  }
 
   // 布局
   const pageChat = document.getElementById('page-chat');
   if(pageChat){
 	pageChat.classList.toggle('split-mode', (beautyCfg.layout||'default')==='split');
 	pageChat.classList.toggle('minimal-mode', (beautyCfg.layout||'default')==='minimal');
-	  // 新的朋友页头像方圆
-  const nfScr = document.getElementById('newFriendsScreen');
-  if(nfScr) nfScr.setAttribute('data-avatar-shape', beautyCfg.avatarShape === 'circle' ? 'circle' : 'square');
   }
-  // 动态页头像方圆
-  const mmRadius = (beautyCfg.avatarShape === 'circle') ? '50%' : '12%';
-  document.documentElement.style.setProperty('--mm-av-radius', mmRadius);
-  document.querySelectorAll('#momentsScreen .mm-av').forEach(el=>{
-	el.style.borderRadius = mmRadius;
-  });
+  // 新的朋友页头像方圆
+  const nfScr = document.getElementById('newFriendsScreen');
+  if(nfScr) nfScr.setAttribute('data-avatar-shape', shape === 'circle' ? 'circle' : 'square');
 
   // ★ 刷新气泡预览区
   refreshBubblePreview();
@@ -9111,6 +9047,9 @@ const DEFAULT_CARD_GROUPS = [
 	  { text:'自顾自己已经有了定义\n何时该靠近什么应该摒弃', t:Date.now() },
 	  '眷恋唯一的星光就是你'
 	] }
+  ]},
+  { id:'g-edited', name:'修改字卡存放处', icon:'note', sub:'长按角色消息编辑后自动存到这里', cats:[
+	{ id:'ce-all', name:'修改', list:[] }
   ]},
   { id:'g-divine', name:'占卜', icon:'star', sub:'角色主动占卜时从这里抽问题', cats:[
 	{ id:'cdv1', name:'问题', list:[
@@ -10522,6 +10461,11 @@ function renderChatFull(forceBottom){
   if(window.__jumpingToMsg){
     forceBottom = false;
   }
+  /* ★ 关键：在 box.innerHTML 被覆盖前，先记下旧 typing-bar 是否带 show。
+     这样重建后能原样恢复，发消息瞬间不会把"对方正在输入"打断。 */
+  const _oldTb = box.querySelector('#typingBar');
+  const _wasTypingShown = !!(_oldTb && _oldTb.classList.contains('show'));
+  if(_wasTypingShown) window.__typingVisible = true;
   const role = getRole();
   const wasAtBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
   box.innerHTML = msgs.map((m, idx)=>{
@@ -10662,6 +10606,18 @@ function renderChatFull(forceBottom){
 	  return msgHTML.replace('class="bubble', 'class="bubble message-received message-bubble-char" data-side="char"');
 	}
   }).join('');
+  /* 每次重建列表时，在末尾追加「输入中」尾巴。
+     用函数开头记下的 _wasTypingShown 恢复显示状态，
+     这样用户发消息触发全量重渲染时，输入中尾巴不会断。 */
+  (function appendTypingBar(){
+    var _tb = document.createElement('div');
+    _tb.className = 'typing-bar';
+    _tb.id = 'typingBar';
+    _tb.innerHTML = '对方正在输入 <span class="dots"><span></span><span></span><span></span></span>';
+    if(_wasTypingShown) _tb.classList.add('show');
+    box.appendChild(_tb);
+  })();
+
   /* ★ 合并转发卡片：点击展开 */
   box.querySelectorAll('.merge-card[data-merge]').forEach(el=>{
 	el.addEventListener('click', (e)=>{
@@ -11108,6 +11064,10 @@ function showMsgMenu(msgEl,x,y){
 		// 复制整段文字
 		copyText(m.text || '', '已复制');
 
+	  } else if(act === 'edit'){
+		// 编辑角色的话，改完可以加入字卡库
+		openEditChar(m);
+
 	  } else if(act === 'quote-divine'){
 		// 引用占卜结果
 		const name = isUser ? userName() : getRole().name;
@@ -11438,7 +11398,66 @@ on('#selOk','click',()=>{
   $('#selOverlay').classList.remove('show');
   selectingMsg = null;
 });
-function openEditChar(m){ const edit=prompt('编辑角色的话：',m.text||''); if(edit===null) return; const t=edit.trim(); if(!t) return; if(!m.originalText){ m.originalText=m.text; } m.text=t; m.edited=true; saveMsgs(); renderChat(); setTimeout(()=>{ if(confirm('是否切回原话？\n确定=切回原话；取消=保留当前')){ m.text=m.originalText||m.text; m.edited=false; } saveMsgs(); renderChat(); },100); }
+function openEditChar(m){
+  if(!m || m.role !== 'char') return;
+  uniAsk({
+    title: '编辑角色的话',
+    sub: 'CARD · 改完可以加入字卡库',
+    value: m.text || '',
+    placeholder: '输入新的内容',
+    maxlength: 200
+  }).then(function(v){
+    if(v === null) return;
+    const t = String(v).trim();
+    if(!t){ toast('内容不能为空'); return; }
+    if(!m.originalText) m.originalText = m.text;
+    m.text = t;
+    m.edited = true;
+    saveMsgs();
+    renderChat();
+    /* 改完 250ms 后问：要不要加入字卡库 */
+    setTimeout(function(){ askAddToCardStore(t); }, 250);
+  });
+}
+
+/* 编辑完 → 直接塞进「修改字卡存放处 / 修改」，不弹面板 */
+function askAddToCardStore(text){
+  const t = String(text || '').trim();
+  if(!t) return;
+
+  /* 找「修改字卡存放处」分组；没有就现建一个 */
+  let groups = getGroupsByOwner('public');
+  let g = groups.find(function(x){ return x.id === 'g-edited'; });
+  if(!g){
+    g = {
+      id: 'g-edited',
+      name: '修改字卡存放处',
+      icon: 'note',
+      sub: '长按角色消息编辑后自动存到这里',
+      cats: [{ id: 'ce-all', name: '修改', list: [] }]
+    };
+    groups.push(g);
+    saveCardStore();
+  }
+  if(!g.cats) g.cats = [];
+  let cat = g.cats.find(function(c){ return c.id === 'ce-all'; });
+  if(!cat){
+    cat = { id: 'ce-all', name: '修改', list: [] };
+    g.cats.unshift(cat);
+  }
+  if(!cat.list) cat.list = [];
+
+  const exists = cat.list.some(function(x){
+    return String(cardText(x)).trim() === t;
+  });
+  if(exists){ toast('这条已经存过了'); return; }
+
+  cat.list.push({ text: t, t: Date.now() });
+  saveCardStore();
+  toast('已存入「修改字卡存放处」');
+}
+
+
 let curQuote=null;
 function setQuote(q){ curQuote=q; $('#inputQuoteText').textContent=q.text; $('#inputQuote').classList.add('show'); }
 on('#quoteClose','click',()=>{ curQuote=null; $('#inputQuote').classList.remove('show'); });
@@ -11463,20 +11482,14 @@ function sendMessage(){
 
 	const m = {id:uid(), role:'user', text, time:Date.now()};
 	if(curQuote){ m.quote = curQuote; curQuote=null; const iq=$('#inputQuote'); if(iq) iq.classList.remove('show'); }
-	/* 发消息时先收起「输入中」尾巴 */
-	const typingBar = document.getElementById('typingBar');
-	if(typingBar) typingBar.classList.remove('show');
+
 	/* ★ 发出消息 → 播发消息音效 */
 	try{ playSoundOnce('outMsg'); }catch(e){}
 	msgs.push(m);
 	inp.value = ''; inp.style.height = 'auto';
-	// 【已读/未读】发出瞬间掷骰子：50% 未读 / 50% 已读
-	m.readState = (Math.random() < 0.5) ? 'unread' : 'read';
+	m.readState = 'unread';
 	saveMsgs(); renderChat(true);
-	/* ★ 未读→已读的定时器：跟语音走同一套 */
-	if(m.readState === 'unread'){
-	  scheduleReadReceipt(m.id);
-	}
+	armReadCooldown();
 	triggerReply();
 	/* 发完后不抢焦点：避免点发送时弹起键盘 */
   }catch(err){ console.error('sendMessage error:', err); toast('发送失败：'+err.message); }
@@ -11493,10 +11506,8 @@ function scheduleReadReceipt(msgId){
     const m = msgs.find(x=>x.id===msgId);
     if(!m) return;
     if(m.readState === 'read' || m.readState === 'noReply') return;
-    // 如果已经被判定为已读不回，就不要覆盖
-    m.readState = 'read';
-    saveMsgs();
-    renderChat();
+    // 用「向前传播」的写法：这条变已读，它之前的所有 user 消息也一起变已读
+    _applyReadStateUpTo(m, 'read');
   }, wait);
 }
 
@@ -11509,29 +11520,79 @@ function pickRandomCardText(){
   return pool[Math.floor(Math.random()*pool.length)];
 }
 
+/* 输入中尾巴：统一显示 / 隐藏入口，同时更新跨渲染的状态 */
+function getTypingBar(){
+  return document.getElementById('typingBar');
+}
+function showTypingBar(){
+  window.__typingVisible = true;
+  /* 记一个"最近显示过"的时间戳，全量重渲染时用来避免误隐藏 */
+  window.__typingVisualLockUntil = Date.now() + 1500;
+  const bar = getTypingBar();
+  if(bar) bar.classList.add('show');
+}
+function hideTypingBar(){
+  window.__typingVisible = false;
+  window.__typingVisualLockUntil = 0;
+  const bar = getTypingBar();
+  if(bar) bar.classList.remove('show');
+}
 function showTypingHint(){
-  const bar = document.getElementById('typingBar');
-  if(!bar) return ()=>{};
-  bar.classList.add('show');
-  return ()=>{
-    bar.classList.remove('show');
-  };
+  showTypingBar();
+  return ()=> hideTypingBar();
+}
+
+/* 把某条 user 消息及其之前所有同角色、未撤回、非系统的 user 消息，
+   统一改成同一个 readState。理由：消息是有先后的，
+   后面的消息都读了，前面的不可能还停在"未读"。 */
+function _applyReadStateUpTo(anchorMsg, state){
+  if(!Array.isArray(msgs) || !msgs.length) return;
+  /* 用 id 找锚点索引（不用 msgs.indexOf），
+     因为 lastUser 有时来自 localStorage 读出的副本，indexOf 会返回 -1 导致整段失效 */
+  let idx = -1;
+  if(anchorMsg && anchorMsg.id){
+    for(let i = 0; i < msgs.length; i++){
+      if(msgs[i].id === anchorMsg.id){ idx = i; break; }
+    }
+  }
+  /* 找不到锚点：退化为"以最后一条 user 消息为准" */
+  if(idx < 0){
+    for(let i = msgs.length - 1; i >= 0; i--){
+      const x = msgs[i];
+      if(x && x.role === 'user' && !x.recalled && !x.sys && !x.namecard){ idx = i; break; }
+    }
+  }
+  if(idx < 0) return;
+
+  let changed = false;
+  for(let i = 0; i <= idx; i++){
+    const x = msgs[i];
+    if(!x || x.role !== 'user') continue;
+    if(x.recalled || x.sys || x.namecard) continue;
+    /* 只改还没定成"更靠后状态"的：
+       - 已经是 noReply（已读不回）就不动，视为终态
+       - 已经是同一状态也不动
+       - unread / read 可以互相推进 */
+    if(x.readState === 'noReply' && state !== 'noReply') continue;
+    if(x.readState === state && !!x.readNoReply === (state === 'noReply')) continue;
+    x.readState = state;
+    x.readNoReply = (state === 'noReply');
+    changed = true;
+  }
+  if(changed){
+    saveMsgs();
+    renderChat();
+  }
 }
 
 function markLastUserRead(){
   const lastUser = [...msgs].reverse().find(x=>x.role==='user' && !x.recalled && !x.sys && !x.namecard);
-  if(lastUser){
-    lastUser.readState = 'read';
-    lastUser.readNoReply = false;
-  }
+  _applyReadStateUpTo(lastUser, 'read');
 }
 
 function markLastUserNoReply(){
   const lastUser = [...msgs].reverse().find(x=>x.role==='user' && !x.recalled && !x.sys && !x.namecard);
-  if(lastUser){
-    lastUser.readState = 'noReply';
-    lastUser.readNoReply = true;
-  }
+  _applyReadStateUpTo(lastUser, 'noReply');
 }
 
 function runRecallChain(chainCount, baseDelay){
@@ -12044,13 +12105,13 @@ function runTimedReplyRounds(){
     const typingDelay = Math.min(delay, 800 + Math.random()*1200);
     setTimeout(()=>{
       if(!box) return;
-      const bar = document.getElementById('typingBar');
+      const bar = getTypingBar();
       if(bar) bar.classList.add('show');
     }, Math.max(0, delay - typingDelay));
 
     setTimeout(()=>{
       try{
-        const bar = document.getElementById('typingBar');
+        const bar = getTypingBar();
         if(bar) bar.classList.remove('show');
         if(res[0].kind==='bubbles'){
           const lastUser = [...msgs].reverse().find(x=>x.role==='user'&&!x.recalled&&x.text);
@@ -12121,10 +12182,10 @@ function runTimedReplyRounds(){
           /* 只有当前就在看这个角色，才更新 readState 并重绘 */
           if(getCurrentRoleId() === roleId){
             if(lastUser){
-              lastUser.readState = 'read';
-              lastUser.readNoReply = false;
+              _applyReadStateUpTo(lastUser, 'read');
+            } else {
+              saveMsgs(); renderChat();
             }
-            saveMsgs(); renderChat();
           }
         }
       }catch(err){ console.error('runTimedReplyRounds error:', err); }
@@ -12140,15 +12201,109 @@ function runTimedReplyRounds(){
 var pendingReply = {};
 var ReplyRunner = (function(){
   var running = {};
+  var timers = {};
+  var TIMEOUT_MS = 25000;
   function isRunning(roleId){ return !!running[roleId]; }
+  function release(roleId){
+    if(timers[roleId]){ clearTimeout(timers[roleId]); delete timers[roleId]; }
+    if(running[roleId]) delete running[roleId];
+  }
   function start(roleId, fn){
     if(running[roleId]) return false;
     running[roleId] = true;
-    fn(function done(){ delete running[roleId]; });
+    timers[roleId] = setTimeout(function(){
+      console.warn('[ReplyRunner] 超时强制解锁：' + roleId);
+      release(roleId);
+      try{
+        if(typeof pendingReply !== 'undefined' && pendingReply[roleId]){
+          pendingReply[roleId] = false;
+          triggerReply();
+        }
+      }catch(e){}
+    }, TIMEOUT_MS);
+    fn(function done(){ release(roleId); });
     return true;
   }
   return { isRunning: isRunning, start: start };
 })();
+
+/* ===== 已读状态机 =====
+   1. 发出消息：80% 未读 / 20% 已读（掷骰子在 sendMessage/sendRecVoice 里做）
+   2. 发完消息 2 分钟没有新消息 → 所有未读的按 80% 概率变已读
+      （2 分钟内继续发消息 → 定时器重置，消息保持未读）
+   3. 已读状态每 30 秒摇一次 5% 概率变回未读
+   4. 已读不回（noReply）不参与
+*/
+var _readArmTimer = null;
+
+setInterval(function(){
+  if(!Array.isArray(msgs)) return;
+  var changed = false;
+  msgs.forEach(function(m){
+    if(!m || m.role !== 'user') return;
+    if(m.recalled || m.sys || m.namecard) return;
+    if(m.readState === 'noReply') return;
+    if(m.readState === 'read' && Math.random() < 0.05){
+      m.readState = 'unread';
+      changed = true;
+    }
+  });
+  if(changed){ saveMsgs(); if(!window.__jumpingToMsg) renderChat(); }
+}, 30 * 1000);
+
+/* ===== 已读状态机 =====
+   1. 刚上线：所有 user 消息重新掷骰 → 90% 未读 / 10% 已读
+   2. 冷却 2 分钟无互动：所有 user 消息重新掷骰 → 80% 未读 / 20% 已读
+   3. 角色回复：由 emitBubbles / _applyReadStateUpTo 处理 → 已读
+   4. 已读后每 30 秒摇一次 5% 概率 → 未读
+   5. 已读不回（noReply）独立，不参与
+*/
+var _readCooldownTimer = null;
+function armReadCooldown(){
+  if(_readCooldownTimer) clearTimeout(_readCooldownTimer);
+  _readCooldownTimer = setTimeout(function(){
+    if(!Array.isArray(msgs)) return;
+    var changed = false;
+    msgs.forEach(function(m){
+      if(!m || m.role !== 'user') return;
+      if(m.recalled || m.sys || m.namecard) return;
+      if(m.readState === 'noReply') return;
+      m.readState = (Math.random() < 0.80) ? 'unread' : 'read';
+      changed = true;
+    });
+    if(changed){ saveMsgs(); if(!window.__jumpingToMsg) renderChat(); }
+  }, 2 * 60 * 1000);
+}
+
+/* 刚上线：所有 user 消息 90% 未读 / 10% 已读 */
+function runOnlineReadCheck(){
+  if(!Array.isArray(msgs)) return;
+  var changed = false;
+  msgs.forEach(function(m){
+    if(!m || m.role !== 'user') return;
+    if(m.recalled || m.sys || m.namecard) return;
+    if(m.readState === 'noReply') return;
+    m.readState = (Math.random() < 0.90) ? 'unread' : 'read';
+    changed = true;
+  });
+  if(changed){ saveMsgs(); if(!window.__jumpingToMsg) renderChat(); }
+}
+
+/* 已读后每 30 秒摇一次：5% 概率已读 → 未读 */
+setInterval(function(){
+  if(!Array.isArray(msgs)) return;
+  var changed = false;
+  msgs.forEach(function(m){
+    if(!m || m.role !== 'user') return;
+    if(m.recalled || m.sys || m.namecard) return;
+    if(m.readState === 'noReply') return;
+    if(m.readState === 'read' && Math.random() < 0.05){
+      m.readState = 'unread';
+      changed = true;
+    }
+  });
+  if(changed){ saveMsgs(); if(!window.__jumpingToMsg) renderChat(); }
+}, 30 * 1000);
 
 function triggerReply(){
   const role = getRole();
@@ -12164,7 +12319,6 @@ function triggerReply(){
 
   ReplyRunner.start(roleId, function(done){
     runReplyChain(function(){
-      /* 链跑完：如果期间又有新消息，则再跑一次；否则真正结束 */
       if(pendingReply[roleId]){
         pendingReply[roleId] = false;
         done();
@@ -12211,10 +12365,22 @@ function runReplyChain(onDone){
     return;
   }
 
+  /* 角色在 delay 时间内"看到"消息 → 变已读
+     时间点：delay 的 30%~70% 处，保证在回复之前、且落在用户设定的延迟内 */
+  const readAt = Math.max(300, delay * (0.3 + Math.random() * 0.4));
+  setTimeout(()=>{
+    if(!stillSameRole()) return;
+    const srcMsgs2 = (getCurrentRoleId() === targetRoleId)
+      ? msgs
+      : (lsGet('mj_msgs_' + targetRoleId, null) || []);
+    const lastU = [...srcMsgs2].reverse().find(x => x.role==='user' && !x.recalled && !x.sys && !x.namecard);
+    if(lastU) _applyReadStateUpTo(lastU, 'read');
+  }, readAt);
+
   const typingDelay = Math.min(delay, 800 + Math.random()*1200);
   setTimeout(()=>{
     if(!stillSameRole()) return;
-    const bar = document.getElementById('typingBar');
+    const bar = getTypingBar();
     if(bar) bar.classList.add('show');
   }, Math.max(0, delay - typingDelay));
 
@@ -12228,7 +12394,7 @@ function runReplyChain(onDone){
 
   function runGaps(cb){
     if(gapCount <= 0){ cb(); return; }
-    const bar = document.getElementById('typingBar');
+    const bar = getTypingBar();
     if(bar) bar.classList.remove('show');
     setTimeout(()=>{
       if(willStopMidway){
@@ -12239,7 +12405,7 @@ function runReplyChain(onDone){
         return;
       }
       if(!stillSameRole()){ onDone(); return; }
-      const bar2 = document.getElementById('typingBar');
+      const bar2 = getTypingBar();
       if(bar2) bar2.classList.add('show');
       gapCount--;
       setTimeout(()=>runGaps(cb), 600 + Math.random()*1500);
@@ -12249,7 +12415,7 @@ function runReplyChain(onDone){
   function emitBubbles(){
     if(!stillSameRole()){ onDone(); return; }
     try{
-      const bar = document.getElementById('typingBar');
+      const bar = getTypingBar();
       if(bar) bar.classList.remove('show');
       if(res[0].kind==='bubbles'){
         const srcMsgs = (getCurrentRoleId() === targetRoleId)
@@ -12324,10 +12490,10 @@ function runReplyChain(onDone){
         });
         if(getCurrentRoleId() === role.id){
           if(lastUser){
-            lastUser.readState = 'read';
-            lastUser.readNoReply = false;
+            _applyReadStateUpTo(lastUser, 'read');
+          } else {
+            saveMsgs(); renderChat();
           }
-          saveMsgs(); renderChat();
         }
       }
     }catch(err){ console.error('triggerReply error:', err); }
@@ -16868,9 +17034,9 @@ function scheduleGroupDivine(){
 /* ===== 群聊列表页 ===== */
 function openGroupList(){
   showScreen('groupListScreen');
-  renderGroupList();
+  renderGroupListPage();
 }
-function renderGroupList(){
+function renderGroupListPage(){
   const box = document.getElementById('gcBody');
   if(!box) return;
   const list = getGroupList();
@@ -17182,57 +17348,7 @@ function openVoiceLib(){
   try{ renderVideoLib(); }catch(e){ console.error(e); }
 }
 
-/* ===== 视频库上传（本地 / URL） ===== */
-function handleVideoLibUploadFiles(files){
-  const roleId = getCurrentRoleId();
-  const arr = files.slice();
-  if(!arr.length) return;
-  toast('正在处理 ' + arr.length + ' 个视频…');
-  let done = 0;
-  arr.forEach(function(file, idx){
-    const key = 'video_' + roleId + '_' + Date.now().toString(36) + '_' + idx;
-    readVideoDuration(file).then(function(dur){
-      return __idb.set(key, file).then(function(){
-        const cur = getVideoLib(roleId);
-        cur.push({
-          id: uid(),
-          key: key,
-          name: file.name || ('视频 ' + (cur.length + 1)),
-          dur: dur,
-          size: file.size,
-          t: Date.now()
-        });
-        setVideoLib(roleId, cur);
-        done++;
-        if(done === arr.length){
-          renderVideoLib();
-          toast('已上传 ' + done + ' 条');
-        }
-      });
-    }).catch(function(e){
-      console.error('视频上传失败', e);
-      toast('上传失败：' + e.message);
-    });
-  });
-}
-
-function handleVideoLibUploadUrl(url){
-  const u = String(url || '').trim();
-  if(!u){ toast('请输入链接'); return; }
-  const roleId = getCurrentRoleId();
-  const cur = getVideoLib(roleId);
-  cur.push({
-    id: uid(),
-    url: u,
-    name: u.length > 40 ? (u.slice(0, 38) + '…') : u,
-    dur: 0,
-    size: 0,
-    t: Date.now()
-  });
-  setVideoLib(roleId, cur);
-  renderVideoLib();
-  toast('已添加');
-}
+/* 视频上传的两个函数已在上文（openVoiceLib 之前）定义，此处不再重复 */
 
 /* ===== 视频上传入口事件 ===== */
 document.addEventListener('click', function(e){
@@ -19032,7 +19148,7 @@ function runApplyTick(){
   renderFriends();
   renderNewFriends();
 }
-setInterval(function(){ try{ runApplyTick(); }catch(e){ console.error(e); } }, 60*60*1000);
+
 
 function openChatSearch(){
   closeChatInfo();
@@ -20710,8 +20826,8 @@ function refreshScrollbar(){ if(!scroller||!customScroll||!thumb) return; const 
 })();
 if(scroller) scroller.addEventListener('scroll',refreshScrollbar);
 window.addEventListener('resize',refreshScrollbar);
-on('#clBack','click',()=>closeScreen());
-on('#cdBack','click',()=>{ if(selMode){ exitSelMode(); return; } showScreen('cardLibScreen'); renderGroupList(); });
+on('#clBack','click',()=>{ closeScreen(); cdHisClose(); });
+on('#cdBack','click',()=>{ if(selMode){ exitSelMode(); return; } cdHisClose(); showScreen('cardLibScreen'); renderGroupListPage(); });
 /* ===== 字卡搜索历史 ===== */
 var CD_HIS_KEY = 'mj_cd_search_his_v1';
 var cdHisMax = 10;
@@ -20799,9 +20915,7 @@ on('#cdSearchInput','keydown',function(e){
     this.blur();
   }
 });
-/* 回字卡列表 / 换分类时，关掉历史 */
-on('#cdBack','click',function(){ cdHisClose(); });
-on('#clBack','click',function(){ cdHisClose(); });
+
 
 let editingMoodIndex = -1;
 let pendingMoodAnim = '1';
@@ -20912,9 +21026,11 @@ on('#btnMoodSettingsOk','click',()=>{
 on('#moodPlayAllBtn','click',()=>{ const cat = getMoodCat(); if(!cat || !cat.list.length){ toast('还没有心情'); return; } let i = 0; function next(){ if(i >= cat.list.length) return; const item = cat.list[i]; const m = typeof item==='string' ? {mood:item,kaomoji:'(◍＞◡＜◍)',anim:'1'} : item; showTopbarMoodBubble(m.kaomoji||'', m.anim||getMoodCfg().defaultAnim||'1'); const mpMb = $('#mpMb'); if(mpMb){ mpMb.textContent = m.kaomoji||''; playAnim(mpMb, m.anim||'1'); $('#mpInfo').innerHTML = '<b>'+escapeHTML(m.mood||'')+'</b> · '+escapeHTML(m.kaomoji||''); } i++; setTimeout(next, 1400); } next(); });
 on('#mpReplay','click',()=>{ const cat = getMoodCat(); if(!cat || !cat.list.length) return; const item = cat.list[0]; const m = typeof item==='string' ? {mood:item,kaomoji:'(◍＞◡＜◍)',anim:'1'} : item; const mpMb = $('#mpMb'); if(mpMb){ mpMb.textContent = m.kaomoji||''; playAnim(mpMb, m.anim||'1'); } });
 on('#moodBack','click',()=>{ showScreen('cardLibScreen'); renderGroupList(); });
+on('#replyBack','click',()=>closeScreen());
+on('#replyBack','click',()=>closeScreen());
 (function(){ const el = $('#mpAv'); if(el) el.innerHTML = avatarHTML(getRole().avatar); })();
 
-function openReplySettings(){ renderReplyPanel('pace'); $('#mReply').classList.add('show'); }
+function openReplySettings(){ renderReplyPanel('pace'); showScreen('mReply'); }
 function renderReplyPanel(tab){
   const r = getReply();
   const body = $('#replyBody');
@@ -22586,12 +22702,10 @@ function sendRecVoice(){
 
   /* 先把临时 URL 用起来，保证当次能立刻播；同时把 Blob 存进 IndexedDB */
   const msg = {id:uid(), role:'user', voice:dur, voiceUrl:tempUrl, voiceIdbKey:idbKey, time:Date.now()};
-  /* ★ 语音也走未读/已读/已读不回：发出瞬间掷骰子 */
-  msg.readState = (Math.random() < 0.5) ? 'unread' : 'read';
+  msg.readState = (Math.random() < 0.80) ? 'unread' : 'read';
   msgs.push(msg);
   saveMsgs(); renderChat(true);
-  /* ★ 已读状态机：给这条语音安排未读→已读的定时器 */
-  scheduleReadReceipt(msg.id);
+  armReadStateCheck();
 
   __idb.set(idbKey, blob).catch(function(e){
     console.error('语音存 IndexedDB 失败', e);
@@ -22671,6 +22785,8 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	msgs = loadMsgs();
 	renderChat();
 	renderFriends();
+	/* 刚上线：所有 user 消息 90% 未读 / 10% 已读 */
+	setTimeout(function(){ try{ runOnlineReadCheck(); }catch(e){ console.error(e); } }, 1500);
 	applyMoodUI();
 	applyTopbarBg();
 	applyBeautyCfg();
@@ -22684,13 +22800,9 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	scheduleActiveDivine();
 	scheduleGroupActivity();
 	scheduleGroupDivine();
-	scheduleGroupActivity();
-	scheduleGroupDivine();
 	/* ★ 启动个签自动切换定时器 */
 	try{ startSignSwitchTimer(); }catch(e){ console.error('个签切换启动失败', e); }
 	/* ★ 启动通话模块 */
-	try{ if(typeof startCallModule === 'function'){ startCallModule(); } }catch(e){ console.error('通话模块启动失败', e); }
-	/* ★ 启动通话模块（等段 3 插入后才会真正生效） */
 	try{ if(typeof startCallModule === 'function'){ startCallModule(); } }catch(e){ console.error('通话模块启动失败', e); }
 
 	/* 时间字卡独立调度：每分钟 tick 一次，跨天自动重建计划 */
@@ -26323,6 +26435,73 @@ function goToPage(name){
   margin-top:4px;
 }
 .vp-desc-count b{color:#1a1a1a;font-family:Georgia,serif}
+
+/* ===== 回复设置 · 整页 ===== */
+.screen#mReply{
+  background:#fff;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:flex-start;
+  padding:0;
+}
+.screen#mReply.show{display:flex}
+.screen#mReply .reply-page{
+  max-width:420px;
+  margin:0 auto;
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+.screen#mReply .reply-top{
+  flex:none;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:20px 22px 12px;
+  background:#fff;
+}
+.screen#mReply .reply-back{
+  width:38px;height:38px;flex:none;
+  border:none;background:transparent;
+  color:#1a1a1a;font-size:22px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 0 4px;
+  font-family:inherit;cursor:pointer;
+  opacity:.55;
+  transition:opacity .18s ease;
+}
+.screen#mReply .reply-back:active{opacity:1}
+.screen#mReply .reply-title{
+  flex:1;
+  font-size:15px;font-weight:300;
+  letter-spacing:6px;
+  text-align:center;
+  color:#1a1a1a;
+  -webkit-text-stroke:.15px #1a1a1a;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+.screen#mReply .reply-top-right{width:38px;flex:none}
+.screen#mReply .sheet-body{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  padding:0;
+}
+.screen#mReply .sheet-body::-webkit-scrollbar{display:none}
+
+/* 旧的弹窗专用外壳在整页模式下不再生效 */
+.screen#mReply .sheet,
+.screen#mReply .rp-sheet-head,
+.screen#mReply .rp-handle,
+.screen#mReply .rp-titlerow,
+.screen#mReply .rp-title,
+.screen#mReply .rp-x{
+  display:none !important;
+}
 </style>
 
 <script>
