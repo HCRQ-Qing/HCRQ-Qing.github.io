@@ -10,6 +10,11 @@
 <style>
 @font-face{font-family:'LikeJian';src:url('https://cdn.jsdelivr.net/gh/maoken-fonts/MaokenYingBiKaiShuJ@main/MaokenYingBiKaiShuJ_0.20.ttf') format('truetype');font-display:swap}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:rgba(0,0,0,0) !important;-webkit-touch-callout:none;user-select:none}
+/* ===== 全站统一遮罩变量 ===== */
+:root{
+  --mask-bg:rgba(0,0,0,.35);
+  --mask-blur:blur(3px);
+}
 html,body{height:100%;overflow:hidden}
 body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th-text,#fff0f5)}
 
@@ -65,6 +70,44 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
 #cardLibScreen,#cardDetailScreen,#moodScreen,#chatSearchScreen,#behaviorScreen{
   background:var(--th-bg0);
 }
+/* ===== 输入中尾巴 ===== */
+.typing-bar{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:64px;
+  padding:6px 20px 8px;
+  font-size:10.5px;
+  color:#999;
+  letter-spacing:1px;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .2s ease;
+  text-align:left;
+  z-index:5;
+}
+.typing-bar.show{opacity:1}
+.typing-bar .dots{
+  display:inline-flex;
+  gap:2px;
+  align-items:center;
+  vertical-align:1px;
+  margin-left:2px;
+}
+.typing-bar .dots span{
+  width:3px;height:3px;
+  border-radius:50%;
+  background:#999;
+  display:block;
+  animation:typingBarDot 1.2s infinite;
+}
+.typing-bar .dots span:nth-child(2){animation-delay:.2s}
+.typing-bar .dots span:nth-child(3){animation-delay:.4s}
+@keyframes typingBarDot{
+  0%,60%,100%{opacity:.3;transform:translateY(0)}
+  30%{opacity:1;transform:translateY(-2px)}
+}
+
 /* ===== 跳到底部按钮 ===== */
 .scroll-bottom-btn{
   position:absolute;
@@ -176,7 +219,9 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
 /* ===== 统一输入弹窗 · 方案 A ===== */
 .uni-mask{
   position:fixed;inset:0;z-index:99999;
-  background:rgba(0,0,0,.32);
+  background:var(--mask-bg);
+  backdrop-filter:var(--mask-blur);
+  -webkit-backdrop-filter:var(--mask-blur);
   display:flex;align-items:center;justify-content:center;
   padding:24px;
   opacity:0;pointer-events:none;
@@ -483,22 +528,22 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
 
 /* ===== 选择结果卡片 ===== */
 .choice-card-msg{
-  border:0.7px dashed #1a1a1a;
-  border-radius:14px;
-  padding:16px 18px;
+  padding:8px 13px;
+  background:rgba(0,0,0,.04);
+  border-radius:16px 16px 16px 4px;
   display:flex;flex-direction:column;gap:6px;
-  max-width:240px;
-  background:#fff;
+  max-width:100%;
+  align-self:flex-start;
 }
 .choice-card-msg .ccm-q{
-  font-size:12.5px;color:#999;font-style:italic;
-  line-height:1.6;font-weight:400;
+  font-size:11px;color:#999;
+  line-height:1.5;font-weight:400;
+  letter-spacing:.2px;
 }
 .choice-card-msg .ccm-ans{
-  font-size:18px;color:#1a1a1a;font-weight:500;
-  letter-spacing:1px;padding-top:6px;
-  border-top:0.6px solid #f0f0f0;margin-top:4px;
-  line-height:1.5;
+  font-size:13.5px;color:#1a1a1a;
+  line-height:1.5;font-weight:400;
+  letter-spacing:.3px;
 }
 /* ===== 合并转发卡片 ===== */
 .merge-card{
@@ -642,7 +687,7 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
 .msg-menu .it.white{
   color:#1a1a1a;
 }
-.sel-overlay{position:fixed;inset:0;z-index:600;background:rgba(31,28,29,.55);backdrop-filter:blur(3px);display:none;flex-direction:column;padding:20px}
+.sel-overlay{position:fixed;inset:0;z-index:600;background:var(--mask-bg);backdrop-filter:var(--mask-blur);-webkit-backdrop-filter:var(--mask-blur);display:none;flex-direction:column;padding:20px}
 .sel-overlay.show{display:flex}
 .sel-tip{text-align:center;font-size:12.5px;color:#fff;letter-spacing:1px;padding:14px 0 14px}
 .sel-content{flex:1;display:flex;align-items:center;justify-content:center;padding:0 10px;overflow-y:auto}
@@ -855,39 +900,35 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
 .me-row:active .arr{transform:translateX(2px)}
 .me-row.hi .name{color:#1a1a1a;font-weight:300}
 
-/* ===== 细体增强补丁：让「我的」页文字真正变细 ===== */
+/* ===== 细体增强补丁：让「我的」页文字真正变细（合并版 · 只留一套） ===== */
+/* 整页统一细体骨架 */
 #page-me,
 #page-me .me-big-name,
-#page-me .me-row .name{
+#page-me .me-row .name,
+#page-me .me-row .num,
+#page-me .me-row .en,
+#page-me .me-row .arr,
+#page-me .me-quote,
+#page-me .me-vert{
   font-family:var(--app-font);
   font-weight:300;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
 }
-/* 大名字：再轻一档，加极细描边防止糊 */
+/* 大名字：比其它再轻一档 */
 #page-me .me-big-name{
   font-weight:200;
   letter-spacing:3px;
 }
-/* 菜单项名字：真的细下来 */
+/* 菜单项名字：细 + 拉开字距 */
 #page-me .me-row .name{
   font-weight:300;
   letter-spacing:2.5px;
 }
-/* 序号 / 英文 / 箭头：本来就轻，不用动 */
-#page-me .me-row .num,
-#page-me .me-row .en,
-#page-me .me-row .arr{
-  font-weight:300;
-}
-/* 签名：再细一点 */
+/* 签名：细 + 微字距 */
 #page-me .me-quote{
   font-weight:300;
   letter-spacing:.6px;
-}
-/* 竖排 MY SPACE */
-#page-me .me-vert{
-  font-weight:300;
 }
 
 
@@ -1110,7 +1151,7 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
 .rename-hint{display:none;padding:6px 20px 0;font-size:10.5px;color:#bbb;letter-spacing:.5px;line-height:1.5}
 body.sel-mode-on .rename-hint{display:block}
 /* 重命名分类弹窗 */
-.rename-mask{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:20px}
+.rename-mask{position:fixed;inset:0;z-index:600;background:var(--mask-bg);backdrop-filter:var(--mask-blur);-webkit-backdrop-filter:var(--mask-blur);display:none;align-items:center;justify-content:center;padding:20px}
 .rename-mask.show{display:flex}
 .rename-sheet{width:100%;max-width:320px;background:#ffffff;border-radius:18px;border:0.7px solid #e0e0e0;box-shadow:0 12px 40px rgba(0,0,0,.18);padding:20px 18px 16px;animation:pop .24s cubic-bezier(.22,1,.36,1)}
 .rename-sheet .rs-title{font-size:14px;font-weight:600;letter-spacing:1.5px;color:#1a1a1a;text-align:center;margin-bottom:16px}
@@ -1870,7 +1911,7 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
   cursor:pointer;padding:0;line-height:1;font-family:inherit;
 }
 #mReply .rp-x:active{color:#1a1a1a}
-.overlay{position:absolute;inset:0;background:transparent}
+.overlay{position:absolute;inset:0;background:var(--mask-bg);backdrop-filter:var(--mask-blur);-webkit-backdrop-filter:var(--mask-blur)}
 /* ===== #mDivine · 方案A 极简细线 ===== */
 #mDivine .sheet{
   position:relative;z-index:1;
@@ -1885,6 +1926,7 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
   animation:pop .28s cubic-bezier(.22,1,.36,1);
   display:flex;flex-direction:column;
 }
+
 #mDivine .sheet-head{
   display:flex;align-items:center;justify-content:space-between;
   padding:22px 22px 18px;
@@ -2367,7 +2409,7 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 }
 /* 分类底部弹出面板 */
 .cat-panel-mask{
-  position:fixed;inset:0;background:rgba(0,0,0,.35);
+  position:fixed;inset:0;background:transparent;
   display:none;align-items:flex-end;justify-content:center;z-index:400;
 }
 .cat-panel-mask.show{display:flex}
@@ -2465,7 +2507,12 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 
 .confirm-sheet{position:relative;z-index:1;width:100%;max-width:340px;background:var(--th-card);border-radius:20px;border:1.5px solid var(--th-accent-line);overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.75);animation:pop .24s cubic-bezier(.22,1,.36,1);padding:22px 20px 18px;text-align:center}
 /* ===== 删除好友弹窗 · 方案3 头像横向版 ===== */
-.del-dlg{width:100%;max-width:340px;background:#ffffff !important;border:0.7px solid rgba(0,0,0,.08) !important;border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.18);padding:22px 20px 16px;text-align:left;animation:pop .28s cubic-bezier(.22,1,.36,1);box-sizing:border-box}
+.del-dlg{position:relative;z-index:1;width:100%;max-width:340px;background:#ffffff !important;border:0.7px solid rgba(0,0,0,.08) !important;border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.18);padding:22px 20px 16px;text-align:left;animation:pop .28s cubic-bezier(.22,1,.36,1);box-sizing:border-box}
+
+/* ===== 编辑好友弹窗 ===== */
+#mEditFriend .ef-av svg{position:absolute;inset:0;width:100%;height:100%}
+#mEditFriend .ef-av .silhouette{fill:#c8c8c8}
+#mEditFriend .ef-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .del-dlg .del-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
 .del-dlg .del-av{width:46px;height:46px;border-radius:var(--avatar-radius,12%);background:#f0f0f0;display:flex;align-items:center;justify-content:center;flex:none;overflow:hidden;position:relative}
 .del-dlg .del-av svg{position:absolute;inset:0;width:100%;height:100%}
@@ -2486,7 +2533,7 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 #mDelGroup{z-index:400}
 #mRenameGroup{z-index:400}
 #mDelFriend{z-index:400}
-#mDelFriend .overlay{background:transparent !important}
+#mDelFriend .overlay{position:fixed !important;inset:0 !important;background:var(--mask-bg) !important;backdrop-filter:var(--mask-blur);-webkit-backdrop-filter:var(--mask-blur)}
 #mDelFriend .del-dlg{background:#ffffff !important;color:#1a1a1a !important;border:0.7px solid rgba(0,0,0,.08) !important}
 #mDelFriend .del-dlg .del-tt{color:#1a1a1a !important}
 #mDelFriend .del-dlg .del-sb{color:#bbb !important}
@@ -2496,7 +2543,8 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 #mDelFriend .del-dlg .del-cancel{color:#999 !important;background:transparent !important;border:0.7px solid rgba(0,0,0,.14) !important}
 #mDelFriend .del-dlg .del-ok{background:#1a1a1a !important;color:#ffffff !important;border:none !important}
 /* 清空聊天记录弹窗：要盖过「聊天信息」面板（z-index:1200） */
-#mConfirmClear{z-index:2000;background:rgba(0,0,0,.32) !important}
+#mConfirmClear{z-index:2000;background:var(--mask-bg) !important}
+#mConfirmClear .overlay{backdrop-filter:var(--mask-blur);-webkit-backdrop-filter:var(--mask-blur)}
 #mConfirmClear .overlay{background:transparent !important}
 #mConfirmClear .confirm-clear-sheet{
   position:relative;z-index:1;
@@ -2655,6 +2703,11 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .d-block:active .del-b{color:#1a1a1a}
 
 /* ===== #mApplyStickers · 复刻 emoji「应用到其Ta角色」的皮肤 ===== */
+#mApplyStickers .overlay{
+  background:var(--mask-bg);
+  backdrop-filter:var(--mask-blur);
+  -webkit-backdrop-filter:var(--mask-blur);
+}
 #mApplyStickers .sheet{
   max-width:340px;
   border-radius:18px;
@@ -3073,11 +3126,13 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .cip-card .switch input:checked + .slider:before{transform:translateX(18px)}
 
 /* ===== 聊天信息 ⋯ 弹窗 ===== */
-.cip-mask{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:99999;justify-content:center;align-items:flex-end}
+.cip-mask{position:fixed;inset:0;background:var(--mask-bg);backdrop-filter:var(--mask-blur);-webkit-backdrop-filter:var(--mask-blur);display:none;z-index:99999;justify-content:center;align-items:flex-end}
 
 /* ===== 聊天信息：删除 / 拉黑 二次确认弹窗 ===== */
 .cip-confirm-mask{
-  position:fixed;inset:0;background:rgba(0,0,0,.45);
+  position:fixed;inset:0;background:var(--mask-bg);
+  backdrop-filter:var(--mask-blur);
+  -webkit-backdrop-filter:var(--mask-blur);
   display:none;z-index:99999;
   align-items:center;justify-content:center;padding:24px;
 }
@@ -3411,7 +3466,7 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .shape-btn .pv.sq{border-radius:12%}
 .shape-btn .pv.ci{border-radius:50%}
 
-.crop-mask{position:fixed;inset:0;z-index:2147483646;background:rgba(8,4,8,.92);display:none;flex-direction:column}
+.crop-mask{position:fixed;inset:0;z-index:2147483646;background:var(--mask-bg);backdrop-filter:var(--mask-blur);-webkit-backdrop-filter:var(--mask-blur);display:none;flex-direction:column}
 .crop-mask.show{display:flex}
 .crop-top{flex:none;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;color:var(--th-text);font-size:14px;font-weight:700;letter-spacing:2px;position:relative;z-index:20}
 .crop-top .cancel{color:var(--th-text-soft);font-size:13px;cursor:pointer;font-weight:400}
@@ -3930,10 +3985,15 @@ html[data-theme="bw"] .tarot .t-suit-en{
 #mChoice .choice-range{display:none}
 #mChoice .choice-go{width:100%;padding:14px 0;border-radius:22px;border:none;background:#1a1a1a;color:#fff;font-size:13.5px;font-family:inherit;letter-spacing:6px;text-indent:6px;font-weight:300;cursor:pointer;margin-top:20px;flex:none}
 #mChoice .choice-go:active{opacity:.85}
-#mChoice .choice-result{margin-top:14px;padding:14px;border-radius:14px;background:#fafafa;border:none;text-align:center;display:none}
+#mChoice .choice-result{margin-top:14px;padding:20px 0;border-radius:0;background:transparent;border:none;text-align:center;display:none}
 #mChoice .choice-result.show{display:block}
-#mChoice .choice-result .r-head{font-size:10.5px;color:#bbb;letter-spacing:3px;font-family:Georgia,serif;margin-bottom:6px}
-#mChoice .choice-result .r-answer{font-size:20px;color:#1a1a1a;font-weight:300;letter-spacing:2px}
+#mChoice .choice-result .r-head{font-size:10px;color:#c8c8c8;letter-spacing:5px;font-family:Georgia,serif;margin-bottom:10px;text-transform:uppercase}
+#mChoice .choice-result .r-answer{font-size:22px;color:#1a1a1a;font-weight:300;letter-spacing:2px;min-height:1.3em;display:flex;align-items:center;justify-content:center;gap:6px}
+#mChoice .choice-result .r-answer .dots{display:inline-flex;gap:6px;align-items:center;height:22px}
+#mChoice .choice-result .r-answer .dots span{width:5px;height:5px;border-radius:50%;background:#1a1a1a;display:block;opacity:.35;animation:choiceDotJump 1.2s ease-in-out infinite}
+#mChoice .choice-result .r-answer .dots span:nth-child(2){animation-delay:.15s}
+#mChoice .choice-result .r-answer .dots span:nth-child(3){animation-delay:.3s}
+@keyframes choiceDotJump{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-5px)}}
 
 /* ===== 编辑好友弹窗 · 细体版 ===== */
 .edit-d .line-row{
@@ -4031,7 +4091,7 @@ html[data-theme="bw"] .tarot .t-suit-en{
 
 .rd-modal{position:fixed;inset:0;z-index:320;display:none;align-items:flex-end;justify-content:center}
 .rd-modal.show{display:flex}
-.rd-modal .overlay{position:absolute;inset:0;background:rgba(20,10,17,.7);backdrop-filter:blur(4px)}
+.rd-modal .overlay{position:absolute;inset:0;background:var(--mask-bg);backdrop-filter:var(--mask-blur);-webkit-backdrop-filter:var(--mask-blur)}
 .rd-modal .sheet{position:relative;width:100%;max-width:520px;background:var(--th-card);border-radius:22px 22px 0 0;border-top:1px solid var(--th-accent-line);max-height:80%;display:flex;flex-direction:column}
 .rd-modal .sheet-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;border-bottom:1px solid var(--th-accent-line)}
 .rd-modal .sheet-head h3{font-size:16px;display:flex;align-items:center;gap:8px;color:var(--th-text)}
@@ -4818,8 +4878,9 @@ body[data-bubble="custom"] .preview-bubble{
 .rec-panel.show{display:flex}
 .rec-panel .backdrop{
   position:absolute;inset:0;
-  background:rgba(10,5,10,.35);
-  backdrop-filter:blur(3px);
+  background:var(--mask-bg);
+  backdrop-filter:var(--mask-blur);
+  -webkit-backdrop-filter:var(--mask-blur);
 }
 .rec-panel .rec-float{
   position:relative;z-index:1;
@@ -4987,10 +5048,11 @@ body[data-bubble="custom"] .preview-bubble{
   border-color:#1F1C1D;
   box-shadow:0 2px 0 rgba(31,28,29,.85);
 }
-/* 动态设置：overlay 透明（不变暗、不模糊） */
+/* 动态设置：跟随全站统一遮罩 */
 #mMomentSet .overlay{
-  background: transparent !important;
-  backdrop-filter: none !important;
+  background: var(--mask-bg) !important;
+  backdrop-filter: var(--mask-blur) !important;
+  -webkit-backdrop-filter: var(--mask-blur) !important;
 }
 .ctrl-row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
 .ctrl-label{font-size:12.5px;color:var(--th-text-soft)}
@@ -5368,11 +5430,28 @@ body[data-bubble="custom"] .preview-bubble{
   padding-bottom:40px;
 }
 .col-item{
+  display:flex;
+  gap:12px;
   padding:14px 0;
   border-bottom:0.6px dashed #f0f0f0;
   position:relative;
+  border-radius:8px;
+  transition:background .2s ease;
 }
 .col-item:last-child{border-bottom:none}
+.col-item.press{background:rgba(0,0,0,.03)}
+.col-item .col-av{
+  width:38px;
+  height:38px;
+  flex:none;
+  background:#f2f2f2;
+  overflow:hidden;
+  position:relative;
+}
+.col-item .col-av svg{position:absolute;inset:0;width:100%;height:100%}
+.col-item .col-av .silhouette{fill:#d4d4d4}
+.col-item .col-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.col-item .col-main{flex:1;min-width:0}
 .col-item .col-txt{
   font-size:13.5px;
   color:#1a1a1a;
@@ -5390,20 +5469,30 @@ body[data-bubble="custom"] .preview-bubble{
   letter-spacing:.5px;
   font-weight:300;
 }
+/* ✕ 默认隐藏，长按 .show-del 才出现 */
 .col-item .col-del{
   position:absolute;
   top:14px;
   right:0;
-  width:24px;
-  height:24px;
+  width:20px;
+  height:20px;
   border:none;
   background:transparent;
   color:#ccc;
-  font-size:13px;
+  font-size:11px;
   cursor:pointer;
   font-family:inherit;
   padding:0;
   border-radius:50%;
+  opacity:0;
+  transform:scale(.7);
+  pointer-events:none;
+  transition:opacity .18s ease, transform .18s ease;
+}
+.col-item.show-del .col-del{
+  opacity:1;
+  transform:scale(1);
+  pointer-events:auto;
 }
 .col-item .col-del:active{color:#1a1a1a;background:#f5f5f5}
 .col-empty{
@@ -6895,6 +6984,10 @@ window.__APP_VERSION__ = '1.0.2';
 	  </div>
 
         <div id="chatList"></div>
+        <div class="typing-bar" id="typingBar">
+          对方正在输入
+          <span class="dots"><span></span><span></span><span></span></span>
+        </div>
         <button class="scroll-bottom-btn" id="scrollBottomBtn" type="button" title="回到最新消息">
           <svg viewBox="0 0 24 24"><polyline points="6,9 12,15 18,9"/></svg>
         </button>
@@ -7088,14 +7181,14 @@ window.__APP_VERSION__ = '1.0.2';
 	</div>
   </div>
 
-  <!-- ★ 第一排：谁说的 -->
+  <!-- 筛选：发送者 -->
   <div class="cs-filter-row" id="csWhoRow">
 	<button class="cs-filter on" data-who="all" type="button">全部</button>
 	<button class="cs-filter" data-who="me" type="button">只看我</button>
 	<button class="cs-filter" data-who="ta" type="button">只看 Ta</button>
   </div>
 
-  <!-- ★ 第二排：什么类型 -->
+  <!-- 筛选：消息类型 -->
   <div class="cs-filter-row" id="csTypeRow">
 	<button class="cs-filter on" data-type="all" type="button">全部</button>
 	<button class="cs-filter" data-type="text" type="button">文字</button>
@@ -7109,7 +7202,7 @@ window.__APP_VERSION__ = '1.0.2';
   <div class="cs-meta" id="csMeta">输入关键词开始搜索</div>
   <div class="cs-list" id="csList"></div>
 
-  <!-- ★ 日期面板 -->
+  <!-- 日期选择面板 -->
   <div class="cs-date-mask" id="csDateMask">
 	<div class="cs-date-panel">
 	  <div class="cs-date-title">跳到某一天</div>
@@ -7130,7 +7223,7 @@ window.__APP_VERSION__ = '1.0.2';
     <div class="vl-add" id="vlAdd">＋ 上传音频</div>
     <div class="vl-list" id="vlList"></div>
 
-    <!-- ★ 通话视频库 -->
+    <!-- 通话视频库 -->
     <div class="vl-tip" id="vlVideoTip" style="margin-top:24px;padding-top:20px;border-top:0.6px dashed #ececec">为「梦角」上传视频，视频通话时会随机插入播放。不传视频就用语音文件。</div>
     <div class="vl-add" id="vlVideoAdd">＋ 上传视频</div>
     <div class="vl-list" id="vlVideoList"></div>
@@ -7564,7 +7657,7 @@ window.__APP_VERSION__ = '1.0.2';
   <div class="it" data-sort="oldest">最旧在前</div>
 </div>
 
-<!-- ★ 字卡回收站 -->
+<!-- 字卡回收站 -->
 <div class="cat-panel-mask" id="cardTrashMask">
   <div class="cat-panel" style="max-height:75vh;display:flex;flex-direction:column">
     <div class="cp-title" style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;border-bottom:0.7px solid #f0f0f0">
@@ -7797,6 +7890,7 @@ window.__APP_VERSION__ = '1.0.2';
 <div class="modal" id="mAdd"><div class="overlay" data-close></div><div class="sheet"><div class="sheet-head"><h3>添加</h3><button class="x" data-close>✕</button></div><div class="sheet-body">
   <div class="chk-row" id="optNewFriend"><div class="nm">增加角色</div><span class="chev">›</span></div>
   <div class="chk-row" id="optNewBuiltin"><div class="nm">建立内置角色</div><span class="chev">›</span></div>
+  <div class="chk-row" id="optBuiltinList"><div class="nm">内置角色一览</div><span class="chev">›</span></div>
   <div class="chk-row" id="optNewGroup"><div class="nm">建立分组</div><span class="chev">›</span></div>
   <div class="chk-row" id="optManageGroup"><div class="nm">分组管理</div><span class="chev">›</span></div>
 </div></div></div>
@@ -7880,7 +7974,7 @@ window.__APP_VERSION__ = '1.0.2';
   <button class="primary-btn" id="btnCreateBuiltin">创建内置角色</button>
 </div></div></div>
 
-<!-- ★ 字卡移动 · 选择目标分类 -->
+<!-- 移动字卡：选择目标分类 -->
 <div class="cat-panel-mask" id="moveCatMask">
   <div class="cat-panel">
     <div class="cp-title">选择目标分类</div>
@@ -7895,12 +7989,29 @@ window.__APP_VERSION__ = '1.0.2';
     <div id="biGroupList"></div>
   </div>
 </div>
+<!-- ============ 编辑好友（真名 + 关系网） ============ -->
+<div class="modal" id="mEditFriend">
+  <div class="overlay" data-close></div>
+  <div class="sheet">
+    <div class="sheet-head"><h3>编辑好友</h3><button class="x" data-close type="button">✕</button></div>
+    <div class="sheet-body">
+      <label>真名</label>
+      <input type="text" id="efName" placeholder="角色的真名">
+      <label style="margin-top:18px">好友关系网</label>
+      <div class="hint" style="font-size:11px;color:#bbb;line-height:1.7;margin:4px 0 8px">勾选 = 默认已经是好友；取消 = 解除好友关系。已删除 / 已拉黑也会出现在这里，可一并设置。</div>
+      <div id="efFriendList" style="max-height:280px;overflow-y:auto;scrollbar-width:none"></div>
+      <button class="primary-btn" id="efSave" style="margin-top:18px">保 存</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="mNewGroup"><div class="overlay" data-close></div><div class="sheet"><div class="sheet-head"><h3>建立分组</h3><button class="x" id="closeNewGroup">✕</button></div><div class="sheet-body">
   <label>分组名</label><input type="text" id="ngName" placeholder="例如：我的爱人们" style="margin-bottom:18px">
   <label style="margin-top:0">选择要放进这个组的角色</label><div id="ngPick"></div>
   <button class="primary-btn" id="btnCreateGroup">建立分组</button>
 </div></div></div>
 <div class="modal" id="mFriendMenu"><div class="overlay" data-close></div><div class="sheet"><div class="sheet-head"><h3>好友操作</h3><button class="x" data-close>✕</button></div><div class="sheet-body">
+  <div class="chk-row" id="fmEditFriend"><div class="nm">编辑好友</div><span class="chev">›</span></div>
   <div class="chk-row" id="fmChangeGroup"><div class="nm">修改分组</div><span class="chev">›</span></div>
   <div class="chk-row" id="fmDelete"><div class="nm" style="color:var(--th-danger)">删除好友</div><span class="chev">›</span></div>
 </div></div></div>
@@ -7987,7 +8098,7 @@ window.__APP_VERSION__ = '1.0.2';
 	<div class="sb" style="color:#8A6E60;text-align:center;margin-bottom:16px">这句话会显示在“我的”页</div>
 	<input type="text" id="signInput" placeholder="我想睡在梦里，醒在梦境"
 	  style="width:100%;border:1.5px solid rgba(221,20,64,.40);border-radius:14px;padding:12px 14px;font-size:14px;font-family:inherit;color:#1F1C1D;outline:none;background:#FFFFFF">
-	<!-- ★ 随机切换我的个签 -->
+	<!-- 随机切换我的个签 -->
 	<div style="display:flex;align-items:center;gap:10px;margin-top:16px;padding-top:16px;border-top:0.6px dashed rgba(221,20,64,.20)">
 	  <div style="flex:1;min-width:0">
 	    <div style="font-size:13px;color:#1F1C1D;letter-spacing:1px;font-weight:400">随机切换我的个签</div>
@@ -8086,7 +8197,7 @@ window.__APP_VERSION__ = '1.0.2';
   </div>
 </div>
 
-<!-- ★ 气泡预览区 -->
+<!-- 气泡预览区 -->
 <div id="bubblePreviewBox" style="
   margin:0 0 18px;
   padding:20px 16px;
@@ -8765,10 +8876,6 @@ window.__APP_VERSION__ = '1.0.2';
   </div>
 </div>
 
-
-
-
-
 <div class="toast" id="toast"></div>
 <div class="msg-notify" id="msgNotify"></div>
 <!-- ===== 统一输入弹窗 · 方案 A ===== -->
@@ -8875,6 +8982,7 @@ try{
   applyTheme('bw');
 }catch(e){ console.error(e); }
 
+const CALL_ROLE_CFG_KEY = 'mj_call_role_cfg_v1';
 const BEAUTY_KEY = 'mj_beauty_v1';
 let beautyCfg = lsGet(BEAUTY_KEY, null) || { avatarShape:'square', layout:'default', bubble:'gray' };
 if(!beautyCfg.bubble) beautyCfg.bubble = 'gray';
@@ -9351,6 +9459,9 @@ const userProfile=lsGet(USER_KEY,{name:'我',avatar:'',sign:'我想睡在梦里�
 function saveUser(){ lsSet(USER_KEY,userProfile); }
 function userName(){ return (userProfile.name || '我').trim() || '我'; }
 
+/* ★ 个签自动切换的存储 key，提前到此处声明，避免 TDZ 报错 */
+const SIGN_SWITCH_KEY = 'mj_sign_switch_v1';
+
 const ROLE_FRIENDS_KEY = 'mj_role_friends_v1';
 function getRoleFriendsMap(){ let m = lsGet(ROLE_FRIENDS_KEY, null); if(!m || typeof m !== 'object') m = {}; return m; }
 function saveRoleFriendsMap(m){ lsSet(ROLE_FRIENDS_KEY, m); }
@@ -9547,35 +9658,42 @@ function pickCard(){
   const rid = getCurrentRoleId();
   const strategy = getCardStrategy(rid);
 
-  /* A：只用群聊字卡（角色专属里的群聊字卡，没有就退回公用群聊字卡） */
-  if(strategy === 'A'){
-    let pool = getCardsFromGroup(rid, 'g-groupchat');
-    if(!pool.length) pool = getCardsFromGroup('public', 'g-groupchat');
-    if(pool.length) return pickCardFrom(pool);
+  /* 从池子里挑一张，池子为空则回退到兜底句 */
+  function pickOrFallback(pool){
+    if(pool && pool.length) return pickCardFrom(pool);
     return '嗯，我在。';
   }
 
-  /* B：群聊字卡 + 角色专属字卡混用 */
+  /* 取某个角色的群聊字卡；自身为空时回退公用 */
+  function groupchatOf(roleId){
+    const own = getCardsFromGroup(roleId, 'g-groupchat');
+    if(own.length) return own;
+    return getCardsFromGroup('public', 'g-groupchat');
+  }
+
+  /* 策略 A：只用群聊字卡 */
+  if(strategy === 'A'){
+    return pickOrFallback(groupchatOf(rid));
+  }
+
+  /* 策略 B：群聊字卡与角色专属字卡各半 */
   if(strategy === 'B'){
-    let gc = getCardsFromGroup(rid, 'g-groupchat');
-    if(!gc.length) gc = getCardsFromGroup('public', 'g-groupchat');
+    const gc = groupchatOf(rid);
     const own = getAllNormalCards(rid);
     if(gc.length && own.length){
       return Math.random() < 0.5 ? pickCardFrom(gc) : pickCardFrom(own);
     }
-    if(gc.length) return pickCardFrom(gc);
-    if(own.length) return pickCardFrom(own);
-    return '嗯，我在。';
+    return pickOrFallback(gc.length ? gc : own);
   }
 
-  /* C（默认）：沿用现有逻辑：公用 + 角色专属按比例混 */
+  /* 策略 C（默认）：公用与角色专属按比例混 */
   const pub = getAllNormalCards('public');
   const role = getAllNormalCards(rid);
   const pubRate = poolRate.public ?? 0.7;
-  if(pub.length && role.length) return Math.random() < pubRate ? pickCardFrom(pub) : pickCardFrom(role);
-  if(pub.length) return pickCardFrom(pub);
-  if(role.length) return pickCardFrom(role);
-  return '嗯，我在。';
+  if(pub.length && role.length){
+    return Math.random() < pubRate ? pickCardFrom(pub) : pickCardFrom(role);
+  }
+  return pickOrFallback(pub.length ? pub : role);
 }
 
 /* ===== 时间字卡 ===== */
@@ -10430,13 +10548,11 @@ function renderChatFull(forceBottom){
 	  const dirCls = isUser ? 'user' : 'char';
 	  return `<div class="msg ${dirCls}" data-id="${m.id}">
 		${av}
-		<div class="msg-body" style="max-width:100%">
+		<div class="msg-body">
 		  ${timeSep}
-		  <div class="bubble" style="background:transparent;border:none;padding:0">
-			<div class="choice-card-msg">
-			  <div class="ccm-q">${escapeHTML(cc.q)}</div>
-			  <div class="ccm-ans">${escapeHTML(cc.answer)}</div>
-			</div>
+		  <div class="choice-card-msg">
+			<div class="ccm-q">${escapeHTML(cc.q)}</div>
+			<div class="ccm-ans">${escapeHTML(cc.answer)}</div>
 		  </div>
 		</div>
 	  </div>`;
@@ -10515,38 +10631,28 @@ function renderChatFull(forceBottom){
 	  body = `<div class="divine-card"><div class="dc-head">DIVINE</div><div class="dc-q">${escapeHTML(m.divine.q)}</div><div class="dc-cards">${m.divine.cards.map(c=>tarotHTML(c.card,c.reversed)).join('')}</div><div class="dc-cards-text" style="font-size:11.5px;color:#1a1a1a;line-height:1.8;padding:4px 2px 0;letter-spacing:.5px">${m.divine.cards.map(c=>escapeHTML(((c.card&&c.card.name)||'?') + (c.reversed?' 逆':''))).join('　')}</div>${readsHTML}${btnHTML}</div>`;
 	}else{
 	  const failedMark = m.sendFailed ? `<span class="send-failed-mark" title="发送失败">!</span>` : '';
-	  // ★ 兜底：如果 m.text 是对象（脏数据），自动解包成字符串
+	  // text 若为对象，按 text / mood / kaomoji 顺序取第一个可用值
+	  const t = m.text;
 	  let rawText;
-	  if(m.text && typeof m.text === 'object'){
+	  if(t && typeof t === 'object'){
 		rawText = String(
-		  m.text.text !== undefined ? m.text.text :
-		  (m.text.mood !== undefined ? m.text.mood :
-		  (m.text.kaomoji !== undefined ? m.text.kaomoji : ''))
+		  t.text !== undefined ? t.text
+		  : t.mood !== undefined ? t.mood
+		  : t.kaomoji !== undefined ? t.kaomoji
+		  : ''
 		);
 	  } else {
-		rawText = String(m.text||'');
+		rawText = String(t || '');
 	  }
 	  // 显示时把所有 [xxx] 都剥成 xxx，只在气泡里生效，不改存储
 	  const showText = rawText.replace(/\[([\s\S]*?)\]/g, '$1');
 	  body = `<div class="bubble${m.sendFailed ? ' bubble-failed' : ''}">${escapeHTML(showText)}${failedMark}</div>`;
 	}
 
-	// 组装已读标签（仅用户消息，含语音）
-	let readFlush = '';
-	if(isUser && !m.recalled && !m.sys && !m.namecard){
-	  if(m.readState === 'noReply' || m.readNoReply){
-		readFlush = `<div class="read-flush noreply">已读不回</div>`;
-	  } else if(m.readState === 'unread'){
-		readFlush = `<div class="read-flush unread">未读</div>`;
-	  } else if(m.readState === 'read'){
-		readFlush = `<div class="read-flush">已读</div>`;
-	  }
-	}
-	/* 主动发消息：气泡上方加一行小标签「— 主动」 */
-	let activeMark = '';
-	if(!isUser && m.active && !m.recalled && !m.sys && !m.namecard){
-	  activeMark = `<div class="active-row"><span class="active-line"></span><span class="active-text">主动</span></div>`;
-	}
+	// 已读标签（我方）+ 主动标签（对方）
+	const meta = getMsgMeta(m, isUser);
+	const readFlush = meta.readFlush;
+	const activeMark = meta.activeMark;
 	const msgHTML = `<div class="msg ${isUser?'user':'char'}" data-id="${m.id}">${av}<div class="msg-body">${timeSep}${activeMark}${quote}${body}${readFlush}</div></div>`;
 	// 给气泡本身补上通用别名：message-sent / message-received
 	// （放在这里是因为 bubble 是动态拼进去的，用字符串替换最稳）
@@ -10589,6 +10695,28 @@ function renderChatFull(forceBottom){
   bindMsgLongPress();
   applyBeautyCfg();
   updateScrollBottomBtn();
+}
+
+/* 计算一条消息的状态标签：已读标签（我方）+ 主动标签（对方） */
+function getMsgMeta(m, isUser){
+  let readFlush = '';
+  let activeMark = '';
+  if(!m.recalled && !m.sys && !m.namecard){
+    if(isUser){
+      if(m.readState === 'noReply' || m.readNoReply){
+        readFlush = `<div class="read-flush noreply">已读不回</div>`;
+      } else if(m.readState === 'unread'){
+        readFlush = `<div class="read-flush unread">未读</div>`;
+      } else if(m.readState === 'read'){
+        readFlush = `<div class="read-flush">已读</div>`;
+      }
+    } else {
+      if(m.active){
+        activeMark = `<div class="active-row"><span class="active-line"></span><span class="active-text">主动</span></div>`;
+      }
+    }
+  }
+  return { readFlush: readFlush, activeMark: activeMark };
 }
 
 /* ===== renderChat 包装：判断要不要全量重建 =====
@@ -10707,6 +10835,7 @@ function collectMsg(m){
     msgId: m.id,
     text: text,
     kind: collectKindOf(m),
+    from: (m.role === 'user') ? 'user' : 'char',
     time: Date.now()
   });
   if(arr.length > 500) arr.length = 500;
@@ -10764,6 +10893,7 @@ function runTheirsCollectTick(){
       msgId: pick.id,
       text: text,
       kind: collectKindOf(pick),
+      from: (pick.role === 'user') ? 'user' : 'char',
       time: Date.now()
     });
     if(list.length > 500) list.length = 500;
@@ -10792,6 +10922,11 @@ function renderCollectScreen(tab){
       '</div>';
     return;
   }
+
+  /* 头像形状跟随全站设置 */
+  const avRadius = (beautyCfg.avatarShape === 'circle') ? '50%' : '12%';
+  const role = getRole();
+
   body.innerHTML = list.map(function(it){
     const d = new Date(it.time);
     const stamp = d.getFullYear() + '-' +
@@ -10799,14 +10934,25 @@ function renderCollectScreen(tab){
       String(d.getDate()).padStart(2,'0') + ' ' +
       String(d.getHours()).padStart(2,'0') + ':' +
       String(d.getMinutes()).padStart(2,'0');
-    const from = (tab === 'mine') ? (it.kind === 'voice' ? '来自我' : '我') : roleName;
+
+    /* ★ 按发出者决定头像：char = 对方，user = 我 */
+    /* 老数据没有 from 字段时，兜底显示对方头像 */
+    const isFromUser = (it.from === 'user');
+    const avHTML = isFromUser
+      ? userAvHTML(userProfile.avatar)
+      : avatarHTML(role.avatar);
+
     return '<div class="col-item" data-id="' + it.id + '">' +
-      '<div class="col-txt">' + escapeHTML(it.text) + '</div>' +
-      '<div class="col-meta">' + escapeHTML(stamp) + ' · ' + escapeHTML(from) + '</div>' +
+      '<div class="col-av" style="border-radius:' + avRadius + '">' + avHTML + '</div>' +
+      '<div class="col-main">' +
+        '<div class="col-txt">' + escapeHTML(it.text) + '</div>' +
+        '<div class="col-meta">' + escapeHTML(stamp) + '</div>' +
+      '</div>' +
       (tab === 'mine' ? '<button class="col-del" data-del="' + it.id + '" type="button">✕</button>' : '') +
     '</div>';
   }).join('');
-  /* 我的收藏：支持删除 */
+
+  /* 我的收藏：支持删除 + 长按显示 ✕ */
   if(tab === 'mine'){
     body.querySelectorAll('[data-del]').forEach(function(btn){
       btn.onclick = function(e){
@@ -10818,6 +10964,53 @@ function renderCollectScreen(tab){
         renderCollectScreen('mine');
         toast('已删除');
       };
+    });
+
+    /* ★ 长按显示 ✕ */
+    body.querySelectorAll('.col-item').forEach(function(el){
+      let pressTimer = null;
+      let startX = 0, startY = 0;
+
+      function onStart(e){
+        const p = e.touches ? e.touches[0] : e;
+        startX = p.clientX; startY = p.clientY;
+        el.classList.add('press');
+        clearTimeout(pressTimer);
+        pressTimer = setTimeout(function(){
+          body.querySelectorAll('.col-item.show-del').forEach(function(o){
+            if(o !== el) o.classList.remove('show-del');
+          });
+          el.classList.add('show-del');
+          if(navigator.vibrate) navigator.vibrate(10);
+        }, 500);
+      }
+      function onMove(e){
+        const p = e.touches ? e.touches[0] : e;
+        if(Math.abs(p.clientX - startX) > 8 || Math.abs(p.clientY - startY) > 8){
+          clearTimeout(pressTimer);
+          el.classList.remove('press');
+        }
+      }
+      function onEnd(){
+        clearTimeout(pressTimer);
+        el.classList.remove('press');
+      }
+
+      el.addEventListener('touchstart', onStart, {passive:true});
+      el.addEventListener('touchmove', onMove, {passive:true});
+      el.addEventListener('touchend', onEnd);
+      el.addEventListener('touchcancel', onEnd);
+      el.addEventListener('mousedown', onStart);
+      el.addEventListener('mousemove', onMove);
+      el.addEventListener('mouseup', onEnd);
+    });
+
+    /* 点空白 → 收起所有 ✕ */
+    document.addEventListener('click', function(e){
+      if(e.target.closest && e.target.closest('.col-item')) return;
+      body.querySelectorAll('.col-item.show-del').forEach(function(el){
+        el.classList.remove('show-del');
+      });
     });
   }
 }
@@ -11270,8 +11463,9 @@ function sendMessage(){
 
 	const m = {id:uid(), role:'user', text, time:Date.now()};
 	if(curQuote){ m.quote = curQuote; curQuote=null; const iq=$('#inputQuote'); if(iq) iq.classList.remove('show'); }
-	/* ★ 发消息时，把「对方正在输入」也清掉，避免被打断后还挂着 */
-	document.querySelectorAll('#chatList .typing-hint').forEach(function(t){ t.remove(); });
+	/* 发消息时先收起「输入中」尾巴 */
+	const typingBar = document.getElementById('typingBar');
+	if(typingBar) typingBar.classList.remove('show');
 	/* ★ 发出消息 → 播发消息音效 */
 	try{ playSoundOnce('outMsg'); }catch(e){}
 	msgs.push(m);
@@ -11284,18 +11478,7 @@ function sendMessage(){
 	  scheduleReadReceipt(m.id);
 	}
 	triggerReply();
-	/* ★ 发完后把焦点还给输入框：键盘不落，可以连续发 */
-	try{
-	  if(inp && !inp.hasAttribute('readonly')){
-	    inp.focus();
-	    /* 移动端某些浏览器会延迟抢焦点，延后再兜底一次 */
-	    setTimeout(function(){
-	      if(document.activeElement !== inp && !inp.hasAttribute('readonly')){
-	        inp.focus();
-	      }
-	    }, 80);
-	  }
-	}catch(e){}
+	/* 发完后不抢焦点：避免点发送时弹起键盘 */
   }catch(err){ console.error('sendMessage error:', err); toast('发送失败：'+err.message); }
 }
 /* ===== 已读状态机 ===== */
@@ -11327,17 +11510,11 @@ function pickRandomCardText(){
 }
 
 function showTypingHint(){
-  const box = $('#chatList');
-  if(!box) return ()=>{};
-  const t = document.createElement('div');
-  t.className = 'typing-hint';
-  t.id = 'typingMsg';
-  t.innerHTML = `对方正在输入 <span class="dots"><span></span><span></span><span></span></span>`;
-  box.appendChild(t);
-  box.scrollTop = box.scrollHeight;
+  const bar = document.getElementById('typingBar');
+  if(!bar) return ()=>{};
+  bar.classList.add('show');
   return ()=>{
-    const el = document.getElementById('typingMsg');
-    if(el) el.remove();
+    bar.classList.remove('show');
   };
 }
 
@@ -11480,6 +11657,8 @@ function showMsgNotify(roleName, text, roleAvatar, targetRoleId){
   try{ playSoundOnce('inMsg'); }catch(e){}
   /* 聊天界面通知总开关：关了就直接不弹 */
   if(!getNotifyChat()) return;
+  /* 正在看这个角色的聊天页 → 不弹（消息已经在列表里，弹窗多余） */
+  if(targetRoleId && typeof isViewingRole === 'function' && isViewingRole(targetRoleId)) return;
   const el = document.getElementById('msgNotify');
   if(!el) return;
 
@@ -11717,7 +11896,7 @@ function fireActiveMessage(roleId){
 /* 每分钟 tick 一次：遍历所有角色，各摇一次 */
 let activeSendTimer = null;
 function scheduleActiveSend(){
-  if(activeSendTimer) clearInterval(activeSendTimer);
+  if(activeSendTimer){ clearInterval(activeSendTimer); activeSendTimer = null; }
   activeSendTimer = setInterval(function(){
     const ids = getAllRoleIds();
     ids.forEach(function(rid){
@@ -11804,8 +11983,13 @@ function fireActiveDivine(roleId){
 }
 
 let activeDivineTimer = null;
+let activeDivinePending = [];
+function clearActiveDivinePending(){
+  activeDivinePending.forEach(function(t){ clearTimeout(t); });
+  activeDivinePending = [];
+}
 function scheduleActiveDivine(){
-  if(activeDivineTimer) clearInterval(activeDivineTimer);
+  if(activeDivineTimer){ clearInterval(activeDivineTimer); activeDivineTimer = null; }
   activeDivineTimer = setInterval(function(){
     const now = Date.now();
     const ids = getAllRoleIds();
@@ -11827,9 +12011,10 @@ function scheduleActiveDivine(){
       /* 摇中：在接下来 30 分钟内随机挑一个时刻发 */
       const delay = Math.floor(Math.random() * DIVINE_TICK_MS);
       const rid2 = rid;
-      setTimeout(function(){
+      const _dvT = setTimeout(function(){
         try { fireActiveDivine(rid2); } catch(e){ console.error('主动占卜出错', e); }
       }, delay);
+      activeDivinePending.push(_dvT);
 
       /* 先占坑，避免同一天重复安排 */
       r.divineLastFireAt = now;
@@ -11859,17 +12044,14 @@ function runTimedReplyRounds(){
     const typingDelay = Math.min(delay, 800 + Math.random()*1200);
     setTimeout(()=>{
       if(!box) return;
-      /* ★ 加之前先清掉旧的，避免叠出两个 */
-      box.querySelectorAll('.typing-hint').forEach(function(t){ t.remove(); });
-      const typing = document.createElement('div');
-      typing.className='typing-hint'; typing.id='typingMsg';
-      typing.innerHTML = `对方正在输入 <span class="dots"><span></span><span></span><span></span></span>`;
-      box.appendChild(typing); box.scrollTop=box.scrollHeight;
+      const bar = document.getElementById('typingBar');
+      if(bar) bar.classList.add('show');
     }, Math.max(0, delay - typingDelay));
 
     setTimeout(()=>{
       try{
-        const t=document.getElementById('typingMsg'); if(t) t.remove();
+        const bar = document.getElementById('typingBar');
+        if(bar) bar.classList.remove('show');
         if(res[0].kind==='bubbles'){
           const lastUser = [...msgs].reverse().find(x=>x.role==='user'&&!x.recalled&&x.text);
           let quote=null;
@@ -11954,40 +12136,77 @@ function runTimedReplyRounds(){
   fireOne(0);
 }
 
+/* 每个角色同一时刻只跑一条回复链；链跑完检查是否还有新消息要回 */
+var pendingReply = {};
+var ReplyRunner = (function(){
+  var running = {};
+  function isRunning(roleId){ return !!running[roleId]; }
+  function start(roleId, fn){
+    if(running[roleId]) return false;
+    running[roleId] = true;
+    fn(function done(){ delete running[roleId]; });
+    return true;
+  }
+  return { isRunning: isRunning, start: start };
+})();
+
 function triggerReply(){
-  const r = getReply(); const role = getRole();
-  /* ★ 打断上一轮「对方正在输入」：清掉所有残留 typing-hint */
-  document.querySelectorAll('#chatList .typing-hint').forEach(function(t){ t.remove(); });
-  /* 把当前角色 id 锁住，防止后续 setTimeout 里 getCurrentRoleId() 已经变成别人 */
+  const role = getRole();
+  const roleId = role.id;
+
+  /* 该角色已在回复中：不叠新链，只打一个"有新消息"的标记 */
+  if(ReplyRunner.isRunning(roleId)){
+    pendingReply[roleId] = true;
+    return;
+  }
+
+  pendingReply[roleId] = false;
+
+  ReplyRunner.start(roleId, function(done){
+    runReplyChain(function(){
+      /* 链跑完：如果期间又有新消息，则再跑一次；否则真正结束 */
+      if(pendingReply[roleId]){
+        pendingReply[roleId] = false;
+        done();
+        setTimeout(triggerReply, 300);
+      } else {
+        done();
+      }
+    });
+  });
+}
+
+/* 一条完整的回复链：抽牌 → 判断空/撤回 → 排打字中 → 排 gap → 发消息 */
+function runReplyChain(onDone){
+  const r = getReply();
+  const role = getRole();
   const targetRoleId = role.id;
   const delay = (r.minDelay||800) + Math.random()*Math.max(0,(r.maxDelay||2200)-(r.minDelay||800));
-  const box = $('#chatList'); if(!box) return;
+  const box = $('#chatList');
+  if(!box){ onDone(); return; }
 
-  /* 工具：如果中途切了角色，就放弃这次回复 */
   function stillSameRole(){
     return getCurrentRoleId() === targetRoleId;
   }
 
-  const lastUserMsg = [...msgs].reverse().find(x=>x.role==='user' && !x.recalled && !x.sys && !x.namecard);
-
   const res = genReply();
 
-  /* charHasSpokenBefore 用的是"这个角色自己的历史"，避免切角色后算错 */
-  const roleHistory = (getCurrentRoleId() === targetRoleId)
-    ? msgs
-    : (lsGet('mj_msgs_' + targetRoleId, null) || []);
-  const charHasSpokenBefore = roleHistory.some(x => x.role==='char' && !x.recalled && (x.text || x.sticker || x.voice || x.divine || x.namecard));
-
+  /* 空回复 / 撤回：走原有分支，完成后回调 onDone */
   if(!res.length || res[0].kind === 'recall'){
     setTimeout(()=>{
-      if(!stillSameRole()) return;
+      if(!stillSameRole()){ onDone(); return; }
       if(!res.length){
         markLastUserNoReply();
         saveMsgs();
         renderChat();
+        onDone();
         return;
       }
+      /* 撤回链自己会往聊天记录里写撤回条 + 最后一条字卡，
+         它内部也有自己的定时器，所以这里不能立刻 onDone。
+         用一个延迟等于链的典型长度来兜底。 */
       runRecallChain(0, delay);
+      setTimeout(onDone, delay + 3000);
     }, delay);
     return;
   }
@@ -11995,9 +12214,8 @@ function triggerReply(){
   const typingDelay = Math.min(delay, 800 + Math.random()*1200);
   setTimeout(()=>{
     if(!stillSameRole()) return;
-    const typing = document.createElement('div'); typing.className='typing-hint'; typing.id='typingMsg';
-    typing.innerHTML = `对方正在输入 <span class="dots"><span></span><span></span><span></span></span>`;
-    box.appendChild(typing); box.scrollTop=box.scrollHeight;
+    const bar = document.getElementById('typingBar');
+    if(bar) bar.classList.add('show');
   }, Math.max(0, delay - typingDelay));
 
   const gapRoll = Math.random();
@@ -12008,132 +12226,120 @@ function triggerReply(){
 
   const willStopMidway = gapCount > 0 && Math.random() < 0.05;
 
-  let finalDelay = delay;
-  if(gapCount > 0){
-    for(let i=0;i<gapCount;i++){
-      finalDelay += 800 + Math.random()*1700;
-    }
-  }
-
   function runGaps(cb){
     if(gapCount <= 0){ cb(); return; }
-    const t = document.getElementById('typingMsg');
-    if(t) t.remove();
+    const bar = document.getElementById('typingBar');
+    if(bar) bar.classList.remove('show');
     setTimeout(()=>{
       if(willStopMidway){
         markLastUserNoReply();
         saveMsgs();
         renderChat();
+        onDone();
         return;
       }
-      if(!stillSameRole()) return;
-      const box2 = $('#chatList');
-      const typing2 = document.createElement('div'); typing2.className='typing-hint'; typing2.id='typingMsg';
-      typing2.innerHTML = `对方正在输入 <span class="dots"><span></span><span></span><span></span></span>`;
-      if(box2){ box2.appendChild(typing2); box2.scrollTop = box2.scrollHeight; }
+      if(!stillSameRole()){ onDone(); return; }
+      const bar2 = document.getElementById('typingBar');
+      if(bar2) bar2.classList.add('show');
       gapCount--;
       setTimeout(()=>runGaps(cb), 600 + Math.random()*1500);
     }, 800 + Math.random()*1500);
   }
 
-  let gapDoneCb = null;
+  function emitBubbles(){
+    if(!stillSameRole()){ onDone(); return; }
+    try{
+      const bar = document.getElementById('typingBar');
+      if(bar) bar.classList.remove('show');
+      if(res[0].kind==='bubbles'){
+        const srcMsgs = (getCurrentRoleId() === targetRoleId)
+          ? msgs
+          : (lsGet('mj_msgs_' + targetRoleId, null) || []);
+        const lastUser = [...srcMsgs].reverse().find(x=>x.role==='user'&&!x.recalled&&x.text);
+        let quote=null;
+        if(lastUser && lastUser.text){
+          if(Math.random()<0.08){
+            const useFull = Math.random()<0.8;
+            let txt = lastUser.text;
+            if(!useFull && txt.length > 4){
+              const len = 1 + Math.floor(Math.random()*txt.length);
+              const start = Math.floor(Math.random()*(txt.length-len+1));
+              txt = txt.slice(start, start+len);
+            }
+            quote = {name:userName(), text:txt};
+          }
+        }
+        res[0].bubbles.forEach((bubble,idx)=>{
+          const inlineParts = [];
+          const standaloneParts = [];
+          bubble.parts.forEach(p => {
+            if(p.__standalone) standaloneParts.push(p);
+            else inlineParts.push(p);
+          });
+
+          let inlineMsg = null;
+          if(inlineParts.length){
+            const hasPinyin = inlineParts.some(p => p.type === 'pinyin');
+            let text='';
+            let pinyinText='', hanText='';
+            inlineParts.forEach((p,i)=>{
+              if(p.type === 'sticker') return;
+              text += p.text;
+              if(p.type === 'pinyin'){
+                pinyinText += (pinyinText ? ' ' : '') + p.text;
+                hanText += (hanText ? ' ' : '') + (p.han || '');
+              }
+              if(i<inlineParts.length-1){
+                if(r.punctOn && r.punctList.length){
+                  text += r.punctList[Math.floor(Math.random()*r.punctList.length)];
+                }else{
+                  text += ' ';
+                }
+              }
+            });
+            if(r.punctOn && r.punctList.length && text.trim()){
+              text += r.punctList[Math.floor(Math.random()*r.punctList.length)];
+            }
+            const m = {id:uid(),role:'char',text,time:Date.now()};
+            const stickerPart = inlineParts.find(p => p.type === 'sticker');
+            if(stickerPart){ m.sticker = stickerPart.text; }
+            if(hasPinyin){
+              m.kind = 'pinyin';
+              m.pinyin = text;
+              m.han = hanText;
+            }
+            if(idx===0 && quote) m.quote=quote;
+            inlineMsg = m;
+          }
+
+          const standaloneMsgs = standaloneParts.map((p, si) => {
+            if(p.type === 'sticker'){
+              return {id:uid(), role:'char', sticker:p.text, time:Date.now() + si + 1};
+            }
+            return {id:uid(), role:'char', text:p.text, time:Date.now() + si + 1};
+          });
+
+          if(inlineMsg) appendMsgToRole(role.id, inlineMsg);
+          standaloneMsgs.forEach(m => appendMsgToRole(role.id, m));
+        });
+        if(getCurrentRoleId() === role.id){
+          if(lastUser){
+            lastUser.readState = 'read';
+            lastUser.readNoReply = false;
+          }
+          saveMsgs(); renderChat();
+        }
+      }
+    }catch(err){ console.error('triggerReply error:', err); }
+    onDone();
+  }
 
   setTimeout(()=>{
-	if(!stillSameRole()) return;
-	try{
-	  const t=document.getElementById('typingMsg'); if(t) t.remove();
-	  if(res[0].kind==='bubbles'){
-  const srcMsgs = (getCurrentRoleId() === targetRoleId)
-    ? msgs
-    : (lsGet('mj_msgs_' + targetRoleId, null) || []);
-  const lastUser = [...srcMsgs].reverse().find(x=>x.role==='user'&&!x.recalled&&x.text);
-  let quote=null;
-  if(lastUser && lastUser.text){
-	if(Math.random()<0.08){
-	  const useFull = Math.random()<0.8;
-	  let txt = lastUser.text;
-	  if(!useFull && txt.length > 4){
-		const len = 1 + Math.floor(Math.random()*txt.length);
-		const start = Math.floor(Math.random()*(txt.length-len+1));
-		txt = txt.slice(start, start+len);
-	  }
-	  quote = {name:userName(), text:txt};
-	}
-  }
-  res[0].bubbles.forEach((bubble,idx)=>{
-	// ===== 拆两段：插入段（跟卡片拼一起）+ 独立段（表情单独成条） =====
-	const inlineParts = [];   // 插入段：card / pinyin / 40% 概率插入的表情
-	const standaloneParts = []; // 独立段：60% 概率独立成条的表情
-	bubble.parts.forEach(p => {
-	  if(p.__standalone){
-		standaloneParts.push(p);
-	  } else {
-		inlineParts.push(p);
-	  }
-	});
-
-	// ---- 1) 先处理插入段（原来的逻辑，只拿 inlineParts 算） ----
-	let inlineMsg = null;
-	if(inlineParts.length){
-	  const hasPinyin = inlineParts.some(p => p.type === 'pinyin');
-	  let text='';
-	  let pinyinText='', hanText='';
-	  inlineParts.forEach((p,i)=>{
-		if(p.type === 'sticker') return;
-		text += p.text;
-		if(p.type === 'pinyin'){
-		  pinyinText += (pinyinText ? ' ' : '') + p.text;
-		  hanText += (hanText ? ' ' : '') + (p.han || '');
-		}
-		if(i<inlineParts.length-1){
-		  if(r.punctOn && r.punctList.length){
-			text += r.punctList[Math.floor(Math.random()*r.punctList.length)];
-		  }else{
-			text += ' ';
-		  }
-		}
-	  });
-	  if(r.punctOn && r.punctList.length && text.trim()){
-		text += r.punctList[Math.floor(Math.random()*r.punctList.length)];
-	  }
-	  const m = {id:uid(),role:'char',text,time:Date.now()};
-	  const stickerPart = inlineParts.find(p => p.type === 'sticker');
-	  if(stickerPart){ m.sticker = stickerPart.text; }
-	  if(hasPinyin){
-		m.kind = 'pinyin';
-		m.pinyin = text;
-		m.han = hanText;
-	  }
-	  if(idx===0 && quote) m.quote=quote;
-	  inlineMsg = m;
-	}
-
-	// ---- 2) 再处理独立段（每个 standalone part 单独成一条） ----
-	const standaloneMsgs = standaloneParts.map((p, si) => {
-	  if(p.type === 'sticker'){
-		// 表情图单独成条：只发图片
-		return {id:uid(), role:'char', sticker:p.text, time:Date.now() + si + 1};
-	  }
-	  // emoji / kao 单独成条：只发这个表情文本
-	  return {id:uid(), role:'char', text:p.text, time:Date.now() + si + 1};
-	});
-
-	// ---- 3) 按顺序写回"这个角色自己的"消息库（不直接动全局 msgs） ----
-	// 用 appendMsgToRole 保证：无论当前切到谁，消息都归属发送者
-	// 且非当前角色会自动 bumpUnread，切换时看到的是未读角标而不是一次性弹一堆
-	if(inlineMsg) appendMsgToRole(role.id, inlineMsg);
-	standaloneMsgs.forEach(m => appendMsgToRole(role.id, m));
-  });
-  /* 只有当前就在看这个角色，才需要更新 readState + 重绘 */
-  if(getCurrentRoleId() === role.id){
-	if(lastUser){
-	  lastUser.readState = 'read';
-	  lastUser.readNoReply = false;
-	}
-	saveMsgs(); renderChat();
-  }
-}
-	}catch(err){ console.error('triggerReply error:', err); }
+    if(gapCount > 0){
+      runGaps(emitBubbles);
+    } else {
+      emitBubbles();
+    }
   }, delay);
 }
 
@@ -12536,11 +12742,21 @@ function renderDrawer(){
 }
 function insertText(ch, kind){
   const ta=$('#chatInput'); if(!ta) return;
-  const s=ta.selectionStart!=null?ta.selectionStart:ta.value.length;
-  const e=ta.selectionEnd!=null?ta.selectionEnd:s;
-  ta.value=ta.value.slice(0,s)+ch+ta.value.slice(e);
-  const p=s+ch.length;
-  ta.focus(); ta.setSelectionRange(p,p);
+
+  /* 只有用户原本就把光标放在输入框里，才按"光标处插入"处理；
+     否则一律追加到末尾，并且不给输入框焦点（避免点 emoji 突然弹键盘）。 */
+  const wasFocused = (document.activeElement === ta);
+
+  if(wasFocused){
+    const s=ta.selectionStart!=null?ta.selectionStart:ta.value.length;
+    const e=ta.selectionEnd!=null?ta.selectionEnd:s;
+    ta.value=ta.value.slice(0,s)+ch+ta.value.slice(e);
+    const p=s+ch.length;
+    ta.setSelectionRange(p,p);
+  } else {
+    ta.value = (ta.value || '') + ch;
+  }
+
   ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,110)+'px';
   /* 记「我的常用」：只有我自己点面板发出去的才算 */
   try{
@@ -14056,11 +14272,14 @@ $('#btnSaveRead').addEventListener('click',()=>{
 on('#drBack','click',()=>{ showScreen('deskScreen'); });
 on('#drSearchInput','input',()=>renderDivineRecords());
 
-let choiceMode='pick';
-let choiceOpts=['火锅','烧烤','日料'];
+let choiceMode='yn';
+let choiceOpts=['yes','no','再说吧'];
 function openChoice(){
+  /* 每次打开都重置到默认状态：Yes/No 模式、选项池、结果区 */
+  choiceMode = 'yn';
+  choiceOpts = ['yes','no','再说吧'];
   $('#choiceBody').innerHTML=`
-	<div class="choice-head"><button class="mode-btn on" data-mode="pick">多选项</button><button class="mode-btn" data-mode="yn">Yes / No</button></div>
+	<div class="choice-head"><button class="mode-btn on" data-mode="yn">Yes / No</button><button class="mode-btn" data-mode="pick">多选项</button></div>
 	<textarea class="choice-q" id="cq" rows="2" placeholder="比如：今晚吃什么？"></textarea>
 	<div id="optsWrap">
 	  <div class="opt-label2">OPTIONS</div>
@@ -14071,18 +14290,22 @@ function openChoice(){
 	<button class="choice-go" id="go">让 Ta 选</button>
   `;
   renderChoiceOpts();
+  /* 根据 choiceMode 同步 #optsWrap 显示状态 */
+  if(choiceMode==='yn'){ $('#optsWrap').style.display='none'; }
+  else { $('#optsWrap').style.display='block'; }
   $('#addOpt').onclick=()=>{ choiceOpts.push(''); renderChoiceOpts(); };
   /* ★ #think 已经不在了（选择弹窗改版时删掉了），加了 null 保护 */
   var thinkEl = $('#think');
   if(thinkEl){ thinkEl.oninput=function(){ var tv=$('#thinkVal'); if(tv) tv.textContent=this.value+'s'; }; }
-  $$('#choiceBody .mode-btn').forEach(b=>{ b.onclick=()=>{ $$('#choiceBody .mode-btn').forEach(x=>x.classList.remove('on')); b.classList.add('on'); choiceMode=b.dataset.mode; if(choiceMode==='yn'){ choiceOpts=['yes','no','再说吧']; $('#optsWrap').style.display='none'; } else{ $('#optsWrap').style.display='block'; choiceOpts=['火锅','烧烤','日料']; } renderChoiceOpts(); }; });
+  $$('#choiceBody .mode-btn').forEach(b=>{ b.onclick=()=>{ $$('#choiceBody .mode-btn').forEach(x=>x.classList.remove('on')); b.classList.add('on'); choiceMode=b.dataset.mode; if(choiceMode==='yn'){ choiceOpts=['yes','no','再说吧']; $('#optsWrap').style.display='none'; } else{ $('#optsWrap').style.display='block'; choiceOpts=['火锅','烧烤','日料']; renderChoiceOpts(); } }; });
   $('#go').onclick=()=>{
 	const q=$('#cq').value.trim()||'（未填写问题）';
 	const maxPick=1;
 	const think=1.5;
 	const valid=choiceOpts.filter(o=>o.trim());
 	if(!valid.length){ alert('至少写一个选项'); return; }
-	$('#rAns').textContent='…'; $('#result').classList.add('show');
+	$('#rAns').innerHTML='<span class="dots"><span></span><span></span><span></span></span>';
+	$('#result').classList.add('show');
 	setTimeout(()=>{
 	  let answer='';
 	  if(choiceMode==='yn'){
@@ -17694,17 +17917,7 @@ on('#cipFriendPerm','click',()=>{
   toast(f.blockSeeMe||f.blockSeeThem ? '朋友权限已更新' : '已取消朋友权限');
 });
 
-/* ===== 删除 / 拉黑 ===== */
-on('#cipDanger','click',()=>{
-  const m=$('#cipMoreMask'); if(m) m.classList.remove('show');
-  const v = prompt('删除 / 拉黑：\n输入 1 = 删除（可被加回）\n输入 2 = 拉黑（不可加回）\n留空 = 取消','');
-  if(v===null || !v.trim()) return;
-  const friends = getFriends();
-  const f = friends.find(x=>x.id===getCurrentRoleId());
-  if(!f) return;
-  if(v.trim()==='1'){ f.hidden=true; f.blocked=false; saveFriends(friends); renderFriends(); closeChatInfo(); toast('已删除（可被加回）'); }
-  else if(v.trim()==='2'){ f.hidden=true; f.blocked=true; saveFriends(friends); renderFriends(); closeChatInfo(); toast('已拉黑（不可加回）'); }
-});
+
 
 /* ===== 通用二次确认弹窗 ===== */
 let cipConfirmOkHandler = null;
@@ -17825,9 +18038,7 @@ function renderSettingsCounts(){
     const blocked = friends.filter(f => f.hidden && f.blocked).length;
     const deleted = friends.filter(f => f.hidden && !f.blocked).length;
     const b1 = document.getElementById('setBlockedCount');
-    const b2 = document.getElementById('setDeletedCount');
     if(b1) b1.textContent = blocked;
-    if(b2) b2.textContent = deleted;
   }catch(e){}
 }
 
@@ -17934,7 +18145,6 @@ document.addEventListener('click', function(e){
     }
     else if(key === 'fullscreen') toggleFullscreen();
     else if(key === 'blocked') openHiddenList('blocked');
-    else if(key === 'deleted') openHiddenList('deleted');
     else if(key === 'about')   showScreen('aboutScreen');
     else if(key === 'wipe')    wipeAllData();
     return;
@@ -18362,6 +18572,238 @@ function closeYouKnow(){
   const scr = $('#youKnowScreen');
   if(scr) scr.classList.remove('on');
 }
+
+/* ============================================================
+   内置角色一览
+   - 只显示 f.builtin === true 的角色（成为正式好友后 builtin 会被清掉）
+   - 点头像弹菜单：编辑 / 动态
+   - 编辑面板：名字 / 个签 / 关系网 / 头像 / 发动态开关
+   ============================================================ */
+let blCurRoleId = '';
+let blEditAvatarTmp = '';
+let blEditSelected = new Set();
+
+/* 拿所有内置角色（未通过） */
+function getBuiltinRoles(){
+  return getFriends().filter(f => f.builtin === true);
+}
+
+/* 打开一览页 */
+function openBuiltinList(){
+  showScreen('builtinListScreen');
+  renderBuiltinList();
+}
+
+/* 渲染一览页 */
+function renderBuiltinList(){
+  const box = document.getElementById('blList');
+  if(!box) return;
+  const list = getBuiltinRoles().slice().sort(function(a, b){
+    return (a.nextBuiltinApplyAt || 0) - (b.nextBuiltinApplyAt || 0);
+  });
+  if(!list.length){
+    box.innerHTML = '<div class="nf-empty">还没有内置角色<br>去「建立内置角色」创建一个吧</div>';
+    return;
+  }
+  const shape = (beautyCfg.avatarShape === 'circle') ? '50%' : '12%';
+  box.innerHTML = list.map(function(f){
+    return '<div class="nf-item" data-bid="' + f.id + '">' +
+      '<div class="nf-av" style="border-radius:' + shape + ';cursor:pointer" data-bl-av="' + f.id + '">' + avatarHTML(f.avatar) + '</div>' +
+      '<div class="nf-info">' +
+        '<div class="nf-name">' + escapeHTML(f.name) + '</div>' +
+        '<div class="nf-sub">' + escapeHTML(getRoleSign(f)) + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  box.querySelectorAll('[data-bl-av]').forEach(function(av){
+    av.addEventListener('click', function(e){
+      e.stopPropagation();
+      const rid = av.dataset.blAv;
+      blCurRoleId = rid;
+      const role = getRoleById(rid);
+      const titleEl = document.getElementById('blMenuTitle');
+      if(titleEl) titleEl.textContent = role ? role.name : '角色';
+      const m = document.getElementById('mBuiltinMenu');
+      if(m) m.classList.add('show');
+    });
+  });
+}
+
+/* 打开编辑面板 */
+function openBuiltinEdit(rid){
+  const role = getRoleById(rid);
+  if(!role){ toast('角色不存在'); return; }
+  blCurRoleId = rid;
+  blEditAvatarTmp = role.avatar || '';
+  blEditSelected = new Set((getRoleFriendsMap()[rid] || []).filter(function(fid){ return fid !== rid; }));
+
+  const nameEl = document.getElementById('blEditName');
+  if(nameEl) nameEl.value = role.name || '';
+  const signEl = document.getElementById('blEditSign');
+  if(signEl) signEl.value = getRoleSign(role);
+  const swEl = document.getElementById('blEditAllowMoment');
+  if(swEl) swEl.checked = !!role.allowMoment;
+
+  renderBlEditAvatar();
+  renderBlEditFriendList();
+  document.getElementById('mEditBuiltin').classList.add('show');
+}
+
+/* 渲染编辑面板里的头像预览 */
+function renderBlEditAvatar(){
+  const box = document.getElementById('blEditAvatarPreview');
+  if(!box) return;
+  box.innerHTML = blEditAvatarTmp
+    ? '<img src="' + blEditAvatarTmp + '">'
+    : '<svg viewBox="0 0 100 100"><circle class="silhouette" cx="50" cy="38" r="19"/><path class="silhouette" d="M12 100 C12 74 28 62 50 62 C72 62 88 74 88 100 Z"/></svg>';
+  const shape = (beautyCfg.avatarShape === 'circle') ? '50%' : '16px';
+  box.style.borderRadius = shape;
+}
+
+/* 渲染编辑面板里的关系网勾选 */
+function renderBlEditFriendList(){
+  const box = document.getElementById('blEditFriendList');
+  if(!box) return;
+  const all = getFriends().filter(function(f){ return f.id !== blCurRoleId; });
+  if(!all.length){
+    box.innerHTML = '<div style="text-align:center;color:#bbb;font-size:12.5px;padding:20px 0">没有可以建立关系的角色</div>';
+    return;
+  }
+  const shape = (beautyCfg.avatarShape === 'circle') ? '50%' : '10px';
+  box.innerHTML = all.map(function(f){
+    const on = blEditSelected.has(f.id);
+    return '<div class="ef-friend-row" data-id="' + f.id + '" style="display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:0.6px dashed rgba(0,0,0,.06);cursor:pointer">' +
+      '<div class="ef-av" style="width:38px;height:38px;flex:none;border-radius:' + shape + ';background:#f2f2f2;overflow:hidden;position:relative">' + avatarHTML(f.avatar) + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:14px;color:#1a1a1a;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHTML(displayName(f)) + '</div>' +
+      '</div>' +
+      '<div class="ef-chk" style="width:20px;height:20px;flex:none;border-radius:50%;border:0.7px solid rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:11px;color:' + (on ? '#fff' : 'transparent') + ';background:' + (on ? '#1a1a1a' : 'transparent') + '">✓</div>' +
+    '</div>';
+  }).join('');
+  box.querySelectorAll('.ef-friend-row').forEach(function(row){
+    row.onclick = function(){
+      const id = row.dataset.id;
+      if(blEditSelected.has(id)) blEditSelected.delete(id);
+      else blEditSelected.add(id);
+      renderBlEditFriendList();
+    };
+  });
+}
+
+/* 保存编辑 */
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  if(t.closest('#blEditSave')){
+    e.preventDefault(); e.stopPropagation();
+    const rid = blCurRoleId;
+    const role = getRoleById(rid);
+    if(!role){ toast('角色不存在'); return; }
+    const nameEl = document.getElementById('blEditName');
+    const signEl = document.getElementById('blEditSign');
+    const swEl = document.getElementById('blEditAllowMoment');
+    const newName = (nameEl ? nameEl.value : '').trim();
+    if(!newName){ toast('名字不能为空'); return; }
+    const friends = getFriends();
+    const f = friends.find(function(x){ return x.id === rid; });
+    if(!f) return;
+    f.name = newName;
+    f.sub = (signEl ? signEl.value.trim() : '');
+    f.avatar = blEditAvatarTmp;
+    f.allowMoment = !!(swEl && swEl.checked);
+    saveFriends(friends);
+
+    /* 写关系网：以勾选为准 */
+    const map = getRoleFriendsMap();
+    const oldSet = new Set(map[rid] || []);
+    const nowSet = new Set(blEditSelected);
+    nowSet.forEach(function(fid){ if(!oldSet.has(fid)) addFriendPair(rid, fid); });
+    oldSet.forEach(function(fid){ if(!nowSet.has(fid)) deleteFriendPair(rid, fid); });
+
+    renderFriends();
+    renderBuiltinList();
+    document.getElementById('mEditBuiltin').classList.remove('show');
+    toast('已保存');
+    return;
+  }
+  if(t.closest('#blEditUploadAv')){
+    e.preventDefault(); e.stopPropagation();
+    const file = document.getElementById('editAvFile');
+    if(file){
+      file._forBuiltinEdit = true;
+      file.value = '';
+      file.click();
+    }
+    return;
+  }
+  if(t.closest('#blEditClearAv')){
+    e.preventDefault(); e.stopPropagation();
+    blEditAvatarTmp = '';
+    renderBlEditAvatar();
+    return;
+  }
+  if(t.closest('#blEditClose')){
+    e.preventDefault(); e.stopPropagation();
+    document.getElementById('mEditBuiltin').classList.remove('show');
+    return;
+  }
+}, true);
+
+/* 菜单里的两项 */
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  if(t.closest('#blMenuEdit')){
+    e.preventDefault(); e.stopPropagation();
+    const rid = blCurRoleId;
+    document.getElementById('mBuiltinMenu').classList.remove('show');
+    if(rid) openBuiltinEdit(rid);
+    return;
+  }
+  if(t.closest('#blMenuMoments')){
+    e.preventDefault(); e.stopPropagation();
+    const rid = blCurRoleId;
+    const role = getRoleById(rid);
+    const titleEl = document.getElementById('blMomentsTitle');
+    if(titleEl) titleEl.textContent = (role ? role.name : '角色') + ' 的动态';
+    document.getElementById('mBuiltinMenu').classList.remove('show');
+    document.getElementById('mBuiltinMoments').classList.add('show');
+    return;
+  }
+  if(t.closest('#blBack')){
+    e.preventDefault(); e.stopPropagation();
+    document.getElementById('builtinListScreen').classList.remove('on');
+    return;
+  }
+}, true);
+
+/* 编辑面板里的上传头像：接管 editAvFile 的 change 事件（用标记区分） */
+document.addEventListener('change', function(e){
+  const t = e.target;
+  if(!t || t.id !== 'editAvFile') return;
+  if(!t._forBuiltinEdit) return;
+  t._forBuiltinEdit = false;
+  const file = t.files && t.files[0];
+  t.value = '';
+  if(!file) return;
+  openCrop(file, 'square', function(data){
+    blEditAvatarTmp = data;
+    renderBlEditAvatar();
+  });
+}, true);
+
+/* 一览页入口：从「添加」弹窗里点进来 */
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  if(t.closest('#optBuiltinList')){
+    e.preventDefault(); e.stopPropagation();
+    document.getElementById('mAdd').classList.remove('show');
+    setTimeout(openBuiltinList, 100);
+    return;
+  }
+}, true);
 let ykPool = [];
 function refreshYouKnow(){
   const box = $('#ykList');
@@ -21234,6 +21676,85 @@ function refreshChatRole(){
 }
 let friendMenuId='';
 function openFriendMenu(fid){ friendMenuId=fid; $('#mFriendMenu').classList.add('show'); }
+on('#fmEditFriend','click',()=>{
+  $('#mFriendMenu').classList.remove('show');
+  setTimeout(openEditFriend, 100);
+});
+
+/* ===== 编辑好友：真名 + 关系网 ===== */
+let efRoleId = '';
+let efSelected = new Set();
+function openEditFriend(){
+  const rid = friendMenuId;
+  const role = getRoleById(rid);
+  if(!role){ toast('角色不存在'); return; }
+  efRoleId = rid;
+  const nameEl = document.getElementById('efName');
+  if(nameEl) nameEl.value = role.name || '';
+  efSelected = new Set((getRoleFriendsMap()[rid] || []).filter(fid => fid !== rid));
+  renderEfFriendList();
+  $('#mEditFriend').classList.add('show');
+  setTimeout(()=>{ const el = document.getElementById('efName'); if(el) el.focus(); }, 200);
+}
+function renderEfFriendList(){
+  const box = document.getElementById('efFriendList');
+  if(!box) return;
+  const all = getFriends().filter(f => f.id !== efRoleId);
+  if(!all.length){
+    box.innerHTML = '<div style="text-align:center;color:#bbb;font-size:12.5px;padding:24px 0">没有可以建立关系的角色</div>';
+    return;
+  }
+  const shape = (beautyCfg.avatarShape === 'circle') ? '50%' : '10px';
+  box.innerHTML = all.map(f => {
+    const on = efSelected.has(f.id);
+    return '<div class="ef-friend-row" data-id="' + f.id + '" style="display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:0.6px dashed rgba(0,0,0,.06);cursor:pointer">' +
+      '<div class="ef-av" style="width:38px;height:38px;flex:none;border-radius:' + shape + ';background:#f2f2f2;overflow:hidden;position:relative">' + avatarHTML(f.avatar) + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:14px;color:#1a1a1a;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHTML(displayName(f)) + '</div>' +
+      '</div>' +
+      '<div class="ef-chk" style="width:20px;height:20px;flex:none;border-radius:50%;border:0.7px solid rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:11px;color:' + (on ? '#fff' : 'transparent') + ';background:' + (on ? '#1a1a1a' : 'transparent') + '">✓</div>' +
+    '</div>';
+  }).join('');
+  box.querySelectorAll('.ef-friend-row').forEach(row => {
+    row.onclick = () => {
+      const id = row.dataset.id;
+      if(efSelected.has(id)) efSelected.delete(id);
+      else efSelected.add(id);
+      renderEfFriendList();
+    };
+  });
+}
+on('#efSave','click',()=>{
+  const rid = efRoleId;
+  const role = getRoleById(rid);
+  if(!role){ toast('角色不存在'); return; }
+  const nameEl = document.getElementById('efName');
+  const newName = (nameEl ? nameEl.value : '').trim();
+  if(!newName){ toast('真名不能为空'); return; }
+  /* 改真名 */
+  if(newName !== role.name){
+    const friends = getFriends();
+    const f = friends.find(x => x.id === rid);
+    if(f){ f.name = newName; saveFriends(friends); }
+  }
+  /* 写关系网：以勾选为准 */
+  const map = getRoleFriendsMap();
+  const old = new Set(map[rid] || []);
+  const now = new Set(efSelected);
+  /* 新增：勾了但现在没有 */
+  now.forEach(fid => {
+    if(!old.has(fid)) addFriendPair(rid, fid);
+  });
+  /* 移除：以前有但现在没勾 */
+  old.forEach(fid => {
+    if(!now.has(fid)) deleteFriendPair(rid, fid);
+  });
+  renderFriends();
+  refreshChatRole();
+  $('#mEditFriend').classList.remove('show');
+  toast('已保存');
+});
+
 on('#fmChangeGroup','click',()=>{
   $('#mFriendMenu').classList.remove('show');
   openChangeGroup();
@@ -22231,7 +22752,29 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	setTimeout(()=>{ try{ runIntroTick(true); }catch(e){} }, 3000);
 
 	const sendBtn = $('#sendBtn');
-	if(sendBtn) sendBtn.onclick = sendMessage;
+	if(sendBtn){
+  /* 让发送按钮不抢焦点：
+     - mousedown 用 preventDefault：桌面浏览器不会把焦点抢走，click 仍触发
+     - touchstart 不 preventDefault（否则安卓会把 click 一起吞掉），
+       而是在触摸前把输入框的焦点"锁"住，交给 sendMessage 之后处理 */
+  sendBtn.addEventListener('mousedown', function(e){ e.preventDefault(); });
+  sendBtn.addEventListener('touchstart', function(){
+    var ta = document.getElementById('chatInput');
+    if(ta && document.activeElement === ta){
+      sendBtn._keepFocus = true;   /* 标记：这次发送是"正在打字时发的" */
+    } else {
+      sendBtn._keepFocus = false;
+    }
+  }, {passive:true});
+  sendBtn.onclick = function(){
+    var ta = document.getElementById('chatInput');
+    var wasFocused = (document.activeElement === ta) || sendBtn._keepFocus;
+    sendMessage();
+    if(wasFocused && ta){
+      try{ ta.focus(); }catch(err){}
+    }
+  };
+}
 	const chatInput = $('#chatInput');
 	if(chatInput){
 	  /* 不再默认 readonly；让输入框永远保持可编辑状态，
@@ -22839,12 +23382,10 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	$('#mMomentSet').classList.add('show');
   }
 
-  let lastSettle = lsGet(LAST_SETTLE_KEY, Date.now());
   let pendingTasks = lsGet(PENDING_KEY, []);
   if(!Array.isArray(pendingTasks)) pendingTasks = [];
   function saveLastSettle(){ lsSet(LAST_SETTLE_KEY, lastSettle); }
   function savePendingTasks(){ lsSet(PENDING_KEY, pendingTasks); }
-  /* （此处的 settleMoments 已删除：被下方完整版覆盖，是死代码） */
   function bindEvents(){
 	const back = $('#mmBack');
 	if(back) back.onclick = goBackFromMoments;
@@ -22877,7 +23418,7 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	if(okBtn) okBtn.onclick = () => {
 	  const t = $('#postText').value.trim();
 	  if(!t){ toast('内容不能为空'); return; }
-	  myMoments.push({
+	  const newMoment = {
 		id: 'mm' + Date.now().toString(36),
 		owner: 'me',
 		name: userProfile.name || '我',
@@ -22888,8 +23429,11 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 		likes: [],
 		vis: myPostVis,
 		comments: []
-	  });
+	  };
+	  myMoments.push(newMoment);
 	  saveMyMoments();
+	  /* ★ 发完立刻给这条动态摇号 */
+	  try { scheduleMomentInteraction(newMoment); } catch(e){ console.error('动态摇号出错', e); }
 	  $('#mPost').classList.remove('show');
 	  renderMyMoments();
 	  toast('已发布');
@@ -22967,7 +23511,7 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 		if(ids.length){
 		  const rid = ids[Math.floor(Math.random() * ids.length)];
 		  const rf = getRoleById(rid) || {};
-		  myMoments.push({
+		  const autoMoment = {
 			id: 'mm' + Date.now().toString(36),
 			owner: rid,
 			name: rf.name || '角色',
@@ -22978,8 +23522,11 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 			likes: [],
 			vis: 'public',
 			comments: []
-		  });
+		  };
+		  myMoments.push(autoMoment);
 		  saveMyMoments();
+		  /* ★ 自动发的动态也走同一套摇号 */
+		  try { scheduleMomentInteraction(autoMoment); } catch(e){ console.error('自动动态摇号出错', e); }
 		  const box = $('#mmBody');
 		  if(box && $('#momentsScreen') && $('#momentsScreen').classList.contains('on')) renderMyMoments();
 		}
@@ -23021,7 +23568,10 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	  const ids = getFriends().map(f => f.id);
 	  if(!ids.length) return;
 	  ids.forEach(rid => {
-		if(m.owner === rid) return;            // 角色不发自己的动态
+		if(m.owner === rid) return;
+if(m.owner !== 'me' && !areFriends(m.owner, rid)) return;            // 角色不发自己的动态
+		/* ★ 新增：只有互为好友才有资格互动（动态作者是"我"时，默认全部好友） */
+		if(m.owner !== 'me' && !areFriends(m.owner, rid)) return;
 		const actorName = roleNameOfId(rid);
 		if((m.likes||[]).indexOf(actorName) >= 0){
 		  // 已点赞，可能追加评论
@@ -23293,7 +23843,6 @@ function syncRoleNameEverywhere(){
    - nextAt：下一次切换的时间戳（ms）
    - 只在「关→开」的时候生成 nextAt；如果 nextAt 为空时到点也重新生成
 */
-const SIGN_SWITCH_KEY = 'mj_sign_switch_v1';
 function getSignSwitchStore(){
   let s = lsGet(SIGN_SWITCH_KEY, null);
   if(!s || typeof s !== 'object') s = {};
@@ -23398,12 +23947,8 @@ function startSignSwitchTimer(){
 const CALL_CFG_KEY = 'mj_call_cfg_v1';
 const CALL_STATE_KEY = 'mj_call_state_v1';
 
-/* ============================================================
-   通话配置 · 每角色独立
-   - mj_call_role_cfg_v1 = { [roleId]: { on, rate, rollMin, rollMax, winMin, winMax, maxVoice, startMiniIncoming, startMiniOutgoing } }
-   - 老数据（mj_call_cfg_v1 全局配置）不再使用，自动作废
-   ============================================================ */
-const CALL_ROLE_CFG_KEY = 'mj_call_role_cfg_v1';
+
+
 
 /* 默认值（每个新角色初始用这个） */
 function defaultCallRoleCfg(){
@@ -24317,6 +24862,8 @@ function switchToRole(id){
   if(!id) return;
   if(id === getCurrentRoleId()) return;
   closeAllOverlays();
+  /* 清掉上一轮角色排下的主动占卜延时任务，避免累积 */
+  try { clearActiveDivinePending(); } catch(e){}
   setCurrentRoleId(id);
   msgs = loadMsgs();
   refreshChatRole();
@@ -24358,21 +24905,18 @@ function scheduleOnlineTrigger(){
   });
 }
 
-/* ===== 页面名字表 =====
-   以后全文切页面统一用 goToPage('名字')，不再写 0/1/2/3。
-   想加新页面，只改这张表。 */
-var PAGE_INDEX = {
-  friends: 0,
-  chat:    1,
-  desk:    2,
-  me:      3
-};
-
 /* ===== 统一切页面入口 =====
    参数 name：'friends' | 'chat' | 'desk' | 'me'
+   页面索引表写死在函数内部，避免外部变量因某个脚本提前抛错而变成 undefined。
    关面板、跳页这类独有动作，留在各调用点，不放这里。 */
 function goToPage(name){
   if(!name) return;
+  var PAGE_INDEX = {
+    friends: 0,
+    chat:    1,
+    desk:    2,
+    me:      3
+  };
   var idx = PAGE_INDEX[name];
   if(typeof idx !== 'number') return;
   if(window.__goPage) window.__goPage(idx);
@@ -24607,6 +25151,87 @@ function goToPage(name){
     <button class="nf-add" id="ykRefresh" type="button">换一批</button>
   </div>
   <div class="nf-list" id="ykList"></div>
+</div>
+
+<!-- ============ 内置角色一览 ============ -->
+<div class="screen" id="builtinListScreen">
+  <div class="nf-top">
+    <button class="nf-back" id="blBack" type="button">‹</button>
+    <div class="nf-title">内 置 角 色</div>
+    <div style="width:38px;flex:none"></div>
+  </div>
+  <div class="nf-list" id="blList"></div>
+</div>
+
+<!-- ============ 内置角色小菜单（点头像弹出） ============ -->
+<div class="modal" id="mBuiltinMenu">
+  <div class="overlay" data-close></div>
+  <div class="sheet" style="max-width:300px">
+    <div class="sheet-head"><h3 id="blMenuTitle">角色</h3><button class="x" data-close type="button">✕</button></div>
+    <div class="sheet-body">
+      <div class="chk-row" id="blMenuEdit"><div class="nm">编辑</div><span class="chev">›</span></div>
+      <div class="chk-row" id="blMenuMoments"><div class="nm">动态</div><span class="chev">›</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 编辑内置角色 ============ -->
+<div class="modal" id="mEditBuiltin">
+  <div class="overlay" data-close></div>
+  <div class="sheet">
+    <div class="sheet-head"><h3>编辑内置角色</h3><button class="x" id="blEditClose" type="button">✕</button></div>
+    <div class="sheet-body">
+      <div class="nf-avatar-block">
+        <div class="nf-avatar-preview" id="blEditAvatarPreview"></div>
+        <div class="nf-avatar-actions">
+          <div class="nf-hint">点击上传或使用默认头像</div>
+          <div class="nf-mini-btns">
+            <button type="button" class="nf-mini-btn primary" id="blEditUploadAv">上传</button>
+            <button type="button" class="nf-mini-btn" id="blEditClearAv">默认</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="nf-form-row">
+        <label>名字</label>
+        <input type="text" id="blEditName" placeholder="角色的名字">
+      </div>
+
+      <div class="nf-form-row">
+        <label>个签</label>
+        <input type="text" id="blEditSign" placeholder="这个人很懒，什么都没有留下。">
+      </div>
+
+      <div class="nf-form-row">
+        <label>关系网</label>
+        <div class="hint" style="font-size:11px;color:#bbb;line-height:1.7;margin:4px 0 8px">勾选 = 默认已经是好友。</div>
+        <div id="blEditFriendList" style="max-height:240px;overflow-y:auto;scrollbar-width:none"></div>
+      </div>
+
+      <div class="nf-form-row" style="display:flex;align-items:center;gap:12px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;color:#1a1a1a;letter-spacing:1px;font-weight:300">允许 Ta 发动态</div>
+          <div style="font-size:10.5px;color:#bbb;margin-top:3px;letter-spacing:.3px;font-weight:300">默认关闭</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="blEditAllowMoment"><span class="slider"></span></label>
+      </div>
+
+      <button class="primary-btn" id="blEditSave" type="button" style="margin-top:18px">保 存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 内置角色动态（占位） ============ -->
+<div class="modal" id="mBuiltinMoments">
+  <div class="overlay" data-close></div>
+  <div class="sheet" style="max-width:320px">
+    <div class="sheet-head"><h3 id="blMomentsTitle">动态</h3><button class="x" data-close type="button">✕</button></div>
+    <div class="sheet-body">
+      <div style="text-align:center;color:#bbb;font-size:13px;padding:40px 20px;line-height:2;font-weight:300">
+        Ta 的动态功能还没做<br>敬请期待
+      </div>
+    </div>
+  </div>
 </div>
 <!-- ============ 聊天信息 · 更多弹窗 ============ -->
 <div class="cip-mask" id="cipMoreMask">
@@ -25974,7 +26599,7 @@ function sendVideoMessage(roleId, video){
         }
         toSend.push(m);
       });
-      // 如果 genReply 返回空（理论上不会），兜底只发卡片
+      // genReply 返回空时，仅发送卡片
       if(!toSend.length){
         toSend.push(cardMsg);
       }
@@ -25984,7 +26609,7 @@ function sendVideoMessage(roleId, video){
     }
 
   } else {
-    // === 情况 3：只发卡片，不说话 ===
+    // 情况 3：仅发送卡片
     toSend.push(cardMsg);
   }
 
@@ -26215,7 +26840,7 @@ document.addEventListener('click', (e) => {
   if(typeof origRender !== 'function') return;
   window.renderChat = function(forceBottom){
     origRender(forceBottom);
-    // ★ 关键修复：每次重建 chatList 后，同步打一次 message-sent / message-received
+    // 重建 chatList 后，同步气泡别名 message-sent / message-received
     if(window.__tagBubbles) window.__tagBubbles();
     const list = document.getElementById('chatList');
     if(!list) return;
@@ -26253,7 +26878,7 @@ function flashVideoStatus(roleId, durationMs){
   const ms2 = getMoodState();
   const backup = { status: ms2.status, mood: ms2.mood };
 
-  // 临时改成「刷视频中」
+  // 切换为「刷视频中」
   ms2.status = '📱 刷视频中';
   saveMoodState(ms2);
   applyMoodUI();
