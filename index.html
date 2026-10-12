@@ -5538,8 +5538,25 @@ html[data-theme="bw"] .tarot .t-suit-en{
 .dr-card .dr-cards{margin-top:18px;display:flex;gap:8px}
 .dr-card .dr-cards .tarot{flex:0 0 auto;width:64px;aspect-ratio:2/3;padding:6px 3px 4px;border:0.7px solid rgba(0,0,0,.18);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.03);background:#fdfdfd}
 .dr-reads{margin-top:16px;padding-top:12px;border-top:0.6px dashed rgba(0,0,0,.08)}
-.dr-reads-title{font-size:10.5px;color:#bbb;letter-spacing:3px;margin-bottom:8px;display:flex;align-items:center;gap:6px;font-weight:300}
+.dr-reads-title{font-size:10.5px;color:#bbb;letter-spacing:3px;margin-bottom:8px;display:flex;align-items:center;gap:6px;font-weight:300;cursor:pointer}
 .dr-reads-title::before{content:"✦";font-size:9px;color:#bbb}
+.dr-reads-arrow{font-size:11px;color:#ccc;transition:transform .2s ease;display:inline-block;margin-left:auto}
+.dr-reads-arrow.open{transform:rotate(90deg)}
+.dr-reads-more{
+  font-size:12px;
+  color:#1a1a1a;
+  letter-spacing:1px;
+  text-align:center;
+  padding:10px 0 6px;
+  margin-top:8px;
+  border-top:0.6px dashed #ececec;
+  cursor:pointer;
+  font-weight:300;
+  transition:color .15s ease;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+.dr-reads-more:active{color:#bbb}
 .dr-read-item{background:transparent;border:none;border-left:1.5px solid #ececec;border-radius:0;padding:4px 0 4px 12px;margin-bottom:10px}
 .dr-read-item .rt{font-size:10px;color:#ccc;margin-bottom:5px;font-family:Georgia,serif;letter-spacing:1px}
 .dr-read-item .rx{font-size:13px;color:#1a1a1a;font-weight:300;line-height:1.7;white-space:pre-wrap;word-break:break-word}
@@ -6886,9 +6903,9 @@ body[data-bubble="custom"] .preview-bubble{
 /* ===== 收藏页 · 筛选栏 ===== */
 .col-filter-row{
   display:flex;
-  justify-content:center;
+  justify-content:flex-start;
   gap:28px;
-  padding:4px 0 14px;
+  padding:4px 0 14px 2px;
   border-bottom:0.6px dashed #f0f0f0;
   margin-bottom:6px;
 }
@@ -6976,8 +6993,8 @@ body[data-bubble="custom"] .preview-bubble{
   height:auto !important;
 }
 .col-act-btn{
-  width:26px;
-  height:26px;
+  width:32px;
+  height:32px;
   border:none;
   background:transparent;
   color:#c8c8c8;
@@ -6990,6 +7007,12 @@ body[data-bubble="custom"] .preview-bubble{
   align-items:center;
   justify-content:center;
   transition:color .18s ease, background .18s ease;
+  touch-action:manipulation;
+}
+.col-act-btn svg{
+  width:14px;
+  height:14px;
+  pointer-events:none;
 }
 .col-act-btn svg{
   width:13px;
@@ -9200,7 +9223,15 @@ window.__APP_VERSION__ = '1.0.2';
       <p>本网站包含较多功能，其中一部分来自朋友的反馈与需求。如果使用习惯不太契合，你也可以选择其它字卡工具，或自行使用 AI 生成一个更适合自己的字卡网站。</p>
       <p>如果进行二传，请标注原作者署名。</p>
       <p>如果有任何问题和建议，也欢迎随时提出。</p>
-      <p>祝你使用愉快。</p>
+    </div>
+
+    <div class="sec-title">NOTICE</div>
+    <div class="sec-title-cn">借 鉴 声 明</div>
+    <div class="notice">
+      <p>本网站的部分功能（包含但不限于拼音字卡、时间段字卡、天气字卡等功能），均为本人独立构思的设计。</p>
+      <p>功能本身没有专利，灵感也可能撞车。说句情绪话，自己的想法被当成别人的原创多少会有点难受。</p>
+      <p>但不管怎么样，我的功能随意借鉴使用，但如果借鉴了我的功能，请标注署名。感谢理解！</p>
+      <p style="font-size:11.5px;color:#bbb;margin-top:18px">联系作者请找：@001（小红书号 27739216821）</p>
     </div>
 
     <div class="sec-title">THANKS</div>
@@ -9209,7 +9240,9 @@ window.__APP_VERSION__ = '1.0.2';
       选择功能借鉴 <b>@FelixFelicis</b><br>
       <span class="id">小红书号：9416318007</span><br><br>
       吐槽、收藏功能借鉴 <b>@言序</b><br>
-      <span class="id">小红书号：1842523578</span>
+      <span class="id">小红书号：1842523578</span><br><br>
+      公用字卡和专享字卡、朋友圈、语音、拼好卡功能借鉴 <b>@默玉</b><br>
+      <span class="id">小红书号：8012400317</span>
     </div>
 
     <div class="end">谢 谢 你 来 过 这 里</div>
@@ -9643,7 +9676,7 @@ window.__APP_VERSION__ = '1.0.2';
 <div class="modal" id="mTimedRate">
   <div class="overlay" data-close></div>
   <div class="sheet">
-    <div class="sheet-head"><h3>时间字卡概率</h3><button class="x" data-close>✕</button></div>
+    <div class="sheet-head"><h3>时间字卡开关</h3><button class="x" data-close>✕</button></div>
     <div class="sheet-body" id="timedRateBody"></div>
   </div>
 </div>
@@ -10874,7 +10907,7 @@ const DEFAULT_CARD_GROUPS = [
 	{ id:'cnc2', name:'拒绝', list:['不加','有点尴尬','算了吧'] },
 	{ id:'cnc3', name:'待定', list:['怎么了？','干嘛','让我考虑考虑'] }
   ]},
-  { id:'g-sign', name:'签字卡', icon:'note', sub:'随机切换个签', cats:[
+  { id:'g-sign', name:'个签字卡', icon:'note', sub:'随机切换个签', cats:[
 	{ id:'cs-role', name:'角色个签', list:[
 	  '云和阳光不过一公尺',
 	  '我想睡在梦里，醒在梦境',
@@ -12955,16 +12988,12 @@ function renderCollectScreen(tab){
   bindColFilterBar(body);
   bindColNoteEvents(body, tab);
 
-  /* 删除：直接从列表里删掉 */
+  /* 删除：走系统确认弹窗 */
   body.querySelectorAll('[data-del]').forEach(function(btn){
     btn.onclick = function(e){
       e.stopPropagation();
       const id = btn.dataset.del;
-      if(!confirm('删除这条收藏？')) return;
-      const arr = getCollectMine(rid).filter(x => x.id !== id);
-      setCollectMine(rid, arr);
-      renderCollectScreen('mine');
-      toast('已删除');
+      openCollectDelConfirm(id);
     };
   });
 
@@ -13062,6 +13091,17 @@ function renderCollectScreen(tab){
       colUpdateSelCount();
     });
   });
+}
+
+/* ===== 收藏页 · 删除确认弹窗 ===== */
+let _colDelPendingId = '';
+function openCollectDelConfirm(id){
+  _colDelPendingId = id;
+  const txt = document.getElementById('confirmDelText');
+  if(txt) txt.innerHTML = '将删除这条收藏。<br><span style="font-size:11px;color:#bbb">删除后无法恢复。</span>';
+  const okBtn = document.getElementById('confirmDelOk');
+  if(okBtn) okBtn.textContent = '删 除';
+  document.getElementById('mConfirmDel').classList.add('show');
 }
 
 /* ===== 收藏页 · 筛选按钮绑定 ===== */
@@ -13286,6 +13326,11 @@ function showMsgMenu(msgEl,x,y){
      额外保留：占卜卡专用项、转发、复制、撤回、重发，按位置插好
      ============================================================ */
 
+  // ⓪ 保存到占卜记录（占卜卡专用，未保存时才显示，放最上面）
+  if(m.divine && !m.divine.saved){
+    html += `<div class="it pink" data-act="divine-save">保存到占卜记录</div>`;
+  }
+
   // ① 收藏（不加粗：去掉 collect-item 类）
   if(!m.recalled && extractCollectText(m)){
     const rid0 = getCurrentRoleId();
@@ -13313,11 +13358,6 @@ function showMsgMenu(msgEl,x,y){
   html += `<div class="it white" data-act="delete">删除</div>`;
 
   /* ===== 额外功能：保留但排在删除之后，不打乱你要的 6 项顺序 ===== */
-
-  // 占卜卡未保存 → 粉色「保存到占卜记录」
-  if(m.divine && !m.divine.saved){
-    html += `<div class="it pink" data-act="divine-save">保存到占卜记录</div>`;
-  }
 
   // 转发（单条）
   if(!m.sys && !m.recalled && (m.text || m.sticker || m.divine || m.mergeCard)){
@@ -13402,6 +13442,22 @@ function showMsgMenu(msgEl,x,y){
 	  } else if(act === 'delete'){
 		const i = msgs.indexOf(m);
 		if(i >= 0){ msgs.splice(i, 1); saveMsgs(); renderChat(); }
+	  } else if(act === 'divine-save'){
+		saveDivineMsg(m);
+	  } else if(act === 'resend'){
+		/* 重发：把原来的失败消息删掉，重新走一次发送 */
+		const i = msgs.indexOf(m);
+		if(i >= 0){ msgs.splice(i, 1); }
+		saveMsgs(); renderChat();
+		const ta = document.getElementById('chatInput');
+		if(ta){ ta.value = m.text || ''; sendMessage(); }
+	  } else if(act === 'recall'){
+		/* 撤回 */
+		const i = msgs.indexOf(m);
+		if(i >= 0){
+		  m.recalled = true;
+		  saveMsgs(); renderChat();
+		}
 	  }
 	};
   });
@@ -13534,7 +13590,7 @@ function openForwardPicker(msgIds, mode){
 	const isCur = (f.id === curId);
 	return '<div class="fw-target-row" data-rid="' + f.id + '" style="display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:0.6px dashed rgba(0,0,0,.06);cursor:pointer">'
 	  + '<div class="fw-ck" style="width:20px;height:20px;border-radius:50%;border:1.5px solid rgba(0,0,0,.2);flex:none;display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent">✓</div>'
-	  + '<div style="width:38px;height:38px;border-radius:' + avRadius + ';background:#f0f0f0;overflow:hidden;position:relative;flex:none">' + avatarHTML(role.avatar) + '</div>'
+	  + '<div style="width:38px;height:38px;border-radius:' + avRadius + ';background:#f0f0f0;overflow:hidden;position:relative;flex:none">' + (role.avatar ? '<img src="' + role.avatar + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">' : '<svg viewBox="0 0 100 100" style="position:absolute;inset:0;width:100%;height:100%"><circle fill="#c8c8c8" cx="50" cy="38" r="19"/><path fill="#c8c8c8" d="M12 100 C12 74 28 62 50 62 C72 62 88 74 88 100 Z"/></svg>') + '</div>'
 	  + '<div style="flex:1;min-width:0;font-size:14px;color:#1a1a1a;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHTML(name) + (isCur ? ' <span style="font-size:10.5px;color:#bbb">（当前）</span>' : '') + '</div>'
 	  + '</div>';
   }).join('');
@@ -14024,16 +14080,22 @@ function showMsgNotify(roleName, text, roleAvatar, targetRoleId){
     clearTimeout(_msgNotifyTimer);
     /* 没有角色 id 就啥也不做（比如手动调用没传的情况） */
     if(!targetRoleId) return;
-    /* 已经在这个角色的聊天页？那就只是收掉提示 */
-    if(getCurrentRoleId() === targetRoleId){
-      /* 如果在聊天页，滚到底部就行 */
+
+    /* 先切角色（不同角色才切），再跳到聊天页 */
+    try {
+      if(getCurrentRoleId() !== targetRoleId){
+        switchToRole(targetRoleId);
+      }
+    } catch(e){ console.error(e); }
+
+    /* 统一跳到聊天页 */
+    try { goToPage('chat'); } catch(e){}
+
+    /* 跳过去后，滚到底部 */
+    setTimeout(function(){
       var box = document.getElementById('chatList');
       if(box) box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
-      return;
-    }
-    /* 切角色 + 跳到聊天页 */
-    try { switchToRole(targetRoleId); } catch(e){ console.error(e); }
-    try { goToPage('chat'); } catch(e){}
+    }, 100);
   };
 
   el.classList.add('show');
@@ -16580,11 +16642,28 @@ function renderDivineRecords(){
   if(!list.length){ box.innerHTML=`<div class="dr-empty" style="text-align:center;padding:80px 30px;font-size:13px;color:#bbb;line-height:2;font-weight:300"><span style="display:block;margin-bottom:14px;font-size:10.5px;letter-spacing:6px;color:#d8d8d8;font-family:Georgia,serif">DIVINE</span>${kw?'没有匹配的占卜记录':'还没有占卜记录<br>去占卜一次，并把理解写下来吧'}</div>`; return; }
   const roleName=getCurrentRoleName();
   box.innerHTML=list.map(rec=>{
-	const readsHTML=(rec.reads||[]).length?`<div class="dr-reads"><div class="dr-reads-title">你的理解（${rec.reads.length}）</div>${rec.reads.map(r=>`<div class="dr-read-item"><div class="rt">${new Date(r.time).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div><div class="rx">${escapeHTML(r.text)}</div></div>`).join('')}</div>`:'';
-	return `<div class="dr-card" data-rec="${rec.id}"><div class="dr-head"><span>${new Date(rec.time).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} · ${escapeHTML(rec.who==='self'?'我抽的':roleName+'抽的')}</span><button class="dr-del" data-rec-del="${rec.id}" type="button">✕</button></div><div class="dr-q-label">Q</div><div class="dr-q">${escapeHTML(rec.question)}</div><div class="dr-cards">${rec.cards.map(c=>tarotHTML(c.card,c.reversed)).join('')}</div>${readsHTML}<button class="dr-add-read" data-rec-add="${rec.id}">✦ ${(rec.reads||[]).length?'追加新的理解':'填写答案 / 解读'}</button></div>`;
+	const allReads = rec.reads || [];
+	const hasReads = allReads.length > 0;
+	/* 默认只显示最新 1 条；展开时显示全部 */
+	const expanded = !!window.__drExpandedSet && window.__drExpandedSet.has(rec.id);
+	const shown = hasReads
+	  ? (expanded ? allReads : allReads.slice(-1))
+	  : [];
+	const readsHTML = hasReads
+	  ? `<div class="dr-reads">
+		   <div class="dr-reads-title" data-rec-toggle="${rec.id}">
+			 <span>你的理解（${allReads.length}）</span>
+			 <span class="dr-reads-arrow ${expanded?'open':''}">›</span>
+		   </div>
+		   ${shown.map(r=>`<div class="dr-read-item"><div class="rt">${new Date(r.time).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div><div class="rx">${escapeHTML(r.text)}</div></div>`).join('')}
+		   ${allReads.length > 1 ? `<div class="dr-reads-more" data-rec-toggle="${rec.id}">${expanded?'收起':'展开全部 '+allReads.length+' 条'}</div>` : ''}
+		 </div>`
+	  : '';
+	return `<div class="dr-card" data-rec="${rec.id}"><div class="dr-head"><span>${new Date(rec.time).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} · ${escapeHTML(rec.who==='self'?'我抽的':roleName+'抽的')}</span><button class="dr-del" data-rec-del="${rec.id}" type="button">✕</button></div><div class="dr-q-label">Q</div><div class="dr-q">${escapeHTML(rec.question)}</div><div class="dr-cards">${rec.cards.map(c=>tarotHTML(c.card,c.reversed)).join('')}</div>${readsHTML}<button class="dr-add-read" data-rec-add="${rec.id}">✦ ${hasReads?'追加新的理解':'填写答案 / 解读'}</button></div>`;
   }).join('');
   box.querySelectorAll('[data-rec-add]').forEach(el=>{ el.addEventListener('click',e=>{ e.stopPropagation(); openReadDialog(el.dataset.recAdd); }); });
   box.querySelectorAll('[data-rec-del]').forEach(el=>{ el.addEventListener('click',e=>{ e.stopPropagation(); const id=el.dataset.recDel; if(!confirm('删除这条占卜记录？')) return; const arr=getDivineRecords(getCurrentRoleId()); const i=arr.findIndex(r=>r.id===id); if(i>=0){ arr.splice(i,1); saveDivineRecords(getCurrentRoleId(),arr); renderDivineRecords(); toast('已删除'); } }); });
+
 }
 function saveDivineMsg(m){
   if(!m || !m.divine) return;
@@ -16759,6 +16838,22 @@ $('#btnSaveRead').addEventListener('click',()=>{
   toast('找不到这张占卜卡');
   $('#mRead').classList.remove('show');
 });
+/* ★ 占卜记录：展开/收起理解（全局委托，重渲染后也生效） */
+if(!window.__drExpandedSet) window.__drExpandedSet = new Set();
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  const el = t.closest('[data-rec-toggle]');
+  if(!el) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const id = el.dataset.recToggle;
+  if(!id) return;
+  if(window.__drExpandedSet.has(id)) window.__drExpandedSet.delete(id);
+  else window.__drExpandedSet.add(id);
+  renderDivineRecords();
+}, true);
+
 on('#drBack','click',()=>{ showScreen('deskScreen'); });
 on('#drSearchInput','input',()=>renderDivineRecords());
 
@@ -20690,6 +20785,7 @@ function toggleFullscreen(){
       if(exit) exit.call(document);
       /* ★ 手动退出全屏：记住用户的选择，下次进来不再自动全屏 */
       lsSet('mj_fullscreen_auto', false);
+      lsSet('mj_fullscreen_want', false);
     }else{
       const el = document.documentElement;
       const req = el.requestFullscreen ||
@@ -20699,6 +20795,7 @@ function toggleFullscreen(){
       if(req) req.call(el);
       /* ★ 手动进入全屏：记住用户的选择，下次进来自动全屏 */
       lsSet('mj_fullscreen_auto', true);
+      lsSet('mj_fullscreen_want', true);
     }
   }catch(e){
     console.error('全屏失败', e);
@@ -20711,6 +20808,41 @@ function toggleFullscreen(){
     updateFullscreenState();
   });
 });
+
+/* ★ 页面加载时，如果用户上次是全屏，就尝试恢复全屏 */
+(function tryRestoreFullscreen(){
+  try{
+    if(!lsGet('mj_fullscreen_want', false)) return;
+    if(!isFullscreenSupported()) return;
+    if(isFullscreenNow()) return;
+    /* 浏览器要求全屏必须由用户手势触发，
+       所以这里先尝试直接请求，失败就等用户第一次点击/触摸时再请求 */
+    function tryReq(){
+      if(isFullscreenNow()) return;
+      const el = document.documentElement;
+      const req = el.requestFullscreen ||
+                  el.webkitRequestFullscreen ||
+                  el.mozRequestFullScreen ||
+                  el.msRequestFullscreen;
+      if(!req) return;
+      try{
+        const p = req.call(el);
+        if(p && typeof p.catch === 'function') p.catch(function(){});
+      }catch(e){}
+    }
+    tryReq();
+    /* 兜底：等用户第一次点屏幕/敲键盘时再试一次 */
+    var once = function(){
+      document.removeEventListener('click', once, true);
+      document.removeEventListener('touchstart', once, true);
+      document.removeEventListener('keydown', once, true);
+      tryReq();
+    };
+    document.addEventListener('click', once, true);
+    document.addEventListener('touchstart', once, true);
+    document.addEventListener('keydown', once, true);
+  }catch(e){ console.error('恢复全屏失败', e); }
+})();
 
 /* ===== 设置页 / 通知页 / 关于页 事件绑定 ===== */
 document.addEventListener('click', function(e){
@@ -20730,11 +20862,11 @@ document.addEventListener('click', function(e){
     renderSettingsCounts();
     return;
   }
-  /* 关于页返回 → 回设置页 */
+  /* 关于页返回 → 回个人界面 */
   if(t.closest('#aboutBack')){
     e.preventDefault(); e.stopPropagation();
-    showScreen('settingsScreen');
-    renderSettingsCounts();
+    document.querySelectorAll('.screen.on').forEach(s => s.classList.remove('on'));
+    if(typeof goToPage === 'function') goToPage('me');
     return;
   }
 
@@ -22007,7 +22139,7 @@ var GROUP_RENDER_ORDER = [
   'g-mood',      /* 心情字卡 */
   'g-status',    /* 状态字卡 */
   'g-moment',    /* 动态字卡 */
-  'g-sign',      /* 签字卡 */
+  'g-sign',      /* 个签字卡 */
   'g-divine',    /* 占卜 */
   'g-tags',      /* 标签 */
   'g-groupchat', /* 群聊字卡 */
@@ -22077,7 +22209,7 @@ function renderGroupList(){
 	  curCatId = (g.cats && g.cats[0]) ? g.cats[0].id : '';
 	  $('#cdTitle').textContent = g.name;
 	  const cdMoreBtn = document.getElementById('cdMore');
-	  if(cdMoreBtn) cdMoreBtn.textContent = (g.id === 'g-timed') ? '⚙' : '⋯';
+	  if(cdMoreBtn) cdMoreBtn.textContent = '⋯';
 	  /* 群聊字卡：显示左上角「字卡策略」栏 */
 	  var gcBar = document.getElementById('cdGcStrategyBar');
 	  if(gcBar) gcBar.style.display = (g.id === 'g-groupchat') ? 'block' : 'none';
@@ -22648,6 +22780,19 @@ function doMoveCards(targetGid, targetCid){
   toast(msg);
 }
 on('#confirmDelOk','click',()=>{
+  /* 收藏页的删除：走这条分支 */
+  if(_colDelPendingId){
+    const rid = getCurrentRoleId();
+    const arr = getCollectMine(rid).filter(x => x.id !== _colDelPendingId);
+    setCollectMine(rid, arr);
+    _colDelPendingId = '';
+    $('#mConfirmDel').classList.remove('show');
+    renderCollectScreen('mine');
+    toast('已删除');
+    return;
+  }
+
+  /* 字卡删除：原逻辑 */
   const cat = currentCatObj();
   const g = currentGroupObj();
   if(!cat || !pendingDelete.length){ $('#mConfirmDel').classList.remove('show'); return; }
@@ -22738,12 +22883,29 @@ function bindLongPress(){
 const cdMore=$('#cdMore'), cdMenu=$('#cdMenu');
 if(cdMore) cdMore.addEventListener('click',e=>{
   e.stopPropagation();
-  const g = currentGroupObj();
-  if(g && g.id === 'g-timed'){ openTimedRate(); return; }
   /* 已经开着 → 再点一次关掉 */
   if(cdMenu.classList.contains('show')){
     cdMenu.classList.remove('show');
     return;
+  }
+  /* 时间字卡分组：菜单里多一项「时段开关」，其余项照旧 */
+  const g = currentGroupObj();
+  let timedBtn = cdMenu.querySelector('[data-act="timed"]');
+  if(g && g.id === 'g-timed'){
+    if(!timedBtn){
+      timedBtn = document.createElement('div');
+      timedBtn.className = 'it';
+      timedBtn.dataset.act = 'timed';
+      timedBtn.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>时段开关';
+      cdMenu.insertBefore(timedBtn, cdMenu.firstChild);
+      timedBtn.addEventListener('click', function(){
+        cdMenu.classList.remove('show');
+        openTimedRate();
+      });
+    }
+    timedBtn.style.display = '';
+  } else {
+    if(timedBtn) timedBtn.style.display = 'none';
   }
   const r=cdMore.getBoundingClientRect();
   cdMenu.style.left=Math.max(10,r.right-160)+'px';
@@ -22753,39 +22915,18 @@ if(cdMore) cdMore.addEventListener('click',e=>{
 
 /* ===== 时间字卡概率设置 ===== */
 function openTimedRate(){
-  const rates = getTimedRate();
   const g = getGroupsByOwner('public').find(x=>x.id==='g-timed');
   if(g && !Array.isArray(g.disabledCats)) g.disabledCats = [];
   const disabled = (g && Array.isArray(g.disabledCats)) ? g.disabledCats : [];
   const box = $('#timedRateBody');
   box.innerHTML = TIMED_SEGMENTS.map(s=>{
-    const v = Math.round((rates[s.key]||0) * 100);
     const on = !disabled.includes(s.id);
-    return `<div class="section">` +
-      `<div class="sw-row">` +
-        `<div class="sw-main"><div class="t1">${escapeHTML(s.name)}</div>` +
-        `<div class="t2">${s.from}–${s.to === 24 ? '24' : s.to} 点</div></div>` +
-        `<label class="switch"><input type="checkbox" id="trOn_${s.key}" ${on?'checked':''}><span class="slider"></span></label>` +
-      `</div>` +
-      `<div class="s-row"><span class="tag">概率</span>` +
-        `<input type="range" id="tr_${s.key}" min="0" max="100" value="${v}">` +
-        `<span class="num" id="trv_${s.key}">${v}%</span>` +
-      `</div>` +
+    return `<div class="tmr-row">` +
+      `<span class="tmr-name">${escapeHTML(s.name)}</span>` +
+      `<span class="tmr-time">${s.from}–${s.to} 点</span>` +
+      `<label class="switch"><input type="checkbox" id="trOn_${s.key}" ${on?'checked':''}><span class="slider"></span></label>` +
     `</div>`;
   }).join('');
-
-  /* 概率滑杆 */
-  TIMED_SEGMENTS.forEach(s=>{
-    const el = $('#tr_' + s.key);
-    if(!el) return;
-    el.addEventListener('input', ()=>{
-      const v = parseInt(el.value,10);
-      const cur = getTimedRate();
-      cur[s.key] = v / 100;
-      saveTimedRate(cur);
-      $('#trv_' + s.key).textContent = v + '%';
-    });
-  });
 
   /* 启用 / 关闭开关 */
   TIMED_SEGMENTS.forEach(s=>{
@@ -29179,6 +29320,96 @@ function goToPage(name){
 .screen#mReply .rp-x{
   display:none !important;
 }
+
+/* ===== 时间字卡开关弹窗 · 方案 B 紧凑单行 ===== */
+#mTimedRate .sheet{
+  max-width:320px !important;
+  padding:20px 20px 8px !important;
+  border-radius:20px !important;
+}
+#mTimedRate .sheet-head{
+  padding:0 0 14px !important;
+  border-bottom:0.6px dashed #ececec !important;
+  margin-bottom:0 !important;
+}
+#mTimedRate .sheet-head h3{
+  font-size:15px !important;
+  font-weight:300 !important;
+  letter-spacing:3px !important;
+  color:#1a1a1a !important;
+}
+#mTimedRate .sheet-head .x{
+  width:26px !important;
+  height:26px !important;
+  color:#c8c8c8 !important;
+  font-size:13px !important;
+}
+#mTimedRate .sheet-body{
+  padding:0 !important;
+}
+#mTimedRate .tmr-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:14px 2px;
+  border-bottom:0.6px dashed #f2f2f2;
+}
+#mTimedRate .tmr-row:last-child{
+  border-bottom:none;
+}
+#mTimedRate .tmr-name{
+  font-size:13.5px;
+  color:#1a1a1a;
+  letter-spacing:1px;
+  font-weight:300;
+  flex:none;
+}
+#mTimedRate .tmr-time{
+  font-size:10.5px;
+  color:#bbb;
+  letter-spacing:.3px;
+  font-family:Georgia,serif;
+  flex:1;
+  min-width:0;
+}
+#mTimedRate .switch{
+  position:relative !important;
+  width:38px !important;
+  height:22px !important;
+  flex:none !important;
+  margin:0 !important;
+}
+#mTimedRate .switch .slider{
+  position:absolute !important;
+  inset:0 !important;
+  border-radius:20px !important;
+  background:#e5e5e5 !important;
+  transition:.22s !important;
+  display:block !important;
+}
+#mTimedRate .switch .slider:before{
+  content:"" !important;
+  position:absolute !important;
+  width:16px !important;
+  height:16px !important;
+  border-radius:50% !important;
+  background:#fff !important;
+  top:3px !important;
+  left:3px !important;
+  transition:.22s !important;
+  box-shadow:0 1px 3px rgba(0,0,0,.15) !important;
+}
+#mTimedRate .switch input:checked + .slider{
+  background:#1a1a1a !important;
+}
+#mTimedRate .switch .slider:before{
+  left:3px !important;
+  transform:translateX(0) !important;
+}
+#mTimedRate .switch input:checked + .slider:before{
+  left:3px !important;
+  transform:translateX(16px) !important;
+}
 </style>
 
 <script>
@@ -30323,6 +30554,22 @@ function locateUser(){
 }
 
 /* 刷新天气（主入口） */
+/* 城市名 → 经纬度（Open-Meteo Geocoding API） */
+function geocodeCity(name){
+  const url = 'https://geocoding-api.open-meteo.com/v1/search?name=' +
+    encodeURIComponent(name) + '&count=1&language=zh&format=json';
+  return fetch(url).then(r => r.json()).then(data => {
+    if(!data || !data.results || !data.results.length){
+      throw new Error('找不到城市：' + name);
+    }
+    const r = data.results[0];
+    return { lat: r.latitude, lon: r.longitude, city: r.name || name };
+  });
+}
+
+/* 定位失败时的默认城市（广东） */
+const DEFAULT_WEATHER = { lat: 23.1291, lon: 113.2644, city: '广东' };
+
 function refreshWeather(force){
   const cfg = getWeatherCfg();
   const now = Date.now();
@@ -30341,25 +30588,55 @@ function refreshWeather(force){
       return null;
     });
   }
+
+  /* 1. 有城市名 + 有坐标 → 直接用 */
   if(cfg.city && cfg.lat && cfg.lon){
     return doFetch(cfg.lat, cfg.lon, cfg.city);
   }
+
+  /* 2. 有城市名但没坐标 → 用 geocoding 查 */
+  if(cfg.city){
+    return geocodeCity(cfg.city).then(pos => {
+      cfg.lat = pos.lat;
+      cfg.lon = pos.lon;
+      cfg.city = pos.city;
+      saveWeatherCfg(cfg);
+      return doFetch(pos.lat, pos.lon, pos.city);
+    }).catch(e => {
+      console.warn('城市名解析失败，用默认城市', e);
+      cfg.lat = DEFAULT_WEATHER.lat;
+      cfg.lon = DEFAULT_WEATHER.lon;
+      cfg.city = DEFAULT_WEATHER.city;
+      saveWeatherCfg(cfg);
+      return doFetch(cfg.lat, cfg.lon, cfg.city);
+    });
+  }
+
+  /* 3. 自动定位 */
   if(cfg.autoLocate){
     return locateUser().then(pos => {
       cfg.lat = pos.lat;
       cfg.lon = pos.lon;
+      cfg.city = '广东';
       saveWeatherCfg(cfg);
-      return doFetch(pos.lat, pos.lon, '当前位置');
+      return doFetch(pos.lat, pos.lon, '广东');
     }).catch(e => {
-      console.warn('定位失败', e);
-      if(cfg.cache) renderBigCardWeather(cfg.cache);
-      else renderBigCardWeather(null, '未定位');
-      return null;
+      console.warn('定位失败，用默认城市', e);
+      /* 定位失败 → 用默认城市兜底 */
+      cfg.lat = DEFAULT_WEATHER.lat;
+      cfg.lon = DEFAULT_WEATHER.lon;
+      cfg.city = DEFAULT_WEATHER.city;
+      saveWeatherCfg(cfg);
+      return doFetch(cfg.lat, cfg.lon, cfg.city);
     });
   }
-  if(cfg.cache) renderBigCardWeather(cfg.cache);
-  else renderBigCardWeather(null, '未设置城市');
-  return Promise.resolve(null);
+
+  /* 4. 什么都没有 → 用默认城市 */
+  cfg.lat = DEFAULT_WEATHER.lat;
+  cfg.lon = DEFAULT_WEATHER.lon;
+  cfg.city = DEFAULT_WEATHER.city;
+  saveWeatherCfg(cfg);
+  return doFetch(cfg.lat, cfg.lon, cfg.city);
 }
 
 /* 渲染大卡片天气区 */
@@ -30890,9 +31167,32 @@ function renderDeWeather(body){
       const v = cityInput.value.trim();
       const c = getWeatherCfg();
       c.city = v;
-      if(!v){ c.lat = 0; c.lon = 0; }
-      saveWeatherCfg(c);
-      toast('城市已保存');
+      if(!v){
+        c.lat = 0;
+        c.lon = 0;
+        saveWeatherCfg(c);
+        toast('已清空城市');
+        return;
+      }
+      /* 有城市名 → 用 geocoding 查坐标 */
+      toast('正在查坐标…');
+      geocodeCity(v).then(pos => {
+        c.lat = pos.lat;
+        c.lon = pos.lon;
+        c.city = pos.city;
+        saveWeatherCfg(c);
+        toast('已保存：' + pos.city);
+        /* 立刻拉一次天气 */
+        refreshWeather(true).then(() => {
+          renderDeskEdit('weather');
+        });
+      }).catch(e => {
+        console.warn('城市名查不到', e);
+        c.lat = 0;
+        c.lon = 0;
+        saveWeatherCfg(c);
+        toast('找不到「' + v + '」，请换个写法');
+      });
     };
   }
   const autoLocate = body.querySelector('#deAutoLocate');
