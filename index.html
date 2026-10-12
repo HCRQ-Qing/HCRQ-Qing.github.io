@@ -7712,6 +7712,19 @@ body[data-bubble="custom"] .preview-bubble{
   padding:0 0 4px;font-family:inherit;cursor:pointer;
   opacity:.55;
 }
+/* ★ 群聊页顶部群头像 */
+.gch-top-av{
+  width:34px;height:34px;flex:none;
+  border-radius:var(--avatar-radius,50%);
+  background:#f2f2f2;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:#bbb;
+  transition:border-radius .2s ease;
+  margin-right:4px;
+}
+.gch-top-av svg{position:absolute;inset:0;width:100%;height:100%}
+.gch-top-av .silhouette{fill:#c8c8c8}
+.gch-top-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .gch-back:active{opacity:1}
 .gch-title{
   flex:1;min-width:0;font-size:15px;font-weight:300;
@@ -7738,9 +7751,10 @@ body[data-bubble="custom"] .preview-bubble{
   flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;
   width:44px;
 }
-.gch-mem .gch-mav{
-  width:36px;height:36px;border-radius:50%;overflow:hidden;
-  background:#f0f0f0;position:relative;flex:none;
+.gch-mav{
+  width:32px;height:32px;flex:none;border-radius:var(--avatar-radius,50%);
+  background:#f0f0f0;position:relative;overflow:hidden;
+  transition:border-radius .2s ease;
 }
 .gch-mem .gch-mav svg{position:absolute;inset:0;width:100%;height:100%}
 .gch-mem .gch-mav .silhouette{fill:#c8c8c8}
@@ -7752,16 +7766,17 @@ body[data-bubble="custom"] .preview-bubble{
 }
 .gch-list{
   flex:1;overflow-y:auto;
-  padding:16px 18px;
-  display:flex;flex-direction:column;gap:16px;
+  padding:26px 16px;
+  display:flex;flex-direction:column;gap:26px;
   scrollbar-width:none;
 }
 .gch-list::-webkit-scrollbar{display:none}
 .gch-msg{display:flex;gap:10px;align-items:flex-start}
 .gch-msg.me{flex-direction:row-reverse}
 .gch-mav{
-  width:32px;height:32px;flex:none;border-radius:50%;
+  width:32px;height:32px;flex:none;border-radius:var(--avatar-radius,50%);
   background:#f0f0f0;position:relative;overflow:hidden;
+  transition:border-radius .2s ease;
 }
 .gch-mav svg{position:absolute;inset:0;width:100%;height:100%}
 .gch-mav .silhouette{fill:#c8c8c8}
@@ -7783,12 +7798,57 @@ body[data-bubble="custom"] .preview-bubble{
   background:rgba(0,0,0,.06);
   border-radius:16px 16px 4px 16px;
 }
+
+/* ★ 群聊气泡接上 data-bubble（跟聊天页同款三套） */
+body[data-bubble="gray"] .gch-bubble{
+  padding:8px 13px;
+  font-size:13.5px;
+  line-height:1.5;
+  font-weight:400;
+  background:rgba(0,0,0,.04);
+  border:none !important;
+  box-shadow:none !important;
+  color:#1a1a1a;
+  border-radius:16px 16px 16px 4px;
+}
+body[data-bubble="gray"] .gch-msg.me .gch-bubble{
+  background:rgba(0,0,0,.06);
+  border-radius:16px 16px 4px 16px;
+}
+body[data-bubble="bracket"] .gch-bubble{
+  padding:4px 10px;
+  font-size:13.5px;
+  line-height:1.4;
+  font-weight:400;
+  background:transparent;
+  border:none !important;
+  border-radius:0;
+  box-shadow:none !important;
+  color:#1a1a1a;
+}
+body[data-bubble="bracket"] .gch-msg .gch-bubble::before{content:"「";color:#1a1a1a;margin-right:4px;font-size:14px;opacity:.5}
+body[data-bubble="bracket"] .gch-msg .gch-bubble::after{content:"」";color:#1a1a1a;margin-left:4px;font-size:14px;opacity:.5}
+body[data-bubble="custom"] .gch-bubble{
+  max-width:100%;
+  word-break:break-word;
+  font-family:inherit;
+  padding:5.6px 11.2px;
+  font-size:12.5px;
+  line-height:1.4;
+  border-radius:6px;
+  color:#1a1a1a;
+}
 .gch-bar{
   flex:none;display:flex;gap:8px;align-items:center;
   margin:0 14px 14px;padding:6px 10px;
   background:#ffffff;border-radius:22px;
   box-shadow:0 1px 5px rgba(0,0,0,.07);
 }
+/* ★ 群聊键盘弹起时：输入栏贴底、列表底部留白、抽屉收起 */
+#groupChatScreen.kb-open-real .gch-bar{position:relative;z-index:20;margin-bottom:0}
+#groupChatScreen.kb-open-real .gch-list{padding-bottom:80px}
+#groupChatScreen.kb-open .gch-func{height:0;border-top-width:0}
+#groupChatScreen.kb-open .gch-drawer{height:0;border-top-width:0}
 .gch-bar textarea{
   flex:1;min-width:0;border:none;background:transparent;
   padding:6px 4px;font-size:13.5px;font-family:inherit;
@@ -7799,14 +7859,15 @@ body[data-bubble="custom"] .preview-bubble{
 
 /* ===== 群聊引用块 ===== */
 .gch-quote{
-  padding:6px 10px;
-  margin-bottom:5px;
+  padding:0 0 0 10px;
+  margin-bottom:8px;
+  background:transparent;
+  border:none;
   border-left:2px solid #d0d0d0;
-  font-size:11.5px;
+  border-radius:0;
+  font-size:11px;
   line-height:1.55;
   color:#999;
-  border-radius:0 4px 4px 0;
-  background:rgba(0,0,0,.02);
   word-break:break-word;
 }
 .gch-quote b{
@@ -7814,6 +7875,33 @@ body[data-bubble="custom"] .preview-bubble{
   font-weight:400;
   margin-right:4px;
 }
+
+/* ★ 群聊系统提示 / 撤回 / 拍一拍，对齐聊天页视觉 */
+.gch-recalled-line{
+  width:100%;text-align:center;font-size:11.5px;color:#bbb;letter-spacing:1px;padding:4px 0;
+}
+.gch-sys-notice{
+  width:100%;text-align:center;padding:4px 0;
+}
+.gch-sys-notice span{
+  display:inline-block;padding:5px 16px;border-radius:20px;
+  background:rgba(0,0,0,.04);
+  border:1px solid rgba(0,0,0,.12);
+  color:#1a1a1a;
+  font-size:11.5px;letter-spacing:1px;line-height:1.55;
+  max-width:88%;
+}
+.gch-sys-notice b{color:#1a1a1a;font-weight:500;}
+.gch-pat-notice{
+  width:100%;text-align:center;padding:6px 0;
+}
+.gch-pat-notice span{
+  display:inline-block;font-size:11.5px;color:#999;letter-spacing:.5px;line-height:1.6;
+  padding:5px 14px;border-radius:20px;background:rgba(0,0,0,.03);
+  max-width:88%;word-break:break-word;
+}
+.gch-pat-notice span b{color:#1a1a1a;font-weight:500;}
+.gch-pat-notice.me span{background:rgba(0,0,0,.05);}
 
 /* ===== 群聊输入栏扩展 ===== */
 .gch-func{
@@ -7823,6 +7911,36 @@ body[data-bubble="custom"] .preview-bubble{
   transition:height .28s cubic-bezier(.22,1,.36,1), border-top-width .3s ease;
 }
 .gch-func.open{height:180px;border-top-width:1px;border-top-color:#f0f0f0}
+
+/* ===== 群聊专用表情抽屉（独立于聊天页 #drawerContent） ===== */
+.gch-drawer{
+  flex:none;height:0;overflow:hidden;
+  background:#fff;
+  display:flex;flex-direction:column;z-index:11;
+  border-radius:22px 22px 0 0;
+  transition:height .32s cubic-bezier(.22,1,.36,1),border-top-width .3s ease;
+  border-top:0 solid transparent;
+}
+.gch-drawer.open{
+  height:48vh;
+  border-top:0.7px solid #f0f0f0;
+  border-top-width:1px;
+}
+.gch-drawer .content-tabs{display:flex;padding:0 20px;flex:none;border-bottom:0.7px solid #f0f0f0;}
+.gch-drawer .d-tab{flex:1;padding:14px 0 12px;border:none;background:transparent;color:#bbb;font-size:13px;font-family:inherit;cursor:pointer;position:relative;letter-spacing:2px;font-weight:300;}
+.gch-drawer .d-tab.on{color:#1a1a1a;}
+.gch-drawer .d-tab.on::after{content:"";position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:16px;height:1.5px;border-radius:2px;background:#1a1a1a;}
+.gch-drawer .sub-tabs{display:flex;justify-content:flex-start;gap:28px;overflow-x:auto;padding:14px 20px 10px;flex:none;scrollbar-width:none;touch-action:pan-x;}
+.gch-drawer .sub-tabs::-webkit-scrollbar{display:none;}
+.gch-drawer .drawer-body{flex:1;overflow-y:auto;padding:16px 20px;scrollbar-width:none;}
+.gch-drawer .drawer-body::-webkit-scrollbar{width:0;}
+.gch-drawer .drawer-foot{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px 20px 14px;border-top:0.7px solid #f5f5f5;flex-wrap:wrap;flex:none;}
+/* 群聊抽屉里的表情格子（复用聊天页 .d-emoji 那套视觉） */
+.gch-drawer .d-emoji-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.gch-drawer .d-kao-grid{display:grid;grid-template-columns:repeat(4, 1fr);gap:14px 8px;}
+.gch-drawer .d-sticker-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.gch-drawer .d-block-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-top:6px;}
+.gch-drawer .d-empty{text-align:center;color:#ccc;padding:40px 20px;font-size:12.5px;line-height:2.1;letter-spacing:1px;font-weight:300;}
 .gch-func-grid{
   display:grid;grid-template-columns:repeat(4,1fr);gap:22px 10px;
   padding:22px 22px;
@@ -7902,6 +8020,18 @@ body[data-bubble="custom"] .preview-bubble{
   font-size:12.5px;color:#999;letter-spacing:1px;flex:none;
   font-weight:300;
 }
+/* ★ 群聊详情面板里的群头像行 */
+.gchd-av{
+  width:40px;height:40px;flex:none;
+  border-radius:var(--avatar-radius,50%);
+  background:#f2f2f2;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:#bbb;
+  transition:border-radius .2s ease;
+}
+.gchd-av svg{position:absolute;inset:0;width:100%;height:100%}
+.gchd-av .silhouette{fill:#c8c8c8}
+.gchd-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .gchd-v{
   flex:1;min-width:0;font-size:14px;color:#1a1a1a;
   letter-spacing:.5px;text-align:right;
@@ -9311,6 +9441,7 @@ window.__APP_VERSION__ = '1.0.2';
 <div class="screen" id="groupChatScreen">
   <div class="gch-top">
     <button class="gch-back" id="gchBack" type="button">‹</button>
+    <div class="gch-top-av" id="gchTopAv"></div>
     <div class="gch-title" id="gchTitle">群聊</div>
     <button class="gch-more" id="gchMore" type="button">⋯</button>
   </div>
@@ -9324,14 +9455,29 @@ window.__APP_VERSION__ = '1.0.2';
     <button class="send-btn" id="gchSend" type="button"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
   </div>
 
-  <!-- 群聊功能抽屉 -->
+  <!-- 群聊功能抽屉（和聊天页对齐，去掉回复设置） -->
   <div class="gch-func" id="gchFunc">
     <div class="gch-func-grid">
-      <div class="gch-func-item" data-gfunc="divine"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><path d="M2.5 12 C5 7.5 8.5 5.5 12 5.5 C15.5 5.5 19 7.5 21.5 12 C19 16.5 15.5 18.5 12 18.5 C8.5 18.5 5 16.5 2.5 12 Z"/><circle cx="12" cy="12" r="3.2"/></svg></div><span class="gch-fi-label">占卜</span></div>
-      <div class="gch-func-item" data-gfunc="card"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 9h18"/></svg></div><span class="gch-fi-label">名片</span></div>
-      <div class="gch-func-item" data-gfunc="sticker"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg></div><span class="gch-fi-label">表情图</span></div>
-      <div class="gch-func-item" data-gfunc="kao"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><path d="M4 12s2-6 8-6 8 6 8 6-2 6-8 6-8-6-8-6z"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/></svg></div><span class="gch-fi-label">颜文字</span></div>
+      <div class="gch-func-item" data-gfunc="quiz"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7"></path><circle cx="12" cy="17" r="0.8" fill="currentColor" stroke="none"></circle></svg></div><span class="gch-fi-label">问卷</span></div>
+      <div class="gch-func-item" data-gfunc="divine"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><path d="M2.5 12 C5 7.5 8.5 5.5 12 5.5 C15.5 5.5 19 7.5 21.5 12 C19 16.5 15.5 18.5 12 18.5 C8.5 18.5 5 16.5 2.5 12 Z"></path><circle cx="12" cy="12" r="3.2"></circle></svg></div><span class="gch-fi-label">占卜</span></div>
+      <div class="gch-func-item" data-gfunc="beauty"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><path d="M12 3l2 5 5 .5-4 3.5 1.3 5L12 14.5 7.7 17l1.3-5-4-3.5L10 8z"></path></svg></div><span class="gch-fi-label">美化</span></div>
+      <div class="gch-func-item" data-gfunc="choice"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><path d="M12 3v18"></path><path d="M5 8l7-5 7 5"></path><path d="M5 16l7 5 7-5"></path></svg></div><span class="gch-fi-label">选择</span></div>
+      <div class="gch-func-item" data-gfunc="card"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 9h18"></path></svg></div><span class="gch-fi-label">名片</span></div>
+      <div class="gch-func-item" data-gfunc="voicecall"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><path d="M21 16.5v2.4a1.6 1.6 0 0 1-1.7 1.6 15.5 15.5 0 0 1-6.7-2.4 15 15 0 0 1-4.6-4.6A15.5 15.5 0 0 1 5.5 6.7 1.6 1.6 0 0 1 7.1 5h2.4a1.6 1.6 0 0 1 1.6 1.4c.1.9.3 1.7.6 2.5a1.6 1.6 0 0 1-.4 1.7l-1 1a12 12 0 0 0 4.6 4.6l1-1a1.6 1.6 0 0 1 1.7-.4c.8.3 1.6.5 2.5.6A1.6 1.6 0 0 1 21 16.5z"></path></svg></div><span class="gch-fi-label">语音通话</span></div>
+      <div class="gch-func-item" data-gfunc="videocall"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"></rect><path d="M16 10l5-3v10l-5-3"></path></svg></div><span class="gch-fi-label">视频通话</span></div>
     </div>
+  </div>
+
+  <!-- 群聊表情抽屉（独立，跟聊天页隔离） -->
+  <div class="gch-drawer" id="gchDrawer">
+    <div class="content-tabs">
+      <button class="d-tab on" data-gtab="emoji" type="button">表情</button>
+      <button class="d-tab" data-gtab="kaomoji" type="button">颜文字</button>
+      <button class="d-tab" data-gtab="sticker" type="button">表情图</button>
+    </div>
+    <div class="sub-tabs" id="gchSubTabs"></div>
+    <div class="drawer-body" id="gchDrawerBody"></div>
+    <div class="drawer-foot" id="gchDrawerFoot"></div>
   </div>
 </div>
 
@@ -9343,6 +9489,11 @@ window.__APP_VERSION__ = '1.0.2';
       <button class="gchd-x" id="gchdClose" type="button">✕</button>
     </div>
     <div class="gchd-body">
+      <div class="gchd-row" id="gchdAvatarRow">
+        <span class="gchd-k">群头像</span>
+        <div class="gchd-av" id="gchdAvatar"></div>
+        <span class="gchd-arr">›</span>
+      </div>
       <div class="gchd-row">
         <span class="gchd-k">群名</span>
         <span class="gchd-v" id="gchdName">群聊</span>
@@ -11394,8 +11545,8 @@ const DEFAULT_REPLY = {
   divineLastFireAt:0
 };
 let replyMap = lsGet(REPLY_KEY, {});
-function getReply(){
-  const rid = getCurrentRoleId();
+function getReply(roleId){
+  const rid = roleId || getCurrentRoleId();
   if(!replyMap[rid]) replyMap[rid] = JSON.parse(JSON.stringify(DEFAULT_REPLY));
   // 一次性迁移：800/2200 → 1000/10000；pinyinMax:3 → 2
   const MIGRATE_KEY = 'mj_reply_migrated_v4';
@@ -11759,6 +11910,53 @@ function pickRoleSticker(){
     return pool[Math.floor(Math.random()*pool.length)];
   }catch(e){ return ''; }
 }
+/* ★ 支持指定角色：群聊里给"某个角色"抽 emoji 用
+   不传参数时行为跟 pickRoleEmoji() 完全一样 */
+function pickRoleEmojiFor(roleId){
+  try{
+    const rid = roleId || getCurrentRoleId();
+    const panel = getPanel(rid);
+    const cats = Array.isArray(panel.emojiCats) ? panel.emojiCats : [];
+    const disabled = Array.isArray(panel.disabledEmojiCats) ? panel.disabledEmojiCats
+                   : (Array.isArray(panel.hiddenEmojiCats) ? panel.hiddenEmojiCats : []);
+    const enabled = cats.filter(c=>!disabled.includes(c.name));
+    const pool = [];
+    enabled.forEach(c=>{ (c.list||[]).forEach(ch=>{ if(ch && String(ch).trim()) pool.push(String(ch).trim()); }); });
+    if(!pool.length) return '';
+    const n = 1 + Math.floor(Math.random() * 3);
+    const picked = [];
+    for(let i=0; i<n; i++){
+      const one = pool[Math.floor(Math.random()*pool.length)];
+      picked.push(one);
+      try{ usageBump(USAGE_EMOJI_KEY, rid, one); }catch(e){}
+    }
+    return picked.join('');
+  }catch(e){ return ''; }
+}
+
+/* ★ 支持指定角色：群聊里给"某个角色"抽颜文字用 */
+function pickRoleKaoFor(roleId){
+  try{
+    const rid = roleId || getCurrentRoleId();
+    const map = lsGet('mj_panel_map', null) || {};
+    const panel = map[rid] || {};
+    const cats = Array.isArray(panel.kaoCats) ? panel.kaoCats : [];
+    const disabled = Array.isArray(panel.disabledKaoCats) ? panel.disabledKaoCats : [];
+    const enabled = cats.filter(c=>!disabled.includes(c.name));
+    const pool = [];
+    enabled.forEach(c=>{ (c.list||[]).forEach(k=>{ if(k && String(k).trim()) pool.push(String(k).trim()); }); });
+    if(!pool.length) return '';
+    const n = 1 + Math.floor(Math.random() * 3);
+    const picked = [];
+    for(let i=0; i<n; i++){
+      const one = pool[Math.floor(Math.random()*pool.length)];
+      picked.push(one);
+      try{ usageBump(USAGE_KAO_KEY, rid, one); }catch(e){}
+    }
+    return picked.join('');
+  }catch(e){ return ''; }
+}
+
 function pickRoleEmoji(){
   try{
     const rid = getCurrentRoleId();
@@ -19101,6 +19299,242 @@ function gchToggleFunc(open){
   box.classList.toggle('open', window.__gchFuncOpen);
 }
 
+/* ============================================================
+   群聊专用表情抽屉（独立状态，跟聊天页隔离）
+   - 每个角色用自己的面板
+   - 不显示「我/角色」切换小 tab
+   - 选中后插入群聊输入框
+   ============================================================ */
+window.__gchDrawer = {
+  open: false,
+  tab: 'emoji',
+  emojiCat: '',
+  kaoCat: '',
+  stickerCat: ''
+};
+
+function gchToggleDrawer(open){
+  const box = document.getElementById('gchDrawer');
+  if(!box) return;
+  const willOpen = (typeof open === 'boolean') ? open : !window.__gchDrawer.open;
+  window.__gchDrawer.open = willOpen;
+  box.classList.toggle('open', willOpen);
+  if(willOpen){
+    /* 打开时，自动切换到"当前群聊角色"的面板 */
+    gchRenderDrawer();
+  }
+}
+
+/* 拿当前群聊角色的面板（自动补默认模板） */
+function gchGetPanel(){
+  const rid = getCurrentRoleId();
+  try{
+    return getPanel(rid);
+  }catch(e){
+    return { emojiCats:[], kaoCats:[], disabledEmojiCats:[], disabledKaoCats:[] };
+  }
+}
+/* 当前群聊角色专属的表情图分类 */
+function gchGetStickerCats(){
+  const rid = getCurrentRoleId();
+  try{
+    return getStickerBucket(rid);
+  }catch(e){
+    return [{ name:'默认', list:[] }];
+  }
+}
+
+function gchRenderDrawer(){
+  gchRenderTabs();
+  gchRenderBody();
+}
+
+function gchRenderTabs(){
+  const box = document.getElementById('gchSubTabs');
+  if(!box) return;
+  const tab = window.__gchDrawer.tab;
+
+  if(tab === 'sticker'){
+    const sc = gchGetStickerCats();
+    if(!sc.some(c => c.name === window.__gchDrawer.stickerCat)){
+      window.__gchDrawer.stickerCat = (sc[0] || {}).name || '';
+    }
+    box.innerHTML = sc.map(c => (
+      '<button class="sub-tab ' + (c.name === window.__gchDrawer.stickerCat ? 'on' : '') +
+      '" data-gscat="' + escapeHTML(c.name) + '">' + escapeHTML(c.name) + '</button>'
+    )).join('');
+    box.querySelectorAll('[data-gscat]').forEach(b => {
+      b.onclick = () => {
+        window.__gchDrawer.stickerCat = b.dataset.gscat;
+        gchRenderDrawer();
+      };
+    });
+    return;
+  }
+
+  const panel = gchGetPanel();
+  if(tab === 'emoji'){
+    const cats = (panel.emojiCats || []).filter(c => !(panel.disabledEmojiCats || []).includes(c.name));
+    if(!cats.some(c => c.name === window.__gchDrawer.emojiCat)){
+      window.__gchDrawer.emojiCat = (cats[0] || {}).name || '';
+    }
+    box.innerHTML = cats.map(c => (
+      '<button class="sub-tab ' + (c.name === window.__gchDrawer.emojiCat ? 'on' : '') +
+      '" data-gcat="' + escapeHTML(c.name) + '">' +
+      (c.icon ? escapeHTML(c.icon) + ' ' : '') + escapeHTML(c.name) +
+      '</button>'
+    )).join('');
+    box.querySelectorAll('[data-gcat]').forEach(b => {
+      b.onclick = () => {
+        window.__gchDrawer.emojiCat = b.dataset.gcat;
+        gchRenderDrawer();
+      };
+    });
+    return;
+  }
+
+  /* kao */
+  const cats2 = (panel.kaoCats || []).filter(c => !(panel.disabledKaoCats || []).includes(c.name));
+  if(!cats2.some(c => c.name === window.__gchDrawer.kaoCat)){
+    window.__gchDrawer.kaoCat = (cats2[0] || {}).name || '';
+  }
+  box.innerHTML = cats2.map(c => (
+    '<button class="sub-tab ' + (c.name === window.__gchDrawer.kaoCat ? 'on' : '') +
+    '" data-gcat="' + escapeHTML(c.name) + '">' + escapeHTML(c.name) + '</button>'
+  )).join('');
+  box.querySelectorAll('[data-gcat]').forEach(b => {
+    b.onclick = () => {
+      window.__gchDrawer.kaoCat = b.dataset.gcat;
+      gchRenderDrawer();
+    };
+  });
+}
+
+function gchRenderBody(){
+  const box = document.getElementById('gchDrawerBody');
+  if(!box) return;
+  const tab = window.__gchDrawer.tab;
+
+  if(tab === 'sticker'){
+    const sc = gchGetStickerCats();
+    const cat = sc.find(c => c.name === window.__gchDrawer.stickerCat);
+    if(!cat || !cat.list || !cat.list.length){
+      box.innerHTML = '<div class="d-empty">「' + escapeHTML(window.__gchDrawer.stickerCat || '') + '」还没有表情图</div>';
+      return;
+    }
+    box.innerHTML = '<div class="d-sticker-grid">' + cat.list.map((src, i) => (
+      '<div class="d-sticker" data-gsi="' + i + '"><img src="' + src + '"></div>'
+    )).join('') + '</div>';
+    box.querySelectorAll('[data-gsi]').forEach(el => {
+      el.onclick = () => {
+        const i = +el.dataset.gsi;
+        const c = gchGetStickerCats().find(x => x.name === window.__gchDrawer.stickerCat);
+        if(!c || !c.list[i]) return;
+        gchSendSticker(c.list[i]);
+      };
+    });
+    return;
+  }
+
+  const panel = gchGetPanel();
+  if(tab === 'emoji'){
+    const cat = (panel.emojiCats || []).find(c => c.name === window.__gchDrawer.emojiCat);
+    if(!cat || !cat.list || !cat.list.length){
+      box.innerHTML = '<div class="d-empty">「' + escapeHTML(window.__gchDrawer.emojiCat || '') + '」还没有内容</div>';
+      return;
+    }
+    /* 按单字符 / 组合 / 多行块分组 */
+    const single = [], combo = [], block = [];
+    cat.list.forEach((ch, i) => {
+      const raw = String(ch);
+      const inner = raw.replace(/\[([\s\S]*?)\]/g, '$1');
+      if(inner.includes('\n')) block.push({ ch, i });
+      else if(Array.from(inner).length > 1) combo.push({ ch, i });
+      else single.push({ ch, i });
+    });
+    let html = '';
+    if(single.length){
+      html += '<div class="d-emoji-grid">' + single.map(it => (
+        '<span class="d-emoji" data-gch="' + escapeHTML(it.ch) + '"><span class="d-emoji-inner">' +
+        escapeHTML(String(it.ch).replace(/\[([\s\S]*?)\]/g, '$1').split('\n')[0]) +
+        '</span></span>'
+      )).join('') + '</div>';
+    }
+    if(combo.length){
+      html += '<div class="d-block-grid">' + combo.map(it => (
+        '<div class="d-block" data-gch="' + escapeHTML(it.ch) + '">' +
+        escapeHTML(String(it.ch).replace(/\[([\s\S]*?)\]/g, '$1')) +
+        '</div>'
+      )).join('') + '</div>';
+    }
+    if(block.length){
+      html += '<div class="d-block-grid">' + block.map(it => (
+        '<div class="d-block" data-gch="' + escapeHTML(it.ch) + '">' +
+        escapeHTML(String(it.ch).replace(/\[([\s\S]*?)\]/g, '$1')) +
+        '</div>'
+      )).join('') + '</div>';
+    }
+    box.innerHTML = html;
+    box.querySelectorAll('[data-gch]').forEach(el => {
+      el.onclick = () => { gchAppendText(el.dataset.gch); };
+    });
+    return;
+  }
+
+  /* kao */
+  const cat2 = (panel.kaoCats || []).find(c => c.name === window.__gchDrawer.kaoCat);
+  if(!cat2 || !cat2.list || !cat2.list.length){
+    box.innerHTML = '<div class="d-empty">「' + escapeHTML(window.__gchDrawer.kaoCat || '') + '」还没有内容</div>';
+    return;
+  }
+  const single2 = [], block2 = [];
+  cat2.list.forEach((k, i) => {
+    if(String(k).includes('\n')) block2.push({ k, i });
+    else single2.push({ k, i });
+  });
+  let html2 = '';
+  if(single2.length){
+    html2 += '<div class="d-kao-grid">' + single2.map(it => (
+      '<span class="d-kao" data-gch="' + escapeHTML(it.k) + '">' + escapeHTML(it.k) + '</span>'
+    )).join('') + '</div>';
+  }
+  if(block2.length){
+    html2 += '<div class="d-block-grid">' + block2.map(it => (
+      '<div class="d-block" data-gch="' + escapeHTML(it.k) + '">' + escapeHTML(it.k) + '</div>'
+    )).join('') + '</div>';
+  }
+  box.innerHTML = html2;
+  box.querySelectorAll('[data-gch]').forEach(el => {
+    el.onclick = () => { gchAppendText(el.dataset.gch); };
+  });
+}
+
+/* 群聊 tab 切换 */
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  const tabBtn = t.closest('#gchDrawer .d-tab');
+  if(!tabBtn) return;
+  e.preventDefault(); e.stopPropagation();
+  document.querySelectorAll('#gchDrawer .d-tab').forEach(x => x.classList.remove('on'));
+  tabBtn.classList.add('on');
+  window.__gchDrawer.tab = tabBtn.dataset.gtab;
+  gchRenderDrawer();
+}, true);
+
+/* 群聊表情图：直接当群消息发出去（补一个专用发送函数） */
+function gchSendSticker(src){
+  const g = getGroupById(window.__curGroupId);
+  if(!g) return;
+  const arr = getGroupMsgs(g.id);
+  arr.push({ id: uid(), role: 'user', sticker: src, time: Date.now() });
+  saveGroupMsgs(g.id, arr);
+  g.lastMsgAt = Date.now();
+  saveGroup(g);
+  renderGroupChat();
+  gchToggleDrawer(false);
+}
+
 function gchAppendText(s){
   const ta = document.getElementById('gchInput');
   if(!ta) return;
@@ -19190,11 +19624,12 @@ document.addEventListener('click', function(e){
   if(t.closest('#gchSmileBtn')){
     e.preventDefault(); e.stopPropagation();
     gchToggleFunc(false);
-    gchOpenEmoji();
+    gchToggleDrawer();
     return;
   }
   if(t.closest('#gchPlusBtn')){
     e.preventDefault(); e.stopPropagation();
+    gchToggleDrawer(false);
     gchToggleFunc(!window.__gchFuncOpen);
     return;
   }
@@ -19209,10 +19644,21 @@ document.addEventListener('click', function(e){
     e.preventDefault(); e.stopPropagation();
     const f = fi.dataset.gfunc;
     gchToggleFunc(false);
-    if(f === 'divine')      gchOpenDivine();
-    else if(f === 'card')   gchOpenCardPicker();
-    else if(f === 'sticker')gchOpenSticker();
-    else if(f === 'kao')    gchOpenKao();
+    if(f === 'beauty'){
+      /* 美化：直接复用全局 */
+      if(typeof openBeauty === 'function') openBeauty();
+      else toast('美化 · 待补');
+    }
+    else if(f === 'card'){
+      /* 名片：先复用私聊的选人弹窗（结果之后接群聊） */
+      if(typeof openCardPicker === 'function') openCardPicker();
+      else toast('名片 · 待补');
+    }
+    else if(f === 'divine')    toast('群聊占卜 · 待补');
+    else if(f === 'choice')    toast('群聊选择 · 待补');
+    else if(f === 'quiz')      toast('群聊问卷 · 待补');
+    else if(f === 'voicecall') toast('群聊语音通话 · 待补');
+    else if(f === 'videocall') toast('群聊视频通话 · 待补');
     return;
   }
 }, true);
@@ -19229,10 +19675,28 @@ function gchShowMenu(msgEl, x, y){
   const id = msgEl.dataset.id;
   const m = getGroupMsgs(window.__curGroupId).find(function(x){ return x.id === id; });
   if(!m){ return; }
+  if(m.sys || m.recalled){ return; }
+
+  const isMe = m.role === 'user';
   let html = '';
-  if(m.text){ html += '<div class="it" data-act="copy">复制</div>'; }
-  if(m.text){ html += '<div class="it" data-act="quote">引用</div>'; }
-  html += '<div class="it" data-act="delete">删除</div>';
+
+  /* 顺序对齐聊天页：收藏 → 引用整段 → 引用部分 → 多选 → 删除 → 转发 → 复制 */
+  if(!m.recalled && (m.text || m.sticker)) html += '<div class="it" data-act="collect">收藏</div>';
+  if(m.divine){
+    html += '<div class="it" data-act="quote-divine">引用占卜结果</div>';
+  } else {
+    html += '<div class="it" data-act="quote">引用整段</div>';
+    html += '<div class="it" data-act="quote-part">引用部分文字</div>';
+  }
+  if(!m.sys && !m.recalled){
+    html += '<div class="it" data-act="multi">多选</div>';
+  }
+  html += '<div class="it white" data-act="delete">删除</div>';
+  if(!m.sys && !m.recalled && (m.text || m.sticker || m.divine)){
+    html += '<div class="it" data-act="forward">转发</div>';
+  }
+  if(m.text) html += '<div class="it" data-act="copy">复制</div>';
+
   menu.innerHTML = html;
   menu.classList.add('show');
   const rect = menu.getBoundingClientRect();
@@ -19243,8 +19707,10 @@ function gchShowMenu(msgEl, x, y){
     it.onclick = function(){
       const act = it.dataset.act;
       menu.classList.remove('show');
+
       if(act === 'copy'){
         copyText(m.text || '', '已复制');
+
       } else if(act === 'quote'){
         window.__gchQuote = {
           msgId: m.id,
@@ -19254,10 +19720,83 @@ function gchShowMenu(msgEl, x, y){
         toast('已引用，去输入框写点什么吧');
         const ta = document.getElementById('gchInput');
         if(ta) ta.focus();
+
+      } else if(act === 'quote-part'){
+        /* 引用部分文字：让用户输入要引用的片段（群聊里先简化成弹窗输入） */
+        if(typeof uniAsk !== 'function'){ toast('引用部分 · 待补'); return; }
+        uniAsk({
+          title: '引用部分文字',
+          sub: 'QUOTE · 输入你想引用的片段',
+          value: (m.text || '').slice(0, 20),
+          placeholder: '输入片段'
+        }).then(function(v){
+          if(v === null) return;
+          const t2 = String(v).trim();
+          if(!t2){ toast('内容不能为空'); return; }
+          window.__gchQuote = {
+            msgId: m.id,
+            name: m.role === 'user' ? userName() : ((getRoleById(m.roleId) || {}).name || '?'),
+            text: t2
+          };
+          toast('已引用，去输入框写点什么吧');
+          const ta = document.getElementById('gchInput');
+          if(ta) ta.focus();
+        });
+
+      } else if(act === 'quote-divine'){
+        /* 引用占卜结果 */
+        const d = m.divine || {};
+        const cards = (d.cards || []).map(function(c){
+          const rev = c.reversed ? '（逆位）' : '';
+          return (c.card && c.card.name ? c.card.name : '?') + rev;
+        }).join('、');
+        const text = 'Q：' + (d.q || '') + (cards ? '\n牌面：' + cards : '');
+        window.__gchQuote = {
+          msgId: m.id,
+          name: (getRoleById(m.roleId) || {}).name || '?',
+          text: text
+        };
+        toast('已引用，去输入框写点什么吧');
+        const ta = document.getElementById('gchInput');
+        if(ta) ta.focus();
+
+      } else if(act === 'collect'){
+        /* 收藏到当前角色的收藏里（简化：存到该角色私聊的收藏库） */
+        try{
+          const rid = m.role === 'user' ? getCurrentRoleId() : (m.roleId || getCurrentRoleId());
+          const arr2 = (typeof getCollectMine === 'function') ? getCollectMine(rid) : null;
+          if(!arr2){ toast('收藏 · 待补'); return; }
+          const t3 = m.text || '[表情图]';
+          if(arr2.some(function(x){ return x.msgId === m.id; })){ toast('已经收藏过了'); return; }
+          arr2.unshift({
+            id: uid(),
+            msgId: m.id,
+            text: t3,
+            kind: m.sticker ? 'sticker' : 'text',
+            from: m.role === 'user' ? 'user' : 'char',
+            time: Date.now(),
+            note: '',
+            noteCollapsed: false
+          });
+          if(arr2.length > 500) arr2.length = 500;
+          if(typeof setCollectMine === 'function') setCollectMine(rid, arr2);
+          toast('已收藏');
+        }catch(err){ console.error('群聊收藏失败', err); toast('收藏失败'); }
+
+      } else if(act === 'multi'){
+        toast('群聊多选 · 待补');
+
+      } else if(act === 'forward'){
+        toast('群聊转发 · 待补');
+
       } else if(act === 'delete'){
         const arr = getGroupMsgs(window.__curGroupId);
         const i = arr.findIndex(function(x){ return x.id === m.id; });
-        if(i >= 0){ arr.splice(i, 1); saveGroupMsgs(window.__curGroupId, arr); renderGroupChat(); }
+        if(i >= 0){
+          arr.splice(i, 1);
+          saveGroupMsgs(window.__curGroupId, arr);
+          renderGroupChat();
+        }
       }
     };
   });
@@ -19297,6 +19836,142 @@ function gchShowMenu(msgEl, x, y){
     document.addEventListener('touchmove', mv, {passive:true});
     document.addEventListener('touchend', en);
   }, {passive:true});
+})();
+
+/* ★ 群聊语音气泡点击播放 / 视频卡片点击打开 */
+(function bindGchMediaClicks(){
+  if(window.__gchMediaClicksBound) return;
+  window.__gchMediaClicksBound = true;
+
+  document.addEventListener('click', function(e){
+    const t = e.target;
+    if(!t || !t.closest) return;
+    if(!t.closest('#gchList')) return;
+
+    /* 语音气泡 */
+    const vb = t.closest('.voice-bubble');
+    if(vb){
+      e.preventDefault(); e.stopPropagation();
+      const url = vb.dataset.url;
+      if(!url){ toast('这条语音没有音频数据'); return; }
+      if(vb._audio && !vb._audio.paused){
+        vb._audio.pause();
+        vb.classList.remove('playing');
+        return;
+      }
+      if(!vb._audio){
+        vb._audio = new Audio(url);
+        vb._audio.onended = () => vb.classList.remove('playing');
+        vb._audio.onerror = () => { toast('播放失败'); vb.classList.remove('playing'); };
+      }
+      vb._audio.currentTime = 0;
+      vb.classList.add('playing');
+      vb._audio.play().catch(() => {
+        vb.classList.remove('playing');
+        toast('播放被拦截，请再点一次');
+      });
+      return;
+    }
+
+    /* 视频卡片 */
+    const vc = t.closest('.video-card');
+    if(vc){
+      e.preventDefault(); e.stopPropagation();
+      const url = vc.dataset.vcurl;
+      if(url) window.open(url, '_blank');
+      return;
+    }
+  }, true);
+
+})();
+
+/* ★ 群聊占卜卡 · 写理解按钮 */
+(function bindGchDivineRead(){
+  if(window.__gchDivineReadBound) return;
+  window.__gchDivineReadBound = true;
+  document.addEventListener('click', function(e){
+    const t = e.target;
+    if(!t || !t.closest) return;
+    const btn = t.closest('[data-gch-divine-read]');
+    if(!btn) return;
+    e.preventDefault(); e.stopPropagation();
+    const msgId = btn.dataset.gchDivineMsg || '';
+    if(!msgId){ toast('找不到这张占卜卡'); return; }
+    /* 复用聊天页的写理解弹窗（它内部会自动从 msgs 里找这条消息） */
+    if(typeof openReadDialog === 'function'){
+      openReadDialog('', msgId);
+    } else {
+      toast('占卜理解弹窗 · 未加载');
+    }
+  }, true);
+})();
+
+/* ★ 群聊拍一拍：双击成员头像（顶部成员条）或消息里的头像 */
+(function bindGchPat(){
+  if(window.__gchPatBound) return;
+  window.__gchPatBound = true;
+
+  let lastTapTime = 0;
+  let lastTapId = '';
+
+  function doGchPat(targetRid, fromIsUser){
+    const target = getRoleById(targetRid);
+    if(!target) return;
+    const meName = userName();
+    const taName = displayName(target) || target.name || '?';
+
+    let html;
+    if(fromIsUser){
+      html = '<b>' + escapeHTML(meName) + '</b> 拍了拍 <b>' + escapeHTML(taName) + '</b>';
+    } else {
+      html = '<b>' + escapeHTML(taName) + '</b> 拍了拍 <b>' + escapeHTML(meName) + '</b>';
+    }
+
+    const g = getGroupById(window.__curGroupId);
+    if(!g) return;
+    const arr = getGroupMsgs(g.id);
+    arr.push({ id: uid(), sys: html, pat: true, patFromUser: !!fromIsUser, time: Date.now() });
+    saveGroupMsgs(g.id, arr);
+    g.lastMsgAt = Date.now();
+    saveGroup(g);
+    renderGroupChat();
+
+    /* 我拍 Ta → Ta 60% 概率回拍一下 */
+    if(fromIsUser && Math.random() < 0.6){
+      setTimeout(function(){
+        if(window.__curGroupId !== g.id) return;
+        const arr2 = getGroupMsgs(g.id);
+        arr2.push({
+          id: uid(),
+          sys: '<b>' + escapeHTML(taName) + '</b> 拍了拍 <b>' + escapeHTML(meName) + '</b>',
+          pat: true,
+          patFromUser: false,
+          time: Date.now()
+        });
+        saveGroupMsgs(g.id, arr2);
+        renderGroupChat();
+      }, 800 + Math.random() * 2200);
+    }
+  }
+
+  /* 双击消息里的成员头像 */
+  document.addEventListener('click', function(e){
+    const av = e.target.closest && e.target.closest('#gchList .gch-mav');
+    if(!av) return;
+    const msgEl = av.closest('.gch-msg');
+    if(!msgEl) return;
+    const id = msgEl.dataset.id;
+    const m = getGroupMsgs(window.__curGroupId).find(function(x){ return x.id === id; });
+    if(!m){ return; }
+    const now = Date.now();
+    if(id === lastTapId && now - lastTapTime < 300){
+      lastTapTime = 0; lastTapId = '';
+      if(m.role === 'user') return;   /* 自己的头像是"我"，不拍自己 */
+      doGchPat(m.roleId, true);
+    } else {
+      lastTapTime = now; lastTapId = id;
+    }
+  }, true);
 })();
 
 /* ============================================================
@@ -19465,18 +20140,32 @@ function renderGroupChat(){
     return;
   }
   list.innerHTML = arr.map(function(m){
+    if(m.recalled){
+      const who = m.role === 'user' ? userName() : (displayName(getRoleById(m.roleId) || {}) || '?');
+      return '<div class="gch-recalled-line">' + escapeHTML(who) + '撤回了一条消息</div>';
+    }
+    if(m.pat){
+      const cls = 'gch-pat-notice' + (m.patFromUser ? ' me' : '');
+      return '<div class="' + cls + '"><span>' + m.sys + '</span></div>';
+    }
     if(m.sys){
-      return '<div style="text-align:center;font-size:11.5px;color:#bbb;padding:4px 0">' + m.sys + '</div>';
+      return '<div class="gch-sys-notice"><span>' + m.sys + '</span></div>';
     }
     if(m.divine){
       const d = m.divine;
       const rr = getRoleById(m.roleId) || {};
-      const readsHTML = (d.reads && d.reads.length) ? '<div style="margin-top:6px;padding-top:6px;border-top:0.6px dashed rgba(0,0,0,.06);font-size:11.5px;color:#666;line-height:1.7">' + d.reads.map(function(r2){ return escapeHTML(r2.text); }).join('<br>') + '</div>' : '';
+      const reads = d.reads || [];
+      const readsHTML = reads.length
+        ? '<div class="dc-reads">' + reads.map(function(r2){
+            return '<div class="dc-read-item"><span class="rt">' + new Date(r2.time).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) + '</span>' + escapeHTML(r2.text) + '</div>';
+          }).join('') + '</div>'
+        : '';
       const cardsHTML = (d.cards || []).map(function(c){ return tarotHTML(c.card, c.reversed); }).join('');
+      const btnHTML = '<button class="dc-read-btn" data-gch-divine-read="' + (d.recordId || '') + '" data-gch-divine-msg="' + m.id + '">' + (reads.length ? '追加新的理解' : '填写答案 / 解读') + '</button>';
       return '<div class="gch-msg" data-id="' + m.id + '">' +
         '<div class="gch-mav">' + avatarHTML(rr.avatar || '') + '</div>' +
-        '<div class="gch-body"><div class="gch-name">' + escapeHTML(displayName(rr) || '?') + '</div>' +
-        '<div class="gch-bubble" style="background:transparent;padding:0"><div class="divine-card"><div class="dc-head">DIVINE</div><div class="dc-q">' + escapeHTML(d.q || '') + '</div><div class="dc-cards">' + cardsHTML + '</div>' + readsHTML + '</div></div></div>' +
+        '<div class="gch-body" style="max-width:100%"><div class="gch-name">' + escapeHTML(displayName(rr) || '?') + '</div>' +
+        '<div class="gch-bubble" style="background:transparent;padding:0"><div class="divine-card"><div class="dc-head">DIVINE</div><div class="dc-q">' + escapeHTML(d.q || '') + '</div><div class="dc-cards">' + cardsHTML + '</div>' + readsHTML + btnHTML + '</div></div></div>' +
       '</div>';
     }
 
@@ -19484,24 +20173,142 @@ function renderGroupChat(){
       ? '<div class="gch-quote"><b>' + escapeHTML(m.quote.name || '') + '：</b>' + escapeHTML(m.quote.text || '') + '</div>'
       : '';
 
+    /* ★ 时间戳：和聊天页同款，同一天只显示 HH:MM */
+    const timeSep = (typeof formatMsgTime === 'function')
+      ? '<div class="time-sep" style="font-size:9px;color:#d0d0d0;letter-spacing:1px;font-family:Georgia,serif;padding:0 2px 4px">' + formatMsgTime(m.time) + '</div>'
+      : '';
+
     const isMe = m.role === 'user';
+
+    /* ★ 拼音卡分支：跟聊天页同款 */
+    if(m.kind === 'pinyin' || m.pinyin){
+      const av = isMe ? userAvHTML(userProfile.avatar) : avatarHTML((getRoleById(m.roleId) || {}).avatar || '');
+      const nm = isMe ? userName() : escapeHTML(displayName(getRoleById(m.roleId) || {}) || '?');
+      const cls = isMe ? 'gch-msg me' : 'gch-msg';
+      const bubbleCls = isMe ? 'message-sent msg-out msg-bubble' : 'message-received msg-in msg-bubble';
+      const side = isMe ? 'user' : 'char';
+      return '<div class="' + cls + '" data-id="' + m.id + '">' +
+        '<div class="gch-mav">' + av + '</div>' +
+        '<div class="gch-body"><div class="gch-name">' + nm + '</div>' +
+        timeSep + quoteHTML +
+        '<div class="gch-bubble ' + bubbleCls + '" data-side="' + side + '">' + escapeHTML(m.pinyin || m.text || '') + '</div>' +
+        '<div class="py-tag"><span class="pfx">拼音：</span><b><span class="py-word">' + escapeHTML(m.han || '') + '</span></b></div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    /* ★ 语音分支 */
+    if(m.voice){
+      const av = isMe ? userAvHTML(userProfile.avatar) : avatarHTML((getRoleById(m.roleId) || {}).avatar || '');
+      const nm = isMe ? userName() : escapeHTML(displayName(getRoleById(m.roleId) || {}) || '?');
+      const cls = isMe ? 'gch-msg me' : 'gch-msg';
+      const bubbleCls = isMe ? 'gch-bubble me' : 'gch-bubble';
+      return '<div class="' + cls + '" data-id="' + m.id + '">' +
+        '<div class="gch-mav">' + av + '</div>' +
+        '<div class="gch-body"><div class="gch-name">' + nm + '</div>' +
+        timeSep + quoteHTML +
+        '<div class="voice-bubble ' + bubbleCls + '" data-url="' + (m.voiceUrl || '') + '" data-dur="' + m.voice + '" data-idbkey="' + (m.voiceIdbKey || '') + '">' +
+          '<div class="vb-play"><svg class="icon-play" viewBox="0 0 12 12"><path d="M3 1.5 L10 6 L3 10.5 Z"/></svg><svg class="icon-pause" viewBox="0 0 12 12"><rect x="3" y="2" width="2.5" height="8" rx="1"/><rect x="6.5" y="2" width="2.5" height="8" rx="1"/></svg></div>' +
+          '<div class="vb-wave"><span></span><span></span><span></span><span></span><span></span><span></span></div>' +
+          '<span class="vb-dur">' + m.voice + '"</span>' +
+        '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    /* ★ 名片分支 */
+    if(m.namecard && m.namecard.name){
+      const av = isMe ? userAvHTML(userProfile.avatar) : avatarHTML((getRoleById(m.roleId) || {}).avatar || '');
+      const nm = isMe ? userName() : escapeHTML(displayName(getRoleById(m.roleId) || {}) || '?');
+      const cls = isMe ? 'gch-msg me' : 'gch-msg';
+      const ncName = m.namecard.name;
+      const ncCls = nameClass ? nameClass(ncName) : '';
+      return '<div class="' + cls + '" data-id="' + m.id + '">' +
+        '<div class="gch-mav">' + av + '</div>' +
+        '<div class="gch-body" style="max-width:100%"><div class="gch-name">' + nm + '</div>' +
+        timeSep + quoteHTML +
+        '<div class="gch-bubble" style="background:transparent;padding:0">' +
+          '<div class="ncard ' + ncCls + '">' +
+            '<div class="nc-inner">' +
+              '<div class="nc-av">' + avatarHTML(m.namecard.avatar) + '</div>' +
+              '<div class="nc-info"><div class="nc-name">' + escapeHTML(ncName) + '</div></div>' +
+            '</div>' +
+            '<div class="nc-bot"><span class="no">01</span><span class="en">Profile</span></div>' +
+          '</div>' +
+        '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    /* ★ 视频卡片分支 */
+    if(m.videoCard && m.videoCard.url){
+      const av = isMe ? userAvHTML(userProfile.avatar) : avatarHTML((getRoleById(m.roleId) || {}).avatar || '');
+      const nm = isMe ? userName() : escapeHTML(displayName(getRoleById(m.roleId) || {}) || '?');
+      const cls = isMe ? 'gch-msg me' : 'gch-msg';
+      const vc = m.videoCard;
+      return '<div class="' + cls + '" data-id="' + m.id + '">' +
+        '<div class="gch-mav">' + av + '</div>' +
+        '<div class="gch-body" style="max-width:100%"><div class="gch-name">' + nm + '</div>' +
+        timeSep + quoteHTML +
+        '<div class="gch-bubble" style="background:transparent;padding:0">' +
+          '<div class="video-card" data-vcurl="' + escapeHTML(vc.url) + '">' +
+            '<div class="vc-head">' +
+              '<span class="vc-platform ' + (typeof platformClass === "function" ? platformClass(vc.platform) : '') + '">' + escapeHTML(vc.platformIcon||'🔗') + ' ' + escapeHTML(vc.platformName||'链接') + '</span>' +
+              '<span>视频分享</span>' +
+            '</div>' +
+            '<div class="vc-title">' + escapeHTML(vc.title||'') + '</div>' +
+            (vc.desc ? '<div class="vc-desc">' + escapeHTML(vc.desc) + '</div>' : '') +
+            '<div class="vc-foot"><span>点击打开</span><span>›</span></div>' +
+          '</div>' +
+        '</div>' +
+        '</div>' +
+      '</div>';
+    }
+
+    /* ★ 表情图分支：不管是谁发的，先走这里 */
+    if(m.sticker){
+      const av = isMe ? userAvHTML(userProfile.avatar) : avatarHTML((getRoleById(m.roleId) || {}).avatar || '');
+      const nm = isMe ? userName() : escapeHTML(displayName(getRoleById(m.roleId) || {}) || '?');
+      const cls = isMe ? 'gch-msg me' : 'gch-msg';
+      return '<div class="' + cls + '" data-id="' + m.id + '">' +
+        '<div class="gch-mav">' + av + '</div>' +
+        '<div class="gch-body"><div class="gch-name">' + nm + '</div>' +
+        quoteHTML +
+        '<div class="gch-bubble" style="background:transparent;padding:0"><img src="' + m.sticker + '" style="max-width:140px;border-radius:12px;display:block"></div></div>' +
+      '</div>';
+    }
+
     if(isMe){
       return '<div class="gch-msg me" data-id="' + m.id + '">' +
         '<div class="gch-mav">' + userAvHTML(userProfile.avatar) + '</div>' +
         '<div class="gch-body"><div class="gch-name">' + escapeHTML(userName()) + '</div>' +
+        timeSep +
         quoteHTML +
-        '<div class="gch-bubble">' + escapeHTML(m.text || '') + '</div></div>' +
+        '<div class="gch-bubble message-sent msg-out msg-bubble" data-side="user">' + escapeHTML(m.text || '') + '</div></div>' +
       '</div>';
     }
     const r = getRoleById(m.roleId) || {};
     return '<div class="gch-msg" data-id="' + m.id + '">' +
       '<div class="gch-mav">' + avatarHTML(r.avatar || '') + '</div>' +
       '<div class="gch-body"><div class="gch-name">' + escapeHTML(displayName(r) || '?') + '</div>' +
+      timeSep +
       quoteHTML +
-      '<div class="gch-bubble">' + escapeHTML(m.text || '') + '</div></div>' +
+      '<div class="gch-bubble message-received msg-in msg-bubble" data-side="char">' + escapeHTML(m.text || '') + '</div></div>' +
     '</div>';
   }).join('');
   list.scrollTop = list.scrollHeight;
+
+  /* ★ 渲染后补 IndexedDB 里的语音地址（原来靠包装层，现在合进本体） */
+  list.querySelectorAll('.voice-bubble[data-idbkey]').forEach(function(vb){
+    const key = vb.dataset.idbkey;
+    if(!key) return;
+    if(vb.dataset.url && vb.dataset.url.length > 10) return;
+    if(typeof __idb !== 'undefined' && __idb.toURL){
+      __idb.toURL(key).then(function(url){
+        if(url) vb.dataset.url = url;
+      }).catch(function(){});
+    }
+  });
 }
 
 function groupChatTriggerReply(){
@@ -19514,47 +20321,128 @@ function groupChatTriggerReply(){
   window.__gchTimers.forEach(function(t){ clearTimeout(t); });
   window.__gchTimers = [];
 
-  const r = getReply();
-
+  /* ============================================================
+     群聊回复：每个角色走他自己的回复设置
+     - 主动概率用他自己的 activeRate
+     - 延迟、气泡数、拼好卡、拼音、标点、emoji、颜文字、撤回
+       全部读 getReply(rid) 里那份
+     - 内容从「群聊字卡」分组抽，优先专属，回退公用
+     ============================================================ */
   members.forEach(function(rid){
-    if(Math.random() > 0.30) return;
-    const delay = (r.minDelay || 1000) + Math.random() * Math.max(0, (r.maxDelay || 10000) - (r.minDelay || 1000));
+    const r = getReply(rid);                       // ← 关键：读这个角色自己的设置
+    if(r.activeOn === false) return;               // 他自己关了主动，就不发言
+
+    const rate = (typeof r.activeRate === 'number') ? r.activeRate : 0.08;
+    if(Math.random() >= rate) return;              // 用他自己的主动概率
+
+    const delay = (r.minDelay || 1000) +
+      Math.random() * Math.max(0, (r.maxDelay || 10000) - (r.minDelay || 1000));
+
     const t = setTimeout(function(){
       if(window.__curGroupId !== g.id) return;
-      let text = '';
-      try{
-        const gcPool = getCardsFromGroup(rid, 'g-groupchat');
-        const pubGcPool = getCardsFromGroup('public', 'g-groupchat');
-        const pool = gcPool.length ? gcPool : pubGcPool;
-        if(pool.length){
-          text = pool[Math.floor(Math.random() * pool.length)];
-        } else {
+      try {
+        /* ---- 用一个假的"当前角色"上下文，跑一遍 genReply(rid) 的逻辑 ---- */
+        /* 但 genReply 内部写死了 getCurrentRoleId()，这里改成手动拼一个简化版：
+           从群聊字卡抽一条，再按他设置里的拼音 / 标点 / emoji / 颜文字概率加工 */
+
+        /* 1) 抽主卡：优先该角色的群聊字卡，回退公用群聊字卡 */
+        let text = '';
+        try{
+          const gcPool = getCardsFromGroup(rid, 'g-groupchat');
+          const pubGcPool = getCardsFromGroup('public', 'g-groupchat');
+          const pool = gcPool.length ? gcPool : pubGcPool;
+          text = pool.length ? pool[Math.floor(Math.random() * pool.length)] : pickCard();
+        }catch(e){
           text = pickCard();
         }
-      }catch(e){
-        text = pickCard();
-      }
-      const msg = {
-        id: uid(),
-        role: 'char',
-        roleId: rid,
-        text: text,
-        time: Date.now()
-      };
-      const arr = getGroupMsgs(g.id);
-      arr.push(msg);
-      saveGroupMsgs(g.id, arr);
-      g.lastMsgAt = Date.now();
-      g.lastMsgText = text.slice(0, 30);
-      saveGroup(g);
 
-      if(window.__curGroupId === g.id){
-        renderGroupChat();
-      } else {
-        const role = getRoleById(rid) || {};
-        showMsgNotify((role.name || '角色') + ' · ' + (g.name || '群聊'), text, role.avatar);
+        /* 2) 拼音替换（按他的 pinyinRate / pinyinOn） */
+        if(r.pinyinOn && Math.random() < (r.pinyinRate || 0)){
+          const cnt = 1 + Math.floor(Math.random() * (r.pinyinMax || 1));
+          const hans = [];
+          for(let i = 0; i < cnt; i++){ hans.push(randPinyin().han); }
+          text = hans.join(r.punctOn && r.punctList && r.punctList.length
+            ? r.punctList[Math.floor(Math.random() * r.punctList.length)]
+            : ' ');
+        }
+
+        /* 3) 末尾标点（按他的 punctOn / punctList） */
+        if(r.punctOn && r.punctList && r.punctList.length && text){
+          text += r.punctList[Math.floor(Math.random() * r.punctList.length)];
+        }
+
+        /* 4) emoji / 颜文字 追加（各按他设置里的概率，随机决定插还是不插） */
+        let expr = '';
+        if(r.emojiOn && Math.random() < (r.emojiRate || 0)){
+          const e = (typeof pickRoleEmojiFor === 'function') ? pickRoleEmojiFor(rid) : '';
+          if(e) expr = e;
+        }
+        if(!expr && r.kaoOn && Math.random() < (r.kaoRate || 0)){
+          const k = (typeof pickRoleKaoFor === 'function') ? pickRoleKaoFor(rid) : '';
+          if(k) expr = k;
+        }
+
+        /* 5) 把 text 和 expr 拼一起（40% 拼在气泡里，60% 单独成一条） */
+        const now = Date.now();
+        const arr = getGroupMsgs(g.id);
+
+        if(expr && Math.random() < 0.4){
+          text = text + expr;
+        }
+
+        arr.push({
+          id: uid(),
+          role: 'char',
+          roleId: rid,
+          text: text,
+          time: now
+        });
+
+        if(expr && Math.random() >= 0.4){
+          arr.push({
+            id: uid(),
+            role: 'char',
+            roleId: rid,
+            text: expr,
+            time: now + 1
+          });
+        }
+
+        saveGroupMsgs(g.id, arr);
+        g.lastMsgAt = Date.now();
+        g.lastMsgText = text.slice(0, 30);
+        saveGroup(g);
+
+        if(window.__curGroupId === g.id){
+          renderGroupChat();
+        } else {
+          const role = getRoleById(rid) || {};
+          showMsgNotify((role.name || '角色') + ' · ' + (g.name || '群聊'), text, role.avatar);
+        }
+
+        /* 6) 撤回（按他的 recallOn / recallRate）：1~60 秒后撤掉刚才那条 */
+        if(r.recallOn && Math.random() < (r.recallRate || 0)){
+          const targetId = arr[arr.length - 1] ? arr[arr.length - 1].id : '';
+          if(targetId){
+            const wait = 1000 + Math.floor(Math.random() * 59000);
+            const _t = setTimeout(function(){
+              const curArr = getGroupMsgs(g.id);
+              const i = curArr.findIndex(function(x){ return x && x.id === targetId; });
+              if(i >= 0){
+                curArr[i] = { id: curArr[i].id, role: 'char', roleId: rid, recalled: true, time: curArr[i].time || Date.now() };
+                saveGroupMsgs(g.id, curArr);
+                if(window.__curGroupId === g.id) renderGroupChat();
+              }
+            }, wait);
+            window.__gchTimers.push(_t);
+          }
+        }
+
+      } catch(e){
+        console.error('群聊角色回复出错', e);
       }
     }, delay);
+
     window.__gchTimers.push(t);
   });
 }
@@ -19574,12 +20462,22 @@ document.addEventListener('click', function(e){
     e.preventDefault(); e.stopPropagation();
     const inp = document.getElementById('gchInput');
     const text = (inp ? inp.value : '').trim();
-    if(!text) return;
+
+    /* ★ 引用时允许空文字（跟聊天页一致） */
+    const hasQuote = !!window.__gchQuote;
+    if(!text && !hasQuote) return;
+
+    /* ★ 修复：记录发送前输入框是否聚焦，发完要"还"回去
+       否则点发送按钮会把输入框的焦点抢走 → 键盘收起 */
+    const wasFocused = (document.activeElement === inp) || !!window.__gchSendKeepFocus;
+    window.__gchSendKeepFocus = false;
+
     const g = getGroupById(window.__curGroupId);
     if(!g) return;
     const arr = getGroupMsgs(g.id);
+
     const outMsg = { id: uid(), role: 'user', text: text, time: Date.now() };
-    if(window.__gchQuote){
+    if(hasQuote){
       outMsg.quote = window.__gchQuote;
       window.__gchQuote = null;
     }
@@ -19588,9 +20486,15 @@ document.addEventListener('click', function(e){
     g.lastMsgAt = Date.now();
     g.lastMsgText = text.slice(0, 30);
     saveGroup(g);
+
     if(inp){ inp.value = ''; inp.style.height = 'auto'; }
     renderGroupChat();
     groupChatTriggerReply();
+
+    /* ★ 发完把焦点还给输入框，键盘不会往下滑走 */
+    if(wasFocused && inp){
+      try{ inp.focus(); }catch(err){}
+    }
     return;
   }
 }, true);
@@ -19601,6 +20505,80 @@ document.addEventListener('input', function(e){
   t.style.height = 'auto';
   t.style.height = Math.min(t.scrollHeight, 110) + 'px';
 }, true);
+
+/* ★ 群聊发送按钮：不抢焦点（跟聊天页 #sendBtn 同款处理）
+   - mousedown preventDefault：桌面浏览器点发送不丢焦点
+   - touchstart 记录"发送前焦点在输入框"，让 click 时知道该还焦点
+*/
+(function bindGchSendFocusGuard(){
+  if(window.__gchSendFocusGuardBound) return;
+  window.__gchSendFocusGuardBound = true;
+  const btn = document.getElementById('gchSend');
+  const inp = document.getElementById('gchInput');
+  if(!btn || !inp) return;
+
+  btn.addEventListener('mousedown', function(e){
+    e.preventDefault();
+  });
+  btn.addEventListener('touchstart', function(){
+    if(document.activeElement === inp){
+      window.__gchSendKeepFocus = true;
+    } else {
+      window.__gchSendKeepFocus = false;
+    }
+  }, {passive:true});
+})();
+
+/* ★ 群聊键盘处理：focus / blur 时切 kb-open，visualViewport 锁高度 */
+(function bindGroupChatKeyboard(){
+  if(window.__gchKbBound) return;
+  window.__gchKbBound = true;
+
+  const gchInput = document.getElementById('gchInput');
+  const gchScreen = document.getElementById('groupChatScreen');
+  if(!gchInput || !gchScreen) return;
+
+  gchInput.addEventListener('focus', () => {
+    gchScreen.classList.add('kb-open');
+    /* 输入框聚焦时，把群聊功能抽屉和表情抽屉都收起 */
+    if(typeof gchToggleFunc === 'function') gchToggleFunc(false);
+    if(typeof gchToggleDrawer === 'function') gchToggleDrawer(false);
+  });
+  gchInput.addEventListener('blur', () => {
+    setTimeout(() => {
+      const active = document.activeElement;
+      if(!active || active.id !== 'gchInput'){
+        gchScreen.classList.remove('kb-open');
+      }
+    }, 100);
+  });
+
+  /* visualViewport 锁高度：防止键盘把群聊页顶飞 */
+  if(window.visualViewport){
+    let baseH = window.innerHeight;
+    function apply(){
+      if(!gchScreen.classList.contains('on')) return;
+      const vv = window.visualViewport;
+      const kh = Math.max(0, baseH - vv.height);
+      if(kh > 40){
+        gchScreen.classList.add('kb-open-real');
+        gchScreen.style.height = vv.height + 'px';
+        gchScreen.style.top = '0';
+        try{ window.scrollTo(0, 0); }catch(e){}
+      } else {
+        gchScreen.classList.remove('kb-open-real');
+        gchScreen.style.height = '';
+        gchScreen.style.top = '';
+      }
+    }
+    window.visualViewport.addEventListener('resize', apply);
+    window.visualViewport.addEventListener('scroll', apply);
+    window.addEventListener('orientationchange', () => {
+      baseH = window.innerHeight;
+      setTimeout(apply, 200);
+    });
+  }
+})();
 
 function openGroupCreate(){
   gccSelected = new Set();
@@ -19875,8 +20853,12 @@ function renderGroupListPage(){
     const memberCount = (g.members || []).length;
     const last = (g.lastMsgText || '').slice(0, 20);
     const sub = memberCount + ' 人' + (last ? ' · ' + last : '');
+    /* ★ 群头像：有就显示，没有就默认 👥 */
+    const gcAvInner = g.avatarKey
+      ? '<img src="" data-gcavkey="' + g.avatarKey + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block">'
+      : '👥';
     return '<div class="gc-item" data-gid="' + g.id + '">' +
-      '<div class="gc-av">👥</div>' +
+      '<div class="gc-av" data-gcav="' + g.id + '">' + gcAvInner + '</div>' +
       '<div class="gc-main">' +
         '<div class="gc-name">' + escapeHTML(g.name || '群聊') + '</div>' +
         '<div class="gc-sub">' + escapeHTML(sub) + '</div>' +
