@@ -55,7 +55,960 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
 /* 键盘弹起时，聊天区底部留出输入栏的空间，避免被盖住 */
 #app.kb-open-real #chatList{padding-bottom:80px}
 #app.kb-open-real .gch-list{padding-bottom:80px}
-.tb-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;padding:6px 0;border-radius:14px;transition:all .2s ease}
+
+/* ============================================================
+   日历页（#page-calendar）· 纯黑白极简
+   ============================================================ */
+#page-calendar{
+  background:#ffffff;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+#page-calendar::-webkit-scrollbar{display:none}
+
+.cal-page-wrap{
+  max-width:520px;
+  margin:0 auto;
+  width:100%;
+  padding:24px 22px 60px;
+  box-sizing:border-box;
+}
+
+/* ---- 大卡片 ---- */
+.big-card{
+  border:0.7px solid rgba(0,0,0,.12);
+  border-radius:18px;
+  padding:22px 20px 18px;
+  background:#fff;
+  margin-bottom:24px;
+  cursor:pointer;
+  transition:border-color .2s ease, box-shadow .2s ease;
+  position:relative;
+  overflow:hidden;
+}
+.big-card:active{
+  border-color:#1a1a1a;
+  box-shadow:0 2px 14px rgba(0,0,0,.06);
+}
+.big-card::after{
+  content:"";
+  position:absolute;
+  right:-60px;top:-60px;
+  width:140px;height:140px;
+  border-radius:50%;
+  border:0.6px solid rgba(0,0,0,.05);
+  pointer-events:none;
+}
+.big-card::before{
+  content:"";
+  position:absolute;
+  right:-100px;top:-100px;
+  width:200px;height:200px;
+  border-radius:50%;
+  border:0.6px solid rgba(0,0,0,.03);
+  pointer-events:none;
+}
+
+.bc-head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  margin-bottom:14px;
+  position:relative;
+  z-index:1;
+}
+.bc-date-wrap{
+  display:flex;
+  align-items:baseline;
+  gap:4px;
+}
+.bc-date{
+  font-size:32px;
+  font-weight:300;
+  letter-spacing:.5px;
+  line-height:1;
+  color:#1a1a1a;
+}
+.bc-date small{
+  font-size:10px;
+  letter-spacing:3px;
+  color:#bbb;
+  font-family:Georgia,serif;
+  margin-left:8px;
+}
+.bc-time{
+  font-size:20px;
+  font-weight:300;
+  letter-spacing:1.5px;
+  font-family:Georgia,serif;
+  line-height:1;
+  color:#1a1a1a;
+}
+.bc-time small{
+  font-size:9px;
+  letter-spacing:2px;
+  color:#bbb;
+  margin-left:3px;
+}
+
+.bc-lunar{
+  font-size:11px;
+  color:#999;
+  letter-spacing:1.2px;
+  padding-bottom:14px;
+  border-bottom:0.6px dashed #f0f0f0;
+  margin-bottom:14px;
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.bc-lunar svg{
+  width:11px;height:11px;
+  stroke:#bbb;fill:none;
+  stroke-width:1.4;
+  stroke-linecap:round;stroke-linejoin:round;
+  flex:none;
+}
+
+.bc-weather{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 0;
+  border-bottom:0.6px dashed #f0f0f0;
+  margin-bottom:14px;
+  position:relative;
+  z-index:1;
+}
+.bc-w-ico{
+  width:32px;height:32px;
+  flex:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:0.7px solid rgba(0,0,0,.12);
+  border-radius:10px;
+}
+.bc-w-ico svg{
+  width:18px;height:18px;
+  stroke:#1a1a1a;fill:none;
+  stroke-width:1.4;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+.bc-w-txt{flex:1;min-width:0}
+.bc-w-main{
+  font-size:13px;
+  color:#1a1a1a;
+  letter-spacing:.5px;
+}
+.bc-w-sub{
+  font-size:10.5px;
+  color:#bbb;
+  margin-top:3px;
+  letter-spacing:.3px;
+}
+.bc-w-refresh{
+  width:26px;height:26px;
+  flex:none;
+  border:0.7px solid rgba(0,0,0,.12);
+  border-radius:50%;
+  background:transparent;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  padding:0;
+  transition:border-color .18s ease;
+}
+.bc-w-refresh:active{border-color:#1a1a1a}
+.bc-w-refresh svg{
+  width:12px;height:12px;
+  stroke:#1a1a1a;fill:none;
+  stroke-width:1.4;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+
+.bc-events{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  position:relative;
+  z-index:1;
+}
+.bc-ev{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-size:10.5px;
+  letter-spacing:.5px;
+  padding:4px 9px;
+  border:0.6px solid #1a1a1a;
+  border-radius:12px;
+  background:transparent;
+  color:#1a1a1a;
+  white-space:nowrap;
+}
+.bc-ev svg{
+  width:12px;height:12px;
+  flex:none;
+  stroke:currentColor;fill:none;
+  stroke-width:1.4;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+.bc-ev-empty{
+  font-size:10.5px;
+  color:#ccc;
+  letter-spacing:.5px;
+  padding:4px 0;
+}
+
+/* ---- 月历 ---- */
+.cal-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:14px;
+  padding:0 2px;
+}
+.cal-title{
+  font-size:14px;
+  letter-spacing:3px;
+  color:#1a1a1a;
+  font-weight:300;
+}
+.cal-title small{
+  font-size:10px;
+  letter-spacing:3px;
+  color:#bbb;
+  margin-left:6px;
+  font-family:Georgia,serif;
+}
+.cal-arrow{
+  width:28px;height:28px;
+  flex:none;
+  border:none;
+  background:transparent;
+  color:#bbb;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  padding:0;
+  border-radius:50%;
+  transition:color .18s, background .18s;
+}
+.cal-arrow:active{color:#1a1a1a;background:#f5f5f5}
+.cal-arrow svg{
+  width:14px;height:14px;
+  stroke:currentColor;fill:none;
+  stroke-width:1.4;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+
+.cal-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:2px;
+}
+.cal-cell{
+  aspect-ratio:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-size:12.5px;
+  color:#1a1a1a;
+  border-radius:8px;
+  position:relative;
+  cursor:pointer;
+  transition:background .15s ease;
+  overflow:hidden;
+}
+.cal-cell:active{background:#f5f5f5}
+.cal-cell.head{
+  color:#bbb;
+  font-size:10px;
+  letter-spacing:1.5px;
+  cursor:default;
+  aspect-ratio:auto;
+  padding:2px 0 10px;
+  font-family:Georgia,serif;
+}
+.cal-cell.head:active{background:transparent}
+.cal-cell.other{
+  color:#e0e0e0;
+  cursor:default;
+}
+.cal-cell.other:active{background:transparent}
+
+/* 跨天日程黑条 */
+.cal-cell.has-band::before{
+  content:"";
+  position:absolute;
+  left:0;right:0;
+  top:50%;
+  height:22px;
+  transform:translateY(-50%);
+  background:#1a1a1a;
+  z-index:0;
+}
+.cal-cell.band-start::before{left:6px}
+.cal-cell.band-end::before{right:6px}
+.cal-cell.band-single::before{left:6px;right:6px;border-radius:6px}
+.cal-cell.has-band{color:#fff}
+.cal-cell.has-band .lunar{color:rgba(255,255,255,.7)}
+
+/* 今天：中灰实心小圆点 */
+.cal-cell .today-dot{
+  position:absolute;
+  left:50%;
+  bottom:3px;
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:#666;
+  transform:translateX(-50%);
+  z-index:3;
+  pointer-events:none;
+}
+.cal-cell.today{font-weight:500}
+.cal-cell.today .lunar:not(:empty){bottom:11px}
+
+.cal-cell .lunar{
+  position:absolute;
+  bottom:2px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:8px;
+  color:#bbb;
+  white-space:nowrap;
+  font-weight:400;
+  z-index:2;
+}
+
+/* ---- 本月事件列表 ---- */
+.cal-events{margin-top:26px}
+.ce-head{
+  font-size:10px;
+  letter-spacing:4px;
+  color:#bbb;
+  font-family:Georgia,serif;
+  text-transform:uppercase;
+  margin-bottom:14px;
+  padding-bottom:8px;
+  border-bottom:0.6px solid #f0f0f0;
+}
+.ce-item{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  padding:12px 0;
+  border-bottom:0.6px dashed #f0f0f0;
+  font-size:12.5px;
+  line-height:1.6;
+}
+.ce-item:last-child{border-bottom:none}
+.ce-item .ico{
+  width:26px;height:26px;
+  flex:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:0.6px solid rgba(0,0,0,.12);
+  border-radius:8px;
+}
+.ce-item .ico svg{
+  width:14px;height:14px;
+  stroke:#1a1a1a;fill:none;
+  stroke-width:1.4;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.ce-item .txt{flex:1;min-width:0}
+.ce-item .txt .tt{
+  font-size:13px;
+  color:#1a1a1a;
+  letter-spacing:.5px;
+}
+.ce-item .txt .sub{
+  font-size:10.5px;
+  color:#bbb;
+  margin-top:4px;
+  letter-spacing:.3px;
+}
+.ce-item .prog-txt{
+  font-size:10.5px;
+  color:#1a1a1a;
+  font-family:Georgia,serif;
+  letter-spacing:.5px;
+  flex:none;
+  padding-top:3px;
+}
+
+.ce-empty{
+  font-size:11.5px;
+  color:#ccc;
+  letter-spacing:1px;
+  text-align:center;
+  padding:20px 0;
+  font-weight:300;
+}
+
+/* ============================================================
+   编辑桌面（#deskEditScreen）· 纯黑白极简
+   ============================================================ */
+#deskEditScreen{
+  background:#ffffff;
+  flex-direction:column;
+}
+#deskEditScreen.on{display:flex}
+
+.de-wrap{
+  max-width:520px;
+  margin:0 auto;
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+/* ---- 顶部 ---- */
+.de-top{
+  flex:none;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:20px 22px 12px;
+  background:#fff;
+}
+.de-back{
+  width:38px;height:38px;
+  flex:none;
+  border:none;
+  background:transparent;
+  color:#1a1a1a;
+  font-size:22px;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 0 4px;
+  font-family:inherit;
+  cursor:pointer;
+  opacity:.55;
+  transition:opacity .18s ease;
+}
+.de-back:active{opacity:1}
+.de-title{
+  flex:1;
+  font-size:15px;
+  font-weight:300;
+  letter-spacing:6px;
+  text-align:center;
+  color:#1a1a1a;
+  -webkit-text-stroke:0.15px #1a1a1a;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+.de-top-right{width:38px;flex:none}
+
+/* ---- tab 栏 ---- */
+.de-tabs{
+  flex:none;
+  display:flex;
+  gap:0;
+  padding:0 22px;
+  border-bottom:0.6px solid #f0f0f0;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.de-tabs::-webkit-scrollbar{display:none}
+.de-tab{
+  flex:1;
+  padding:12px 0;
+  border:none;
+  background:transparent;
+  font-family:inherit;
+  font-size:12.5px;
+  letter-spacing:2px;
+  color:#bbb;
+  cursor:pointer;
+  position:relative;
+  font-weight:300;
+  white-space:nowrap;
+  transition:color .18s ease;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+.de-tab.on{
+  color:#1a1a1a;
+  font-weight:400;
+}
+.de-tab.on::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-1px;
+  transform:translateX(-50%);
+  width:20px;
+  height:1.5px;
+  background:#1a1a1a;
+  border-radius:2px;
+}
+
+/* ---- 内容区 ---- */
+.de-body{
+  flex:1;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:4px 22px calc(24px + env(safe-area-inset-bottom));
+  scrollbar-width:none;
+}
+.de-body::-webkit-scrollbar{display:none}
+
+/* ---- 通用分组标题 ---- */
+.de-sec{
+  padding:20px 0 10px;
+  border-bottom:0.6px dashed #f0f0f0;
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+}
+.de-sec:first-child{padding-top:14px}
+.de-sec .tt{
+  font-size:12.5px;
+  letter-spacing:2px;
+  color:#1a1a1a;
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+}
+.de-sec .tt-en{
+  font-size:9px;
+  letter-spacing:3px;
+  color:#ccc;
+  font-family:Georgia,serif;
+  font-weight:400;
+}
+.de-sec .act{
+  font-size:11.5px;
+  color:#1a1a1a;
+  letter-spacing:1px;
+  cursor:pointer;
+  padding:2px 6px;
+  border-radius:8px;
+  transition:background .18s ease;
+}
+.de-sec .act:active{background:#f5f5f5}
+
+/* ---- 列表行 ---- */
+.de-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 2px;
+  border-bottom:0.6px dashed #f0f0f0;
+  cursor:pointer;
+  transition:background .18s ease;
+}
+.de-row:last-child{border-bottom:none}
+.de-row:active{background:rgba(0,0,0,.02)}
+.de-row .r-ic{
+  width:30px;height:30px;
+  flex:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:0.6px solid rgba(0,0,0,.12);
+  border-radius:9px;
+  background:#fff;
+}
+.de-row .r-ic svg{
+  width:14px;height:14px;
+  stroke:#1a1a1a;fill:none;
+  stroke-width:1.4;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.de-row .r-main{flex:1;min-width:0}
+.de-row .r-tt{
+  font-size:13.5px;
+  color:#1a1a1a;
+  letter-spacing:.5px;
+  font-weight:400;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.de-row .r-sub{
+  font-size:10.5px;
+  color:#bbb;
+  margin-top:4px;
+  letter-spacing:.3px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.de-row .r-val{
+  font-size:11.5px;
+  color:#999;
+  letter-spacing:.5px;
+  flex:none;
+  font-family:Georgia,serif;
+}
+.de-row .r-arr{
+  color:#e0e0e0;
+  font-size:12px;
+  flex:none;
+  margin-left:2px;
+}
+.de-row .r-del{
+  width:22px;height:22px;
+  flex:none;
+  border:none;
+  background:transparent;
+  color:#ccc;
+  font-size:11px;
+  cursor:pointer;
+  padding:0;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:color .18s ease;
+}
+.de-row .r-del:active{color:#1a1a1a;background:#f5f5f5}
+
+/* ---- 空状态 ---- */
+.de-empty{
+  text-align:center;
+  color:#ccc;
+  font-size:12.5px;
+  padding:40px 20px;
+  line-height:2;
+  letter-spacing:1px;
+  font-weight:300;
+}
+.de-empty .plus{
+  display:block;
+  font-size:11.5px;
+  color:#1a1a1a;
+  margin-top:14px;
+  letter-spacing:2px;
+  cursor:pointer;
+}
+
+/* ---- 开关行 ---- */
+.de-sw-row{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:16px 2px;
+  border-bottom:0.6px dashed #f0f0f0;
+}
+.de-sw-row:last-child{border-bottom:none}
+.de-sw-row .sw-main{flex:1;min-width:0}
+.de-sw-row .sw-main .t1{
+  font-size:13.5px;
+  color:#1a1a1a;
+  letter-spacing:.5px;
+  font-weight:400;
+}
+.de-sw-row .sw-main .t2{
+  font-size:10.5px;
+  color:#bbb;
+  margin-top:4px;
+  letter-spacing:.3px;
+}
+
+/* ---- 颜色选择行（今天的圆点颜色） ---- */
+.de-color-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:14px 2px;
+  flex-wrap:wrap;
+}
+.de-color-lbl{
+  font-size:12.5px;
+  color:#1a1a1a;
+  letter-spacing:1px;
+  flex:none;
+  margin-right:4px;
+  font-weight:400;
+}
+.de-color-dot{
+  width:22px;height:22px;
+  border-radius:50%;
+  border:1.5px solid transparent;
+  cursor:pointer;
+  flex:none;
+  transition:border-color .18s ease, transform .12s ease;
+  padding:0;
+  outline:none;
+}
+.de-color-dot:active{transform:scale(.92)}
+.de-color-dot.on{
+  border-color:#1a1a1a;
+}
+.de-color-hex{
+  margin-left:auto;
+  padding:5px 12px;
+  font-size:11px;
+  color:#1a1a1a;
+  letter-spacing:1px;
+  border:0.7px solid #1a1a1a;
+  background:transparent;
+  border-radius:10px;
+  font-family:inherit;
+  cursor:pointer;
+}
+
+/* ---- 待办 / 日程进度行 ---- */
+.de-todo-item{
+  padding:14px 2px;
+  border-bottom:0.6px dashed #f0f0f0;
+  cursor:pointer;
+  transition:background .18s ease;
+}
+.de-todo-item:last-child{border-bottom:none}
+.de-todo-item:active{background:rgba(0,0,0,.02)}
+.de-todo-item .ti-tt{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:13.5px;
+  color:#1a1a1a;
+  letter-spacing:.5px;
+  font-weight:400;
+}
+.de-todo-item .ti-tt .ck{
+  width:16px;height:16px;
+  flex:none;
+  border:1px solid #1a1a1a;
+  border-radius:4px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  color:transparent;
+}
+.de-todo-item.done .ti-tt .ck{
+  background:#1a1a1a;
+  color:#fff;
+}
+.de-todo-item.done .ti-tt{
+  text-decoration:line-through;
+  color:#999;
+}
+.de-todo-item .ti-sub{
+  font-size:10.5px;
+  color:#bbb;
+  margin-top:6px;
+  margin-left:26px;
+  letter-spacing:.3px;
+}
+.de-todo-item .ti-prog{
+  height:2px;
+  background:#f0f0f0;
+  border-radius:2px;
+  margin:8px 0 0 26px;
+  overflow:hidden;
+}
+.de-todo-item .ti-prog-bar{
+  height:100%;
+  background:#1a1a1a;
+  border-radius:2px;
+}
+
+/* ---- 天气定位设置 ---- */
+.de-city-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:14px 2px;
+  border-bottom:0.6px dashed #f0f0f0;
+}
+.de-city-row .lbl{
+  font-size:12.5px;
+  color:#1a1a1a;
+  letter-spacing:1px;
+  flex:none;
+  width:80px;
+  font-weight:400;
+}
+.de-city-row input{
+  flex:1;
+  min-width:0;
+  border:none;
+  border-bottom:0.7px solid rgba(0,0,0,.15);
+  background:transparent;
+  padding:6px 2px;
+  font-size:13.5px;
+  font-family:inherit;
+  color:#1a1a1a;
+  outline:none;
+  letter-spacing:.5px;
+}
+.de-city-row input:focus{border-bottom-color:#1a1a1a}
+.de-city-row input::placeholder{color:#ccc}
+
+/* ---- 角色状态行 ---- */
+.de-role-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 2px;
+  border-bottom:0.6px dashed #f0f0f0;
+}
+.de-role-item:last-child{border-bottom:none}
+.de-role-av{
+  width:34px;height:34px;
+  border-radius:var(--avatar-radius,12%);
+  overflow:hidden;
+  background:#f2f2f2;
+  flex:none;
+  position:relative;
+  display:flex;
+  align-items:stretch;
+  justify-content:center;
+}
+.de-role-av svg{
+  position:absolute;
+  inset:0;
+  width:100%;height:100%;
+}
+.de-role-av .silhouette{fill:#d4d4d4}
+.de-role-av img{
+  position:absolute;
+  inset:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  display:block;
+}
+.de-role-info{flex:1;min-width:0}
+.de-role-name{
+  font-size:13.5px;
+  color:#1a1a1a;
+  letter-spacing:.5px;
+  font-weight:400;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.de-role-status-row{
+  display:flex;
+  gap:6px;
+  margin-top:6px;
+}
+.de-status-chip{
+  padding:3px 10px;
+  font-size:10.5px;
+  color:#999;
+  letter-spacing:1px;
+  border:0.6px solid rgba(0,0,0,.15);
+  border-radius:10px;
+  cursor:pointer;
+  background:transparent;
+  font-family:inherit;
+  white-space:nowrap;
+  transition:all .15s ease;
+}
+.de-status-chip.on{
+  background:#1a1a1a;
+  color:#fff;
+  border-color:#1a1a1a;
+  font-weight:400;
+}
+
+/* ---- 日期选择行（生日等） ---- */
+.de-date-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:14px 2px;
+  border-bottom:0.6px dashed #f0f0f0;
+}
+.de-date-row:last-child{border-bottom:none}
+.de-date-row .lbl{
+  font-size:12.5px;
+  color:#1a1a1a;
+  letter-spacing:1px;
+  width:70px;
+  flex:none;
+  font-weight:400;
+}
+.de-date-row .val{
+  flex:1;
+  font-size:13.5px;
+  color:#1a1a1a;
+  letter-spacing:.5px;
+  cursor:pointer;
+  padding:6px 2px;
+  border-bottom:0.7px solid rgba(0,0,0,.1);
+}
+.de-date-row .val:active{border-bottom-color:#1a1a1a}
+.de-date-row .mode-tabs-mini{
+  display:flex;
+  gap:6px;
+  flex:none;
+}
+.de-date-row .mode-tabs-mini .mt{
+  padding:4px 10px;
+  font-size:10.5px;
+  color:#999;
+  letter-spacing:1px;
+  border:0.6px solid rgba(0,0,0,.12);
+  border-radius:10px;
+  background:transparent;
+  font-family:inherit;
+  cursor:pointer;
+  transition:all .15s ease;
+}
+.de-date-row .mode-tabs-mini .mt.on{
+  background:#1a1a1a;
+  color:#fff;
+  border-color:#1a1a1a;
+}
+
+/* ---- 底部主按钮 ---- */
+.de-primary-btn{
+  width:100%;
+  margin-top:20px;
+  padding:14px 0;
+  border-radius:22px;
+  border:none;
+  background:#1a1a1a;
+  color:#fff;
+  font-size:13.5px;
+  font-family:inherit;
+  font-weight:400;
+  letter-spacing:3px;
+  cursor:pointer;
+  box-shadow:0 2px 8px rgba(0,0,0,.12);
+  transition:opacity .18s ease;
+}
+.de-primary-btn:active{opacity:.85}
+.de-ghost-btn{
+  width:100%;
+  margin-top:10px;
+  padding:13px 0;
+  border-radius:22px;
+  border:0.7px solid rgba(0,0,0,.15);
+  background:transparent;
+  color:#999;
+  font-size:13px;
+  font-family:inherit;
+  font-weight:300;
+  letter-spacing:2px;
+  cursor:pointer;
+  transition:border-color .18s ease;
+}
+.de-ghost-btn:active{border-color:#1a1a1a;color:#1a1a1a}
 .tb-item .tb-ic{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;transition:all .22s ease;background:transparent;border:0.7px solid transparent}
 .tb-item .tb-ic svg{width:20px;height:20px;stroke:#1a1a1a;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;transition:all .22s}
 .tb-item .tb-lb{font-size:10px;color:#999;font-family:inherit;font-weight:400;letter-spacing:1px;transition:all .22s}
@@ -1167,11 +2120,12 @@ body.sel-mode-on .cd-tabs-wrap{margin-top:10px}
 
 .cd-tab{flex:none;padding:2px 0 8px;font-size:13px;letter-spacing:1.5px;color:#c8c8c8;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;border-radius:0;border:none;background:transparent;font-family:var(--app-font);transition:color .18s ease;position:relative}
 .cd-tab .cd-tab-del{
-  width:14px;height:14px;border-radius:50%;
-  background:#f0f0f0;color:#999;font-size:9px;
+  width:auto;height:auto;border-radius:0;
+  background:transparent;color:#bbb;font-size:11px;
   display:none;
   align-items:center;justify-content:center;
-  margin-left:2px;flex:none;transition:all .15s;
+  margin-left:4px;flex:none;transition:color .15s;
+  line-height:1;
 }
 body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .cd-tab .cd-tab-del:active{background:#1a1a1a;color:#fff}
@@ -1193,9 +2147,46 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .cd-list::-webkit-scrollbar{display:none}
 
 .cl-line{display:flex;align-items:center;gap:14px;padding:21px 0;border-bottom:0.6px solid #f6f6f6;min-height:0}
-.cl-line .chk{width:22px;height:22px;flex:none;border-radius:7px;border:1.5px solid var(--th-accent-line);display:none;align-items:center;justify-content:center;font-size:12px;color:#fff;margin-top:0}
-.cl-line.sel-mode .chk{display:flex}
-.cl-line.sel-mode.selected .chk{background:var(--th-accent);border-color:var(--th-accent)}
+.cl-line .chk{
+  width:22px;height:22px;flex:none;
+  border-radius:50%;
+  border:1.5px solid rgba(0,0,0,.45);
+  background:#ffffff;
+  color:#ffffff;
+  font-size:14px;
+  line-height:1;
+  text-align:center;
+  display:none;
+  margin-top:0;
+  box-sizing:border-box;
+  transition:background .15s ease, border-color .15s ease, color .15s ease;
+}
+.cl-line.sel-mode .chk{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.cl-line.sel-mode.selected{
+  background:transparent;
+  border-radius:0;
+  padding-left:0;
+  padding-right:0;
+}
+.cl-line.sel-mode.selected .chk{
+  background:#1a1a1a;
+  border-color:#1a1a1a;
+  color:#ffffff;
+}
+.cl-line.sel-mode.selected .chk::after{
+  content:"";
+  display:block;
+  width:13px;
+  height:13px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%23ffffff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/13px 13px no-repeat;
+  border:none;
+  transform:none;
+}
+.cl-line.sel-mode.selected .chk{font-size:0;}
 .cl-line .idx{width:20px;flex:none;font-size:10px;color:#dedede;font-family:Georgia,serif;text-align:right;padding-top:0}
 .cl-line.sel-mode .idx{display:none}
 .cl-line .txt{flex:1;min-width:0;font-size:14px;line-height:1.75;color:#1a1a1a;letter-spacing:.4px;word-break:break-word;font-family:var(--app-font);white-space:pre-wrap;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
@@ -1240,34 +2231,48 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 }
 
 .sort-opt{
-  display:flex;align-items:center;gap:10px;
-  padding:13px 14px;border-radius:10px;
-  font-size:13.5px;color:#1a1a1a;font-family:inherit;
+  display:flex;align-items:center;gap:14px;
+  padding:16px 4px;
+  font-size:14px;color:#1a1a1a;font-family:inherit;
   cursor:pointer;background:transparent;
-  border:0.7px solid #e8e8e8;
-  transition:all .18s ease;
+  border:none;
+  border-bottom:0.6px dashed rgba(0,0,0,.06);
+  border-radius:0;
+  transition:background .18s ease;
 }
-.sort-opt:last-child{margin-bottom:0}
-.sort-opt:active{background:#fafafa}
-.sort-opt.on{
-  border-color:#1a1a1a;
-  background:#ffffff;
-  font-weight:500;
-}
+.sort-opt:last-child{border-bottom:none;margin-bottom:0}
+.sort-opt:active{background:rgba(0,0,0,.02)}
+.sort-opt.on{background:transparent;font-weight:300}
 .sort-opt .chk{
-  width:16px;height:16px;flex:none;border-radius:50%;
-  border:0.7px solid #d0d0d0;
+  width:20px;height:20px;flex:none;border-radius:50%;
+  border:1.5px solid rgba(0,0,0,.18);
   display:flex;align-items:center;justify-content:center;
-  font-size:10px;color:transparent;transition:all .18s ease;
+  background:transparent;
+  transition:border-color .15s ease, background .15s ease;
 }
 .sort-opt.on .chk{
-  background:#1a1a1a;border-color:#1a1a1a;color:#fff;
+  background:#1a1a1a;border-color:#1a1a1a;
 }
+.sort-opt .chk svg{
+  width:11px;height:11px;display:block;
+}
+.sort-opt .chk svg path{
+  fill:none;stroke:#fff;stroke-width:2.6;
+  stroke-linecap:round;stroke-linejoin:round;
+  opacity:0;transition:opacity .15s ease;
+}
+.sort-opt.on .chk svg path{opacity:1}
 .sort-opt .opt-main{flex:1;min-width:0}
-.sort-opt .opt-title{font-size:13.5px;line-height:1.3}
+.sort-opt .opt-title{
+  font-size:14px;font-weight:300;letter-spacing:1.5px;
+  line-height:1.3;color:#1a1a1a;
+  -webkit-text-stroke:0.1px #1a1a1a;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
 .sort-opt .opt-sub{
-  font-size:10.5px;color:#bbb;margin-top:3px;line-height:1.3;
-  font-weight:400;
+  font-size:11px;color:#bbb;margin-top:5px;line-height:1.3;
+  font-weight:300;letter-spacing:.5px;
 }
 
 .trim-cat-row{
@@ -1851,6 +2856,46 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 }
 #mReply .rp-x:active{color:#1a1a1a}
 .overlay{position:absolute;inset:0;background:var(--mask-bg);backdrop-filter:var(--mask-blur);-webkit-backdrop-filter:var(--mask-blur)}
+/* ===== 导出字卡弹窗 · 单分组内选分类 ===== */
+#expSheet{max-width:340px !important;}
+#mExport .sub-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 2px 10px;font-size:11.5px;color:#999;letter-spacing:1px;
+}
+#mExport .sub-row .all{color:#1a1a1a;cursor:pointer;font-size:12px;}
+#mExport .exp-cat-list{max-height:52vh;overflow-y:auto;scrollbar-width:none;margin-bottom:16px;}
+#mExport .exp-cat-list::-webkit-scrollbar{display:none}
+#mExport .exp-cat-row{
+  display:flex;align-items:center;gap:12px;
+  padding:15px 2px;cursor:pointer;
+  border-bottom:0.6px dashed rgba(0,0,0,.06);
+}
+#mExport .exp-cat-row:last-child{border-bottom:none}
+#mExport .exp-cat-row .exp-ck{
+  width:18px;height:18px;flex:none;border-radius:50%;
+  border:1.4px solid rgba(0,0,0,.42);
+  background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s ease, border-color .15s ease;
+}
+#mExport .exp-cat-row.on .exp-ck{background:#1a1a1a;border-color:#1a1a1a;}
+#mExport .exp-cat-row .exp-ck svg{width:10px;height:10px;display:block;}
+#mExport .exp-cat-row .exp-ck svg path{
+  fill:none;stroke:#fff;stroke-width:2.6;
+  stroke-linecap:round;stroke-linejoin:round;
+  opacity:0;transition:opacity .15s ease;
+}
+#mExport .exp-cat-row.on .exp-ck svg path{opacity:1;}
+#mExport .exp-cat-row .exp-name{flex:1;font-size:13.5px;color:#1a1a1a;font-weight:300;letter-spacing:.5px;}
+#mExport .exp-cat-row .exp-count{font-size:11px;color:#ccc;font-family:Georgia,serif;flex:none;}
+#mExport .acts{padding-top:14px;border-top:0.6px dashed #ececec;}
+#mExport .acts button{
+  width:100%;padding:13px 0;border-radius:22px;
+  font-size:13px;font-family:inherit;letter-spacing:2px;
+  cursor:pointer;background:#1a1a1a;color:#fff;border:none;
+}
+#mExport .acts button:active{opacity:.85;}
+
 /* ===== #mDivine · 方案A 极简细线 ===== */
 #mDivine .sheet{
   position:relative;z-index:1;
@@ -2348,9 +3393,147 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 }
 /* 分类底部弹出面板 */
 .cat-panel-mask{
-  position:fixed;inset:0;background:transparent;
+  position:fixed;inset:0;
+  background:var(--mask-bg);
+  backdrop-filter:var(--mask-blur);
+  -webkit-backdrop-filter:var(--mask-blur);
   display:none;align-items:flex-end;justify-content:center;z-index:400;
 }
+.cat-panel-mask.show{display:flex}
+
+/* ===== 回收站 · 全屏桌面（方案 C） ===== */
+#cardTrashMask{
+  align-items:flex-start !important;
+  justify-content:flex-start !important;
+  padding:0 !important;
+  background:#ffffff !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  z-index:600 !important;
+}
+.trash-desk{
+  width:100%;
+  height:100%;
+  max-width:520px;
+  margin:0 auto;
+  position:relative;
+  background:#ffffff;
+  display:flex;
+  flex-direction:column;
+}
+.trash-desk-inner{
+  flex:1;
+  overflow-y:auto;
+  padding:20px 22px 120px;
+  scrollbar-width:none;
+}
+.trash-desk-inner::-webkit-scrollbar{display:none}
+.trash-top{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:0 0 16px;
+}
+.trash-back{
+  width:38px;height:38px;flex:none;
+  border:none;background:transparent;
+  color:#1a1a1a;font-size:22px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 0 4px;font-family:inherit;cursor:pointer;
+  opacity:.55;transition:opacity .18s ease;
+}
+.trash-back:active{opacity:1}
+.trash-title{
+  flex:1;
+  text-align:center;
+  font-size:15px;
+  font-weight:300;
+  letter-spacing:6px;
+  color:#1a1a1a;
+  -webkit-text-stroke:0.15px #1a1a1a;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+.trash-all{
+  width:38px;flex:none;
+  font-size:12px;color:#1a1a1a;letter-spacing:1px;
+  text-align:right;cursor:pointer;
+  -webkit-font-smoothing:antialiased;
+}
+.trash-list{padding:16px 0 10px}
+.trash-list .trash-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:14px 2px;
+  border-bottom:0.6px dashed rgba(0,0,0,.06);
+  cursor:pointer;
+}
+.trash-list .trash-item:last-child{border-bottom:none}
+
+/* 字卡列表同款勾选圈 */
+.trash-list .trash-ck{
+  width:18px;height:18px;flex:none;border-radius:50%;
+  border:1.4px solid rgba(0,0,0,.42);
+  background:#ffffff;
+  display:flex;align-items:center;justify-content:center;
+  margin-top:7px;
+  box-sizing:border-box;
+  transition:background .15s ease, border-color .15s ease;
+}
+.trash-list .trash-item.sel .trash-ck{
+  background:#1a1a1a;
+  border-color:#1a1a1a;
+}
+.trash-list .trash-ck svg{width:11px;height:11px;display:block}
+.trash-list .trash-ck svg path{
+  fill:none;
+  stroke:#ffffff;
+  stroke-width:2.4;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  opacity:0;
+  transition:opacity .15s ease;
+}
+.trash-list .trash-item.sel .trash-ck svg path{opacity:1}
+
+.trash-list .trash-main{flex:1;min-width:0}
+.trash-list .trash-tt{
+  font-size:13.5px;color:#1a1a1a;line-height:1.6;
+  font-weight:300;word-break:break-word;
+}
+.trash-list .trash-sb{
+  font-size:10.5px;color:#bbb;margin-top:5px;letter-spacing:.3px;
+}
+
+/* 底部浮条 */
+.trash-acts{
+  position:absolute;
+  left:50%;transform:translateX(-50%);
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  max-width:380px;width:calc(100% - 44px);
+  padding:10px;
+  background:rgba(255,255,255,.96);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:0.7px solid rgba(0,0,0,.08);
+  border-radius:22px;
+  display:flex;gap:8px;
+  box-shadow:0 8px 24px rgba(0,0,0,.08);
+  z-index:2;
+}
+.trash-acts button{
+  flex:1;padding:11px 0;border-radius:16px;
+  font-size:12.5px;font-family:inherit;letter-spacing:1.5px;cursor:pointer;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+.trash-acts .primary{background:#1a1a1a;color:#fff;border:none}
+.trash-acts .primary:active{opacity:.85}
+.trash-acts .ghost{
+  background:transparent;
+  border:0.7px solid rgba(0,0,0,.12);
+  color:#1a1a1a;
+}
+.trash-acts .ghost:active{background:#fafafa}
 .cat-panel-mask.show{display:flex}
 .cat-panel{
   width:100%;max-width:460px;background:#ffffff;
@@ -2444,7 +3627,49 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .chk-row.on .ck{background:var(--th-accent);border-color:var(--th-accent)}
 .chk-row .nm{flex:1;font-size:12.5px;color:var(--th-text)}
 
-.confirm-sheet{position:relative;z-index:1;width:100%;max-width:340px;background:var(--th-card);border-radius:20px;border:1.5px solid var(--th-accent-line);overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.75);animation:pop .24s cubic-bezier(.22,1,.36,1);padding:22px 20px 18px;text-align:center}
+/* ===== 确认删除弹窗 · 和清空聊天记录同款 ===== */
+.confirm-clear-sheet{
+  position:relative;z-index:1;
+  width:100%;max-width:300px;
+  background:#ffffff;
+  border-radius:16px;
+  box-shadow:0 2px 14px rgba(0,0,0,.05);
+  padding:24px 22px 20px;
+  text-align:center;
+  animation:pop .24s cubic-bezier(.22,1,.36,1);
+}
+.confirm-clear-sheet .cc-ic{
+  width:44px;height:44px;border-radius:12px;
+  background:#f7f7f7;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px;
+}
+.confirm-clear-sheet .cc-ic svg{
+  width:20px;height:20px;
+  stroke:#1a1a1a;fill:none;stroke-width:1.3;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+.confirm-clear-sheet .cc-tt{
+  font-size:15px;font-weight:400;letter-spacing:3px;
+  color:#1a1a1a;text-indent:3px;
+}
+.confirm-clear-sheet .cc-sb{
+  font-size:12px;color:#999;line-height:1.75;letter-spacing:.5px;
+  margin-top:12px;font-weight:300;
+}
+.confirm-clear-sheet .cc-sb b{color:#1a1a1a;font-weight:400}
+.confirm-clear-sheet .cc-acts{display:flex;gap:10px;margin-top:26px}
+.confirm-clear-sheet .cc-acts button{
+  flex:1;padding:12px 0;border-radius:10px;
+  font-size:13px;font-family:inherit;letter-spacing:2px;text-indent:2px;
+  cursor:pointer;border:none;font-weight:300;
+}
+.confirm-clear-sheet .cc-cancel{
+  background:transparent;border:0.7px solid rgba(0,0,0,.12);color:#999;
+}
+.confirm-clear-sheet .cc-ok{
+  background:#1a1a1a;color:#fff;font-weight:400;
+}
 /* ===== 删除好友弹窗 · 方案3 头像横向版 ===== */
 .del-dlg{position:relative;z-index:1;width:100%;max-width:340px;background:#ffffff !important;border:0.7px solid rgba(0,0,0,.08) !important;border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.18);padding:22px 20px 16px;text-align:left;animation:pop .28s cubic-bezier(.22,1,.36,1);box-sizing:border-box}
 
@@ -5434,6 +6659,99 @@ body[data-bubble="custom"] .preview-bubble{
   pointer-events:auto;
 }
 .col-item .col-del:active{color:#1a1a1a;background:#f5f5f5}
+
+/* ===== 收藏页 · 筛选栏 ===== */
+.col-filter-row{
+  display:flex;
+  gap:18px;
+  padding:4px 0 14px;
+  border-bottom:0.6px dashed #f0f0f0;
+  margin-bottom:6px;
+}
+.col-filter{
+  background:transparent;
+  border:none;
+  font-size:12.5px;
+  color:#bbb;
+  letter-spacing:1.5px;
+  padding:4px 0;
+  font-family:inherit;
+  font-weight:300;
+  cursor:pointer;
+  position:relative;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  transition:color .18s ease;
+}
+.col-filter.on{
+  color:#1a1a1a;
+  font-weight:400;
+}
+.col-filter.on::after{
+  content:"";
+  position:absolute;
+  left:50%;bottom:-2px;
+  transform:translateX(-50%);
+  width:16px;height:1.5px;
+  background:#1a1a1a;
+  border-radius:2px;
+}
+
+/* ===== 收藏页 · 备注行 ===== */
+.col-note{
+  font-size:11.5px;
+  color:#999;
+  letter-spacing:.5px;
+  line-height:1.7;
+  margin-top:6px;
+  padding:6px 10px 6px 10px;
+  background:rgba(0,0,0,.025);
+  border-radius:8px;
+  word-break:break-word;
+  white-space:pre-wrap;
+  cursor:pointer;
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  transition:background .18s ease;
+}
+.col-note:active{background:rgba(0,0,0,.05)}
+.col-note.empty{
+  color:#ccc;
+  font-style:italic;
+  background:transparent;
+  padding-left:0;
+}
+.col-note-txt{display:inline}
+
+/* ===== 收藏页 · 长按出现的分享按钮 ===== */
+.col-item .col-share{
+  position:absolute;
+  top:14px;
+  right:28px;
+  width:22px;
+  height:22px;
+  border:none;
+  background:transparent;
+  color:#bbb;
+  font-size:13px;
+  cursor:pointer;
+  font-family:inherit;
+  padding:0;
+  border-radius:50%;
+  opacity:0;
+  transform:scale(.7);
+  pointer-events:none;
+  transition:opacity .18s ease, transform .18s ease;
+  z-index:3;
+}
+.col-item.show-del .col-share{
+  opacity:1;
+  transform:scale(1);
+  pointer-events:auto;
+}
+.col-item .col-share:active{color:#1a1a1a;background:#f5f5f5}
+
 .col-empty{
   text-align:center;
   color:#bbb;
@@ -5443,6 +6761,70 @@ body[data-bubble="custom"] .preview-bubble{
   letter-spacing:.5px;
   font-weight:300;
 }
+
+/* ===== 收藏页 · 右侧常驻按钮 ===== */
+.col-item{position:relative;padding-right:78px}
+.col-act-wrap{
+  position:absolute;
+  top:14px;
+  right:0;
+  display:flex;
+  gap:4px;
+  align-items:center;
+  flex:none;
+}
+.col-act-btn{
+  width:24px;
+  height:24px;
+  border:none;
+  background:transparent;
+  color:#bbb;
+  font-size:13px;
+  cursor:pointer;
+  font-family:inherit;
+  padding:0;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:color .18s ease, background .18s ease;
+}
+.col-act-btn:active{color:#1a1a1a;background:#f5f5f5}
+.col-act-btn.col-del{color:#ccc}
+.col-act-btn.col-del:active{color:#1a1a1a}
+
+/* ===== 收藏页 · 多选模式 ===== */
+.col-item.sel-mode{padding-left:34px}
+.col-item.sel-mode::before{
+  content:"";
+  position:absolute;
+  left:2px;
+  top:22px;
+  width:18px;
+  height:18px;
+  border-radius:6px;
+  border:1.5px solid rgba(0,0,0,.18);
+  background:transparent;
+  transition:background .15s ease, border-color .15s ease;
+}
+.col-item.sel-mode.selected::before{
+  content:"✓";
+  background:#1a1a1a;
+  border-color:#1a1a1a;
+  color:#fff;
+  font-size:12px;
+  line-height:18px;
+  text-align:center;
+}
+.col-item.sel-mode .col-act-wrap{display:none}
+.col-item.sel-mode .col-note{pointer-events:none}
+
+/* 多选工具条：默认隐藏，进入多选时显示 */
+#colSelBar{display:none}
+#colSelBar.show{display:flex}
+
+/* 我的收藏：✕ 已改为常驻按钮，干掉旧的 hover 逻辑 */
+.col-item .col-del{opacity:1 !important;transform:none !important;pointer-events:auto !important}
 /* 消息长按菜单里的「收藏」项 */
 .msg-menu .it.collect-item{color:#1a1a1a;font-weight:600}
 /* ===== 拍一拍 ===== */
@@ -6966,6 +8348,62 @@ window.__APP_VERSION__ = '1.0.2';
       </div><!-- /split-main -->
     </div><!-- /#page-chat -->
 
+    <div class="page" id="page-calendar">
+      <div class="cal-page-wrap">
+
+        <!-- ===== 大卡片 ===== -->
+        <div class="big-card" id="calBigCard">
+          <div class="bc-head">
+            <div class="bc-date-wrap">
+              <span class="bc-date" id="calBigDate">--月--日</span>
+              <small id="calBigWeek">---</small>
+            </div>
+            <div class="bc-time" id="calBigTime">--:--<small id="calBigAmpm"></small></div>
+          </div>
+
+          <div class="bc-lunar" id="calBigLunar">
+            <svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 8l7-5 7 5"/><path d="M5 16l7 5 7-5"/></svg>
+            <span id="calBigLunarText">农历 —</span>
+          </div>
+
+          <div class="bc-weather" id="calBigWeather">
+            <div class="bc-w-ico" id="calBigWIcon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>
+            </div>
+            <div class="bc-w-txt">
+              <div class="bc-w-main" id="calBigWMain">天气加载中…</div>
+              <div class="bc-w-sub" id="calBigWSub">正在获取定位</div>
+            </div>
+            <button class="bc-w-refresh" id="calBigWRefresh" type="button" title="刷新天气">
+              <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 4 21 10 15 10"/></svg>
+            </button>
+          </div>
+
+          <div class="bc-events" id="calBigEvents"></div>
+        </div>
+
+        <!-- ===== 月历 ===== -->
+        <div class="cal-head">
+          <button class="cal-arrow" id="calPrevMonth" type="button">
+            <svg viewBox="0 0 24 24"><polyline points="15,6 9,12 15,18"/></svg>
+          </button>
+          <div class="cal-title" id="calTitle">— 月<small id="calTitleYear">----</small></div>
+          <button class="cal-arrow" id="calNextMonth" type="button">
+            <svg viewBox="0 0 24 24"><polyline points="9,6 15,12 9,18"/></svg>
+          </button>
+        </div>
+
+        <div class="cal-grid" id="calGrid"></div>
+
+        <!-- ===== 本月事件 ===== -->
+        <div class="cal-events">
+          <div class="ce-head">This Month</div>
+          <div id="calMonthEvents"></div>
+        </div>
+
+      </div>
+    </div><!-- /#page-calendar -->
+
     <div class="page" id="page-desk">
 	  <div class="desk-top"><div class="desk-title">功 能 页<small>FUNCTIONS</small></div><div class="desk-clock" id="deskClock">--:--</div></div>
 	  <div class="desk-grid">
@@ -7178,6 +8616,13 @@ window.__APP_VERSION__ = '1.0.2';
     <div class="memo-tabs" id="colTabs">
       <div class="memo-tab on" data-col-tab="mine" id="colTabMine">我的收藏</div>
       <div class="memo-tab" data-col-tab="theirs" id="colTabTheirs">Ta 的收藏</div>
+    </div>
+    <div class="sel-bar" id="colSelBar">
+      <div class="sel-count" id="colSelCountWrap">已选 <b id="colSelCount">0</b> 条</div>
+      <button class="sel-btn" id="colSelAllBtn" type="button">全选</button>
+      <button class="sel-btn" id="colSelCopyBtn" type="button">复制</button>
+      <button class="sel-btn danger" id="colSelDelBtn" type="button">删除</button>
+      <button class="sel-btn" id="colSelCancelBtn" type="button">取消</button>
     </div>
     <div class="col-body" id="colBody"></div>
   </div>
@@ -7393,6 +8838,29 @@ window.__APP_VERSION__ = '1.0.2';
   </div>
 </div>
 
+<!-- ============ 编辑桌面 ============ -->
+<div class="screen" id="deskEditScreen">
+  <div class="de-wrap">
+
+    <div class="de-top">
+      <button class="de-back" id="deBack" type="button">‹</button>
+      <div class="de-title">编 辑 桌 面</div>
+      <div class="de-top-right"></div>
+    </div>
+
+    <div class="de-tabs" id="deTabs">
+      <button class="de-tab on" data-de-tab="date" type="button">日 期</button>
+      <button class="de-tab" data-de-tab="todo" type="button">待 办</button>
+      <button class="de-tab" data-de-tab="weather" type="button">天 气</button>
+      <button class="de-tab" data-de-tab="role" type="button">角 色</button>
+      <button class="de-tab" data-de-tab="setting" type="button">设 置</button>
+    </div>
+
+    <div class="de-body" id="deBody"></div>
+
+  </div>
+</div>
+
 <!-- ============ 群聊列表 ============ -->
 <div class="screen" id="groupListScreen">
   <div class="gc-top">
@@ -7594,16 +9062,19 @@ window.__APP_VERSION__ = '1.0.2';
 
 <!-- 字卡回收站 -->
 <div class="cat-panel-mask" id="cardTrashMask">
-  <div class="cat-panel" style="max-height:75vh;display:flex;flex-direction:column">
-    <div class="cp-title" style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;border-bottom:0.7px solid #f0f0f0">
-      <span>回收站</span>
-      <span id="cardTrashAll" style="font-size:11.5px;color:#1a1a1a;cursor:pointer;letter-spacing:1px">全选 / 取消</span>
+  <div class="trash-desk">
+    <div class="trash-desk-inner">
+      <div class="trash-top">
+        <button class="trash-back" id="cardTrashBack" type="button">‹</button>
+        <div class="trash-title">回 收 站</div>
+        <div class="trash-all" id="cardTrashAll">全选</div>
+      </div>
+      <div class="trash-list" id="cardTrashList"></div>
     </div>
-    <div id="cardTrashList" style="flex:1;overflow-y:auto;padding:4px 18px 10px;scrollbar-width:none"></div>
-    <div style="display:flex;gap:8px;padding:12px 18px calc(14px + env(safe-area-inset-bottom));border-top:0.7px solid #f0f0f0;flex:none">
-      <button id="cardTrashRestore" type="button" style="flex:1;padding:11px 0;border-radius:12px;border:0.7px solid rgba(0,0,0,.14);background:transparent;color:#1a1a1a;font-size:13px;font-family:inherit;letter-spacing:1px;cursor:pointer">还原</button>
-      <button id="cardTrashDelete" type="button" style="flex:1;padding:11px 0;border-radius:12px;border:none;background:#1a1a1a;color:#fff;font-size:13px;font-family:inherit;letter-spacing:1px;cursor:pointer">彻底删除</button>
-      <button id="cardTrashClear" type="button" style="flex:1;padding:11px 0;border-radius:12px;border:0.7px solid rgba(0,0,0,.14);background:transparent;color:#999;font-size:13px;font-family:inherit;letter-spacing:1px;cursor:pointer">清空</button>
+    <div class="trash-acts">
+      <button id="cardTrashRestore" type="button" class="primary">还 原</button>
+      <button id="cardTrashDelete" type="button" class="ghost">彻底删除</button>
+      <button id="cardTrashClear" type="button" class="ghost">清 空</button>
     </div>
   </div>
 </div>
@@ -7613,28 +9084,28 @@ window.__APP_VERSION__ = '1.0.2';
 	<div class="sheet-head"><h3>排序方式</h3><button class="x" data-close>✕</button></div>
 	<div class="sheet-body">
 	  <div class="sort-opt" id="sortAz" data-sort="az">
-		<div class="chk"></div>
+		<div class="chk"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
 		<div class="opt-main">
 		  <div class="opt-title">字母 A → Z</div>
 		  <div class="opt-sub">按首字拼音/字母升序排列</div>
 		</div>
 	  </div>
 	  <div class="sort-opt" id="sortZa" data-sort="za">
-		<div class="chk"></div>
+		<div class="chk"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
 		<div class="opt-main">
 		  <div class="opt-title">字母 Z → A</div>
 		  <div class="opt-sub">按首字拼音/字母降序排列</div>
 		</div>
 	  </div>
 	  <div class="sort-opt" id="sortNewest" data-sort="newest">
-		<div class="chk"></div>
+		<div class="chk"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
 		<div class="opt-main">
 		  <div class="opt-title">最新在前</div>
 		  <div class="opt-sub">最近添加的排在最上面</div>
 		</div>
 	  </div>
 	  <div class="sort-opt" id="sortOldest" data-sort="oldest">
-		<div class="chk"></div>
+		<div class="chk"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
 		<div class="opt-main">
 		  <div class="opt-title">最旧在前</div>
 		  <div class="opt-sub">最早添加的排在最上面</div>
@@ -7717,11 +9188,14 @@ window.__APP_VERSION__ = '1.0.2';
 
 <div class="modal" id="mConfirmDel">
   <div class="overlay" data-close></div>
-  <div class="confirm-sheet">
-	<div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg></div>
-	<div class="tt">确认删除？</div>
-	<div class="sb" id="confirmDelText">将删除 <b>0</b> 条字卡，删除后无法恢复。</div>
-	<div class="acts"><button class="cancel-btn" data-close>取 消</button><button class="ok-btn" id="confirmDelOk">删 除</button></div>
+  <div class="confirm-clear-sheet">
+    <div class="cc-ic"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg></div>
+    <div class="cc-tt">确认删除？</div>
+    <div class="cc-sb" id="confirmDelText">将删除 <b>0</b> 条字卡。<br>（30 天内可在回收站还原）</div>
+    <div class="cc-acts">
+      <button class="cc-cancel" data-close type="button">取 消</button>
+      <button class="cc-ok" id="confirmDelOk" type="button">删 除</button>
+    </div>
   </div>
 </div>
 
@@ -8623,15 +10097,15 @@ window.__APP_VERSION__ = '1.0.2';
 </div>
 <div class="modal" id="mExport">
   <div class="overlay" data-close></div>
-  <div class="sheet">
+  <div class="sheet" id="expSheet">
 	<div class="sheet-head"><h3>导出字卡</h3><button class="x" data-close>✕</button></div>
 	<div class="sheet-body">
-	  <div style="display:flex;align-items:center;justify-content:space-between;margin:2px 0 6px">
-		<span style="font-size:13px;color:#999">选择分组 / 分类</span>
-		<span style="font-size:12px;color:#1a1a1a;cursor:pointer" id="expToggleAll">全选 / 取消全选</span>
+	  <div class="sub-row" id="expSubRow">
+		<span>选择要导出的分类</span>
+		<span class="all" id="expToggleAll">全选 / 取消全选</span>
 	  </div>
-	  <div id="expGroupList" style="margin-top:6px"></div>
-	  <button class="primary-btn" id="btnExportOk">导 出</button>
+	  <div id="expCatList" class="exp-cat-list"></div>
+	  <div class="acts"><button id="btnExportOk" type="button">导 出</button></div>
 	</div>
   </div>
 </div>
@@ -9009,12 +10483,6 @@ const DEFAULT_CARD_GROUPS = [
 	  '我在呢','一直都在','陪你','陪着你','不走','不离开','会一直在','有我在','别怕','我陪你',
 	  '一起吧','和你一起','站你这边','向着你','只对你好',
 	  '好','嗯','哦','欸','咦','呀','哇','啊','嘿','哈','唔','诶嘿','好嘛','行吧','可以'
-	] },
-	{ id:'cl1', name:'早安', list:[
-	  '早安','早呀','醒了吗','起床啦','早安，今天也要好好吃饭','醒了？我梦见你了','阳光刚好，想和你分享'
-	] },
-	{ id:'cl2', name:'晚安', list:[
-	  '晚安','晚安安','睡了吗','该睡啦','做个好梦','明天见','梦里见','闭眼啦','先睡一步','你也早点睡','晚安，想你','晚安，做个好梦','今天也辛苦了，早点休息'
 	] }
   ]},
   { id:'g-mood', name:'心情字卡', icon:'heart', sub:'角色当前心情（带颜文字）', cats:[
@@ -9062,7 +10530,7 @@ const DEFAULT_CARD_GROUPS = [
   ]},
   { id:'g-timed', name:'时间字卡', icon:'clock', sub:'按时间段自动触发的字卡（只可关分类）', cats:[
 	{ id:'ct-morning', name:'清晨', list:[
-	  '早呀','醒了没','再睡一会儿嘛','今天也要好好的','起床啦','早安，今天天气不错'
+	  '早安','早呀','醒了没','醒了吗','起床啦','再睡一会儿嘛','今天也要好好的','早安，今天也要好好吃饭','醒了？我梦见你了','阳光刚好，想和你分享','早安，今天天气不错'
 	] },
 	{ id:'ct-forenoon', name:'上午', list:[
 	  '在忙吗','摸鱼中','喝口水吧','上午好','今天事多不多','别太累了'
@@ -9076,11 +10544,8 @@ const DEFAULT_CARD_GROUPS = [
 	{ id:'ct-evening', name:'傍晚', list:[
 	  '下班了吗','回家路上小心','晚饭吃什么','傍晚了','今天累不累','快到家了'
 	] },
-	{ id:'ct-night', name:'夜晚', list:[
-	  '在干嘛呢','洗澡了吗','追剧呢','晚上好','今天过得怎么样','想和你说说话'
-	] },
-	{ id:'ct-late', name:'深夜', list:[
-	  '还没睡吗','早点休息','别熬夜了','夜深了','睡了吗','做个好梦'
+	{ id:'ct-night', name:'晚上', list:[
+	  '晚安','晚安安','睡了吗','该睡啦','做个好梦','明天见','梦里见','闭眼啦','先睡一步','你也早点睡','晚安，想你','晚安，做个好梦','今天也辛苦了，早点休息','在干嘛呢','洗澡了吗','追剧呢','晚上好','今天过得怎么样','想和你说说话','还没睡吗','早点休息','别熬夜了','夜深了'
 	] }
   ]},
   { id:'g-groupchat', name:'群聊字卡', icon:'note', sub:'群聊里角色说话时从这里抽', cats:[
@@ -9185,6 +10650,24 @@ function syncRoleCardGroups(roleId){
 
   if(changed) saveCardStore();
 }
+/* 一次性清理：把公用里的「修改字卡存放处」分组删掉（已挪到角色专属） */
+(function removePublicEditedGroup(){
+  const FLAG = 'mj_removed_public_edited_v1';
+  if(lsGet(FLAG, false)) return;
+  try{
+    if(cardStore && Array.isArray(cardStore.public)){
+      const before = cardStore.public.length;
+      cardStore.public = cardStore.public.filter(function(g){
+        return !(g && g.id === 'g-edited');
+      });
+      /* 顺便把之前写进去的内容清掉（如果用户之前存过） */
+      if(cardStore.public.length !== before){
+        saveCardStore();
+      }
+    }
+  }catch(e){ console.error('清理公用修改分组失败', e); }
+  lsSet(FLAG, true);
+})();
 function cardText(item){
   if(typeof item === 'string') return item;
   if(item && typeof item === 'object'){
@@ -9554,6 +11037,28 @@ function getGroupsByOwner(owner){
     cardStore.roles[owner] = cloned;
     saveCardStore();
   }
+  /* ★ 每个角色专属字卡的「普通字卡」下，保证「修改后的字卡」分类存在，并在第一个 */
+  (function ensureEditedCat(){
+    const arr = cardStore.roles[owner];
+    const gNormal = arr.find(function(x){ return x && x.id === 'g-normal'; });
+    if(!gNormal) return;
+    if(!Array.isArray(gNormal.cats)) gNormal.cats = [];
+    let cat = gNormal.cats.find(function(c){ return c && c.id === 'ce-edited'; });
+    let dirty = false;
+    if(!cat){
+      cat = { id: 'ce-edited', name: '修改后的字卡', list: [] };
+      gNormal.cats.unshift(cat);
+      dirty = true;
+    } else {
+      const idx = gNormal.cats.indexOf(cat);
+      if(idx > 0){
+        gNormal.cats.splice(idx, 1);
+        gNormal.cats.unshift(cat);
+        dirty = true;
+      }
+    }
+    if(dirty) saveCardStore();
+  })();
   return cardStore.roles[owner];
 }
 function isStatusGroup(g){
@@ -9578,6 +11083,43 @@ function getAllNormalCards(owner){
   return arr;
 }
 function pickCardFrom(pool){ if(!pool.length) return '嗯，我在。'; return pool[Math.floor(Math.random()*pool.length)]; }
+
+/* ============================================================
+   天气字卡 · 从「天气字卡」分组按今日天气抽一条
+   ============================================================ */
+function pickWeatherCard(){
+  /* 检查开关 */
+  if(!lsGet('mj_weather_card_on', true)) return '';
+  /* 拿今天天气 */
+  const cfg = (typeof getWeatherCfg === 'function') ? getWeatherCfg() : null;
+  if(!cfg || !cfg.cache) return '';
+  const w = cfg.cache;
+  /* 天气类型 → 分类 id */
+  let catId = 'cw-cloudy';
+  const code = Number(w.code);
+  if(code === 0) catId = 'cw-sunny';
+  else if(code >= 1 && code <= 3) catId = 'cw-cloudy';
+  else if(code === 45 || code === 48) catId = 'cw-fog';
+  else if(code >= 51 && code <= 67) catId = 'cw-rain';
+  else if(code >= 71 && code <= 77) catId = 'cw-snow';
+  else if(code >= 80 && code <= 82) catId = 'cw-rain';
+  else if(code >= 85 && code <= 86) catId = 'cw-snow';
+  else if(code >= 95 && code <= 99) catId = 'cw-storm';
+
+  /* 高温预警单独处理：温度 ≥ 35 也归高温 */
+  if(w.temp >= 35) catId = 'cw-hot';
+  /* 台风暴雨：代码 95-99 或风力 ≥ 10 */
+  if(code >= 95 && code <= 99) catId = 'cw-storm';
+
+  const g = getGroupsByOwner('public').find(x => x.id === 'g-weather');
+  if(!g || !g.cats) return '';
+  const cat = g.cats.find(c => c.id === catId);
+  if(!cat || !cat.list || !cat.list.length) return '';
+  const pool = cat.list.map(cardText).map(s => String(s).trim()).filter(Boolean);
+  if(!pool.length) return '';
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 /* 从指定分组抽卡 */
 function getCardsFromGroup(owner, groupId){
   const arr = [];
@@ -9597,6 +11139,33 @@ function pickCard(){
   const rid = getCurrentRoleId();
   const strategy = getCardStrategy(rid);
 
+  /* ★ 天气字卡优先：如果今天有天气，30% 概率直接抽天气字卡 */
+  try{
+    if(Math.random() < 0.30){
+      const wText = pickWeatherCard();
+      if(wText) return wText;
+    }
+  }catch(e){}
+
+  /* ★ 时间字卡：把当前时段分类的卡，直接并入普通字卡池一起随机抽。
+     不写回字卡库，只是抽卡时临时并入。
+     过了这个时段，getCurrentTimedSegment() 会自动指向下一个时段，
+     上一个时段分类就自动不再参与。 */
+  function getTimedSegPool(){
+    try{
+      const g = getGroupsByOwner('public').find(function(x){ return x.id === 'g-timed'; });
+      if(!g || !g.cats || !g.cats.length) return [];
+      const seg = getCurrentTimedSegment();
+      const cat = g.cats.find(function(c){ return c.id === seg.id; });
+      if(!cat) return [];
+      /* 该时段被关掉 → 不参与 */
+      if(!Array.isArray(g.disabledCats)) g.disabledCats = [];
+      if(g.disabledCats.includes(cat.id)) return [];
+      if(!cat.list || !cat.list.length) return [];
+      return cat.list.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
+    }catch(e){ return []; }
+  }
+
   /* 从池子里挑一张，池子为空则回退到兜底句 */
   function pickOrFallback(pool){
     if(pool && pool.length) return pickCardFrom(pool);
@@ -9610,29 +11179,43 @@ function pickCard(){
     return getCardsFromGroup('public', 'g-groupchat');
   }
 
-  /* 策略 A：只用群聊字卡 */
+  /* 策略 A：群聊字卡 + 当前时段字卡，等权混池 */
   if(strategy === 'A'){
-    return pickOrFallback(groupchatOf(rid));
+    const gc = groupchatOf(rid);
+    const timed = getTimedSegPool();
+    const pool = gc.concat(timed);
+    return pickOrFallback(pool);
   }
 
-  /* 策略 B：群聊字卡与角色专属字卡各半 */
+  /* 策略 B：群聊字卡 + 角色专属字卡 + 当前时段字卡，等权混池 */
   if(strategy === 'B'){
     const gc = groupchatOf(rid);
     const own = getAllNormalCards(rid);
+    const timed = getTimedSegPool();
+    let base;
     if(gc.length && own.length){
-      return Math.random() < 0.5 ? pickCardFrom(gc) : pickCardFrom(own);
+      base = gc.concat(own);
+    } else {
+      base = gc.length ? gc : own;
     }
-    return pickOrFallback(gc.length ? gc : own);
+    const pool = base.concat(timed);
+    return pickOrFallback(pool);
   }
 
-  /* 策略 C（默认）：公用与角色专属按比例混 */
+  /* 策略 C（默认）：公用 + 角色专属按比例混，再并入当前时段字卡 */
   const pub = getAllNormalCards('public');
   const role = getAllNormalCards(rid);
   const pubRate = poolRate.public ?? 0.7;
+  const timed = getTimedSegPool();
+  let base;
   if(pub.length && role.length){
-    return Math.random() < pubRate ? pickCardFrom(pub) : pickCardFrom(role);
+    /* 按 pubRate 先决定主体从哪来 */
+    base = (Math.random() < pubRate) ? pub : role;
+  } else {
+    base = pub.length ? pub : role;
   }
-  return pickOrFallback(pub.length ? pub : role);
+  const pool = base.concat(timed);
+  return pickOrFallback(pool);
 }
 
 /* ===== 时间字卡 ===== */
@@ -9643,8 +11226,7 @@ const TIMED_SEGMENTS = [
   {id:'ct-noon',      name:'午间', from:12, to:14, key:'noon'},
   {id:'ct-afternoon', name:'下午', from:14, to:18, key:'afternoon'},
   {id:'ct-evening',   name:'傍晚', from:18, to:21, key:'evening'},
-  {id:'ct-night',     name:'夜晚', from:21, to:24, key:'night'},
-  {id:'ct-late',      name:'深夜', from:0,  to:5,  key:'late'}
+  {id:'ct-night',     name:'晚上', from:21, to:5,  key:'night'}
 ];
 function getTimedRate(){
   let m = lsGet(TIMED_RATE_KEY, null);
@@ -9952,8 +11534,7 @@ const TIMED_SEGS = [
   {id:'ct-noon',      name:'午间', from:12, to:14},
   {id:'ct-afternoon', name:'下午', from:14, to:18},
   {id:'ct-evening',   name:'傍晚', from:18, to:21},
-  {id:'ct-night',     name:'夜晚', from:21, to:24},
-  {id:'ct-late',      name:'深夜', from:0,  to:5}
+  {id:'ct-night',     name:'晚上', from:21, to:5}
 ];
 
 function todayDateKey(){
@@ -10025,51 +11606,8 @@ function pickTimedCardFromSeg(segId){
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-/* 发一条时间字卡消息给指定角色 */
-function fireTimedCard(roleId, segId){
-  const text = pickTimedCardFromSeg(segId);
-  if(!text) return;
-  const msg = {
-    id: uid(),
-    role: 'char',
-    text: text,
-    time: Date.now(),
-    timedSeg: segId
-  };
-  appendMsgToRole(roleId, msg);
-}
 
-/* 每分钟 tick 一次：扫所有角色，看有没有到点的时段 */
-function runTimedCardTick(){
-  const s = getTimedSchedule();
-  const now = Date.now();
-  let changed = false;
 
-  Object.keys(s.roles).forEach(rid=>{
-    const plan = s.roles[rid] || {};
-    TIMED_SEGS.forEach(seg=>{
-      const t = plan[seg.id];
-      if(!t || t <= 0) return;
-      const fireKey = rid + '|' + seg.id;
-      if(s.fired[fireKey]) return;
-      /* 到点就发：
-         - 页面一直活着时，定时器每分钟跑一次，到点会在这里发
-         - 只有"恰好这一分钟 tick 到"才发；页面被杀掉后重启，
-           超过 1 分钟就算过期，直接标记跳过（不补发） */
-      if(now >= t && now - t < 60*1000){
-        try{ fireTimedCard(rid, seg.id); }catch(e){ console.error('时间字卡发送出错', e); }
-        s.fired[fireKey] = now;
-        changed = true;
-      } else if(now - t >= 60*1000){
-        /* 页面重启后错过：跳过，不补发 */
-        s.fired[fireKey] = now;
-        changed = true;
-      }
-    });
-  });
-
-  if(changed) saveTimedSchedule(s);
-}
 
 /* ============================================================
    关系网 · 数据层
@@ -10792,11 +12330,59 @@ function collectMsg(m){
     text: text,
     kind: collectKindOf(m),
     from: (m.role === 'user') ? 'user' : 'char',
-    time: Date.now()
+    time: Date.now(),
+    note: '',            /* ★ 我的备注 */
+    noteCollapsed: false /* ★ 备注是否收起 */
   });
   if(arr.length > 500) arr.length = 500;
   setCollectMine(rid, arr);
   toast('已收藏');
+}
+
+/* ===== 收藏备注 · 生成与更新 ===== */
+
+/* 从「公用 + 角色专属」的普通字卡池里抽 N 条拼成备注（N ∈ 1~10 随机） */
+function buildRoleNoteText(roleId){
+  const pub  = getAllNormalCards('public');
+  const own  = getAllNormalCards(roleId);
+  const pool = own.concat(pub);
+  if(!pool.length) return '';
+  const n = 1 + Math.floor(Math.random() * 10);   /* 1~10 条 */
+  const picked = [];
+  for(let i = 0; i < n; i++){
+    picked.push(pool[Math.floor(Math.random() * pool.length)]);
+  }
+  return picked.join('');
+}
+
+/* Ta 的收藏：角色给自己的收藏逐条生成备注（65% 概率有） */
+function buildTheirsNotes(roleId){
+  const arr = getCollectTheirs(roleId);
+  let changed = false;
+  arr.forEach(function(it){
+    if(typeof it.note !== 'string'){
+      it.note = '';
+      changed = true;
+    }
+    if(it.note === '' && !it.noteRolled){
+      it.noteRolled = true;
+      changed = true;
+      if(Math.random() < 0.65){
+        it.note = buildRoleNoteText(roleId);
+      }
+    }
+  });
+  if(changed) setCollectTheirs(roleId, arr);
+}
+
+/* 用户更新自己的备注 */
+function updateCollectNote(roleId, itemId, note){
+  const arr = getCollectMine(roleId);
+  const it = arr.find(function(x){ return x.id === itemId; });
+  if(!it) return false;
+  it.note = String(note || '');
+  setCollectMine(roleId, arr);
+  return true;
 }
 
 /* 抽一条消息的可收藏文本 */
@@ -10833,6 +12419,10 @@ function runTheirsCollectTick(){
   ids.forEach(function(rid){
     const role = getRoleById(rid);
     if(!role || role.hidden) return;
+
+    /* 先给已有的旧收藏补一遍备注（幂等） */
+    try{ buildTheirsNotes(rid); }catch(e){}
+
     if(Math.random() >= 0.05) return;   /* 5% 概率 */
     /* 从和这个角色的聊天记录里找一条我发的、有文字的 */
     const key = 'mj_msgs_' + rid;
@@ -10844,13 +12434,18 @@ function runTheirsCollectTick(){
     const text = extractCollectText(pick);
     const list = getCollectTheirs(rid);
     if(list.some(x => x.msgId === pick.id)) return;
+    /* ★ 65% 概率带角色备注 */
+    const note = (Math.random() < 0.65) ? buildRoleNoteText(rid) : '';
     list.unshift({
       id: uid(),
       msgId: pick.id,
       text: text,
       kind: collectKindOf(pick),
       from: (pick.role === 'user') ? 'user' : 'char',
-      time: Date.now()
+      time: Date.now(),
+      note: note,
+      noteRolled: true,
+      noteCollapsed: false
     });
     if(list.length > 500) list.length = 500;
     setCollectTheirs(rid, list);
@@ -10858,24 +12453,92 @@ function runTheirsCollectTick(){
 }
 setInterval(function(){ try{ runTheirsCollectTick(); }catch(e){ console.error('Ta 收藏 tick 出错', e); } }, 30 * 60 * 1000);
 
+/* ===== 收藏页 · 筛选状态 ===== */
+let colFilterFrom = 'all';   /* all / me / char */
+
 /* 打开收藏页 */
 function openCollectScreen(){
   showScreen('collectScreen');
   renderCollectScreen('mine');
 }
+let colSelMode = false;
+let colSelSet = new Set();
+let colSelTab = 'mine';
+
+function colExitSelMode(){
+  colSelMode = false;
+  colSelSet = new Set();
+  const bar = document.getElementById('colSelBar');
+  if(bar) bar.classList.remove('show');
+  const body = document.getElementById('colBody');
+  if(body){
+    body.querySelectorAll('.col-item.sel-mode').forEach(function(el){
+      el.classList.remove('sel-mode','selected');
+    });
+  }
+}
+function colUpdateSelCount(){
+  const el = document.getElementById('colSelCount');
+  if(el) el.textContent = colSelSet.size;
+  const body = document.getElementById('colBody');
+  const total = body ? body.querySelectorAll('.col-item').length : 0;
+  const b = document.getElementById('colSelAllBtn');
+  if(b) b.textContent = (colSelSet.size === total && total > 0) ? '取消全选' : '全选';
+}
+function colEnterSelMode(){
+  colSelMode = true;
+  colSelSet = new Set();
+  const bar = document.getElementById('colSelBar');
+  if(bar) bar.classList.add('show');
+  const body = document.getElementById('colBody');
+  if(body){
+    body.querySelectorAll('.col-item').forEach(function(el){
+      el.classList.add('sel-mode');
+      el.classList.remove('selected');
+    });
+  }
+  colUpdateSelCount();
+}
+
 function renderCollectScreen(tab){
   const body = document.getElementById('colBody');
   if(!body) return;
+  colSelTab = tab;
+
+  /* 切 tab 时退出多选 */
+  colExitSelMode();
+
   const rid = getCurrentRoleId();
   const roleName = getCurrentRoleName();
   /* ★ 更新「Ta 的收藏」tab 文字，跟随角色名 */
   const tabTheirs = document.getElementById('colTabTheirs');
   if(tabTheirs) tabTheirs.textContent = roleName + ' 的收藏';
-  const list = (tab === 'mine') ? getCollectMine(rid) : getCollectTheirs(rid);
+
+  /* ★ Ta 的收藏：渲染前补一遍备注（幂等） */
+  if(tab !== 'mine'){ try{ buildTheirsNotes(rid); }catch(e){} }
+
+  let list = (tab === 'mine') ? getCollectMine(rid) : getCollectTheirs(rid);
+
+  /* ★ 按发送者筛选 */
+  if(colFilterFrom === 'me'){
+    list = list.filter(function(it){ return it.from === 'user'; });
+  } else if(colFilterFrom === 'char'){
+    list = list.filter(function(it){ return it.from !== 'user'; });
+  }
+
+  /* ★ 渲染筛选栏（放在正文最前面） */
+  const filterBarHTML =
+    '<div class="col-filter-row" id="colFilterRow">' +
+      '<button class="col-filter' + (colFilterFrom === 'all'  ? ' on' : '') + '" data-cf="all"  type="button">全部</button>' +
+      '<button class="col-filter' + (colFilterFrom === 'me'   ? ' on' : '') + '" data-cf="me"   type="button">只看我</button>' +
+      '<button class="col-filter' + (colFilterFrom === 'char' ? ' on' : '') + '" data-cf="char" type="button">只看 Ta</button>' +
+    '</div>';
+
   if(!list.length){
-    body.innerHTML = '<div class="col-empty">' +
+    body.innerHTML = filterBarHTML + '<div class="col-empty">' +
       (tab === 'mine' ? '还没有收藏的消息<br>长按任意消息 → 收藏' : 'Ta 还没有收藏过你的消息') +
       '</div>';
+    bindColFilterBar(body);
     return;
   }
 
@@ -10883,7 +12546,7 @@ function renderCollectScreen(tab){
   const avRadius = (beautyCfg.avatarShape === 'circle') ? '50%' : '12%';
   const role = getRole();
 
-  body.innerHTML = list.map(function(it){
+  body.innerHTML = filterBarHTML + list.map(function(it){
     const d = new Date(it.time);
     const stamp = d.getFullYear() + '-' +
       String(d.getMonth()+1).padStart(2,'0') + '-' +
@@ -10891,83 +12554,346 @@ function renderCollectScreen(tab){
       String(d.getHours()).padStart(2,'0') + ':' +
       String(d.getMinutes()).padStart(2,'0');
 
-    /* ★ 按发出者决定头像：char = 对方，user = 我 */
-    /* 老数据没有 from 字段时，兜底显示对方头像 */
     const isFromUser = (it.from === 'user');
     const avHTML = isFromUser
       ? userAvHTML(userProfile.avatar)
       : avatarHTML(role.avatar);
 
+    /* 备注行不再需要点击，改成按钮 */
+    const noteText = it.note ? String(it.note) : '';
+    const collapsed = !!it.noteCollapsed;
+    const noteDisplay = noteText
+      ? (collapsed ? '备注 ▸' : ('备注：' + escapeHTML(noteText) + ' ▾'))
+      : '点我写备注';
+    const noteLine =
+      '<div class="col-note' + (noteText ? '' : ' empty') + '" data-note-row="' + it.id + '">' +
+        '<span class="col-note-txt" data-note-edit="' + it.id + '">' + noteDisplay + '</span>' +
+      '</div>';
+
+    /* 默认状态下，右侧常驻：分享 + 备注 + ✕（仅我的收藏有 ✕） */
+    const actBtns =
+      '<button class="col-act-btn col-share" data-share="' + it.id + '" type="button" title="分享">↗</button>' +
+      '<button class="col-act-btn col-note-btn" data-note-btn="' + it.id + '" type="button" title="备注">✎</button>' +
+      (tab === 'mine' ? '<button class="col-act-btn col-del" data-del="' + it.id + '" type="button" title="删除">✕</button>' : '');
+
     return '<div class="col-item" data-id="' + it.id + '">' +
       '<div class="col-av" style="border-radius:' + avRadius + '">' + avHTML + '</div>' +
       '<div class="col-main">' +
         '<div class="col-txt">' + escapeHTML(it.text) + '</div>' +
+        noteLine +
         '<div class="col-meta">' + escapeHTML(stamp) + '</div>' +
       '</div>' +
-      (tab === 'mine' ? '<button class="col-del" data-del="' + it.id + '" type="button">✕</button>' : '') +
+      '<div class="col-act-wrap">' + actBtns + '</div>' +
     '</div>';
   }).join('');
 
-  /* 我的收藏：支持删除 + 长按显示 ✕ */
-  if(tab === 'mine'){
-    body.querySelectorAll('[data-del]').forEach(function(btn){
-      btn.onclick = function(e){
-        e.stopPropagation();
-        const id = btn.dataset.del;
-        if(!confirm('删除这条收藏？')) return;
-        const arr = getCollectMine(rid).filter(x => x.id !== id);
-        setCollectMine(rid, arr);
-        renderCollectScreen('mine');
-        toast('已删除');
-      };
-    });
+  bindColFilterBar(body);
+  bindColNoteEvents(body, tab);
 
-    /* ★ 长按显示 ✕ */
-    body.querySelectorAll('.col-item').forEach(function(el){
-      let pressTimer = null;
-      let startX = 0, startY = 0;
+  /* 删除：直接从列表里删掉 */
+  body.querySelectorAll('[data-del]').forEach(function(btn){
+    btn.onclick = function(e){
+      e.stopPropagation();
+      const id = btn.dataset.del;
+      if(!confirm('删除这条收藏？')) return;
+      const arr = getCollectMine(rid).filter(x => x.id !== id);
+      setCollectMine(rid, arr);
+      renderCollectScreen('mine');
+      toast('已删除');
+    };
+  });
 
-      function onStart(e){
-        const p = e.touches ? e.touches[0] : e;
-        startX = p.clientX; startY = p.clientY;
-        el.classList.add('press');
-        clearTimeout(pressTimer);
-        pressTimer = setTimeout(function(){
-          body.querySelectorAll('.col-item.show-del').forEach(function(o){
-            if(o !== el) o.classList.remove('show-del');
-          });
-          el.classList.add('show-del');
-          if(navigator.vibrate) navigator.vibrate(10);
-        }, 500);
-      }
-      function onMove(e){
-        const p = e.touches ? e.touches[0] : e;
-        if(Math.abs(p.clientX - startX) > 8 || Math.abs(p.clientY - startY) > 8){
-          clearTimeout(pressTimer);
-          el.classList.remove('press');
+  /* 分享：走原来的 shareCollectItem */
+  body.querySelectorAll('[data-share]').forEach(function(btn){
+    btn.onclick = function(e){
+      e.stopPropagation();
+      shareCollectItem(btn.dataset.share);
+    };
+  });
+
+  /* 备注按钮：点它 = 弹备注编辑框 */
+  body.querySelectorAll('[data-note-btn]').forEach(function(btn){
+    btn.onclick = function(e){
+      e.stopPropagation();
+      const id = btn.dataset.noteBtn;
+      if(tab !== 'mine'){ toast('只能修改自己的备注'); return; }
+      const arr = getCollectMine(rid);
+      const it = arr.find(function(x){ return x.id === id; });
+      if(!it) return;
+      uniAsk({
+        title: '备注',
+        sub: 'NOTE · 留空 = 删除备注',
+        value: it.note || '',
+        placeholder: '写点什么…'
+      }).then(function(v){
+        if(v === null) return;
+        const ok = updateCollectNote(rid, id, String(v).trim());
+        if(ok){
+          const activeTab = document.querySelector('#colTabs .memo-tab.on');
+          renderCollectScreen(activeTab ? activeTab.dataset.colTab : 'mine');
+          toast('已保存');
         }
-      }
-      function onEnd(){
+      });
+    };
+  });
+
+  /* ★ 长按条目 → 进入多选模式（跟字卡一样） */
+  body.querySelectorAll('.col-item').forEach(function(el){
+    let pressTimer = null;
+    let startX = 0, startY = 0;
+    let longPressed = false;
+
+    function onStart(e){
+      if(colSelMode) return;   /* 已经在多选中，不再触发长按 */
+      const p = e.touches ? e.touches[0] : e;
+      startX = p.clientX; startY = p.clientY;
+      el.classList.add('press');
+      longPressed = false;
+      clearTimeout(pressTimer);
+      pressTimer = setTimeout(function(){
+        longPressed = true;
+        colEnterSelMode();
+        const id = el.dataset.id;
+        colSelSet.add(id);
+        el.classList.add('selected');
+        colUpdateSelCount();
+        if(navigator.vibrate) navigator.vibrate(15);
+      }, 500);
+    }
+    function onMove(e){
+      const p = e.touches ? e.touches[0] : e;
+      if(Math.abs(p.clientX - startX) > 8 || Math.abs(p.clientY - startY) > 8){
         clearTimeout(pressTimer);
         el.classList.remove('press');
       }
+    }
+    function onEnd(){
+      clearTimeout(pressTimer);
+      el.classList.remove('press');
+    }
 
-      el.addEventListener('touchstart', onStart, {passive:true});
-      el.addEventListener('touchmove', onMove, {passive:true});
-      el.addEventListener('touchend', onEnd);
-      el.addEventListener('touchcancel', onEnd);
-      el.addEventListener('mousedown', onStart);
-      el.addEventListener('mousemove', onMove);
-      el.addEventListener('mouseup', onEnd);
+    el.addEventListener('touchstart', onStart, {passive:true});
+    el.addEventListener('touchmove', onMove, {passive:true});
+    el.addEventListener('touchend', onEnd);
+    el.addEventListener('touchcancel', onEnd);
+    el.addEventListener('mousedown', onStart);
+    el.addEventListener('mousemove', onMove);
+    el.addEventListener('mouseup', onEnd);
+
+    /* 多选模式下点击 → 切换选中 */
+    el.addEventListener('click', function(e){
+      if(!colSelMode) return;
+      if(e.target.closest('[data-del]') || e.target.closest('[data-share]') || e.target.closest('[data-note-btn]') || e.target.closest('.col-note')) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const id = el.dataset.id;
+      if(colSelSet.has(id)){
+        colSelSet.delete(id);
+        el.classList.remove('selected');
+      } else {
+        colSelSet.add(id);
+        el.classList.add('selected');
+      }
+      colUpdateSelCount();
     });
+  });
+}
 
-    /* 点空白 → 收起所有 ✕ */
-    document.addEventListener('click', function(e){
-      if(e.target.closest && e.target.closest('.col-item')) return;
-      body.querySelectorAll('.col-item.show-del').forEach(function(el){
-        el.classList.remove('show-del');
+/* ===== 收藏页 · 筛选按钮绑定 ===== */
+function bindColFilterBar(body){
+  if(!body) return;
+  const row = body.querySelector('#colFilterRow');
+  if(!row) return;
+  row.querySelectorAll('.col-filter').forEach(function(btn){
+    btn.onclick = function(e){
+      e.stopPropagation();
+      colFilterFrom = btn.dataset.cf || 'all';
+      const activeTab = document.querySelector('#colTabs .memo-tab.on');
+      renderCollectScreen(activeTab ? activeTab.dataset.colTab : 'mine');
+    };
+  });
+}
+
+/* ===== 收藏页 · 多选工具条按钮 ===== */
+(function bindColSelBar(){
+  if(window.__colSelBarBound) return;
+  window.__colSelBarBound = true;
+  document.addEventListener('click', function(e){
+    const t = e.target;
+    if(!t || !t.closest) return;
+
+    if(t.closest('#colSelCancelBtn')){
+      e.preventDefault(); e.stopPropagation();
+      colExitSelMode();
+      return;
+    }
+    if(t.closest('#colSelAllBtn')){
+      e.preventDefault(); e.stopPropagation();
+      const body = document.getElementById('colBody');
+      if(!body) return;
+      const items = body.querySelectorAll('.col-item');
+      const allOn = colSelSet.size === items.length && items.length > 0;
+      if(allOn){
+        colSelSet = new Set();
+        items.forEach(function(el){ el.classList.remove('selected'); });
+      } else {
+        colSelSet = new Set();
+        items.forEach(function(el){
+          const id = el.dataset.id;
+          if(id){ colSelSet.add(id); el.classList.add('selected'); }
+        });
+      }
+      colUpdateSelCount();
+      return;
+    }
+    if(t.closest('#colSelCopyBtn')){
+      e.preventDefault(); e.stopPropagation();
+      const rid = getCurrentRoleId();
+      const src = (colSelTab === 'mine') ? getCollectMine(rid) : getCollectTheirs(rid);
+      if(!colSelSet.size){ toast('请先选择要复制的内容'); return; }
+      const texts = src.filter(function(it){ return colSelSet.has(it.id); }).map(function(it){
+        return it.note ? (it.text + '\n备注：' + it.note) : it.text;
       });
+      if(!texts.length){ toast('没有可复制的内容'); return; }
+      copyText(texts.join('\n\n'), '已复制 ' + texts.length + ' 条');
+      colExitSelMode();
+      return;
+    }
+    if(t.closest('#colSelDelBtn')){
+      e.preventDefault(); e.stopPropagation();
+      if(!colSelSet.size){ toast('请先选择要删除的内容'); return; }
+      if(!confirm('删除选中的 ' + colSelSet.size + ' 条收藏？')) return;
+      const rid = getCurrentRoleId();
+      if(colSelTab === 'mine'){
+        const arr = getCollectMine(rid).filter(function(it){ return !colSelSet.has(it.id); });
+        setCollectMine(rid, arr);
+      } else {
+        const arr = getCollectTheirs(rid).filter(function(it){ return !colSelSet.has(it.id); });
+        setCollectTheirs(rid, arr);
+      }
+      const tab2 = colSelTab;
+      colExitSelMode();
+      renderCollectScreen(tab2);
+      toast('已删除');
+      return;
+    }
+  }, true);
+})();
+
+/* ===== 收藏页 · 备注行绑定 ===== */
+function bindColNoteEvents(body, tab){
+  if(!body) return;
+  const rid = getCurrentRoleId();
+
+  /* 点备注文字 → 编辑（仅“我的收藏”可编辑） */
+  body.querySelectorAll('[data-note-edit]').forEach(function(el){
+    el.onclick = function(e){
+      e.stopPropagation();
+      const id = el.dataset.noteEdit;
+
+      if(tab !== 'mine'){
+        toast('只能修改自己的备注');
+        return;
+      }
+
+      /* 存一下原状态，用于区分点击和三角点击 */
+      const arr = getCollectMine(rid);
+      const it = arr.find(function(x){ return x.id === id; });
+      if(!it) return;
+
+      uniAsk({
+        title: '备注',
+        sub: 'NOTE · 留空 = 删除备注',
+        value: it.note || '',
+        placeholder: '写点什么…'
+      }).then(function(v){
+        if(v === null) return;
+        const ok = updateCollectNote(rid, id, String(v).trim());
+        if(ok){
+          const activeTab = document.querySelector('#colTabs .memo-tab.on');
+          renderCollectScreen(activeTab ? activeTab.dataset.colTab : 'mine');
+          toast('已保存');
+        }
+      });
+    };
+  });
+
+  /* 点备注行最右侧的小三角 → 收起/展开 */
+  body.querySelectorAll('[data-note-row]').forEach(function(row){
+    row.onclick = function(e){
+      e.stopPropagation();
+      const id = row.dataset.noteRow;
+      if(tab !== 'mine'){
+        toast('只能修改自己的备注');
+        return;
+      }
+      const arr = getCollectMine(rid);
+      const it = arr.find(function(x){ return x.id === id; });
+      if(!it) return;
+      if(!it.note) return;   /* 没备注时不给收起 */
+      it.noteCollapsed = !it.noteCollapsed;
+      setCollectMine(rid, arr);
+      const activeTab = document.querySelector('#colTabs .memo-tab.on');
+      renderCollectScreen(activeTab ? activeTab.dataset.colTab : 'mine');
+    };
+  });
+
+  /* 长按收藏行 → 出现分享按钮（仅“我的收藏”） */
+  if(tab === 'mine'){
+    body.querySelectorAll('.col-item').forEach(function(item){
+      const id = item.dataset.id;
+
+      /* 动态加一个分享按钮（只在长按后显示） */
+      if(!item.querySelector('.col-share')){
+        const btn = document.createElement('button');
+        btn.className = 'col-share';
+        btn.type = 'button';
+        btn.textContent = '↗';
+        btn.dataset.share = id;
+        item.appendChild(btn);
+      }
+
+      const shareBtn = item.querySelector('.col-share');
+      shareBtn.onclick = function(e){
+        e.stopPropagation();
+        shareCollectItem(id);
+      };
     });
+  }
+}
+
+/* ===== 收藏页 · 分享一条收藏（含备注） ===== */
+function shareCollectItem(itemId){
+  const rid = getCurrentRoleId();
+  const it = getCollectMine(rid).find(function(x){ return x.id === itemId; });
+  if(!it){ toast('这条收藏不见了'); return; }
+  if(typeof openForwardPicker !== 'function'){
+    toast('转发模块没加载好');
+    return;
+  }
+
+  /* 复制一份合成消息，塞进当前聊天，再走“单条转发”流程 */
+  const now = Date.now();
+  const synthText = it.note
+    ? (it.text + '\n备注：' + it.note)
+    : it.text;
+
+  const synthMsg = {
+    id: 'sh' + now.toString(36) + Math.random().toString(36).slice(2,6),
+    role: it.from === 'user' ? 'user' : 'char',
+    text: synthText,
+    time: now
+  };
+
+  /* 塞进 msgs（如果不在当前聊天，就直接挂到 openForwardPicker 上） */
+  const backupMsgs = msgs.slice();
+  msgs.push(synthMsg);
+  try{
+    openForwardPicker([synthMsg.id], 'single');
+  }catch(e){
+    console.error('转发失败', e);
+    toast('转发失败：' + e.message);
+    msgs = backupMsgs;
   }
 }
 
@@ -11420,32 +13346,36 @@ function openEditChar(m){
   });
 }
 
-/* 编辑完 → 直接塞进「修改字卡存放处 / 修改」，不弹面板 */
+/* 编辑完 → 塞进「角色专属字卡 → 普通字卡 → 修改后的字卡」（第一个分类） */
 function askAddToCardStore(text){
   const t = String(text || '').trim();
   if(!t) return;
 
-  /* 找「修改字卡存放处」分组；没有就现建一个 */
-  let groups = getGroupsByOwner('public');
-  let g = groups.find(function(x){ return x.id === 'g-edited'; });
-  if(!g){
-    g = {
-      id: 'g-edited',
-      name: '修改字卡存放处',
-      icon: 'note',
-      sub: '长按角色消息编辑后自动存到这里',
-      cats: [{ id: 'ce-all', name: '修改', list: [] }]
-    };
-    groups.push(g);
-    saveCardStore();
-  }
-  if(!g.cats) g.cats = [];
-  let cat = g.cats.find(function(c){ return c.id === 'ce-all'; });
+  const roleId = getCurrentRoleId();
+  if(!roleId){ toast('找不到当前角色'); return; }
+
+  /* 确保角色专属字卡结构齐全（含公用那套分组） */
+  syncRoleCardGroups(roleId);
+
+  const roleGroups = getGroupsByOwner(roleId);
+  const gNormal = roleGroups.find(function(x){ return x.id === 'g-normal'; });
+  if(!gNormal){ toast('找不到普通字卡分组'); return; }
+  if(!Array.isArray(gNormal.cats)) gNormal.cats = [];
+
+  /* 找「修改后的字卡」分类；没有就现建一个，并放到第一个 */
+  let cat = gNormal.cats.find(function(c){ return c.id === 'ce-edited'; });
   if(!cat){
-    cat = { id: 'ce-all', name: '修改', list: [] };
-    g.cats.unshift(cat);
+    cat = { id: 'ce-edited', name: '修改后的字卡', list: [] };
+    gNormal.cats.unshift(cat);
+  } else {
+    /* 已经存在，但要保证它在第一个 */
+    const idx = gNormal.cats.indexOf(cat);
+    if(idx > 0){
+      gNormal.cats.splice(idx, 1);
+      gNormal.cats.unshift(cat);
+    }
   }
-  if(!cat.list) cat.list = [];
+  if(!Array.isArray(cat.list)) cat.list = [];
 
   const exists = cat.list.some(function(x){
     return String(cardText(x)).trim() === t;
@@ -11454,7 +13384,7 @@ function askAddToCardStore(text){
 
   cat.list.push({ text: t, t: Date.now() });
   saveCardStore();
-  toast('已存入「修改字卡存放处」');
+  toast('已存入「修改后的字卡」');
 }
 
 
@@ -11714,6 +13644,14 @@ function setNotifyMoment(v){ lsSet(NOTIFY_MOMENT_KEY, !!v); }
 
 let _msgNotifyTimer = null;
 function showMsgNotify(roleName, text, roleAvatar, targetRoleId){
+  /* ★ 优先用备注名（有备注就显示备注） */
+  if(targetRoleId){
+    const r = getRoleById(targetRoleId);
+    if(r){
+      const rk = (r.remark && String(r.remark).trim());
+      if(rk) roleName = rk;
+    }
+  }
   /* ★ 收到消息 → 播收消息音效 */
   try{ playSoundOnce('inMsg'); }catch(e){}
   /* 聊天界面通知总开关：关了就直接不弹 */
@@ -14439,11 +16377,11 @@ on('#drBack','click',()=>{ showScreen('deskScreen'); });
 on('#drSearchInput','input',()=>renderDivineRecords());
 
 let choiceMode='yn';
-let choiceOpts=['yes','no','再说吧'];
+let choiceOpts=[''];
 function openChoice(){
   /* 每次打开都重置到默认状态：Yes/No 模式、选项池、结果区 */
   choiceMode = 'yn';
-  choiceOpts = ['yes','no','再说吧'];
+  choiceOpts = [''];
   $('#choiceBody').innerHTML=`
 	<div class="choice-head"><button class="mode-btn on" data-mode="yn">Yes / No</button><button class="mode-btn" data-mode="pick">多选项</button></div>
 	<textarea class="choice-q" id="cq" rows="2" placeholder="比如：今晚吃什么？"></textarea>
@@ -14463,7 +16401,7 @@ function openChoice(){
   /* ★ #think 已经不在了（选择弹窗改版时删掉了），加了 null 保护 */
   var thinkEl = $('#think');
   if(thinkEl){ thinkEl.oninput=function(){ var tv=$('#thinkVal'); if(tv) tv.textContent=this.value+'s'; }; }
-  $$('#choiceBody .mode-btn').forEach(b=>{ b.onclick=()=>{ $$('#choiceBody .mode-btn').forEach(x=>x.classList.remove('on')); b.classList.add('on'); choiceMode=b.dataset.mode; if(choiceMode==='yn'){ choiceOpts=['yes','no','再说吧']; $('#optsWrap').style.display='none'; } else{ $('#optsWrap').style.display='block'; choiceOpts=['火锅','烧烤','日料']; renderChoiceOpts(); } }; });
+  	  $$('#choiceBody .mode-btn').forEach(b=>{ b.onclick=()=>{ $$('#choiceBody .mode-btn').forEach(x=>x.classList.remove('on')); b.classList.add('on'); choiceMode=b.dataset.mode; if(choiceMode==='yn'){ choiceOpts=['yes','no','再说吧']; $('#optsWrap').style.display='none'; } else{ $('#optsWrap').style.display='block'; choiceOpts=['']; renderChoiceOpts(); } }; });
   $('#go').onclick=()=>{
 	const q=$('#cq').value.trim()||'（未填写问题）';
 	const maxPick=1;
@@ -14505,11 +16443,11 @@ function openChoice(){
 function renderChoiceOpts(){
   const box=$('#opts'); if(!box) return;
   box.innerHTML=choiceOpts.map((o,i)=>{
-	const canDel = choiceOpts.length > 1;
+	const canDel = i > 0;   /* 第 1 个选项不给删除，其余都有 ✕ */
 	return `<div class="choice-opts-row"><span class="choice-idx">${String(i+1).padStart(2,'0')}</span><input class="choice-opt-input" data-i="${i}" value="${escapeHTML(o)}" placeholder="选项">${canDel?`<button class="choice-del" data-i="${i}" type="button">✕</button>`:''}</div>`;
   }).join('');
   box.querySelectorAll('.choice-opt-input').forEach(inp=>{ inp.oninput=()=>{ choiceOpts[+inp.dataset.i]=inp.value; }; });
-  box.querySelectorAll('.choice-del').forEach(b=>{ b.onclick=()=>{ choiceOpts.splice(+b.dataset.i,1); renderChoiceOpts(); }; });
+  box.querySelectorAll('.choice-del').forEach(b=>{ b.onclick=()=>{ const idx=+b.dataset.i; if(idx<=0) return; choiceOpts.splice(idx,1); renderChoiceOpts(); }; });
 }
 
 const NAME_CARD_PROB = { agree:0.25, reject:0.55, hold:0.20 };
@@ -17346,6 +19284,17 @@ function openVoiceLib(){
   showScreen('voiceLibScreen');
   renderVoiceLib();
   try{ renderVideoLib(); }catch(e){ console.error(e); }
+
+  /* 返回按钮：用捕获阶段重绑一次，保证一定退出 */
+  var back = document.getElementById('vlBack');
+  if(back && !back._boundBack){
+    back._boundBack = true;
+    back.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
+    }, true);
+  }
 }
 
 /* 视频上传的两个函数已在上文（openVoiceLib 之前）定义，此处不再重复 */
@@ -18080,12 +20029,7 @@ document.addEventListener('touchend', function(e){
   if(back){ e.preventDefault(); e.stopPropagation(); closeChatInfo(); }
 }, {passive:false});
 
-/* ===== ⋯ 弹窗打开/关闭（已在上面用事件委托统一处理，这里不再重复绑定） ===== */
 
-/* ===== 备注 / 备忘 / 朋友权限 / 删除拉黑 =====
-   上面（on('#cipName'...) 之后）已经有一整套了，这里是重复的，已删除。
-   注意：#cipRemark 在 HTML 里根本不存在（实际是 #cipName），原来那段是无效代码。
-*/
 
 
 /* ===== 设置桌面页入口 ===== */
@@ -19401,7 +21345,7 @@ function applyTopbarBg(){
 
 (function(){
   const stack = $('#pageStack'); if(!stack) return;
-  const pages = ['page-friends','page-chat','page-desk','page-me'];
+  const pages = ['page-friends','page-chat','page-calendar','page-desk','page-me'];
   let cur = 1; let sx=0,sy=0,dragging=false,dx=0;
   const app = $('#app');
   function go(n){
@@ -19502,39 +21446,67 @@ function renderOwnerChips(){
     renderGroupList();
   }); });
 }
+/* 分组渲染顺序（只影响渲染，不动存储；用户手动拖动排序仍然有效）
+   注意：这个数组里没写到的分组，会按原数组顺序追加在最后 */
+var GROUP_RENDER_ORDER = [
+  'g-normal',    /* 普通字卡 */
+  'g-timed',     /* 时间字卡 */
+  'g-weather',   /* 天气字卡 */
+  'g-mood',      /* 心情字卡 */
+  'g-status',    /* 状态字卡 */
+  'g-moment',    /* 动态字卡 */
+  'g-sign',      /* 签字卡 */
+  'g-divine',    /* 占卜 */
+  'g-tags',      /* 标签 */
+  'g-groupchat', /* 群聊字卡 */
+  'g-namecard',  /* 名片字卡 */
+  'g-share',     /* 分享卡片 */
+  'g-festival',  /* 节日字卡 */
+  'g-special'    /* 特殊日期字卡 */
+];
+
 function renderGroupList(){
   const box = $('#groupList'); if(!box) return;
   const groups = getGroupsByOwner(curOwner);
   if(!groups.length){ box.innerHTML = `<div class="cl-empty">这里还没有分组</div>`; return; }
 
-  /* ★ 语音文件入口：只在「公用」字卡页显示，跟随分组列表一起滚动
-     规则：拼音分组（g-pinyin）后面插一个；没拼音分组就放在最末尾 */
-  var voiceEntryHTML = '';
-  if(curOwner === 'public'){
-    voiceEntryHTML = `<div class="group-card vl-entry-card" id="vlEntryBtn"><div class="g-ic">🎵</div><div class="g-name">语音文件<span class="g-sub">角色主动语音</span></div><div class="g-arrow">›</div></div>`;
-  }
+  /* ★ 按 GROUP_RENDER_ORDER 重排一次（只影响本次渲染，不改存储） */
+  var orderedGroups = [];
+  var usedIds = {};
+  GROUP_RENDER_ORDER.forEach(function(oid){
+    var hit = groups.find(function(g){ return g && g.id === oid; });
+    if(hit){ orderedGroups.push(hit); usedIds[oid] = true; }
+  });
+  /* 没在顺序表里出现的分组（比如用户自建、拼音 g-pinyin、修改字卡存放处等），按原顺序追加 */
+  groups.forEach(function(g){
+    if(!g) return;
+    if(!usedIds[g.id]) orderedGroups.push(g);
+  });
 
-  var hasPinyin = groups.some(g => g && g.id === 'g-pinyin');
+  /* ★ 语音文件入口：公用页和角色专属页都显示，插在「普通字卡」后面
+     规则：找到普通字卡（g-normal）就插它后面；找不到就插在最前面 */
+  var voiceEntryHTML = `<div class="group-card vl-entry-card" id="vlEntryBtn"><div class="g-ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="16" cy="16" r="3"/></svg></div><div class="g-name">语音文件<span class="g-sub">角色主动语音</span></div><div class="g-arrow">›</div></div>`;
+
   var usedVoice = false;
 
-  var html = groups.map(g=>{
+  var html = orderedGroups.map(g=>{
 	const total = (g.cats||[]).reduce((n,c)=>n+(c.list||[]).length,0);
 	const iconKey = (g && g.icon) ? g.icon : 'doc';
 	const gid = (g && g.id) ? g.id : '';
 	const gname = (g && g.name) ? g.name : '未命名';
 	const gsub = (g && g.sub) ? g.sub : '';
 	var card = `<div class="group-card" data-open="${escapeHTML(gid)}"><div class="g-ic">${iconSVG(iconKey)}</div><div class="g-name">${escapeHTML(gname)}<span class="g-sub">${escapeHTML(gsub)}</span></div><div class="g-count">${total}</div><div class="g-arrow">›</div></div>`;
-	/* 如果这个分组是拼音字卡，后面跟上语音入口 */
-	if(voiceEntryHTML && g && g.id === 'g-pinyin'){
+	/* 普通字卡后面跟上语音入口 */
+	if(g && g.id === 'g-normal'){
 	  card += voiceEntryHTML;
 	  usedVoice = true;
 	}
 	return card;
   }).join('');
 
-  /* 没有拼音分组 → 语音入口放最末尾 */
-  if(voiceEntryHTML && !usedVoice){
-    html += voiceEntryHTML;
+  /* 没有普通字卡 → 语音入口插在最前面 */
+  if(!usedVoice){
+    html = voiceEntryHTML + html;
   }
 
   box.innerHTML = html;
@@ -19790,22 +21762,78 @@ function renderCdList(){
     box.innerHTML = `<div class="cl-empty">「${escapeHTML(cat.name)}」已被关闭<br>不会参与时间字卡抽卡</div>`;
   }
   else{
-	  const showChk = selMode;
+	  /* ★ 多选状态判断：只看 body 上的标记，不读 selMode 变量 */
+	  const _cdInSelMode = document.body.hasAttribute('data-cd-selmode');
+	  const showChk = _cdInSelMode;
 	box.innerHTML = items.map(it=>{
 	  const isSel = selSet.has(it.i);
 	  const raw = cardText(it.line);
 	  const moved = it.line && typeof it.line === 'object' && it.line.justMoved;
 	  const txt = moved ? '（' + raw + '）' : raw;
-	  const cls = 'cl-line' + (selMode&&!sortMode?' sel-mode':'') + (isSel?' selected':'') + (moved?' just-moved':'');
-	  return `<div class="${cls}" data-i="${it.i}">${showChk?'<div class="chk">✓</div>':''}<span class="idx"></span><div class="txt">${highlight(txt,kw)}</div><div class="acts"><div class="cl-act copy" data-copy="${it.i}"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></div><div class="cl-act" data-edit="${it.i}"><svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg></div><div class="cl-act" data-del="${it.i}"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg></div></div></div>`;
+	  const cls = 'cl-line' + (_cdInSelMode?' sel-mode':'') + (isSel?' selected':'') + (moved?' just-moved':'');
+	  const chkHTML = showChk ? ('<div class="chk">' + (isSel ? '✓' : '') + '</div>') : '';
+	  return `<div class="${cls}" data-i="${it.i}">${chkHTML}<span class="idx"></span><div class="txt">${highlight(txt,kw)}</div><div class="acts"><div class="cl-act copy" data-copy="${it.i}"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></div><div class="cl-act" data-edit="${it.i}"><svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg></div><div class="cl-act" data-del="${it.i}"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg></div></div></div>`;
 	}).join('');
   }
-  if(!selMode){
-	box.querySelectorAll('[data-copy]').forEach(el=>{ el.addEventListener('click',e=>{ e.stopPropagation(); copyText(cardText(cat.list[+el.dataset.copy]),'已复制'); }); });
-	box.querySelectorAll('[data-edit]').forEach(el=>{ el.addEventListener('click',e=>{ e.stopPropagation(); openEditInline(+el.dataset.edit); }); });
-	box.querySelectorAll('[data-del]').forEach(el=>{ el.addEventListener('click',e=>{ e.stopPropagation(); const i=+el.dataset.del; pendingDelete=[i]; const t=cardText(cat.list[i]); $('#confirmDelText').innerHTML=`将删除 1 条字卡：<br><span style="color:var(--th-accent)">${escapeHTML(t).slice(0,40)}</span><br><span style="font-size:11px;color:#bbb">（30 天内可在回收站还原）</span>`; $('#mConfirmDel').classList.add('show'); }); });
+  /* ===== 事件委托：一次性绑到 #cdList 上，避免重建后丢事件 ===== */
+  if(box._delegated){
+    box.removeEventListener('click', box._delegated, true);
   }
-  if(selMode && !sortMode){ box.querySelectorAll('.cl-line').forEach(line=>{ line.addEventListener('click',e=>{ if(e.target.closest('.cl-act')) return; const i=+line.dataset.i; if(selSet.has(i)) selSet.delete(i); else selSet.add(i); line.classList.toggle('selected',selSet.has(i)); const chk=line.querySelector('.chk'); if(chk) chk.textContent=selSet.has(i)?'✓':''; updateSelCount(); }); }); }
+  box._delegated = function(e){
+    const line = e.target.closest('.cl-line');
+    if(!line) return;
+
+    /* 多选状态判断：只读 body 属性，不读 selMode 变量 */
+    const nowInSel = document.body.hasAttribute('data-cd-selmode');
+
+    /* 非多选：走复制 / 编辑 / 删除 */
+    if(!nowInSel){
+      const cp = e.target.closest('[data-copy]');
+      if(cp){
+        e.stopPropagation();
+        const i = +cp.dataset.copy;
+        const c = getCat(currentGroupObj(), curCatId);
+        if(c) copyText(cardText(c.list[i]),'已复制');
+        return;
+      }
+      const ed = e.target.closest('[data-edit]');
+      if(ed){
+        e.stopPropagation();
+        openEditInline(+ed.dataset.edit);
+        return;
+      }
+      const dl = e.target.closest('[data-del]');
+      if(dl){
+        e.stopPropagation();
+        const i = +dl.dataset.del;
+        pendingDelete=[i];
+        const c = getCat(currentGroupObj(), curCatId);
+        const t = c ? cardText(c.list[i]) : '';
+        $('#confirmDelText').innerHTML=`将删除 1 条字卡：<br><span style="color:var(--th-accent)">${escapeHTML(t).slice(0,40)}</span><br><span style="font-size:11px;color:#bbb">（30 天内可在回收站还原）</span>`;
+        $('#mConfirmDel').classList.add('show');
+        return;
+      }
+      return;
+    }
+
+    /* 多选模式：点任意非图标区域 → 切换选中 */
+    if(e.target.closest('.cl-act')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const i = +line.dataset.i;
+    if(selSet.has(i)) selSet.delete(i);
+    else selSet.add(i);
+    line.classList.toggle('selected', selSet.has(i));
+    const chk = line.querySelector('.chk');
+    if(chk) chk.textContent = selSet.has(i) ? '✓' : '';
+    updateSelCount();
+    const allBtn = document.getElementById('selAllBtn');
+    const c2 = currentCatObj();
+    const total = c2 ? c2.list.length : 0;
+    if(allBtn) allBtn.textContent = (selSet.size === total && total > 0) ? '取消全选' : '全选';
+  };
+  box.addEventListener('click', box._delegated, true);
+
   updateSelCount();
   setTimeout(refreshScrollbar,30);
 }
@@ -19813,19 +21841,28 @@ function renderCdList(){
 
 function enterSelMode(){
   selMode = true;
-  selSet = new Set();
+  /* 全局标记：真正的多选状态来源 */
   document.body.classList.add('sel-mode-on');
-  $('#selBar').classList.add('show');
-  $('#cdSearchWrap').style.display = 'none';
+  document.body.setAttribute('data-cd-selmode', '1');
+  if(!selSet || !(selSet instanceof Set)) selSet = new Set();
+  selSet = new Set();
+  var bar = document.getElementById('selBar');
+  if(bar) bar.classList.add('show');
+  var sw = document.getElementById('cdSearchWrap');
+  if(sw) sw.style.display = 'none';
   renderCdTabs();
   renderCdList();
 }
 function exitSelMode(){
   selMode = false;
+  if(!selSet || !(selSet instanceof Set)) selSet = new Set();
   selSet = new Set();
   document.body.classList.remove('sel-mode-on');
-  $('#selBar').classList.remove('show');
-  $('#cdSearchWrap').style.display = '';
+  document.body.removeAttribute('data-cd-selmode');
+  var bar = document.getElementById('selBar');
+  if(bar) bar.classList.remove('show');
+  var sw = document.getElementById('cdSearchWrap');
+  if(sw) sw.style.display = '';
   renderCdTabs();
   renderCdList();
 }
@@ -19846,55 +21883,144 @@ function openMovePicker(){
   const srcCat = getCat(g, curCatId);
   if(!srcCat){ toast('原分类不存在'); return; }
 
-  /* 构造面板：列出当前分组下所有分类，以及其它分组的分类 */
   const box = $('#moveCatList');
   if(!box) return;
 
-  let html = '';
+  /* 第一步：选移动类型 */
+  function renderStep1(){
+    box.innerHTML =
+      '<div class="cp-item" data-step="same-group">' +
+        '<div class="cp-chk"></div>' +
+        '<span>移动至' + escapeHTML(g.name) + '分类</span>' +
+      '</div>' +
+      '<div class="cp-item" data-step="other-group">' +
+        '<div class="cp-chk"></div>' +
+        '<span>移动至其它分组分类</span>' +
+      '</div>';
 
-  /* 当前分组 */
-  html += '<div class="cp-title" style="padding:10px 18px 6px;font-size:10.5px;letter-spacing:2px;color:#999">' + escapeHTML(g.name) + '</div>';
-  (g.cats || []).forEach(c => {
-    const isSelf = c.id === curCatId;
-    if(isSelf) return; /* 不显示原分类 */
-    html += '<div class="cp-item" data-gid="' + g.id + '" data-cid="' + c.id + '">' +
+    box.querySelectorAll('.cp-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const step = item.dataset.step;
+        if(step === 'same-group') renderStep2SameGroup();
+        else renderStep2OtherGroups();
+      });
+    });
+  }
+
+  /* 第二步 A：当前分组的所有分类（排除原分类、排除修改字卡存放处） */
+  function renderStep2SameGroup(){
+    let html = '<div class="cp-title" style="padding:10px 18px 6px;font-size:10.5px;letter-spacing:2px;color:#999">' + escapeHTML(g.name) + '</div>';
+    let count = 0;
+    (g.cats || []).forEach(c => {
+      if(c.id === curCatId) return;                    /* 不显示原分类 */
+      if(c.id === 'ce-edited') return;                 /* 排除「修改后的字卡」 */
+      count++;
+      html += '<div class="cp-item" data-gid="' + g.id + '" data-cid="' + c.id + '">' +
+        '<div class="cp-chk"></div>' +
+        '<span>' + escapeHTML(c.name) + '</span>' +
+        '<span class="cp-count">' + (c.list||[]).length + '</span>' +
+      '</div>';
+    });
+    if(!count){
+      html += '<div style="padding:30px 20px;text-align:center;color:#999;font-size:12px">这个分组没有其它分类</div>';
+    }
+    html += '<div class="cp-item" data-step="back" style="margin-top:6px">' +
       '<div class="cp-chk"></div>' +
-      '<span>' + escapeHTML(c.name) + '</span>' +
-      '<span class="cp-count">' + (c.list||[]).length + '</span>' +
+      '<span>返回上一步</span>' +
     '</div>';
-  });
+    box.innerHTML = html;
 
-  /* 其它分组 */
-  const allGroups = getGroupsByOwner(curOwner);
-  allGroups.forEach(otherG => {
-    if(otherG.id === g.id) return;
-    const cats = (otherG.cats || []).filter(c => !isMoodGroup(otherG) || otherG.id !== 'g-mood');
-    if(!cats.length) return;
-    html += '<div class="cp-title" style="padding:14px 18px 6px;font-size:10.5px;letter-spacing:2px;color:#999">' + escapeHTML(otherG.name) + '</div>';
-    cats.forEach(c => {
+    box.querySelectorAll('.cp-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const step = item.dataset.step;
+        if(step === 'back'){ renderStep1(); return; }
+        const gid = item.dataset.gid;
+        const cid = item.dataset.cid;
+        doMoveCards(gid, cid);
+      });
+    });
+  }
+
+  /* 第二步 B：先列所有分组（排除当前分组、排除 g-edited），点一个分组再列它的分类 */
+  function renderStep2OtherGroups(){
+    const allGroups = getGroupsByOwner(curOwner);
+    let html = '<div class="cp-title" style="padding:10px 18px 6px;font-size:10.5px;letter-spacing:2px;color:#999">选择分组</div>';
+    let count = 0;
+    allGroups.forEach(otherG => {
+      if(otherG.id === g.id) return;                   /* 排除当前分组 */
+      if(otherG.id === 'g-edited') return;             /* 排除修改字卡存放处 */
+      count++;
+      html += '<div class="cp-item" data-group="' + otherG.id + '">' +
+        '<div class="cp-chk"></div>' +
+        '<span>' + escapeHTML(otherG.name) + '</span>' +
+        '<span class="cp-count">' + (otherG.cats||[]).length + '</span>' +
+      '</div>';
+    });
+    if(!count){
+      html += '<div style="padding:30px 20px;text-align:center;color:#999;font-size:12px">没有其它分组</div>';
+    }
+    html += '<div class="cp-item" data-step="back" style="margin-top:6px">' +
+      '<div class="cp-chk"></div>' +
+      '<span>返回上一步</span>' +
+    '</div>';
+    box.innerHTML = html;
+
+    box.querySelectorAll('.cp-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const step = item.dataset.step;
+        if(step === 'back'){ renderStep1(); return; }
+        const gid = item.dataset.group;
+        renderStep3GroupCats(gid);
+      });
+    });
+  }
+
+  /* 第三步：某个分组的分类列表（排除「修改后的字卡」） */
+  function renderStep3GroupCats(gid){
+    const otherG = getGroup(curOwner, gid);
+    if(!otherG){ toast('分组不存在'); return; }
+    let html = '<div class="cp-title" style="padding:10px 18px 6px;font-size:10.5px;letter-spacing:2px;color:#999">' + escapeHTML(otherG.name) + '</div>';
+    let count = 0;
+    (otherG.cats || []).forEach(c => {
+      if(c.id === 'ce-edited') return;                 /* 排除「修改后的字卡」 */
+      count++;
       html += '<div class="cp-item" data-gid="' + otherG.id + '" data-cid="' + c.id + '">' +
         '<div class="cp-chk"></div>' +
         '<span>' + escapeHTML(c.name) + '</span>' +
         '<span class="cp-count">' + (c.list||[]).length + '</span>' +
       '</div>';
     });
-  });
+    if(!count){
+      html += '<div style="padding:30px 20px;text-align:center;color:#999;font-size:12px">这个分组没有分类</div>';
+    }
+    html += '<div class="cp-item" data-step="back-group" style="margin-top:6px">' +
+      '<div class="cp-chk"></div>' +
+      '<span>返回分组列表</span>' +
+    '</div>';
+    box.innerHTML = html;
 
-  if(!html){
-    html = '<div style="padding:30px 20px;text-align:center;color:#999;font-size:12px">没有其它可移动的分类</div>';
+    box.querySelectorAll('.cp-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const step = item.dataset.step;
+        if(step === 'back-group'){ renderStep2OtherGroups(); return; }
+        const gid2 = item.dataset.gid;
+        const cid = item.dataset.cid;
+        doMoveCards(gid2, cid);
+      });
+    });
   }
 
-  box.innerHTML = html;
-
-  box.querySelectorAll('.cp-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const gid = item.dataset.gid;
-      const cid = item.dataset.cid;
-      doMoveCards(gid, cid);
-    });
-  });
-
+  renderStep1();
   $('#moveCatMask').classList.add('show');
+
+  /* 点空白关闭：只绑一次，绑定在遮罩本身上，不会被内部重绘覆盖 */
+  var _moveMaskEl = document.getElementById('moveCatMask');
+  if(_moveMaskEl && !_moveMaskEl._boundClose){
+    _moveMaskEl._boundClose = true;
+    _moveMaskEl.addEventListener('click', function(e){
+      if(e.target === _moveMaskEl) _moveMaskEl.classList.remove('show');
+    });
+  }
 }
 
 /* ★ 执行移动：把选中的字卡从原分类移到目标分类 */
@@ -20047,6 +22173,11 @@ if(cdMore) cdMore.addEventListener('click',e=>{
   e.stopPropagation();
   const g = currentGroupObj();
   if(g && g.id === 'g-timed'){ openTimedRate(); return; }
+  /* 已经开着 → 再点一次关掉 */
+  if(cdMenu.classList.contains('show')){
+    cdMenu.classList.remove('show');
+    return;
+  }
   const r=cdMore.getBoundingClientRect();
   cdMenu.style.left=Math.max(10,r.right-160)+'px';
   cdMenu.style.top=(r.bottom+6)+'px';
@@ -20110,7 +22241,14 @@ function openTimedRate(){
 
   $('#mTimedRate').classList.add('show');
 }
-document.addEventListener('click',e=>{ if(!e.target.closest('#cdMenu')&&e.target!==cdMore) cdMenu.classList.remove('show'); });
+document.addEventListener('click',e=>{
+  /* 点在菜单内部 → 不关（菜单项自己处理） */
+  if(e.target.closest('#cdMenu')) return;
+  /* 点在 ⋯ 按钮上 → 交给 #cdMore 自己的 toggle 逻辑处理 */
+  if(e.target.closest('#cdMore')) return;
+  /* 其它地方 → 关闭 */
+  cdMenu.classList.remove('show');
+});
 if(cdMenu) cdMenu.addEventListener('click',e=>{
   const it=e.target.closest('.it'); if(!it) return;
   const act=it.dataset.act;
@@ -20123,11 +22261,22 @@ if(cdMenu) cdMenu.addEventListener('click',e=>{
   else if(act==='trash') openCardTrash();
 });
 
-/* ===== 回收站面板 ===== */
+/* ===== 回收站桌面 ===== */
 function openCardTrash(){
   cleanExpiredCardTrash();
+  var mask = document.getElementById('cardTrashMask');
+  if(!mask) return;
   renderCardTrash();
-  $('#cardTrashMask').classList.add('show');
+  mask.classList.add('show');
+
+  /* 返回按钮：点一下关闭 */
+  var back = document.getElementById('cardTrashBack');
+  if(back && !back._bound){
+    back._bound = true;
+    back.addEventListener('click', function(){
+      mask.classList.remove('show');
+    });
+  }
 }
 
 function renderCardTrash(){
@@ -20135,7 +22284,7 @@ function renderCardTrash(){
   if(!box) return;
   const arr = getCardTrash();
   if(!arr.length){
-    box.innerHTML = '<div style="text-align:center;color:#bbb;font-size:12.5px;padding:40px 20px;letter-spacing:1px">回收站是空的</div>';
+    box.innerHTML = '<div style="text-align:center;color:#bbb;font-size:12.5px;padding:60px 20px;letter-spacing:1px;font-weight:300">回收站是空的</div>';
     return;
   }
   const now = Date.now();
@@ -20144,29 +22293,17 @@ function renderCardTrash(){
     const agoDays = Math.max(0, Math.floor((now - item.deletedAt) / 86400000));
     const agoText = agoDays === 0 ? '今天' : (agoDays + ' 天前');
     const src = (item.originalGroupName || '') + ' / ' + (item.originalCatName || '');
-    return '<div class="trash-item" data-tid="' + item.id + '" style="display:flex;align-items:flex-start;gap:10px;padding:12px 4px;border-bottom:0.6px dashed rgba(0,0,0,.06)">' +
-      '<div class="trash-ck" style="width:18px;height:18px;border-radius:6px;border:1.5px solid rgba(0,0,0,.18);flex:none;margin-top:3px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff"></div>' +
-      '<div style="flex:1;min-width:0">' +
-        '<div style="font-size:13.5px;color:#1a1a1a;line-height:1.6;word-break:break-word">' + escapeHTML(item.text) + '</div>' +
-        '<div style="font-size:10.5px;color:#bbb;margin-top:5px;line-height:1.5">' +
-          escapeHTML(src) + ' · ' + agoText + '删 · 剩 ' + leftDays + ' 天' +
-        '</div>' +
+    return '<div class="trash-item" data-tid="' + item.id + '">' +
+      '<div class="trash-ck"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>' +
+      '<div class="trash-main">' +
+        '<div class="trash-tt">' + escapeHTML(item.text) + '</div>' +
+        '<div class="trash-sb">' + escapeHTML(src) + ' · ' + agoText + '删 · 剩 ' + leftDays + ' 天</div>' +
       '</div>' +
     '</div>';
   }).join('');
   box.querySelectorAll('.trash-item').forEach(el => {
     el.addEventListener('click', () => {
-      const ck = el.querySelector('.trash-ck');
-      const on = ck.textContent === '✓';
-      if(on){
-        ck.textContent = '';
-        ck.style.background = '';
-        ck.style.borderColor = 'rgba(0,0,0,.18)';
-      } else {
-        ck.textContent = '✓';
-        ck.style.background = '#1a1a1a';
-        ck.style.borderColor = '#1a1a1a';
-      }
+      el.classList.toggle('sel');
     });
   });
 }
@@ -20174,9 +22311,8 @@ function renderCardTrash(){
 /* 取回收站里当前勾选的 id 列表 */
 function getTrashChecked(){
   const ids = [];
-  document.querySelectorAll('#cardTrashList .trash-item').forEach(el => {
-    const ck = el.querySelector('.trash-ck');
-    if(ck && ck.textContent === '✓') ids.push(el.dataset.tid);
+  document.querySelectorAll('#cardTrashList .trash-item.sel').forEach(el => {
+    ids.push(el.dataset.tid);
   });
   return ids;
 }
@@ -20224,53 +22360,95 @@ on('#cardTrashRestore','click',()=>{
 on('#cardTrashDelete','click',()=>{
   const ids = getTrashChecked();
   if(!ids.length){ toast('请先选择要删除的字卡'); return; }
-  if(!confirm('彻底删除这 ' + ids.length + ' 条？删除后无法恢复。')) return;
-  const arr = getCardTrash().filter(x => !ids.includes(x.id));
-  saveCardTrash(arr);
-  renderCardTrash();
-  toast('已彻底删除 ' + ids.length + ' 条');
+
+  /* 自建一次性确认层，样式和站内「清空聊天记录」完全一致 */
+  const layer = document.createElement('div');
+  layer.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px';
+  layer.innerHTML =
+    '<div style="width:100%;max-width:300px;background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.05);padding:24px 22px 20px;text-align:center">' +
+      '<div style="width:44px;height:44px;border-radius:12px;background:#f7f7f7;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">' +
+        '<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:#1a1a1a;fill:none;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg>' +
+      '</div>' +
+      '<div style="font-size:15px;font-weight:400;letter-spacing:3px;color:#1a1a1a;text-indent:3px">确认删除？</div>' +
+      '<div style="font-size:12px;color:#999;line-height:1.75;letter-spacing:.5px;margin-top:12px;font-weight:300">将彻底删除 <b style="color:#1a1a1a;font-weight:400">' + ids.length + '</b> 条字卡。<br>删除后无法恢复。</div>' +
+      '<div style="display:flex;gap:10px;margin-top:26px">' +
+        '<button data-cancel type="button" style="flex:1;padding:12px 0;border-radius:10px;font-size:13px;font-family:inherit;letter-spacing:2px;text-indent:2px;cursor:pointer;background:transparent;border:0.7px solid rgba(0,0,0,.12);color:#999;font-weight:300">取 消</button>' +
+        '<button data-ok type="button" style="flex:1;padding:12px 0;border-radius:10px;font-size:13px;font-family:inherit;letter-spacing:2px;text-indent:2px;cursor:pointer;background:#1a1a1a;color:#fff;border:none;font-weight:400">删 除</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(layer);
+
+  layer.addEventListener('click', function(e){
+    if(e.target === layer){ layer.remove(); }
+  });
+  layer.querySelector('[data-cancel]').addEventListener('click', function(){ layer.remove(); });
+  layer.querySelector('[data-ok]').addEventListener('click', function(){
+    const arr = getCardTrash().filter(x => !ids.includes(x.id));
+    saveCardTrash(arr);
+    renderCardTrash();
+    layer.remove();
+    toast('已彻底删除 ' + ids.length + ' 条');
+  });
 });
 
 /* 清空回收站 */
 on('#cardTrashClear','click',()=>{
   const arr = getCardTrash();
   if(!arr.length){ toast('回收站已经是空的'); return; }
-  if(!confirm('清空回收站？共 ' + arr.length + ' 条，全部彻底删除，无法恢复。')) return;
-  saveCardTrash([]);
-  renderCardTrash();
-  toast('回收站已清空');
+
+  /* 自建一次性确认层，样式和站内「清空聊天记录」一致 */
+  const layer = document.createElement('div');
+  layer.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px';
+  layer.innerHTML =
+    '<div style="width:100%;max-width:300px;background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.05);padding:24px 22px 20px;text-align:center">' +
+      '<div style="width:44px;height:44px;border-radius:12px;background:#f7f7f7;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">' +
+        '<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:#1a1a1a;fill:none;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg>' +
+      '</div>' +
+      '<div style="font-size:15px;font-weight:400;letter-spacing:3px;color:#1a1a1a;text-indent:3px">确认清空？</div>' +
+      '<div style="font-size:12px;color:#999;line-height:1.75;letter-spacing:.5px;margin-top:12px;font-weight:300">将清空回收站中的 <b style="color:#1a1a1a;font-weight:400">' + arr.length + '</b> 条字卡。<br>全部彻底删除，无法恢复。</div>' +
+      '<div style="display:flex;gap:10px;margin-top:26px">' +
+        '<button data-cancel type="button" style="flex:1;padding:12px 0;border-radius:10px;font-size:13px;font-family:inherit;letter-spacing:2px;text-indent:2px;cursor:pointer;background:transparent;border:0.7px solid rgba(0,0,0,.12);color:#999;font-weight:300">取 消</button>' +
+        '<button data-ok type="button" style="flex:1;padding:12px 0;border-radius:10px;font-size:13px;font-family:inherit;letter-spacing:2px;text-indent:2px;cursor:pointer;background:#1a1a1a;color:#fff;border:none;font-weight:400">清 空</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(layer);
+
+  layer.addEventListener('click', function(e){
+    if(e.target === layer){ layer.remove(); }
+  });
+  layer.querySelector('[data-cancel]').addEventListener('click', function(){ layer.remove(); });
+  layer.querySelector('[data-ok]').addEventListener('click', function(){
+    saveCardTrash([]);
+    renderCardTrash();
+    layer.remove();
+    toast('回收站已清空');
+  });
 });
 
 /* 全选 / 取消全选 */
 on('#cardTrashAll','click',()=>{
   const items = document.querySelectorAll('#cardTrashList .trash-item');
   if(!items.length) return;
-  const allOn = Array.from(items).every(el => {
-    const ck = el.querySelector('.trash-ck');
-    return ck && ck.textContent === '✓';
-  });
+  const allOn = Array.from(items).every(el => el.classList.contains('sel'));
   items.forEach(el => {
-    const ck = el.querySelector('.trash-ck');
-    if(!ck) return;
-    if(allOn){
-      ck.textContent = '';
-      ck.style.background = '';
-      ck.style.borderColor = 'rgba(0,0,0,.18)';
-    } else {
-      ck.textContent = '✓';
-      ck.style.background = '#1a1a1a';
-      ck.style.borderColor = '#1a1a1a';
-    }
+    el.classList.toggle('sel', !allOn);
   });
 });
 
 /* ===== 去末尾标点：选择分类 ===== */
 function openTrimPicker(){
   const box = $('#trimCatList');
-  const g = currentGroupObj(); if(!g){ toast('分组不存在'); return; }
-  const cats = g.cats || [];
-  if(!cats.length){ toast('这个分组没有分类'); return; }
-  box.innerHTML = cats.map(c=>`<div class="trim-cat-row" data-cid="${c.id}"><div class="trim-ck"></div><div class="trim-name">${escapeHTML(c.name)}<span class="count">${(c.list||[]).length}</span></div></div>`).join('');
+  if(!box) return;
+  const g = currentGroupObj();
+  if(!g){ toast('请先进入一个分组再使用'); return; }
+  const cats = (g.cats || []).filter(c => c && c.id !== 'ce-edited');
+  if(!cats.length){ toast('这个分组没有可处理的分类'); return; }
+
+  /* 提示当前处理的是哪个分组 */
+  box.innerHTML =
+    '<div style="padding:6px 2px 12px;font-size:11.5px;color:#999;letter-spacing:.5px;text-align:center">当前分组：' + escapeHTML(g.name || '') + '</div>' +
+    cats.map(c=>`<div class="trim-cat-row" data-cid="${c.id}"><div class="trim-ck"></div><div class="trim-name">${escapeHTML(c.name)}<span class="count">${(c.list||[]).length}</span></div></div>`).join('');
+
   box.querySelectorAll('.trim-cat-row').forEach(row=>{
 	row.addEventListener('click', ()=>{
 	  row.classList.toggle('on');
@@ -20281,31 +22459,37 @@ function openTrimPicker(){
   $('#mTrimPicker').classList.add('show');
 }
 on('#btnTrimOk','click',()=>{
-  const g = currentGroupObj(); if(!g) return;
+  const g = currentGroupObj();
+  if(!g){ toast('请先进入一个分组再使用'); return; }
   const picked = Array.from(document.querySelectorAll('#trimCatList .trim-cat-row.on')).map(r=>r.dataset.cid);
   if(!picked.length){ toast('请至少选择一个分类'); return; }
   let totalChanged = 0;
   picked.forEach(cid=>{
-	const cat = getCat(g, cid); if(!cat) return;
-	(cat.list||[]).forEach(item=>{
-	  const oldText = cardText(item);
+	const cat = getCat(g, cid);
+	if(!cat) return;
+	const arr = cat.list || [];
+	for(let i = 0; i < arr.length; i++){
+	  const item = arr[i];
+	  const oldText = String(cardText(item) || '');
 	  const newText = oldText.replace(/[\s]*[。．.，,；;：:！!？?…]+[\s]*$/g, '');
-	  if(newText === oldText) return;
+	  if(newText === oldText) continue;
 	  if(typeof item === 'string'){
-		const idx = cat.list.indexOf(item);
-		cat.list[idx] = { text: newText, t: item.t || Date.now() };
+		arr[i] = { text: newText, t: Date.now() };
 	  } else if(item && typeof item === 'object'){
+		/* 只改原本存在的字段，不凭空添字段 */
 		if(item.text !== undefined) item.text = newText;
-		if(item.mood !== undefined) item.mood = newText;
+		else if(item.mood !== undefined) item.mood = newText;
+		else if(item.kaomoji !== undefined) item.kaomoji = newText;
+		else item.text = newText;
 	  }
 	  totalChanged++;
-	});
+	}
   });
   saveCardStore();
   $('#mTrimPicker').classList.remove('show');
   renderCdTabs();
   renderCdList();
-  toast('已处理 ' + totalChanged + ' 条字卡');
+  toast(totalChanged ? ('已处理 ' + totalChanged + ' 条字卡') : '这些分类里没有需要去除的末尾标点');
 });
 
 /* ===== 排序选择（弹窗） ===== */
@@ -20328,173 +22512,101 @@ document.querySelectorAll('#mSortPicker .sort-opt').forEach(el=>{
   });
 });
 
-let expSelGroups = new Set();
+let expSelCats = new Set();
 
 function doExportCards(){
-  expSelGroups = new Set();
-  renderExportGroupList();
+  expSelCats = new Set();
+  renderExportCatList();
   $('#mExport').classList.add('show');
 }
 
-function renderExportGroupList(){
-  const box = $('#expGroupList');
-  const blocks = [];
-  (cardStore.public||[]).forEach(g=>{
-	blocks.push(makeExportBlock('pub:'+g.id, '公用 · '+g.name, g, 'pub', null));
-  });
-  Object.keys(cardStore.roles||{}).forEach(rid=>{
-	const roleName = getRoleNameById(rid) || '角色';
-	(cardStore.roles[rid]||[]).forEach(g=>{
-	  blocks.push(makeExportBlock('role:'+rid+':'+g.id, roleName+' · '+g.name, g, 'role', rid));
-	});
-  });
-  if(!blocks.length){
-	box.innerHTML = `<div style="text-align:center;color:#999;font-size:12px;padding:20px 0">没有可导出的分组</div>`;
-	return;
-  }
-  box.innerHTML = `<div style="max-height:340px;overflow-y:auto;margin-top:4px">${blocks.join('')}</div>`;
-  bindExportBlockEvents();
-  refreshExportGroupStates();
-}
-
-function makeExportBlock(groupKey, title, group, kind, rid){
-  const cats = group.cats || [];
-  const total = cats.reduce((n,c)=>n+(c.list||[]).length, 0);
-  const catsHTML = cats.map(c=>{
-	const cid = c.id;
-	const cKey = kind === 'pub'
-	  ? 'pub:'+group.id+':'+cid
-	  : 'role:'+rid+':'+group.id+':'+cid;
-	const cnt = (c.list||[]).length;
-	return `<div class="exp-cat-row" data-key="${cKey}" data-parent="${groupKey}" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer;transition:background .15s"><div class="exp-ck" style="width:18px;height:18px;border-radius:6px;border:1.5px solid var(--th-accent-line);display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;flex:none">✓</div><div style="flex:1;font-size:12.5px;color:var(--th-text)">${escapeHTML(c.name)}<span style="color:#999;margin-left:6px;font-size:11px">${cnt}</span></div></div>`;
-  }).join('');
-  return `<div class="exp-group-block" data-group-key="${groupKey}" data-kind="${kind}" data-rid="${rid||''}" data-gid="${group.id}" style="margin-bottom:10px;border:1px solid var(--th-accent-line);border-radius:12px;overflow:hidden">
-	<div class="exp-group-head" style="display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;background:var(--th-accent-soft)">
-	  <span class="exp-arrow" style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;flex:none;transition:transform .22s ease;color:#999"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,6 15,12 9,18"/></svg></span>
-	  <div class="exp-ck" style="width:20px;height:20px;border-radius:6px;border:1.5px solid var(--th-accent-line);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex:none">✓</div>
-	  <div style="flex:1;font-size:13.5px;color:var(--th-text);font-weight:500">${escapeHTML(title)}<span style="color:#999;margin-left:6px;font-size:11px;font-weight:400">${total}</span></div>
-	</div>
-	<div class="exp-group-body" style="display:none;padding:6px 8px 8px;background:#fff">${catsHTML}</div>
-  </div>`;
-}
-
-function refreshExportGroupStates(){
-  const box = $('#expGroupList');
+/* 只渲染当前分组的分类 */
+function renderExportCatList(){
+  const box = $('#expCatList');
   if(!box) return;
-  box.querySelectorAll('.exp-group-block').forEach(block=>{
-	const gKey = block.dataset.groupKey;
-	const head = block.querySelector('.exp-group-head');
-	const headCk = head.querySelector('.exp-ck');
-	const catRows = block.querySelectorAll('.exp-cat-row');
-	const totalCats = catRows.length;
-	let selectedCats = 0;
-	catRows.forEach(r=>{
-	  const on = expSelGroups.has(r.dataset.key);
-	  r.style.background = on ? 'var(--th-accent-soft-2)' : 'transparent';
-	  const ck = r.querySelector('.exp-ck');
-	  ck.style.background = on ? 'var(--th-accent)' : 'transparent';
-	  ck.style.borderColor = on ? 'var(--th-accent)' : 'var(--th-accent-line)';
-	  ck.style.color = on ? '#fff' : 'transparent';
-	  if(on) selectedCats++;
-	});
-	// 分组本身的勾选状态：如果整个组被选中，或者下面所有分类都被选中
-	const groupSel = expSelGroups.has(gKey);
-	const allCatsSel = totalCats > 0 && selectedCats === totalCats;
-	const headOn = groupSel || allCatsSel;
-	headCk.style.background = headOn ? 'var(--th-accent)' : 'transparent';
-	headCk.style.borderColor = headOn ? 'var(--th-accent)' : 'var(--th-accent-line)';
-	headCk.style.color = headOn ? '#fff' : 'transparent';
-  });
-}
+  const g = currentGroupObj();
+  if(!g){
+    box.innerHTML = '<div style="text-align:center;color:#999;font-size:12px;padding:20px 0">请先进入一个分组</div>';
+    return;
+  }
+  const cats = (g.cats || []).filter(c => c && c.id !== 'ce-edited');
+  if(!cats.length){
+    box.innerHTML = '<div style="text-align:center;color:#999;font-size:12px;padding:20px 0">这个分组没有可导出的分类</div>';
+    return;
+  }
+  box.innerHTML = cats.map(c => {
+    const on = expSelCats.has(c.id);
+    const cnt = (c.list || []).length;
+    return '<div class="exp-cat-row' + (on ? ' on' : '') + '" data-cid="' + c.id + '">' +
+      '<div class="exp-ck"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>' +
+      '<div class="exp-name">' + escapeHTML(c.name) + '</div>' +
+      '<div class="exp-count">' + cnt + '</div>' +
+    '</div>';
+  }).join('');
 
-function bindExportBlockEvents(){
-  const box = $('#expGroupList');
-  if(!box || box._bound) return;
-  box._bound = true;
-  box.addEventListener('click', e=>{
-	// 展开/收起
-	const head = e.target.closest('.exp-group-head');
-	if(head){
-	  const block = head.closest('.exp-group-block');
-	  const body = block.querySelector('.exp-group-body');
-	  const arrow = block.querySelector('.exp-arrow');
-	  const isOpen = body.style.display !== 'none';
-	  body.style.display = isOpen ? 'none' : 'block';
-	  arrow.style.transform = isOpen ? '' : 'rotate(90deg)';
-	  return;
-	}
-	// 点击某分类行
-	const catRow = e.target.closest('.exp-cat-row');
-	if(catRow){
-	  const k = catRow.dataset.key;
-	  if(expSelGroups.has(k)) expSelGroups.delete(k); else expSelGroups.add(k);
-	  // 如果取消分类勾选，同时取消整个组的勾选
-	  const parentKey = catRow.dataset.parent;
-	  if(expSelGroups.has(parentKey)) expSelGroups.delete(parentKey);
-	  refreshExportGroupStates();
-	  return;
-	}
+  box.querySelectorAll('.exp-cat-row').forEach(row => {
+    row.onclick = () => {
+      const cid = row.dataset.cid;
+      if(expSelCats.has(cid)) expSelCats.delete(cid);
+      else expSelCats.add(cid);
+      row.classList.toggle('on', expSelCats.has(cid));
+    };
   });
 }
 
 
+
+/* ===== 导出字卡 · 全选按钮（新增） ===== */
+document.addEventListener('click', function(e){
+  if(e.target && e.target.id === 'expToggleAll'){
+    e.preventDefault();
+    e.stopPropagation();
+    var box = document.getElementById('expCatList');
+    if(!box) return;
+    var rows = box.querySelectorAll('.exp-cat-row');
+    if(!rows.length) return;
+    var allOn = Array.prototype.every.call(rows, function(r){ return expSelCats.has(r.dataset.cid); });
+    expSelCats.clear();
+    if(!allOn){
+      Array.prototype.forEach.call(rows, function(r){ expSelCats.add(r.dataset.cid); });
+    }
+    Array.prototype.forEach.call(rows, function(r){
+      r.classList.toggle('on', expSelCats.has(r.dataset.cid));
+    });
+  }
+}, true);
 
 on('#btnExportOk','click',()=>{
-  // 判断是否有任何勾选
-  const hasAnySel = expSelGroups.size > 0;
+  const g = currentGroupObj();
+  if(!g){ toast('请先进入一个分组'); return; }
+  if(!expSelCats.size){ toast('请至少选择一个分类'); return; }
 
-  function catSelected(prefix, catId){
-	const groupKey = prefix;
-	const catKey = prefix + ':' + catId;
-	if(expSelGroups.has(groupKey)) return true;
-	if(expSelGroups.has(catKey)) return true;
-	return false;
-  }
-
-  const outPublic = [];
-  const outRoles = {};
-
-  (cardStore.public||[]).forEach(g=>{
-	const prefix = 'pub:'+g.id;
-	const newCats = [];
-	(g.cats||[]).forEach(c=>{
-	  const pick = hasAnySel ? catSelected(prefix, c.id) : true;
-	  if(pick){
-		newCats.push(JSON.parse(JSON.stringify(c)));
-	  }
-	});
-	if(newCats.length > 0){
-	  const gCopy = JSON.parse(JSON.stringify(g));
-	  gCopy.cats = newCats;
-	  outPublic.push(gCopy);
-	}
+  /* 只导出当前分组的被选中分类 */
+  const newCats = [];
+  (g.cats || []).forEach(c => {
+    if(!c || c.id === 'ce-edited') return;
+    if(expSelCats.has(c.id)){
+      newCats.push(JSON.parse(JSON.stringify(c)));
+    }
   });
-  Object.keys(cardStore.roles||{}).forEach(rid=>{
-	(cardStore.roles[rid]||[]).forEach(g=>{
-	  const prefix = 'role:'+rid+':'+g.id;
-	  const newCats = [];
-	  (g.cats||[]).forEach(c=>{
-		const pick = hasAnySel ? catSelected(prefix, c.id) : true;
-		if(pick){
-		  newCats.push(JSON.parse(JSON.stringify(c)));
-		}
-	  });
-	  if(newCats.length > 0){
-		if(!outRoles[rid]) outRoles[rid] = [];
-		const gCopy = JSON.parse(JSON.stringify(g));
-		gCopy.cats = newCats;
-		outRoles[rid].push(gCopy);
-	  }
-	});
-  });
+  if(!newCats.length){ toast('没有可导出的内容'); return; }
+
+  /* 判断当前分组是公用还是角色专属 */
+  const isPublic = (curOwner === 'public');
+  const gCopy = JSON.parse(JSON.stringify(g));
+  gCopy.cats = newCats;
 
   const data = {
-	__type:'our-dreamland-cards',
-	__version:1,
-	exportedAt: Date.now(),
-	public: outPublic,
-	roles: outRoles
+    __type: 'our-dreamland-cards',
+    __version: 1,
+    exportedAt: Date.now(),
+    public: isPublic ? [gCopy] : [],
+    roles: {}
   };
+  if(!isPublic){
+    data.roles[curOwner] = [gCopy];
+  }
+
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], {type:'application/json'});
   const url = URL.createObjectURL(blob);
@@ -20502,28 +22614,30 @@ on('#btnExportOk','click',()=>{
   const d = new Date();
   const stamp = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}`;
   a.href = url;
-  a.download = `字卡备份_${stamp}.json`;
+  a.download = `${g.name || '字卡'}_${stamp}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url), 1000);
-  const pubCount = outPublic.reduce((n,g)=>n+(g.cats||[]).reduce((m,c)=>m+(c.list||[]).length,0),0);
-  const roleCount = Object.values(outRoles).reduce((n,groups)=>n+groups.reduce((m,g)=>m+(g.cats||[]).reduce((k,c)=>k+(c.list||[]).length,0),0),0);
-  toast(`已导出：公共 ${pubCount} 条 · 专属 ${roleCount} 条`);
+
+  const count = newCats.reduce((n,c) => n + (c.list || []).length, 0);
+  toast('已导出：' + g.name + ' · ' + newCats.length + ' 个分类 · ' + count + ' 条');
   $('#mExport').classList.remove('show');
 });
 
 on('#expToggleAll','click',()=>{
-  // 全选：勾所有分组（而不是所有分类）
-  const box = $('#expGroupList');
+  const box = $('#expCatList');
   if(!box) return;
-  const blocks = box.querySelectorAll('.exp-group-block');
-  const allOn = Array.from(blocks).every(b=>expSelGroups.has(b.dataset.groupKey));
-  expSelGroups.clear();
+  const rows = box.querySelectorAll('.exp-cat-row');
+  if(!rows.length) return;
+  const allOn = Array.from(rows).every(r => expSelCats.has(r.dataset.cid));
+  expSelCats.clear();
   if(!allOn){
-	blocks.forEach(b=>expSelGroups.add(b.dataset.groupKey));
+    rows.forEach(r => expSelCats.add(r.dataset.cid));
   }
-  refreshExportGroupStates();
+  rows.forEach(r => {
+    r.classList.toggle('on', expSelCats.has(r.dataset.cid));
+  });
 });
 let pendingImportData = null;
 function doImportCards(){
@@ -20902,7 +23016,7 @@ on('#cdHisClear','click',function(){
   cdHisRender();
 });
 on('#cdHisMask','click',cdHisClose);
-on('#cdSearchInput','focus',function(){ cdHisOpen(); });
+
 on('#cdSearchInput','input',function(){
   cardKeyword = this.value;
   renderCdList();
@@ -20910,8 +23024,6 @@ on('#cdSearchInput','input',function(){
 on('#cdSearchInput','keydown',function(e){
   if(e.key === 'Enter'){
     e.preventDefault();
-    cdHisAdd(this.value);
-    cdHisClose();
     this.blur();
   }
 });
@@ -21781,7 +23893,7 @@ function renderFriends(){
 }
 function refreshChatRole(){
   const role=getRole();
-  $('#chatName').textContent=role.name;
+  $('#chatName').textContent=displayName(role);
   $('#chatAvatar').innerHTML=avatarHTML(role.avatar);
   const mpAv=$('#mpAv'); if(mpAv) mpAv.innerHTML=avatarHTML(role.avatar);
   const ssAv=$('#splitAvatar'); if(ssAv) ssAv.innerHTML=avatarHTML(role.avatar);
@@ -22673,24 +24785,39 @@ function rerecordRec(){
 function toggleRecConfirmPlay(){
   if(!pendingUrl) return;
   const wave = $('#recWave');
+  const getPlayBtn = ()=> document.querySelector('#recActions .rec-act[data-act="play"]');
   // 如果正在播放 → 暂停
   if(confirmAudio && !confirmAudio.paused){
     confirmAudio.pause();
     if(wave){ wave.classList.remove('playing'); wave.classList.add('frozen'); }
+    const pb = getPlayBtn();
+    if(pb) pb.textContent = '▶ 试 听';
     return;
   }
   if(!confirmAudio){
     confirmAudio = new Audio(pendingUrl);
     confirmAudio.onended = ()=>{
       if(wave){ wave.classList.remove('playing'); wave.classList.add('frozen'); }
+      const pb = getPlayBtn();
+      if(pb) pb.textContent = '▶ 试 听';
     };
-    confirmAudio.onerror = ()=>{ toast('试听失败'); if(wave){ wave.classList.remove('playing'); wave.classList.add('frozen'); } };
+    confirmAudio.onerror = ()=>{
+      toast('试听失败');
+      if(wave){ wave.classList.remove('playing'); wave.classList.add('frozen'); }
+      const pb = getPlayBtn();
+      if(pb) pb.textContent = '▶ 试 听';
+    };
   }
   confirmAudio.currentTime = 0;
   confirmAudio.play().then(()=>{
-    // 试听时波形也动起来
     if(wave){ wave.classList.remove('frozen'); wave.classList.add('playing'); }
-  }).catch(()=>{ toast('播放被拦截，请再点一次'); });
+    const pb = getPlayBtn();
+    if(pb) pb.textContent = '⏸ 暂 停';
+  }).catch(()=>{
+    toast('播放被拦截，请再点一次');
+    const pb = getPlayBtn();
+    if(pb) pb.textContent = '▶ 试 听';
+  });
 }
 function sendRecVoice(){
   if(!pendingBlob){ toast('没有可发送的语音'); return; }
@@ -22702,10 +24829,10 @@ function sendRecVoice(){
 
   /* 先把临时 URL 用起来，保证当次能立刻播；同时把 Blob 存进 IndexedDB */
   const msg = {id:uid(), role:'user', voice:dur, voiceUrl:tempUrl, voiceIdbKey:idbKey, time:Date.now()};
-  msg.readState = (Math.random() < 0.80) ? 'unread' : 'read';
+  msg.readState = 'unread';
   msgs.push(msg);
   saveMsgs(); renderChat(true);
-  armReadStateCheck();
+  armReadCooldown();
 
   __idb.set(idbKey, blob).catch(function(e){
     console.error('语音存 IndexedDB 失败', e);
@@ -22805,18 +24932,7 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	/* ★ 启动通话模块 */
 	try{ if(typeof startCallModule === 'function'){ startCallModule(); } }catch(e){ console.error('通话模块启动失败', e); }
 
-	/* 时间字卡独立调度：每分钟 tick 一次，跨天自动重建计划 */
-	try{
-	  getTimedSchedule();                       /* 启动时生成今天的计划 */
-	  setInterval(function(){
-	    try{
-	      getTimedSchedule();                   /* 跨天时自动重建 */
-	      runTimedCardTick();
-	    }catch(e){ console.error('时间字卡 tick 出错', e); }
-	  }, 60 * 1000);
-	  /* 启动后立即跑一次（防止已经过了今天某个点的时刻） */
-	  setTimeout(function(){ try{ runTimedCardTick(); }catch(e){} }, 8000);
-	}catch(e){ console.error('时间字卡调度启动失败', e); }
+
 
 	/* 标签自动贴调度：每分钟 tick 一次 */
 	try{
@@ -23016,7 +25132,7 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	  });
 	});
 	on('#cipBg','click',()=>$('#topbarBgFile').click());
-	/* 清空聊天记录入口已移除 */
+	
 
 	on('#topbarBgFile','change',function(){
 	  const f=this.files[0]; this.value=''; if(!f) return;
@@ -25018,16 +27134,17 @@ function scheduleOnlineTrigger(){
 }
 
 /* ===== 统一切页面入口 =====
-   参数 name：'friends' | 'chat' | 'desk' | 'me'
+   参数 name：'friends' | 'chat' | 'calendar' | 'desk' | 'me'
    页面索引表写死在函数内部，避免外部变量因某个脚本提前抛错而变成 undefined。
    关面板、跳页这类独有动作，留在各调用点，不放这里。 */
 function goToPage(name){
   if(!name) return;
   var PAGE_INDEX = {
-    friends: 0,
-    chat:    1,
-    desk:    2,
-    me:      3
+    friends:  0,
+    chat:     1,
+    calendar: 2,
+    desk:     3,
+    me:       4
   };
   var idx = PAGE_INDEX[name];
   if(typeof idx !== 'number') return;
@@ -27014,6 +29131,154 @@ document.addEventListener('click', (e) => {
   saveCardStore();
 })();
 
+/* ============================================================
+   内置：天气字卡 / 节日字卡 / 特殊日期字卡（一次性建好，用户可改）
+   ============================================================ */
+(function ensureLinkCardGroups(){
+  if(!cardStore || !Array.isArray(cardStore.public)) return;
+  const FLAG = 'mj_link_groups_v1';
+  if(lsGet(FLAG, false)) return;
+
+  /* ---- 天气字卡（按天气类型分 9 类）---- */
+  if(!cardStore.public.some(g => g.id === 'g-weather')){
+    cardStore.public.push({
+      id: 'g-weather',
+      name: '天气字卡',
+      icon: 'star',
+      sub: '角色根据今日天气说话',
+      cats: [
+        { id:'cw-sunny',   name:'晴',      list:[
+          '今天天气真好，晒晒太阳','阳光不错，出去走走吧','晴天心情也跟着好',
+          '这么晴朗，适合和你一起出去','太阳好大，记得涂防晒'
+        ]},
+        { id:'cw-cloudy',  name:'多云',    list:[
+          '今天多云，还挺舒服的','云有点厚，不过不闷','天不算晴也不算阴，刚刚好',
+          '多云的日子适合发呆'
+        ]},
+        { id:'cw-overcast',name:'阴',      list:[
+          '今天阴沉沉的，别影响心情','天色有点闷，记得开窗通风',
+          '阴天让人想赖床','阴天也别忘了笑一下'
+        ]},
+        { id:'cw-rain',    name:'雨',      list:[
+          '今天下雨了，记得带伞','外面在下雨，别淋湿了','下雨天路滑，小心点',
+          '听着雨声想你了','雨很大，出门穿双防水的鞋'
+        ]},
+        { id:'cw-snow',    name:'雪',      list:[
+          '下雪了，注意保暖','雪天路滑，慢一点走','外面白茫茫的，好美',
+          '下雪了，想和你一起看','雪天记得多穿点'
+        ]},
+        { id:'cw-fog',     name:'雾',      list:[
+          '今天有雾，出门小心','雾气很重，开车慢一点','雾天视线不好，注意安全',
+          '雾里的城市像一幅水墨画'
+        ]},
+        { id:'cw-wind',    name:'风',      list:[
+          '今天风大，穿厚一点','风好大，帽子差点吹跑','刮风了，注意别着凉',
+          '风把云都吹散了'
+        ]},
+        { id:'cw-hot',     name:'高温预警',list:[
+          '今天高温，多喝水','外面太热了，别在外面待太久','高温天气，注意防暑',
+          '这么热，来杯冰饮吧','热到融化，你也注意身体'
+        ]},
+        { id:'cw-storm',   name:'台风暴雨',list:[
+          '台风预警，注意安全','暴雨天尽量别出门','风大雨大，待在家里最好',
+          '台风来了，把窗户关好','暴雨天气，注意排水和用电安全'
+        ]}
+      ]
+    });
+  }
+
+  /* ---- 节日字卡 ---- */
+  if(!cardStore.public.some(g => g.id === 'g-festival')){
+    cardStore.public.push({
+      id: 'g-festival',
+      name: '节日字卡',
+      icon: 'star',
+      sub: '到节日时角色自动说祝福',
+      cats: [
+        { id:'cf-solar', name:'公历节日', list:[] },
+        { id:'cf-lunar', name:'农历节日', list:[] },
+        { id:'cf-term',  name:'节气',     list:[] }
+      ]
+    });
+  }
+  /* 往节日字卡里填默认祝福语（幂等，只在分类空时填） */
+  (function fillFestivalDefaults(){
+    const g = cardStore.public.find(x => x.id === 'g-festival');
+    if(!g || !g.cats) return;
+    const solarCat = g.cats.find(c => c.id === 'cf-solar');
+    const lunarCat = g.cats.find(c => c.id === 'cf-lunar');
+    const termCat  = g.cats.find(c => c.id === 'cf-term');
+    function fill(cat, list){
+      if(!cat) return;
+      if(!Array.isArray(cat.list)) cat.list = [];
+      if(cat.list.length) return;
+      list.forEach(t => cat.list.push({ text: t, t: Date.now() }));
+    }
+    fill(solarCat, [
+      '元旦快乐，新的一年也要好好的',
+      '新年快乐！今年也要在一起',
+      '情人节快乐，今天特别想你',
+      '劳动节快乐，好好休息一下',
+      '儿童节快乐，你也是我的小朋友',
+      '国庆快乐，放假好好玩',
+      '圣诞快乐，想要什么礼物',
+      '平安夜快乐，记得吃苹果'
+    ]);
+    fill(lunarCat, [
+      '春节快乐！新年吉祥',
+      '元宵节快乐，记得吃汤圆',
+      '端午节安康，今天吃粽子了吗',
+      '七夕快乐，今天想你了',
+      '中秋节快乐，月亮好圆',
+      '重阳节安康，记得看看老人',
+      '腊八节快乐，今天喝粥了吗'
+    ]);
+    fill(termCat, [
+      '今天立春，春天要来了',
+      '今天清明，去踏青了吗',
+      '今天夏至，白天最长',
+      '今天秋分，昼夜等长',
+      '今天冬至，记得吃饺子或汤圆',
+      '今天是大雪，注意保暖'
+    ]);
+  })();
+
+  /* ---- 特殊日期字卡（生日 / 纪念日 / 倒计时 / 100 天）---- */
+  if(!cardStore.public.some(g => g.id === 'g-special')){
+    cardStore.public.push({
+      id: 'g-special',
+      name: '特殊日期字卡',
+      icon: 'star',
+      sub: '生日 / 纪念日 / 倒计时当天自动祝福',
+      cats: [
+        { id:'cs-birthday', name:'生日祝福', list:[
+          '生日快乐！今天你是主角',
+          '生日快乐，希望你每天都开心',
+          '又长大一岁啦，生日快乐',
+          '生日快乐，我准备了一个小惊喜',
+          '生日快乐，这一年也要健康平安'
+        ]},
+        { id:'cs-love',     name:'恋爱纪念日', list:[
+          '纪念日快乐，今天特别想你',
+          '又是和你在一起的一天，真好',
+          '纪念日快乐，想和你走更远',
+          '今天是我们在一起的第 N 天，纪念一下',
+          '纪念日快乐，每天都是新的开始'
+        ]},
+        { id:'cs-countdown',name:'倒计时 / 日程', list:[
+          '今天是那个日子，你准备好了吗',
+          '今天终于到了，加油',
+          '记着呢，就是今天',
+          '那个日子到了，我陪你'
+        ]}
+      ]
+    });
+  }
+
+  saveCardStore();
+  lsSet(FLAG, true);
+})();
+
 (function patchChatRender(){
   const origRender = window.renderChat;
   if(typeof origRender !== 'function') return;
@@ -27242,28 +29507,1487 @@ window.__memoDebug = function(){
 </script>
 
 <script>
-/* ===== 独立的诊断按钮 · 不依赖原 script[1] ===== */
-(function(){
-  if(document.getElementById('diagFabNew')) return;
-  var fab = document.createElement('div');
-  fab.id = 'diagFabNew';
-  fab.textContent = '🩺';
-  fab.style.cssText = 'position:fixed;right:10px;bottom:120px;width:36px;height:36px;border-radius:50%;background:#1a1a1a;color:#fff;font-size:16px;border:1px solid #fff;display:flex;align-items:center;justify-content:center;z-index:2147483647;line-height:1;box-shadow:0 2px 10px rgba(0,0,0,.35);cursor:pointer;opacity:.75;';
-  fab.onclick = function(){
-    if(typeof window.__openDiagPanel === 'function'){
-      window.__openDiagPanel();
+/* ============================================================
+   日历页 + 编辑桌面 · 数据层 + 渲染 + 天气 + 农历
+   ============================================================ */
+
+/* ---------- 1. 农历数据表（1900 - 2100） ---------- */
+const LUNAR_INFO = [
+0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,
+0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,
+0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,
+0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,
+0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,
+0x06ca0,0x0b550,0x15355,0x04da0,0x0a5b0,0x14573,0x052b0,0x0a9a8,0x0e950,0x06aa0,
+0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,
+0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b6a0,0x195a6,
+0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,
+0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x05ac0,0x0ab60,0x096d5,0x092e0,
+0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,
+0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0a930,
+0x07954,0x06aa0,0x0ad50,0x05b52,0x04b60,0x0a6e6,0x0a4e0,0x0d260,0x0ea65,0x0d530,
+0x05aa0,0x076a3,0x096d0,0x04afb,0x04ad0,0x0a4d0,0x1d0b6,0x0d250,0x0d520,0x0dd45,
+0x0b5a0,0x056d0,0x055b2,0x049b0,0x0a577,0x0a4b0,0x0aa50,0x1b255,0x06d20,0x0ada0,
+0x14b63,0x09370,0x049f8,0x04970,0x064b0,0x168a6,0x0ea50,0x06b20,0x1a6c4,0x0aae0,
+0x0a2e0,0x0d2e3,0x0c960,0x0d557,0x0d4a0,0x0da50,0x05d55,0x056a0,0x0a6d0,0x055d4,
+0x052d0,0x0a9b8,0x0a950,0x0b4a0,0x0b6a6,0x0ad50,0x055a0,0x0aba4,0x0a5b0,0x052b0,
+0x0b273,0x06930,0x07337,0x06aa0,0x0ad50,0x14b55,0x04b60,0x0a570,0x054e4,0x0d160,
+0x0e968,0x0d520,0x0daa0,0x16aa6,0x056d0,0x04ae0,0x0a9d4,0x0a2d0,0x0d150,0x0f252,
+0x0d520
+];
+const LUNAR_MONTH_CN = ['正','二','三','四','五','六','七','八','九','十','冬','腊'];
+const LUNAR_DAY_CN = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十',
+  '十一','十二','十三','十四','十五','十六','十七','十八','十九','二十',
+  '廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
+const LUNAR_DAY_CN_S = ['初','十','廿','卅'];
+
+function lunarYearDays(y){
+  let sum = 348;
+  for(let i = 0x8000; i > 0x8; i >>= 1){
+    sum += (LUNAR_INFO[y - 1900] & i) ? 1 : 0;
+  }
+  return sum + leapDays(y);
+}
+function leapMonth(y){
+  return LUNAR_INFO[y - 1900] & 0xf;
+}
+function leapDays(y){
+  if(leapMonth(y)){
+    return (LUNAR_INFO[y - 1900] & 0x10000) ? 30 : 29;
+  }
+  return 0;
+}
+function monthDays(y, m){
+  return (LUNAR_INFO[y - 1900] & (0x10000 >> m)) ? 30 : 29;
+}
+function solarToLunar(y, m, d){
+  if(y < 1900 || y > 2100) return null;
+  let offset = (Date.UTC(y, m - 1, d) - Date.UTC(1900, 0, 31)) / 86400000;
+  let i;
+  for(i = 1900; i < 2101 && offset > 0; i++){
+    offset -= lunarYearDays(i);
+  }
+  if(offset < 0){ offset += lunarYearDays(i - 1); i--; }
+  const lunarYear = i;
+  const leap = leapMonth(i);
+  let isLeap = false;
+  let j;
+  for(j = 1; j < 13 && offset > 0; j++){
+    if(leap > 0 && j === (leap + 1) && !isLeap){
+      --j;
+      isLeap = true;
+      offset -= leapDays(lunarYear);
     } else {
-      alert('诊断面板未就绪，请刷新页面');
+      offset -= monthDays(lunarYear, j);
     }
+    if(isLeap && j === (leap + 1)) isLeap = false;
+  }
+  if(offset === 0 && leap > 0 && j === (leap + 1)){
+    if(isLeap){ isLeap = false; }
+    else { isLeap = true; --j; }
+  }
+  if(offset < 0){ offset += monthDays(lunarYear, j); --j; }
+  const lunarMonth = j;
+  const lunarDay = offset + 1;
+  return {
+    year: lunarYear,
+    month: lunarMonth,
+    day: lunarDay,
+    isLeap: isLeap,
+    monthCn: (isLeap ? '闰' : '') + LUNAR_MONTH_CN[lunarMonth - 1] + '月',
+    dayCn: LUNAR_DAY_CN[lunarDay - 1]
   };
-  document.body.appendChild(fab);
-  /* 统计 JS 错误数 */
-  window.__errCount = window.__errCount || 0;
-  window.addEventListener('error', function(){ window.__errCount++; });
-  window.addEventListener('unhandledrejection', function(){ window.__errCount++; });
-  console.log('[诊断按钮] 已创建');
-})();
+}
+function lunarToSolar(ly, lm, ld, isLeap){
+  if(ly < 1900 || ly > 2100) return null;
+  let offset = 0;
+  let i;
+  for(i = 1900; i < ly; i++){
+    offset += lunarYearDays(i);
+  }
+  const leap = leapMonth(ly);
+  let isLeapMonth = false;
+  for(i = 1; i < 13; i++){
+    if(leap > 0 && i === (leap + 1) && !isLeapMonth){
+      --i;
+      isLeapMonth = true;
+      if(isLeap){
+        offset += leapDays(ly);
+      }
+    } else {
+      if(isLeapMonth && i === (leap + 1)) isLeapMonth = false;
+      if(isLeap && i === lm && isLeapMonth){ break; }
+      if(i === lm && !isLeap){ break; }
+      offset += monthDays(ly, i);
+    }
+  }
+  offset += (ld - 1);
+  const baseUTC = Date.UTC(1900, 0, 31);
+  const targetUTC = baseUTC + offset * 86400000;
+  const d = new Date(targetUTC);
+  return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate() };
+}
+
+/* ---------- 2. 节气（简化版：只算 24 节气的公历日） ---------- */
+const SOLAR_TERMS = ['小寒','大寒','立春','雨水','惊蛰','春分','清明','谷雨','立夏','小满',
+  '芒种','夏至','小暑','大暑','立秋','处暑','白露','秋分','寒露','霜降','立冬','小雪','大雪','冬至'];
+const SOLAR_TERM_DAYS = [
+  5,20,4,19,5,20,4,20,5,21,5,21,7,22,7,23,7,23,8,23,7,22,7,22
+];
+function getSolarTerm(y, m, d){
+  const baseDay = SOLAR_TERM_DAYS[(m - 1) * 2];
+  const baseDay2 = SOLAR_TERM_DAYS[(m - 1) * 2 + 1];
+  if(d === baseDay) return SOLAR_TERMS[(m - 1) * 2];
+  if(d === baseDay2) return SOLAR_TERMS[(m - 1) * 2 + 1];
+  return '';
+}
+
+/* ---------- 3. 节日（公历 + 农历 + 节气） ---------- */
+const SOLAR_FESTIVALS = {
+  '1-1':'元旦','2-14':'情人节','3-8':'妇女节','3-12':'植树节','4-1':'愚人节',
+  '5-1':'劳动节','5-4':'青年节','6-1':'儿童节','7-1':'建党节','8-1':'建军节',
+  '9-10':'教师节','10-1':'国庆节','12-24':'平安夜','12-25':'圣诞节'
+};
+const LUNAR_FESTIVALS = {
+  '1-1':'春节','1-15':'元宵节','2-2':'龙抬头','5-5':'端午节','7-7':'七夕',
+  '7-15':'中元节','8-15':'中秋节','9-9':'重阳节','12-8':'腊八节','12-23':'小年'
+};
+
+/* ---------- 4. 特殊日期存储 ---------- */
+const CAL_SPECIAL_KEY = 'mj_cal_special_v1';
+function getSpecialDates(){
+  let a = lsGet(CAL_SPECIAL_KEY, null);
+  if(!Array.isArray(a)) a = [];
+  return a;
+}
+function saveSpecialDates(a){ lsSet(CAL_SPECIAL_KEY, a); }
+
+/* ---------- 5. 日程 / 待办存储 ---------- */
+const CAL_TODO_KEY = 'mj_cal_todo_v1';
+function getTodos(){
+  let a = lsGet(CAL_TODO_KEY, null);
+  if(!Array.isArray(a)) a = [];
+  return a;
+}
+function saveTodos(a){ lsSet(CAL_TODO_KEY, a); }
+
+/* ---------- 6. 天气配置 + 缓存 ---------- */
+const CAL_WEATHER_KEY = 'mj_cal_weather_v1';
+function getWeatherCfg(){
+  let c = lsGet(CAL_WEATHER_KEY, null);
+  if(!c || typeof c !== 'object') c = {};
+  if(typeof c.city !== 'string') c.city = '';
+  if(typeof c.lat !== 'number') c.lat = 0;
+  if(typeof c.lon !== 'number') c.lon = 0;
+  if(typeof c.autoLocate !== 'boolean') c.autoLocate = true;
+  if(!c.cache || typeof c.cache !== 'object') c.cache = null;
+  return c;
+}
+function saveWeatherCfg(c){ lsSet(CAL_WEATHER_KEY, c); }
+
+/* 天气代码 → 中文 + 图标 key */
+function weatherCodeToText(code){
+  const c = Number(code);
+  if(c === 0) return { text: '晴', icon: 'sunny' };
+  if(c >= 1 && c <= 3) return { text: '多云', icon: 'cloudy' };
+  if(c === 45 || c === 48) return { text: '雾', icon: 'fog' };
+  if(c >= 51 && c <= 57) return { text: '毛毛雨', icon: 'rain' };
+  if(c >= 61 && c <= 67) return { text: '雨', icon: 'rain' };
+  if(c >= 71 && c <= 77) return { text: '雪', icon: 'snow' };
+  if(c >= 80 && c <= 82) return { text: '阵雨', icon: 'rain' };
+  if(c >= 85 && c <= 86) return { text: '阵雪', icon: 'snow' };
+  if(c >= 95 && c <= 99) return { text: '雷雨', icon: 'storm' };
+  return { text: '未知', icon: 'cloudy' };
+}
+
+/* 天气图标 SVG */
+function weatherIconSVG(icon){
+  const icons = {
+    sunny: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>',
+    cloudy: '<svg viewBox="0 0 24 24"><path d="M17 14a4 4 0 0 0-1-7.9 6 6 0 0 0-11.4 2A3.5 3.5 0 0 0 5 14h12z"/></svg>',
+    fog: '<svg viewBox="0 0 24 24"><path d="M17 13a4 4 0 0 0-1-7.9 6 6 0 0 0-11.4 2A3.5 3.5 0 0 0 5 13h12z"/><line x1="6" y1="17" x2="18" y2="17"/><line x1="8" y1="20" x2="16" y2="20"/></svg>',
+    rain: '<svg viewBox="0 0 24 24"><path d="M17 14a4 4 0 0 0-1-7.9 6 6 0 0 0-11.4 2A3.5 3.5 0 0 0 5 14h12z"/><line x1="8" y1="17" x2="8" y2="20"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="16" y1="17" x2="16" y2="20"/></svg>',
+    snow: '<svg viewBox="0 0 24 24"><path d="M17 14a4 4 0 0 0-1-7.9 6 6 0 0 0-11.4 2A3.5 3.5 0 0 0 5 14h12z"/><circle cx="8" cy="18" r="0.8" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="0.8" fill="currentColor" stroke="none"/><circle cx="16" cy="18" r="0.8" fill="currentColor" stroke="none"/></svg>',
+    storm: '<svg viewBox="0 0 24 24"><path d="M17 14a4 4 0 0 0-1-7.9 6 6 0 0 0-11.4 2A3.5 3.5 0 0 0 5 14h12z"/><polyline points="11,15 9,19 13,19 11,23"/></svg>'
+  };
+  return icons[icon] || icons.cloudy;
+}
+
+/* 从 Open-Meteo 拉天气 */
+function fetchWeather(lat, lon, cityName){
+  const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat +
+    '&longitude=' + lon +
+    '&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m' +
+    '&daily=temperature_2m_max,temperature_2m_min,weather_code' +
+    '&timezone=auto&forecast_days=3';
+  return fetch(url).then(r => r.json()).then(data => {
+    if(!data || !data.current) throw new Error('天气数据异常');
+    const cur = data.current;
+    const daily = data.daily || {};
+    const wInfo = weatherCodeToText(cur.weather_code);
+    const result = {
+      city: cityName || '当前位置',
+      temp: Math.round(cur.temperature_2m),
+      code: cur.weather_code,
+      text: wInfo.text,
+      icon: wInfo.icon,
+      humidity: cur.relative_humidity_2m || 0,
+      wind: cur.wind_speed_10m || 0,
+      tmax: daily.temperature_2m_max ? Math.round(daily.temperature_2m_max[0]) : '',
+      tmin: daily.temperature_2m_min ? Math.round(daily.temperature_2m_min[0]) : '',
+      daily: (daily.time || []).map((t, i) => ({
+        date: t,
+        code: daily.weather_code[i],
+        tmax: Math.round(daily.temperature_2m_max[i]),
+        tmin: Math.round(daily.temperature_2m_min[i])
+      })),
+      fetchedAt: Date.now()
+    };
+    const cfg = getWeatherCfg();
+    cfg.cache = result;
+    saveWeatherCfg(cfg);
+    return result;
+  });
+}
+
+/* 浏览器定位 */
+function locateUser(){
+  return new Promise((resolve, reject) => {
+    if(!navigator.geolocation){ reject(new Error('不支持定位')); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+      err => reject(err),
+      { timeout: 10000, maximumAge: 3600000 }
+    );
+  });
+}
+
+/* 刷新天气（主入口） */
+function refreshWeather(force){
+  const cfg = getWeatherCfg();
+  const now = Date.now();
+  if(!force && cfg.cache && (now - cfg.cache.fetchedAt < 30 * 60 * 1000)){
+    renderBigCardWeather(cfg.cache);
+    return Promise.resolve(cfg.cache);
+  }
+  function doFetch(lat, lon, city){
+    return fetchWeather(lat, lon, city).then(w => {
+      renderBigCardWeather(w);
+      return w;
+    }).catch(e => {
+      console.error('天气获取失败', e);
+      if(cfg.cache) renderBigCardWeather(cfg.cache);
+      else renderBigCardWeather(null, '获取失败');
+      return null;
+    });
+  }
+  if(cfg.city && cfg.lat && cfg.lon){
+    return doFetch(cfg.lat, cfg.lon, cfg.city);
+  }
+  if(cfg.autoLocate){
+    return locateUser().then(pos => {
+      cfg.lat = pos.lat;
+      cfg.lon = pos.lon;
+      saveWeatherCfg(cfg);
+      return doFetch(pos.lat, pos.lon, '当前位置');
+    }).catch(e => {
+      console.warn('定位失败', e);
+      if(cfg.cache) renderBigCardWeather(cfg.cache);
+      else renderBigCardWeather(null, '未定位');
+      return null;
+    });
+  }
+  if(cfg.cache) renderBigCardWeather(cfg.cache);
+  else renderBigCardWeather(null, '未设置城市');
+  return Promise.resolve(null);
+}
+
+/* 渲染大卡片天气区 */
+function renderBigCardWeather(w, errText){
+  const main = document.getElementById('calBigWMain');
+  const sub = document.getElementById('calBigWSub');
+  const icoBox = document.getElementById('calBigWIcon');
+  if(!main || !sub || !icoBox) return;
+  if(!w){
+    main.textContent = errText || '未获取';
+    sub.textContent = '点右侧刷新';
+    icoBox.innerHTML = weatherIconSVG('cloudy');
+    return;
+  }
+  main.textContent = w.text + ' · ' + w.temp + '°C';
+  sub.textContent = '最高 ' + w.tmax + '° / 最低 ' + w.tmin + '° · ' + w.city;
+  icoBox.innerHTML = weatherIconSVG(w.icon);
+}
+
+/* ---------- 7. 大卡片日期 / 时间 / 农历渲染 ---------- */
+function renderBigCardDate(){
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth() + 1, d = now.getDate();
+  const week = ['SUN','MON','TUE','WED','THU','FRI','SAT'][now.getDay()];
+
+  const dateEl = document.getElementById('calBigDate');
+  if(dateEl) dateEl.textContent = m + '月' + d + '日';
+  const weekEl = document.getElementById('calBigWeek');
+  if(weekEl) weekEl.textContent = week;
+
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const timeEl = document.getElementById('calBigTime');
+  if(timeEl) timeEl.innerHTML = hh + ':' + mm + '<small>' + (now.getHours() < 12 ? 'AM' : 'PM') + '</small>';
+
+  const lunarEl = document.getElementById('calBigLunarText');
+  if(lunarEl){
+    const lunar = solarToLunar(y, m, d);
+    const term = getSolarTerm(y, m, d);
+    let text = '农历 ';
+    if(lunar) text += lunar.monthCn + lunar.dayCn;
+    else text += '—';
+    if(term) text += ' · ' + term;
+    lunarEl.textContent = text;
+  }
+}
+
+/* ---------- 8. 月历渲染 ---------- */
+let calCurrentYear = 0;
+let calCurrentMonth = 0;
+
+function renderCalendar(y, m){
+  calCurrentYear = y;
+  calCurrentMonth = m;
+
+  const titleEl = document.getElementById('calTitle');
+  if(titleEl){
+    titleEl.innerHTML = m + ' 月<small>' + y + '</small>';
+  }
+
+  const grid = document.getElementById('calGrid');
+  if(!grid) return;
+  const firstDay = new Date(y, m - 1, 1).getDay();
+  const totalDays = new Date(y, m, 0).getDate();
+  const prevTotalDays = new Date(y, m - 1, 0).getDate();
+
+  const today = new Date();
+  const isThisMonth = (today.getFullYear() === y && today.getMonth() + 1 === m);
+  const todayDate = today.getDate();
+
+  const todos = getTodos();
+
+  const heads = ['S','M','T','W','T','F','S'];
+  let html = heads.map(h => '<div class="cal-cell head">' + h + '</div>').join('');
+
+  for(let i = 0; i < firstDay; i++){
+    html += '<div class="cal-cell other">' + (prevTotalDays - firstDay + i + 1) + '</div>';
+  }
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  const dateKey = (yy,mm,dd) => yy + '-' + pad(mm) + '-' + pad(dd);
+
+  for(let d = 1; d <= totalDays; d++){
+    const key = dateKey(y, m, d);
+    const inBand = todos.some(t => t.type === 'range' && t.start && t.end && key >= t.start && key <= t.end);
+    const bandStart = todos.some(t => t.type === 'range' && t.start === key);
+    const bandEnd = todos.some(t => t.type === 'range' && t.end === key);
+    const bandSingle = todos.some(t => t.type === 'range' && t.start === key && t.end === key);
+
+    const cls = ['cal-cell'];
+    if(inBand) cls.push('has-band');
+    if(bandStart) cls.push('band-start');
+    if(bandEnd) cls.push('band-end');
+    if(bandSingle) cls.push('band-single');
+    if(isThisMonth && d === todayDate) cls.push('today');
+
+    let sub = '';
+    const lunar = solarToLunar(y, m, d);
+    if(lunar){
+      if(lunar.day === 1) sub = lunar.monthCn;
+      else sub = LUNAR_DAY_CN_S[Math.floor((lunar.day - 1) / 10)] + LUNAR_DAY_CN[lunar.day - 1].slice(1);
+    }
+    const term = getSolarTerm(y, m, d);
+    if(term) sub = term;
+    const solarFest = SOLAR_FESTIVALS[m + '-' + d];
+    if(solarFest) sub = solarFest;
+    if(lunar){
+      const lunarFest = LUNAR_FESTIVALS[lunar.month + '-' + lunar.day];
+      if(lunarFest && !lunar.isLeap) sub = lunarFest;
+    }
+
+    let inner = '';
+    if(inBand){
+      inner = '<span style="position:relative;z-index:1">' + d + '</span>';
+    } else {
+      inner = String(d);
+    }
+    inner += '<div class="lunar">' + (sub || '') + '</div>';
+    if(isThisMonth && d === todayDate) inner += '<div class="today-dot"></div>';
+
+    html += '<div class="' + cls.join(' ') + '">' + inner + '</div>';
+  }
+
+  const used = firstDay + totalDays;
+  const remain = (7 - used % 7) % 7;
+  for(let i = 1; i <= remain; i++){
+    html += '<div class="cal-cell other">' + i + '</div>';
+  }
+
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('.cal-cell:not(.head):not(.other)').forEach(el => {
+    el.addEventListener('click', () => {
+      const day = parseInt(el.textContent, 10);
+      if(isNaN(day)) return;
+      console.log('点击了', y + '-' + m + '-' + day);
+    });
+  });
+}
+
+/* ---------- 9. 大卡片事件标签 ---------- */
+function renderBigCardEvents(){
+  const box = document.getElementById('calBigEvents');
+  if(!box) return;
+  const now = new Date();
+  const todayKey = now.getFullYear() + '-' +
+    String(now.getMonth()+1).padStart(2,'0') + '-' +
+    String(now.getDate()).padStart(2,'0');
+
+  const items = [];
+
+  const special = getSpecialDates();
+  special.forEach(s => {
+    let hit = false;
+    if(s.type === 'solar' && s.date === (now.getMonth()+1) + '-' + now.getDate()) hit = true;
+    if(s.type === 'lunar'){
+      const lunar = solarToLunar(now.getFullYear(), now.getMonth()+1, now.getDate());
+      if(lunar && lunar.month === s.month && lunar.day === s.day && !lunar.isLeap) hit = true;
+    }
+    if(hit){
+      items.push({
+        icon: s.category === 'birthday' ? 'cake' : (s.category === 'love' ? 'heart' : 'star'),
+        text: s.name
+      });
+    }
+  });
+
+  const todos = getTodos();
+  todos.forEach(t => {
+    if(t.type === 'range' && t.start && t.end && todayKey >= t.start && todayKey <= t.end){
+      const total = Math.round((new Date(t.end) - new Date(t.start)) / 86400000) + 1;
+      const passed = Math.round((new Date(todayKey) - new Date(t.start)) / 86400000) + 1;
+      items.push({
+        icon: 'book',
+        text: t.title + ' ' + passed + '/' + total
+      });
+    }
+  });
+
+  if(!items.length){
+    box.innerHTML = '<div class="bc-ev-empty">今天没有特别的日子</div>';
+    return;
+  }
+
+  const icons = {
+    cake: '<svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="1"/><rect x="3" y="7" width="18" height="3.5" rx="0.8"/><path d="M12 7v14"/><path d="M12 7c-1.5 -2.5 -3.5 -3 -4.5 -1.8c-1 1.2 .5 3 4.5 1.8z"/><path d="M12 7c1.5 -2.5 3.5 -3 4.5 -1.8c1 1.2 -.5 3 -4.5 1.8z"/></svg>',
+    heart: '<svg viewBox="0 0 24 24"><path d="M12 20.5S4 15.3 4 9.7A4.5 4.5 0 0 1 8.5 5.2c1.5 0 2.8.8 3.5 1.9.7-1.1 2-1.9 3.5-1.9A4.5 4.5 0 0 1 20 9.7c0 5.6-8 10.8-8 10.8z"/></svg>',
+    star: '<svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.6 1-5.8L3.5 9.7l5.9-.9z"/></svg>',
+    book: '<svg viewBox="0 0 24 24"><path d="M4 19.3A2.3 2.3 0 0 1 6.3 17H20"/><path d="M6.3 2H20v20H6.3A2.3 2.3 0 0 1 4 19.7V4.3A2.3 2.3 0 0 1 6.3 2z"/><path d="M9 7h7"/><path d="M9 11h5"/></svg>'
+  };
+
+  box.innerHTML = items.map(it => (
+    '<span class="bc-ev">' + (icons[it.icon] || icons.star) + escapeHTML(it.text) + '</span>'
+  )).join('');
+}
+
+/* ---------- 10. 本月事件列表 ---------- */
+function renderMonthEvents(){
+  const box = document.getElementById('calMonthEvents');
+  if(!box) return;
+  const y = calCurrentYear, m = calCurrentMonth;
+  const now = new Date();
+  const todayZero = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+  const items = [];
+
+  getSpecialDates().forEach(s => {
+    let solar;
+    if(s.type === 'solar'){
+      const parts = s.date.split('-');
+      solar = { year: y, month: parseInt(parts[0],10), day: parseInt(parts[1],10) };
+    } else if(s.type === 'lunar'){
+      const r = lunarToSolar(y, s.month, s.day, false);
+      if(r) solar = r;
+    }
+    if(!solar || solar.month !== m) return;
+    const ts = new Date(solar.year, solar.month - 1, solar.day).getTime();
+    const daysLeft = Math.round((ts - todayZero) / 86400000);
+    let sub;
+    if(daysLeft === 0) sub = '就是今天';
+    else if(daysLeft > 0) sub = '还有 ' + daysLeft + ' 天';
+    else sub = '已经 ' + (-daysLeft) + ' 天';
+    items.push({
+      icon: s.category === 'birthday' ? 'cake' : (s.category === 'love' ? 'heart' : 'star'),
+      title: s.name,
+      sub: solar.month + '月' + solar.day + '日 · ' + (s.type === 'lunar' ? '农历' : '公历') + ' · ' + sub,
+      sort: ts
+    });
+  });
+
+  getTodos().forEach(t => {
+    if(t.type !== 'range') return;
+    const startParts = t.start.split('-').map(Number);
+    const endParts = t.end.split('-').map(Number);
+    const monthStart = new Date(y, m - 1, 1).getTime();
+    const monthEnd = new Date(y, m, 0).getTime();
+    const sTs = new Date(startParts[0], startParts[1]-1, startParts[2]).getTime();
+    const eTs = new Date(endParts[0], endParts[1]-1, endParts[2]).getTime();
+    if(eTs < monthStart || sTs > monthEnd) return;
+    const total = Math.round((eTs - sTs) / 86400000) + 1;
+    const passed = Math.max(0, Math.min(total, Math.round((todayZero - sTs) / 86400000) + 1));
+    items.push({
+      icon: 'book',
+      title: t.title,
+      sub: startParts[1] + '月' + startParts[2] + '日 - ' + endParts[1] + '月' + endParts[2] + '日',
+      prog: passed + ' / ' + total,
+      sort: sTs
+    });
+  });
+
+  if(!items.length){
+    box.innerHTML = '<div class="ce-empty">这个月没有特殊日子</div>';
+    return;
+  }
+  items.sort((a, b) => a.sort - b.sort);
+
+  const icons = {
+    cake: '<svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="1"/><rect x="3" y="7" width="18" height="3.5" rx="0.8"/><path d="M12 7v14"/><path d="M12 7c-1.5 -2.5 -3.5 -3 -4.5 -1.8c-1 1.2 .5 3 4.5 1.8z"/><path d="M12 7c1.5 -2.5 3.5 -3 4.5 -1.8c1 1.2 -.5 3 -4.5 1.8z"/></svg>',
+    heart: '<svg viewBox="0 0 24 24"><path d="M12 20.5S4 15.3 4 9.7A4.5 4.5 0 0 1 8.5 5.2c1.5 0 2.8.8 3.5 1.9.7-1.1 2-1.9 3.5-1.9A4.5 4.5 0 0 1 20 9.7c0 5.6-8 10.8-8 10.8z"/></svg>',
+    star: '<svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.6 1-5.8L3.5 9.7l5.9-.9z"/></svg>',
+    book: '<svg viewBox="0 0 24 24"><path d="M4 19.3A2.3 2.3 0 0 1 6.3 17H20"/><path d="M6.3 2H20v20H6.3A2.3 2.3 0 0 1 4 19.7V4.3A2.3 2.3 0 0 1 6.3 2z"/><path d="M9 7h7"/><path d="M9 11h5"/></svg>'
+  };
+
+  box.innerHTML = items.map(it => (
+    '<div class="ce-item">' +
+      '<div class="ico">' + (icons[it.icon] || icons.star) + '</div>' +
+      '<div class="txt">' +
+        '<div class="tt">' + escapeHTML(it.title) + '</div>' +
+        '<div class="sub">' + escapeHTML(it.sub) + '</div>' +
+      '</div>' +
+      (it.prog ? '<div class="prog-txt">' + it.prog + '</div>' : '') +
+    '</div>'
+  )).join('');
+}
+
+/* ---------- 11. 刷新整页日历 ---------- */
+function refreshCalendarPage(){
+  renderBigCardDate();
+  renderBigCardEvents();
+  renderCalendar(calCurrentYear || new Date().getFullYear(), calCurrentMonth || new Date().getMonth() + 1);
+  renderMonthEvents();
+}
+
+/* ---------- 12. 编辑桌面：tab 切换 ---------- */
+let deCurrentTab = 'date';
+function renderDeskEdit(tab){
+  deCurrentTab = tab || deCurrentTab;
+  const body = document.getElementById('deBody');
+  if(!body) return;
+  document.querySelectorAll('#deTabs .de-tab').forEach(t => {
+    t.classList.toggle('on', t.dataset.deTab === deCurrentTab);
+  });
+  if(deCurrentTab === 'date') renderDeDate(body);
+  else if(deCurrentTab === 'todo') renderDeTodo(body);
+  else if(deCurrentTab === 'weather') renderDeWeather(body);
+  else if(deCurrentTab === 'role') renderDeRole(body);
+  else if(deCurrentTab === 'setting') renderDeSetting(body);
+}
+
+/* ---- 日期 tab ---- */
+function renderDeDate(body){
+  const list = getSpecialDates();
+  const icons = {
+    birthday: '<svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="1"/><rect x="3" y="7" width="18" height="3.5" rx="0.8"/><path d="M12 7v14"/><path d="M12 7c-1.5 -2.5 -3.5 -3 -4.5 -1.8c-1 1.2 .5 3 4.5 1.8z"/><path d="M12 7c1.5 -2.5 3.5 -3 4.5 -1.8c1 1.2 -.5 3 -4.5 1.8z"/></svg>',
+    love: '<svg viewBox="0 0 24 24"><path d="M12 20.5S4 15.3 4 9.7A4.5 4.5 0 0 1 8.5 5.2c1.5 0 2.8.8 3.5 1.9.7-1.1 2-1.9 3.5-1.9A4.5 4.5 0 0 1 20 9.7c0 5.6-8 10.8-8 10.8z"/></svg>',
+    star: '<svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.6 1-5.8L3.5 9.7l5.9-.9z"/></svg>'
+  };
+  let html = '<div class="de-sec"><span class="tt">特 殊 日 期</span><span class="act" id="deAddSpecial">＋ 添加</span></div>';
+  if(!list.length){
+    html += '<div class="de-empty">还没有特殊日期<br><span class="plus" id="deAddSpecialEmpty">＋ 添加生日 / 纪念日</span></div>';
+  } else {
+    html += list.map(s => {
+      let dateText = '';
+      if(s.type === 'solar'){
+        dateText = '公历 ' + s.date.replace('-', '月') + '日';
+      } else {
+        dateText = '农历 ' + LUNAR_MONTH_CN[s.month-1] + '月' + LUNAR_DAY_CN[s.day-1];
+      }
+      return '<div class="de-row" data-sid="' + s.id + '">' +
+        '<div class="r-ic">' + (icons[s.category] || icons.star) + '</div>' +
+        '<div class="r-main">' +
+          '<div class="r-tt">' + escapeHTML(s.name) + '</div>' +
+          '<div class="r-sub">' + dateText + '</div>' +
+        '</div>' +
+        '<button class="r-del" data-del-sid="' + s.id + '" type="button">✕</button>' +
+      '</div>';
+    }).join('');
+  }
+  body.innerHTML = html;
+
+  body.querySelectorAll('[data-del-sid]').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.delSid;
+      if(!confirm('删除这条特殊日期？')) return;
+      const arr = getSpecialDates().filter(x => x.id !== id);
+      saveSpecialDates(arr);
+      renderDeskEdit('date');
+      refreshCalendarPage();
+    };
+  });
+  const addFn = () => openAddSpecialDialog();
+  const a1 = body.querySelector('#deAddSpecial'); if(a1) a1.onclick = addFn;
+  const a2 = body.querySelector('#deAddSpecialEmpty'); if(a2) a2.onclick = addFn;
+}
+
+function openAddSpecialDialog(){
+  uniAsk({
+    title: '名称',
+    sub: 'SPECIAL · 例如：梦角生日',
+    value: '',
+    placeholder: '生日 / 纪念日 / …'
+  }).then(name => {
+    if(name === null) return;
+    const n = String(name).trim();
+    if(!n){ toast('名称不能为空'); return; }
+    uniAsk({
+      title: '日期',
+      sub: '格式 月-日，例如 8-15',
+      value: '',
+      placeholder: '8-15'
+    }).then(dstr => {
+      if(dstr === null) return;
+      const t = String(dstr).trim();
+      const m = t.match(/^(\d{1,2})\s*[-月]\s*(\d{1,2})/);
+      if(!m){ toast('格式不对'); return; }
+      const mm = parseInt(m[1],10), dd = parseInt(m[2],10);
+      if(mm < 1 || mm > 12 || dd < 1 || dd > 31){ toast('日期不合法'); return; }
+      const mask = document.createElement('div');
+      mask.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center';
+      mask.innerHTML = '<div style="width:100%;max-width:520px;background:#fff;border-radius:22px 22px 0 0;padding:22px 20px calc(20px + env(safe-area-inset-bottom));">'
+        + '<div style="font-size:15px;font-weight:300;letter-spacing:4px;color:#1a1a1a;text-align:center;padding-bottom:16px;border-bottom:0.6px solid #f0f0f0;margin-bottom:8px">这 是 什 么 日 期</div>'
+        + '<div class="de-row" data-type="solar" style="cursor:pointer"><div class="r-main"><div class="r-tt">公历 ' + mm + '月' + dd + '日</div><div class="r-sub">每年这一天</div></div><div class="r-arr">›</div></div>'
+        + '<div class="de-row" data-type="lunar" style="cursor:pointer"><div class="r-main"><div class="r-tt">农历 ' + mm + '月' + dd + '日</div><div class="r-sub">每年农历这一天</div></div><div class="r-arr">›</div></div>'
+        + '<div class="de-row" data-type="birthday" style="cursor:pointer"><div class="r-main"><div class="r-tt">生日</div><div class="r-sub">标记为生日</div></div><div class="r-arr">›</div></div>'
+        + '<div class="de-row" data-type="love" style="cursor:pointer"><div class="r-main"><div class="r-tt">恋爱纪念日</div><div class="r-sub">标记为纪念日</div></div><div class="r-arr">›</div></div>'
+        + '</div>';
+      document.body.appendChild(mask);
+      mask.addEventListener('click', (e) => {
+        const row = e.target.closest('[data-type]');
+        if(!row){ if(e.target === mask) mask.remove(); return; }
+        const type = row.dataset.type;
+        let item;
+        if(type === 'birthday'){
+          item = { id: uid(), name: n, type: 'solar', date: mm + '-' + dd, category: 'birthday' };
+        } else if(type === 'love'){          item = { id: uid(), name: n, type: 'solar', date: mm + '-' + dd, category: 'love' };
+        } else if(type === 'lunar'){
+          item = { id: uid(), name: n, type: 'lunar', month: mm, day: dd, category: 'star' };
+        } else {
+          item = { id: uid(), name: n, type: 'solar', date: mm + '-' + dd, category: 'star' };
+        }
+        const arr = getSpecialDates();
+        arr.push(item);
+        saveSpecialDates(arr);
+        mask.remove();
+        renderDeskEdit('date');
+        refreshCalendarPage();
+        toast('已添加');
+      });
+    });
+  });
+}
+
+/* ---- 待办 tab ---- */
+function renderDeTodo(body){
+  const list = getTodos();
+  let html = '<div class="de-sec"><span class="tt">待 办 / 日 程</span><span class="act" id="deAddTodo">＋ 添加</span></div>';
+  if(!list.length){
+    html += '<div class="de-empty">还没有待办<br><span class="plus" id="deAddTodoEmpty">＋ 添加一条</span></div>';
+  } else {
+    html += list.map(t => {
+      if(t.type === 'range'){
+        const total = Math.round((new Date(t.end) - new Date(t.start)) / 86400000) + 1;
+        const passed = Math.max(0, Math.min(total, Math.round((Date.now() - new Date(t.start).getTime()) / 86400000) + 1));
+        const pct = Math.round(passed / total * 100);
+        return '<div class="de-todo-item" data-tid="' + t.id + '">' +
+          '<div class="ti-tt">' + escapeHTML(t.title) + '</div>' +
+          '<div class="ti-sub">' + t.start + ' → ' + t.end + '</div>' +
+          '<div class="ti-prog"><div class="ti-prog-bar" style="width:' + pct + '%"></div></div>' +
+        '</div>';
+      } else {
+        const done = t.done ? 'done' : '';
+        return '<div class="de-todo-item ' + done + '" data-tid="' + t.id + '">' +
+          '<div class="ti-tt"><span class="ck">✓</span>' + escapeHTML(t.title) + '</div>' +
+          '<div class="ti-sub">' + (t.date || '') + '</div>' +
+        '</div>';
+      }
+    }).join('');
+  }
+  body.innerHTML = html;
+
+  body.querySelectorAll('.de-todo-item').forEach(el => {
+    el.onclick = (e) => {
+      if(e.target.classList.contains('r-del')) return;
+      const id = el.dataset.tid;
+      const arr = getTodos();
+      const t = arr.find(x => x.id === id);
+      if(!t) return;
+      if(t.type !== 'range'){
+        t.done = !t.done;
+        saveTodos(arr);
+        renderDeskEdit('todo');
+        refreshCalendarPage();
+      }
+    };
+  });
+
+  const addFn = () => openAddTodoDialog();
+  const a1 = body.querySelector('#deAddTodo'); if(a1) a1.onclick = addFn;
+  const a2 = body.querySelector('#deAddTodoEmpty'); if(a2) a2.onclick = addFn;
+}
+
+function openAddTodoDialog(){
+  uniAsk({
+    title: '待办名称',
+    sub: 'TODO · 例如：期末复习',
+    value: '',
+    placeholder: '写下要做的事'
+  }).then(name => {
+    if(name === null) return;
+    const n = String(name).trim();
+    if(!n){ toast('名称不能为空'); return; }
+    const mask = document.createElement('div');
+    mask.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center';
+    mask.innerHTML = '<div style="width:100%;max-width:520px;background:#fff;border-radius:22px 22px 0 0;padding:22px 20px calc(20px + env(safe-area-inset-bottom));">'
+      + '<div style="font-size:15px;font-weight:300;letter-spacing:4px;color:#1a1a1a;text-align:center;padding-bottom:16px;border-bottom:0.6px solid #f0f0f0;margin-bottom:8px">待 办 类 型</div>'
+      + '<div class="de-row" data-type="single"><div class="r-main"><div class="r-tt">单日待办</div><div class="r-sub">某一天要做的事</div></div><div class="r-arr">›</div></div>'
+      + '<div class="de-row" data-type="range"><div class="r-main"><div class="r-tt">跨天日程</div><div class="r-sub">持续多天，日历上显示进度</div></div><div class="r-arr">›</div></div>'
+      + '</div>';
+    document.body.appendChild(mask);
+    mask.addEventListener('click', (e) => {
+      const row = e.target.closest('[data-type]');
+      if(!row){ if(e.target === mask) mask.remove(); return; }
+      const type = row.dataset.type;
+      mask.remove();
+      if(type === 'single'){
+        uniAsk({ title:'日期', sub:'格式 2026-10-15', value: new Date().toISOString().slice(0,10), placeholder:'2026-10-15' }).then(d => {
+          if(d === null) return;
+          const dt = String(d).trim();
+          if(!/^\d{4}-\d{2}-\d{2}$/.test(dt)){ toast('格式不对'); return; }
+          const arr = getTodos();
+          arr.push({ id: uid(), type: 'single', title: n, date: dt, done: false });
+          saveTodos(arr);
+          renderDeskEdit('todo');
+          refreshCalendarPage();
+          toast('已添加');
+        });
+      } else {
+        uniAsk({ title:'开始日期', sub:'格式 2026-10-01', value: new Date().toISOString().slice(0,10), placeholder:'2026-10-01' }).then(d1 => {
+          if(d1 === null) return;
+          const start = String(d1).trim();
+          if(!/^\d{4}-\d{2}-\d{2}$/.test(start)){ toast('开始日期格式不对'); return; }
+          uniAsk({ title:'结束日期', sub:'格式 2026-10-20', value: start, placeholder:'2026-10-20' }).then(d2 => {
+            if(d2 === null) return;
+            const end = String(d2).trim();
+            if(!/^\d{4}-\d{2}-\d{2}$/.test(end)){ toast('结束日期格式不对'); return; }
+            if(end < start){ toast('结束不能早于开始'); return; }
+            const arr = getTodos();
+            arr.push({ id: uid(), type: 'range', title: n, start: start, end: end });
+            saveTodos(arr);
+            renderDeskEdit('todo');
+            refreshCalendarPage();
+            toast('已添加');
+          });
+        });
+      }
+    });
+  });
+}
+
+/* ---- 天气 tab ---- */
+function renderDeWeather(body){
+  const cfg = getWeatherCfg();
+  const cache = cfg.cache;
+  let html = '<div class="de-sec"><span class="tt">天 气 设 置</span><span class="tt-en">WEATHER</span></div>';
+  html += '<div class="de-city-row"><span class="lbl">城市</span><input type="text" id="deCityInput" placeholder="例如：广州" value="' + escapeHTML(cfg.city || '') + '"></div>';
+  html += '<div class="de-sw-row"><div class="sw-main"><div class="t1">自动定位</div><div class="t2">打开时尝试用浏览器定位</div></div><label class="switch"><input type="checkbox" id="deAutoLocate" ' + (cfg.autoLocate ? 'checked' : '') + '><span class="slider"></span></label></div>';
+  if(cache){
+    html += '<div class="de-sec"><span class="tt">最 近 一 次</span><span class="tt-en">CACHED</span></div>';
+    html += '<div class="de-row"><div class="r-ic">' + weatherIconSVG(cache.icon) + '</div><div class="r-main"><div class="r-tt">' + cache.text + ' · ' + cache.temp + '°C</div><div class="r-sub">' + cache.city + ' · ' + new Date(cache.fetchedAt).toLocaleString('zh-CN', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) + '</div></div></div>';
+  }
+  html += '<button class="de-primary-btn" id="deWeatherRefresh">刷 新 天 气</button>';
+  body.innerHTML = html;
+
+  const cityInput = body.querySelector('#deCityInput');
+  if(cityInput){
+    cityInput.onchange = () => {
+      const v = cityInput.value.trim();
+      const c = getWeatherCfg();
+      c.city = v;
+      if(!v){ c.lat = 0; c.lon = 0; }
+      saveWeatherCfg(c);
+      toast('城市已保存');
+    };
+  }
+  const autoLocate = body.querySelector('#deAutoLocate');
+  if(autoLocate){
+    autoLocate.onchange = () => {
+      const c = getWeatherCfg();
+      c.autoLocate = autoLocate.checked;
+      saveWeatherCfg(c);
+      toast(autoLocate.checked ? '已开启自动定位' : '已关闭自动定位');
+    };
+  }
+  const btn = body.querySelector('#deWeatherRefresh');
+  if(btn){
+    btn.onclick = () => {
+      btn.textContent = '获 取 中…';
+      refreshWeather(true).then(() => {
+        btn.textContent = '刷 新 天 气';
+        renderDeskEdit('weather');
+      });
+    };
+  }
+}
+
+/* ---- 角色 tab ---- */
+function renderDeRole(body){
+  const friends = getFriends().filter(f => !f.hidden && !f.builtin);
+  let html = '<div class="de-sec"><span class="tt">角 色 状 态</span><span class="tt-en">ROLE STATUS</span></div>';
+  if(!friends.length){
+    html += '<div class="de-empty">还没有角色</div>';
+  } else {
+    html += friends.map(f => {
+      const status = f.status || 'online';
+      const avRadius = (beautyCfg.avatarShape === 'circle') ? '50%' : '12%';
+      return '<div class="de-role-item" data-rid="' + f.id + '">' +
+        '<div class="de-role-av" style="border-radius:' + avRadius + '">' + avatarHTML(f.avatar) + '</div>' +
+        '<div class="de-role-info">' +
+          '<div class="de-role-name">' + escapeHTML(f.name) + '</div>' +
+          '<div class="de-role-status-row">' +
+            '<button class="de-status-chip ' + (status === 'online'  ? 'on' : '') + '" data-st="online"  data-rid="' + f.id + '" type="button">在线</button>' +
+            '<button class="de-status-chip ' + (status === 'offline' ? 'on' : '') + '" data-st="offline" data-rid="' + f.id + '" type="button">离线</button>' +
+            '<button class="de-status-chip ' + (status === 'busy'    ? 'on' : '') + '" data-st="busy"    data-rid="' + f.id + '" type="button">勿扰</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+  body.innerHTML = html;
+
+  body.querySelectorAll('.de-status-chip').forEach(btn => {
+    btn.onclick = () => {
+      const rid = btn.dataset.rid;
+      const st = btn.dataset.st;
+      const friends2 = getFriends();
+      const f = friends2.find(x => x.id === rid);
+      if(!f) return;
+      f.status = st;
+      saveFriends(friends2);
+      renderDeRole(body);
+      toast('已更新状态');
+    };
+  });
+}
+
+/* ---- 设置 tab ---- */
+function renderDeSetting(body){
+  const dotColor = lsGet('mj_today_dot_color', '#666');
+  const colors = ['#1a1a1a','#444','#666','#999','#ccc','#DD1440','#1e40af','#166534'];
+  let html = '';
+  html += '<div class="de-sec"><span class="tt">今 天 小 圆 点</span><span class="tt-en">TODAY DOT</span></div>';
+  html += '<div class="de-color-row">';
+  html += '<span class="de-color-lbl">颜色</span>';
+  colors.forEach(c => {
+    html += '<button class="de-color-dot ' + (c === dotColor ? 'on' : '') + '" data-color="' + c + '" type="button" style="background:' + c + '"></button>';
+  });
+  html += '<button class="de-color-hex" id="deColorHex" type="button">自 定 义</button>';
+  html += '</div>';
+
+  html += '<div class="de-sec"><span class="tt">字 卡 联 动</span><span class="tt-en">CARD LINK</span></div>';
+  const wOn = lsGet('mj_weather_card_on', true);
+  const fOn = lsGet('mj_festival_card_on', true);
+  const sOn = lsGet('mj_special_card_on', true);
+  html += '<div class="de-sw-row"><div class="sw-main"><div class="t1">天气字卡</div><div class="t2">角色根据今日天气说话</div></div><label class="switch"><input type="checkbox" id="deSwWeather" ' + (wOn ? 'checked' : '') + '><span class="slider"></span></label></div>';
+  html += '<div class="de-sw-row"><div class="sw-main"><div class="t1">节日字卡</div><div class="t2">到节日时角色自动说祝福</div></div><label class="switch"><input type="checkbox" id="deSwFestival" ' + (fOn ? 'checked' : '') + '><span class="slider"></span></label></div>';
+  html += '<div class="de-sw-row"><div class="sw-main"><div class="t1">特殊日期字卡</div><div class="t2">生日 / 纪念日当天自动祝福</div></div><label class="switch"><input type="checkbox" id="deSwSpecial" ' + (sOn ? 'checked' : '') + '><span class="slider"></span></label></div>';
+
+  body.innerHTML = html;
+
+  body.querySelectorAll('.de-color-dot').forEach(btn => {
+    btn.onclick = () => {
+      const c = btn.dataset.color;
+      lsSet('mj_today_dot_color', c);
+      applyTodayDotColor();
+      renderDeSetting(body);
+    };
+  });
+  const hexBtn = body.querySelector('#deColorHex');
+  if(hexBtn){
+    hexBtn.onclick = () => {
+      uniAsk({
+        title: '自定义颜色',
+        sub: 'HEX · 例如 #666666',
+        value: dotColor,
+        placeholder: '#666666',
+        maxlength: 9
+      }).then(v => {
+        if(v === null) return;
+        const s = String(v).trim();
+        if(!/^#[0-9a-fA-F]{3,8}$/.test(s)){ toast('格式不对'); return; }
+        lsSet('mj_today_dot_color', s);
+        applyTodayDotColor();
+        renderDeSetting(body);
+      });
+    };
+  }
+  const swW = body.querySelector('#deSwWeather'); if(swW) swW.onchange = () => { lsSet('mj_weather_card_on', swW.checked); toast(swW.checked ? '已开启天气字卡' : '已关闭天气字卡'); };
+  const swF = body.querySelector('#deSwFestival'); if(swF) swF.onchange = () => { lsSet('mj_festival_card_on', swF.checked); toast(swF.checked ? '已开启节日字卡' : '已关闭节日字卡'); };
+  const swS = body.querySelector('#deSwSpecial'); if(swS) swS.onchange = () => { lsSet('mj_special_card_on', swS.checked); toast(swS.checked ? '已开启特殊日期字卡' : '已关闭特殊日期字卡'); };
+}
+
+/* 应用今天小圆点颜色 */
+function applyTodayDotColor(){
+  const c = lsGet('mj_today_dot_color', '#666');
+  document.documentElement.style.setProperty('--today-dot', c);
+  document.querySelectorAll('#calGrid .today-dot').forEach(el => {
+    el.style.background = c;
+  });
+}
+
+/* ---------- 13. 初始化 ---------- */
+function initCalendarPage(){
+  calCurrentYear = new Date().getFullYear();
+  calCurrentMonth = new Date().getMonth() + 1;
+  refreshCalendarPage();
+  refreshWeather(false);
+  applyTodayDotColor();
+}
+
+/* 全局事件绑定 */
+document.addEventListener('click', function(e){
+  const card = e.target.closest('#calBigCard');
+  if(card){
+    showScreen('deskEditScreen');
+    renderDeskEdit('date');
+    return;
+  }
+  if(e.target.closest('#calBigWRefresh')){
+    e.stopPropagation();
+    refreshWeather(true);
+    return;
+  }
+  if(e.target.closest('#calPrevMonth')){
+    e.preventDefault(); e.stopPropagation();
+    let m = calCurrentMonth - 1, y = calCurrentYear;
+    if(m < 1){ m = 12; y--; }
+    renderCalendar(y, m);
+    renderMonthEvents();
+    return;
+  }
+  if(e.target.closest('#calNextMonth')){
+    e.preventDefault(); e.stopPropagation();
+    let m = calCurrentMonth + 1, y = calCurrentYear;
+    if(m > 12){ m = 1; y++; }
+    renderCalendar(y, m);
+    renderMonthEvents();
+    return;
+  }
+  if(e.target.closest('#deBack')){
+    e.preventDefault(); e.stopPropagation();
+    document.querySelectorAll('.screen.on').forEach(s => s.classList.remove('on'));
+    return;
+  }
+  const deTab = e.target.closest('#deTabs .de-tab');
+  if(deTab){
+    e.preventDefault(); e.stopPropagation();
+    renderDeskEdit(deTab.dataset.deTab);
+    return;
+  }
+}, true);
+
+/* 每分钟刷新大卡片时间 */
+setInterval(() => {
+  const stack = document.getElementById('pageStack');
+  if(!stack) return;
+  const w = window.innerWidth || 1;
+  const idx = Math.round(-stack.getBoundingClientRect().left / w);
+  if(idx === 2){
+    renderBigCardDate();
+    renderBigCardEvents();
+  }
+}, 60 * 1000);
+
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState === 'visible'){
+    renderBigCardDate();
+    renderBigCardEvents();
+  }
+});
+
+/* 挂到 window */
+window.__calendar = {
+  init: initCalendarPage,
+  refresh: refreshCalendarPage,
+  refreshWeather: refreshWeather,
+  openDeskEdit: () => { showScreen('deskEditScreen'); renderDeskEdit('date'); }
+};
+
+/* 启动 */
+try{ initCalendarPage(); }catch(e){ console.error('日历初始化失败', e); }
 </script>
+
+<script>
+/* ============================================================
+   节日 / 特殊日期 / 100天 / 周年 · 自动祝福调度
+   ============================================================ */
+
+const FEST_SCHED_KEY = 'mj_fest_sched_v1';
+
+/* 拿某个节日分类的候选祝福语 */
+function getFestivalCandidates(kind, festName){
+  const g = getGroupsByOwner('public').find(x => x.id === 'g-festival');
+  if(!g || !g.cats) return [];
+  /* kind: 'solar' / 'lunar' / 'term' */
+  const catId = kind === 'solar' ? 'cf-solar' : (kind === 'lunar' ? 'cf-lunar' : 'cf-term');
+  const cat = g.cats.find(c => c.id === catId);
+  if(!cat || !cat.list || !cat.list.length) return [];
+  /* 优先匹配包含节日名的，没有就返回全部 */
+  const all = cat.list.map(cardText).map(s => String(s).trim()).filter(Boolean);
+  const matched = all.filter(t => t.indexOf(festName) >= 0);
+  return matched.length ? matched : all;
+}
+
+/* 拿某个特殊日期分类的候选祝福语 */
+function getSpecialCandidates(catId){
+  const g = getGroupsByOwner('public').find(x => x.id === 'g-special');
+  if(!g || !g.cats) return [];
+  const cat = g.cats.find(c => c.id === catId);
+  if(!cat || !cat.list || !cat.list.length) return [];
+  return cat.list.map(cardText).map(s => String(s).trim()).filter(Boolean);
+}
+
+/* 今天命中的所有事件（可能多个）
+   返回 [{ type, name, catId, text }, ...]
+   可能同时包含：生日 + 纪念日 + 节日（农历） + 节日（公历） + 节气 + 倒计时 + 100天 */
+function getTodaySpecialEvents(){
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth() + 1, d = now.getDate();
+  const todayKey = y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+  const events = [];
+
+  /* 1. 生日 / 恋爱纪念日（来自编辑桌面的特殊日期） */
+  const specials = (typeof getSpecialDates === 'function') ? getSpecialDates() : [];
+  specials.forEach(s => {
+    let hit = false;
+    if(s.type === 'solar' && s.date === m + '-' + d) hit = true;
+    if(s.type === 'lunar'){
+      const lunar = (typeof solarToLunar === 'function') ? solarToLunar(y, m, d) : null;
+      if(lunar && lunar.month === s.month && lunar.day === s.day && !lunar.isLeap) hit = true;
+    }
+    if(!hit) return;
+    if(s.category === 'birthday'){
+      const arr = getSpecialCandidates('cs-birthday');
+      events.push({ type:'birthday', name:s.name, catId:'cs-birthday', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : '生日快乐' });
+    } else if(s.category === 'love'){
+      const arr = getSpecialCandidates('cs-love');
+      events.push({ type:'love', name:s.name, catId:'cs-love', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : '纪念日快乐' });
+    }
+  });
+
+  /* 2. 100 天节点（从恋爱纪念日算起） */
+  specials.forEach(s => {
+    if(s.category !== 'love') return;
+    let baseTs = 0;
+    if(s.type === 'solar'){
+      const parts = s.date.split('-');
+      baseTs = new Date(y, parseInt(parts[0],10) - 1, parseInt(parts[1],10)).getTime();
+    } else if(s.type === 'lunar'){
+      const r = (typeof lunarToSolar === 'function') ? lunarToSolar(y, s.month, s.day, false) : null;
+      if(r) baseTs = new Date(r.year, r.month - 1, r.day).getTime();
+    }
+    if(!baseTs) return;
+    const diffDays = Math.round((new Date(y, m-1, d).getTime() - baseTs) / 86400000);
+    if(diffDays > 0 && diffDays % 100 === 0){
+      const arr = getSpecialCandidates('cs-love');
+      events.push({ type:'love100', name:s.name, catId:'cs-love', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : ('在一起第 ' + diffDays + ' 天') });
+    }
+  });
+
+  /* 3. 节日（农历） */
+  const lunar = (typeof solarToLunar === 'function') ? solarToLunar(y, m, d) : null;
+  if(lunar){
+    const lunarFest = LUNAR_FESTIVALS[lunar.month + '-' + lunar.day];
+    if(lunarFest && !lunar.isLeap){
+      const arr = getFestivalCandidates('lunar', lunarFest);
+      events.push({ type:'festival-lunar', name:lunarFest, catId:'cf-lunar', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : (lunarFest + '快乐') });
+    }
+  }
+
+  /* 4. 节日（公历） */
+  const solarFest = SOLAR_FESTIVALS[m + '-' + d];
+  if(solarFest){
+    const arr = getFestivalCandidates('solar', solarFest);
+    events.push({ type:'festival-solar', name:solarFest, catId:'cf-solar', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : (solarFest + '快乐') });
+  }
+
+  /* 5. 节气 */
+  const term = (typeof getSolarTerm === 'function') ? getSolarTerm(y, m, d) : '';
+  if(term){
+    const arr = getFestivalCandidates('term', term);
+    events.push({ type:'term', name:term, catId:'cf-term', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : ('今天' + term) });
+  }
+
+  /* 6. 倒计时 / 日程结束日 */
+  const todos = (typeof getTodos === 'function') ? getTodos() : [];
+  todos.forEach(t => {
+    if(t.type === 'range' && t.end === todayKey){
+      const arr = getSpecialCandidates('cs-countdown');
+      events.push({ type:'countdown', name:t.title, catId:'cs-countdown', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : ('今天终于到了：' + t.title) });
+    }
+  });
+
+  return events;
+}
+
+/* 给所有好友各发一条消息（走「角色主动发消息」通道） */
+function broadcastToAllRoles(text, opts){
+  opts = opts || {};
+  const ids = getAllRoleIds();
+  ids.forEach(rid => {
+    const role = getRoleById(rid);
+    if(!role || role.hidden) return;
+    /* 每个角色独立加 0~30 秒抖动，避免同时抵达 */
+    const delay = (opts.baseDelay || 0) + Math.random() * 30000;
+    setTimeout(() => {
+      try{
+        const msg = {
+          id: uid(),
+          role: 'char',
+          text: text,
+          time: Date.now(),
+          active: true
+        };
+        if(opts.type) msg.festivalType = opts.type;
+        appendMsgToRole(rid, msg);
+        if(!isViewingRole(rid)){
+          const r = getRoleById(rid) || {};
+          showMsgNotify(r.name || '角色', text, r.avatar, rid);
+        }
+      }catch(e){ console.error('广播祝福出错', e); }
+    }, delay);
+  });
+}
+
+/* 每天一次的调度：
+   - 检查今天命中的所有事件（可能多个）
+   - 每个事件在今天剩余时间里独立随机挑一个时刻
+   - 到点广播给所有好友
+   存储结构：
+   { date:'2026-10-11', events:[ {type,name,catId,text,at,fired}, ... ] }
+*/
+function buildTodayFestSched(){
+  const todayKey = (function(){
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  })();
+
+  let sched = lsGet(FEST_SCHED_KEY, null);
+  if(!sched || typeof sched !== 'object') sched = {};
+  if(sched.date === todayKey && Array.isArray(sched.events)) return sched;
+
+  /* 新的一天：重置 */
+  sched = { date: todayKey, events: [] };
+
+  const evs = getTodaySpecialEvents();
+  if(evs && evs.length){
+    const now = Date.now();
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+    const span = endOfDay.getTime() - now;
+    evs.forEach((ev, idx) => {
+      /* 每个事件独立挑一个时刻（可能撞车，但撞车概率小） */
+      const at = (span > 0)
+        ? (now + Math.floor(Math.random() * span))
+        : 0;
+      sched.events.push({
+        type: ev.type,
+        name: ev.name,
+        catId: ev.catId,
+        text: ev.text,
+        at: at,
+        fired: false
+      });
+    });
+  }
+  lsSet(FEST_SCHED_KEY, sched);
+  return sched;
+}
+
+/* 每分钟 tick：检查每个事件是否到点 */
+let _festTickTimer = null;
+function runFestTick(){
+  const sched = buildTodayFestSched();
+  if(!sched || !Array.isArray(sched.events) || !sched.events.length) return;
+  const now = Date.now();
+  let changed = false;
+
+  sched.events.forEach(ev => {
+    if(ev.fired) return;
+    if(!ev.at) return;
+    if(now < ev.at) return;
+    /* 到点：广播 */
+    try{
+      broadcastToAllRoles(ev.text, { type: ev.type });
+    }catch(e){ console.error('节日广播失败', e); }
+    ev.fired = true;
+    changed = true;
+  });
+
+  if(changed) lsSet(FEST_SCHED_KEY, sched);
+}
+
+function scheduleFestTick(){
+  if(_festTickTimer) clearInterval(_festTickTimer);
+  _festTickTimer = setInterval(function(){
+    try{ runFestTick(); }catch(e){ console.error('节日 tick 出错', e); }
+  }, 60 * 1000);
+  /* 启动后 5 秒先跑一次 */
+  setTimeout(function(){ try{ runFestTick(); }catch(e){} }, 5000);
+}
+
+try{ scheduleFestTick(); }catch(e){ console.error('节日调度启动失败', e); }
+</script>
+
+<script>
+/* ============================================================
+   节日 / 特殊日期 / 100天 / 周年 · 自动祝福调度
+   ============================================================ */
+
+const FEST_SCHED_KEY = 'mj_fest_sched_v1';
+
+/* 拿某个节日分类的候选祝福语 */
+function getFestivalCandidates(kind, festName){
+  const g = getGroupsByOwner('public').find(x => x.id === 'g-festival');
+  if(!g || !g.cats) return [];
+  /* kind: 'solar' / 'lunar' / 'term' */
+  const catId = kind === 'solar' ? 'cf-solar' : (kind === 'lunar' ? 'cf-lunar' : 'cf-term');
+  const cat = g.cats.find(c => c.id === catId);
+  if(!cat || !cat.list || !cat.list.length) return [];
+  /* 优先匹配包含节日名的，没有就返回全部 */
+  const all = cat.list.map(cardText).map(s => String(s).trim()).filter(Boolean);
+  const matched = all.filter(t => t.indexOf(festName) >= 0);
+  return matched.length ? matched : all;
+}
+
+/* 拿某个特殊日期分类的候选祝福语 */
+function getSpecialCandidates(catId){
+  const g = getGroupsByOwner('public').find(x => x.id === 'g-special');
+  if(!g || !g.cats) return [];
+  const cat = g.cats.find(c => c.id === catId);
+  if(!cat || !cat.list || !cat.list.length) return [];
+  return cat.list.map(cardText).map(s => String(s).trim()).filter(Boolean);
+}
+
+/* 今天命中的所有事件（可能多个）
+   返回 [{ type, name, catId, text }, ...]
+   可能同时包含：生日 + 纪念日 + 节日（农历） + 节日（公历） + 节气 + 倒计时 + 100天 */
+function getTodaySpecialEvents(){
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth() + 1, d = now.getDate();
+  const todayKey = y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+  const events = [];
+
+  /* 1. 生日 / 恋爱纪念日（来自编辑桌面的特殊日期） */
+  const specials = (typeof getSpecialDates === 'function') ? getSpecialDates() : [];
+  specials.forEach(s => {
+    let hit = false;
+    if(s.type === 'solar' && s.date === m + '-' + d) hit = true;
+    if(s.type === 'lunar'){
+      const lunar = (typeof solarToLunar === 'function') ? solarToLunar(y, m, d) : null;
+      if(lunar && lunar.month === s.month && lunar.day === s.day && !lunar.isLeap) hit = true;
+    }
+    if(!hit) return;
+    if(s.category === 'birthday'){
+      const arr = getSpecialCandidates('cs-birthday');
+      events.push({ type:'birthday', name:s.name, catId:'cs-birthday', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : '生日快乐' });
+    } else if(s.category === 'love'){
+      const arr = getSpecialCandidates('cs-love');
+      events.push({ type:'love', name:s.name, catId:'cs-love', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : '纪念日快乐' });
+    }
+  });
+
+  /* 2. 100 天节点（从恋爱纪念日算起） */
+  specials.forEach(s => {
+    if(s.category !== 'love') return;
+    let baseTs = 0;
+    if(s.type === 'solar'){
+      const parts = s.date.split('-');
+      baseTs = new Date(y, parseInt(parts[0],10) - 1, parseInt(parts[1],10)).getTime();
+    } else if(s.type === 'lunar'){
+      const r = (typeof lunarToSolar === 'function') ? lunarToSolar(y, s.month, s.day, false) : null;
+      if(r) baseTs = new Date(r.year, r.month - 1, r.day).getTime();
+    }
+    if(!baseTs) return;
+    const diffDays = Math.round((new Date(y, m-1, d).getTime() - baseTs) / 86400000);
+    if(diffDays > 0 && diffDays % 100 === 0){
+      const arr = getSpecialCandidates('cs-love');
+      events.push({ type:'love100', name:s.name, catId:'cs-love', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : ('在一起第 ' + diffDays + ' 天') });
+    }
+  });
+
+  /* 3. 节日（农历） */
+  const lunar = (typeof solarToLunar === 'function') ? solarToLunar(y, m, d) : null;
+  if(lunar){
+    const lunarFest = LUNAR_FESTIVALS[lunar.month + '-' + lunar.day];
+    if(lunarFest && !lunar.isLeap){
+      const arr = getFestivalCandidates('lunar', lunarFest);
+      events.push({ type:'festival-lunar', name:lunarFest, catId:'cf-lunar', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : (lunarFest + '快乐') });
+    }
+  }
+
+  /* 4. 节日（公历） */
+  const solarFest = SOLAR_FESTIVALS[m + '-' + d];
+  if(solarFest){
+    const arr = getFestivalCandidates('solar', solarFest);
+    events.push({ type:'festival-solar', name:solarFest, catId:'cf-solar', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : (solarFest + '快乐') });
+  }
+
+  /* 5. 节气 */
+  const term = (typeof getSolarTerm === 'function') ? getSolarTerm(y, m, d) : '';
+  if(term){
+    const arr = getFestivalCandidates('term', term);
+    events.push({ type:'term', name:term, catId:'cf-term', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : ('今天' + term) });
+  }
+
+  /* 6. 倒计时 / 日程结束日 */
+  const todos = (typeof getTodos === 'function') ? getTodos() : [];
+  todos.forEach(t => {
+    if(t.type === 'range' && t.end === todayKey){
+      const arr = getSpecialCandidates('cs-countdown');
+      events.push({ type:'countdown', name:t.title, catId:'cs-countdown', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : ('今天终于到了：' + t.title) });
+    }
+  });
+
+  return events;
+}
+
+/* 给所有好友各发一条消息（走「角色主动发消息」通道） */
+function broadcastToAllRoles(text, opts){
+  opts = opts || {};
+  const ids = getAllRoleIds();
+  ids.forEach(rid => {
+    const role = getRoleById(rid);
+    if(!role || role.hidden) return;
+    /* 每个角色独立加 0~30 秒抖动，避免同时抵达 */
+    const delay = (opts.baseDelay || 0) + Math.random() * 30000;
+    setTimeout(() => {
+      try{
+        const msg = {
+          id: uid(),
+          role: 'char',
+          text: text,
+          time: Date.now(),
+          active: true
+        };
+        if(opts.type) msg.festivalType = opts.type;
+        appendMsgToRole(rid, msg);
+        if(!isViewingRole(rid)){
+          const r = getRoleById(rid) || {};
+          showMsgNotify(r.name || '角色', text, r.avatar, rid);
+        }
+      }catch(e){ console.error('广播祝福出错', e); }
+    }, delay);
+  });
+}
+
+/* 每天一次的调度：
+   - 检查今天命中的所有事件（可能多个）
+   - 每个事件在今天剩余时间里独立随机挑一个时刻
+   - 到点广播给所有好友
+   存储结构：
+   { date:'2026-10-11', events:[ {type,name,catId,text,at,fired}, ... ] }
+*/
+function buildTodayFestSched(){
+  const todayKey = (function(){
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  })();
+
+  let sched = lsGet(FEST_SCHED_KEY, null);
+  if(!sched || typeof sched !== 'object') sched = {};
+  if(sched.date === todayKey && Array.isArray(sched.events)) return sched;
+
+  /* 新的一天：重置 */
+  sched = { date: todayKey, events: [] };
+
+  const evs = getTodaySpecialEvents();
+  if(evs && evs.length){
+    const now = Date.now();
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+    const span = endOfDay.getTime() - now;
+    evs.forEach((ev, idx) => {
+      /* 每个事件独立挑一个时刻（可能撞车，但撞车概率小） */
+      const at = (span > 0)
+        ? (now + Math.floor(Math.random() * span))
+        : 0;
+      sched.events.push({
+        type: ev.type,
+        name: ev.name,
+        catId: ev.catId,
+        text: ev.text,
+        at: at,
+        fired: false
+      });
+    });
+  }
+  lsSet(FEST_SCHED_KEY, sched);
+  return sched;
+}
+
+/* 每分钟 tick：检查每个事件是否到点 */
+let _festTickTimer = null;
+function runFestTick(){
+  const sched = buildTodayFestSched();
+  if(!sched || !Array.isArray(sched.events) || !sched.events.length) return;
+  const now = Date.now();
+  let changed = false;
+
+  sched.events.forEach(ev => {
+    if(ev.fired) return;
+    if(!ev.at) return;
+    if(now < ev.at) return;
+    /* 到点：广播 */
+    try{
+      broadcastToAllRoles(ev.text, { type: ev.type });
+    }catch(e){ console.error('节日广播失败', e); }
+    ev.fired = true;
+    changed = true;
+  });
+
+  if(changed) lsSet(FEST_SCHED_KEY, sched);
+}
+
+function scheduleFestTick(){
+  if(_festTickTimer) clearInterval(_festTickTimer);
+  _festTickTimer = setInterval(function(){
+    try{ runFestTick(); }catch(e){ console.error('节日 tick 出错', e); }
+  }, 60 * 1000);
+  /* 启动后 5 秒先跑一次 */
+  setTimeout(function(){ try{ runFestTick(); }catch(e){} }, 5000);
+}
+
+try{ scheduleFestTick(); }catch(e){ console.error('节日调度启动失败', e); }
+</script>
+
+
 
 <script>
 /* ===== 独立诊断面板 v2 · 抓错误版 · 不依赖 script[1] ===== */
