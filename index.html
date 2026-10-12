@@ -4483,13 +4483,54 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .cs-item .cs-text{font-size:13.5px;color:var(--th-text);line-height:1.6;word-break:break-word;margin-top:5px}
 .cs-item .hl{background:rgba(255,213,74,.35);color:#fff;border-radius:3px;padding:0 2px}
 
-.beauty-panel{position:fixed;inset:0;z-index:80;max-width:520px;margin:0 auto;background:#ffffff;display:flex;flex-direction:column;transform:translateY(100%);visibility:hidden;transition:transform .35s cubic-bezier(.22,1,.36,1), visibility .35s}
-.beauty-panel.show{transform:translateY(0);visibility:visible}
-.bp-head{flex:none;display:flex;align-items:center;gap:8px;padding:16px 18px 12px;border-bottom:0.7px solid rgba(0,0,0,.06)}
-.bp-back{width:34px;height:34px;border-radius:11px;flex:none;border:none;background:transparent;color:#1a1a1a;font-size:24px;line-height:1;padding-bottom:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;opacity:.65;transition:opacity .18s ease}
-.bp-back:active{opacity:1}
-.bp-title{font-size:17px;font-weight:300;letter-spacing:3px;color:#1a1a1a;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-.bp-sub{font-size:10.7px;color:#ccc;margin-top:3px;letter-spacing:.5px;font-weight:300;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+/* 美化整页：跟字卡库/收藏页一样，整页铺满，从右滑入 */
+/* 美化整页：跟字卡库/收藏页一样，瞬间显隐，无过渡 */
+.beauty-panel{position:fixed;inset:0;z-index:100;max-width:520px;margin:0 auto;background:#ffffff;display:none;flex-direction:column;visibility:visible}
+.beauty-panel.show{display:flex}
+/* 美化顶部栏：跟字卡库/收藏页一致 —— 左箭头 + 居中标题 + 右侧占位 */
+.bp-head{
+  flex:none;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:20px 22px 12px;
+  background:#ffffff;
+  border-bottom:none;
+}
+.bp-head .bp-back{
+  width:38px;
+  height:38px;
+  flex:none;
+  border:none;
+  background:transparent;
+  color:#1a1a1a;
+  font-size:22px;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 0 4px;
+  font-family:inherit;
+  cursor:pointer;
+  opacity:.55;
+  transition:opacity .18s ease;
+}
+.bp-head .bp-back:active{opacity:1}
+.bp-head .bp-title{
+  flex:1;
+  font-size:15px;
+  font-weight:300;
+  letter-spacing:6px;
+  text-align:center;
+  color:#1a1a1a;
+  -webkit-text-stroke:0.15px #1a1a1a;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+.bp-head .bp-head-right{
+  width:38px;
+  flex:none;
+}
 .bp-body{flex:1;overflow-y:auto;padding:16px 18px 24px;scrollbar-width:none}
 .bp-body::-webkit-scrollbar{width:0}
 .bp-hint{font-size:11.5px;color:var(--th-text-mute);margin-bottom:10px;font-weight:300;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
@@ -6633,32 +6674,7 @@ body[data-bubble="custom"] .preview-bubble{
   letter-spacing:.5px;
   font-weight:300;
 }
-/* ✕ 默认隐藏，长按 .show-del 才出现 */
-.col-item .col-del{
-  position:absolute;
-  top:14px;
-  right:0;
-  width:20px;
-  height:20px;
-  border:none;
-  background:transparent;
-  color:#ccc;
-  font-size:11px;
-  cursor:pointer;
-  font-family:inherit;
-  padding:0;
-  border-radius:50%;
-  opacity:0;
-  transform:scale(.7);
-  pointer-events:none;
-  transition:opacity .18s ease, transform .18s ease;
-}
-.col-item.show-del .col-del{
-  opacity:1;
-  transform:scale(1);
-  pointer-events:auto;
-}
-.col-item .col-del:active{color:#1a1a1a;background:#f5f5f5}
+
 
 /* ===== 收藏页 · 筛选栏 ===== */
 .col-filter-row{
@@ -6724,33 +6740,7 @@ body[data-bubble="custom"] .preview-bubble{
 }
 .col-note-txt{display:inline}
 
-/* ===== 收藏页 · 长按出现的分享按钮 ===== */
-.col-item .col-share{
-  position:absolute;
-  top:14px;
-  right:28px;
-  width:22px;
-  height:22px;
-  border:none;
-  background:transparent;
-  color:#bbb;
-  font-size:13px;
-  cursor:pointer;
-  font-family:inherit;
-  padding:0;
-  border-radius:50%;
-  opacity:0;
-  transform:scale(.7);
-  pointer-events:none;
-  transition:opacity .18s ease, transform .18s ease;
-  z-index:3;
-}
-.col-item.show-del .col-share{
-  opacity:1;
-  transform:scale(1);
-  pointer-events:auto;
-}
-.col-item .col-share:active{color:#1a1a1a;background:#f5f5f5}
+
 
 .col-empty{
   text-align:center;
@@ -6762,23 +6752,27 @@ body[data-bubble="custom"] .preview-bubble{
   font-weight:300;
 }
 
-/* ===== 收藏页 · 右侧常驻按钮 ===== */
-.col-item{position:relative;padding-right:78px}
+/* ===== 收藏页 · 右侧常驻按钮 · 方案A 极简线条 ===== */
+.col-item{position:relative;padding-right:88px}
 .col-act-wrap{
   position:absolute;
   top:14px;
   right:0;
-  display:flex;
-  gap:4px;
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  gap:2px;
   align-items:center;
-  flex:none;
+  justify-content:flex-end;
+  width:auto !important;
+  height:auto !important;
 }
 .col-act-btn{
-  width:24px;
-  height:24px;
+  width:26px;
+  height:26px;
   border:none;
   background:transparent;
-  color:#bbb;
+  color:#c8c8c8;
   font-size:13px;
   cursor:pointer;
   font-family:inherit;
@@ -6789,8 +6783,18 @@ body[data-bubble="custom"] .preview-bubble{
   justify-content:center;
   transition:color .18s ease, background .18s ease;
 }
+.col-act-btn svg{
+  width:13px;
+  height:13px;
+  stroke:currentColor;
+  fill:none;
+  stroke-width:1.4;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  pointer-events:none;
+}
 .col-act-btn:active{color:#1a1a1a;background:#f5f5f5}
-.col-act-btn.col-del{color:#ccc}
+.col-act-btn.col-del{color:#c8c8c8}
 .col-act-btn.col-del:active{color:#1a1a1a}
 
 /* ===== 收藏页 · 多选模式 ===== */
@@ -8861,6 +8865,23 @@ window.__APP_VERSION__ = '1.0.2';
   </div>
 </div>
 
+<!-- ============ 视频文件库 ============ -->
+<div class="screen" id="videoLibScreen">
+  <div class="memo-wrap">
+    <div class="memo-top">
+      <button class="memo-back" id="vdlBack" type="button">‹</button>
+      <div class="memo-title">视 频 文 件</div>
+      <div class="memo-top-right"></div>
+    </div>
+
+    <div class="vl-tip" id="vdlTip">为「梦角」上传视频，视频通话时会随机插入播放。</div>
+    <div class="vl-add" id="vdlAdd">＋ 上传视频</div>
+    <div class="vl-list" id="vdlList"></div>
+
+    <input type="file" id="vdlFile" accept="video/*" multiple style="display:none">
+  </div>
+</div>
+
 <!-- ============ 群聊列表 ============ -->
 <div class="screen" id="groupListScreen">
   <div class="gc-top">
@@ -9552,11 +9573,9 @@ window.__APP_VERSION__ = '1.0.2';
 
 <div class="beauty-panel" id="beautyPanel">
   <div class="bp-head">
-	<div class="bp-back" id="beautyBack">‹</div>
-	<div>
-	  <div class="bp-title">美 化</div>
-	  <div class="bp-sub">全局生效</div>
-	</div>
+	<button class="bp-back" id="beautyBack" type="button">‹</button>
+	<div class="bp-title">美 化</div>
+	<div class="bp-head-right"></div>
   </div>
   <div class="bp-body">
 	<div class="bp-row" data-panel="theme"><span class="num">01</span><div class="r-name">主题</div><span class="r-val" id="themeVal">粉樱</span><span class="r-arr">›</span></div>
@@ -11179,34 +11198,37 @@ function pickCard(){
     return getCardsFromGroup('public', 'g-groupchat');
   }
 
-  /* 策略 A：群聊字卡 + 当前时段字卡，等权混池 */
+  /* 策略 A：群聊字卡 + 当前时段字卡 + 天气字卡，等权混池 */
   if(strategy === 'A'){
     const gc = groupchatOf(rid);
     const timed = getTimedSegPool();
-    const pool = gc.concat(timed);
+    const weather = getWeatherPool();
+    const pool = gc.concat(timed, weather);
     return pickOrFallback(pool);
   }
 
-  /* 策略 B：群聊字卡 + 角色专属字卡 + 当前时段字卡，等权混池 */
+  /* 策略 B：群聊字卡 + 角色专属字卡 + 当前时段字卡 + 天气字卡，等权混池 */
   if(strategy === 'B'){
     const gc = groupchatOf(rid);
     const own = getAllNormalCards(rid);
     const timed = getTimedSegPool();
+    const weather = getWeatherPool();
     let base;
     if(gc.length && own.length){
       base = gc.concat(own);
     } else {
       base = gc.length ? gc : own;
     }
-    const pool = base.concat(timed);
+    const pool = base.concat(timed, weather);
     return pickOrFallback(pool);
   }
 
-  /* 策略 C（默认）：公用 + 角色专属按比例混，再并入当前时段字卡 */
+  /* 策略 C（默认）：公用 + 角色专属按比例混，再并入当前时段字卡 + 天气字卡 */
   const pub = getAllNormalCards('public');
   const role = getAllNormalCards(rid);
   const pubRate = poolRate.public ?? 0.7;
   const timed = getTimedSegPool();
+  const weather = getWeatherPool();
   let base;
   if(pub.length && role.length){
     /* 按 pubRate 先决定主体从哪来 */
@@ -11214,7 +11236,7 @@ function pickCard(){
   } else {
     base = pub.length ? pub : role;
   }
-  const pool = base.concat(timed);
+  const pool = base.concat(timed, weather);
   return pickOrFallback(pool);
 }
 
@@ -11743,8 +11765,10 @@ function genReply(useTimed){
   if(r.ignoreOn && Math.random() < r.ignoreRate) return [];
   // 撤回：只有对方此前已经说过话，才允许掷中
   // （已排除自己撤回过的消息，避免「撤回的也算说过话」）
+  /* 撤回：不再走「立即撤回」通道，改成在 runReplyChain 里排定时器。
+     这里只检查「Ta 之前是否说过话」和概率，命中就返回一个标记，
+     由 runReplyChain 决定挑哪条真实消息来撤、什么时候撤。 */
   const charHasSpokenBefore = msgs.some(x => x.role==='char' && !x.recalled && (x.text || x.sticker || x.voice || x.divine || x.namecard));
-  // 用户撤回的消息不再被计入「用户说过话」的判定，避免影响后续
   if(charHasSpokenBefore && r.recallOn && Math.random() < r.recallRate) return [{kind:'recall'}];
   let bubbleCount = 1;
   if(Math.random() < (r.multiBubbleProb||0)){
@@ -12559,22 +12583,41 @@ function renderCollectScreen(tab){
       ? userAvHTML(userProfile.avatar)
       : avatarHTML(role.avatar);
 
-    /* 备注行不再需要点击，改成按钮 */
+    /* 备注行：只有真有备注时才显示，没备注就整行不渲染 */
     const noteText = it.note ? String(it.note) : '';
     const collapsed = !!it.noteCollapsed;
     const noteDisplay = noteText
       ? (collapsed ? '备注 ▸' : ('备注：' + escapeHTML(noteText) + ' ▾'))
-      : '点我写备注';
-    const noteLine =
-      '<div class="col-note' + (noteText ? '' : ' empty') + '" data-note-row="' + it.id + '">' +
-        '<span class="col-note-txt" data-note-edit="' + it.id + '">' + noteDisplay + '</span>' +
-      '</div>';
+      : '';
+    const noteLine = noteText
+      ? ('<div class="col-note" data-note-row="' + it.id + '">' +
+          '<span class="col-note-txt" data-note-edit="' + it.id + '">' + noteDisplay + '</span>' +
+        '</div>')
+      : '';
 
-    /* 默认状态下，右侧常驻：分享 + 备注 + ✕（仅我的收藏有 ✕） */
+    /* 默认状态下，右侧常驻：分享 + 备注 + ✕（仅我的收藏有 ✕）
+       方案A：三个 SVG 线条图标 */
+    const iconShare =
+      '<svg viewBox="0 0 24 24">' +
+        '<path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/>' +
+        '<polyline points="16 6 12 2 8 6"/>' +
+        '<line x1="12" y1="2" x2="12" y2="15"/>' +
+      '</svg>';
+    const iconNote =
+      '<svg viewBox="0 0 24 24">' +
+        '<path d="M4 20l4-1 11-11-3-3L5 16z"/>' +
+        '<path d="M14 6l3 3"/>' +
+      '</svg>';
+    const iconDel =
+      '<svg viewBox="0 0 24 24">' +
+        '<line x1="6" y1="6" x2="18" y2="18"/>' +
+        '<line x1="18" y1="6" x2="6" y2="18"/>' +
+      '</svg>';
+
     const actBtns =
-      '<button class="col-act-btn col-share" data-share="' + it.id + '" type="button" title="分享">↗</button>' +
-      '<button class="col-act-btn col-note-btn" data-note-btn="' + it.id + '" type="button" title="备注">✎</button>' +
-      (tab === 'mine' ? '<button class="col-act-btn col-del" data-del="' + it.id + '" type="button" title="删除">✕</button>' : '');
+      '<button class="col-act-btn col-share" data-share="' + it.id + '" type="button" title="分享">' + iconShare + '</button>' +
+      '<button class="col-act-btn col-note-btn" data-note-btn="' + it.id + '" type="button" title="备注">' + iconNote + '</button>' +
+      (tab === 'mine' ? '<button class="col-act-btn col-del" data-del="' + it.id + '" type="button" title="删除">' + iconDel + '</button>' : '');
 
     return '<div class="col-item" data-id="' + it.id + '">' +
       '<div class="col-av" style="border-radius:' + avRadius + '">' + avHTML + '</div>' +
@@ -13525,6 +13568,74 @@ function markLastUserNoReply(){
   _applyReadStateUpTo(lastUser, 'noReply');
 }
 
+/* ★ 真实撤回：1~60 秒内随机挑一个时刻，把「Ta 自己发过的、还没撤回的」
+   最新一条消息标记成撤回。消息位置不变，只把内容换成撤回提示。
+   找不到可撤回的消息，就什么都不做，直接回调 onDone。 */
+function scheduleRealRecall(roleId, onDone){
+  if(!roleId){ if(onDone) onDone(); return; }
+  if(typeof onDone !== 'function') onDone = function(){};
+
+  /* 先找一条可撤回的：角色发的、非撤回、非系统、非名片、有内容 */
+  const arr = (getCurrentRoleId() === roleId)
+    ? msgs
+    : (lsGet('mj_msgs_' + roleId, null) || []);
+  if(!Array.isArray(arr) || !arr.length){ onDone(); return; }
+
+  let pick = null;
+  for(let i = arr.length - 1; i >= 0; i--){
+    const m = arr[i];
+    if(!m) continue;
+    if(m.role !== 'char') continue;
+    if(m.recalled) continue;
+    if(m.sys) continue;
+    if(m.namecard) continue;
+    if(m.mergeCard) continue;
+    if(!(m.text || m.sticker || m.voice || m.divine)) continue;
+    pick = m;
+    break;
+  }
+  if(!pick){ onDone(); return; }
+
+  /* 1~60 秒随机延迟 */
+  const delayMs = 1000 + Math.floor(Math.random() * 59000);
+
+  setTimeout(function(){
+    /* 中途切了角色：直接放弃，不改任何数据 */
+    if(getCurrentRoleId() !== roleId){
+      /* 如果切到别的角色了，也要把撤回写到那个角色的存储里 */
+      const key = 'mj_msgs_' + roleId;
+      let store = lsGet(key, null);
+      if(Array.isArray(store)){
+        const idx = store.findIndex(x => x && x.id === pick.id);
+        if(idx >= 0){
+          store[idx] = {
+            id: store[idx].id,
+            role: 'char',
+            recalled: true,
+            time: store[idx].time || Date.now()
+          };
+          lsSet(key, store);
+        }
+      }
+      onDone();
+      return;
+    }
+
+    /* 当前就在看这个角色：直接改 msgs */
+    const idx = msgs.findIndex(x => x && x.id === pick.id);
+    if(idx < 0){ onDone(); return; }
+    msgs[idx] = {
+      id: msgs[idx].id,
+      role: 'char',
+      recalled: true,
+      time: msgs[idx].time || Date.now()
+    };
+    saveMsgs();
+    renderChat();
+    onDone();
+  }, delayMs);
+}
+
 function runRecallChain(chainCount, baseDelay){
   /* 锁住进入时的角色，避免 setTimeout 期间被切角色影响 */
   const roleId = getCurrentRoleId();
@@ -14294,11 +14405,10 @@ function runReplyChain(onDone){
         onDone();
         return;
       }
-      /* 撤回链自己会往聊天记录里写撤回条 + 最后一条字卡，
-         它内部也有自己的定时器，所以这里不能立刻 onDone。
-         用一个延迟等于链的典型长度来兜底。 */
-      runRecallChain(0, delay);
-      setTimeout(onDone, delay + 3000);
+      /* ★ 撤回：不立即执行，改成 1~60 秒内随机挑一个时刻，
+         从「Ta 自己发过的、还没撤回的」消息里挑一条最新的，把它标记成撤回。
+         这条消息原位置不变，只把内容替换成「Ta 撤回了一条消息」。 */
+      scheduleRealRecall(targetRoleId, onDone);
     }, delay);
     return;
   }
@@ -16381,7 +16491,7 @@ let choiceOpts=[''];
 function openChoice(){
   /* 每次打开都重置到默认状态：Yes/No 模式、选项池、结果区 */
   choiceMode = 'yn';
-  choiceOpts = [''];
+  choiceOpts = ['yes','no','再说吧'];
   $('#choiceBody').innerHTML=`
 	<div class="choice-head"><button class="mode-btn on" data-mode="yn">Yes / No</button><button class="mode-btn" data-mode="pick">多选项</button></div>
 	<textarea class="choice-q" id="cq" rows="2" placeholder="比如：今晚吃什么？"></textarea>
@@ -19279,6 +19389,94 @@ function handleVideoLibUploadUrl(url){
   toast('已添加');
 }
 
+/* ===== 视频库整页（跟语音库同款，但只显示视频） ===== */
+function openVideoLib(){
+  showScreen('videoLibScreen');
+  renderVideoLibOnly();
+
+  var back = document.getElementById('vdlBack');
+  if(back && !back._boundBack){
+    back._boundBack = true;
+    back.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
+    }, true);
+  }
+
+  var addBtn = document.getElementById('vdlAdd');
+  if(addBtn && !addBtn._boundAdd){
+    addBtn._boundAdd = true;
+    addBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      var mask = document.getElementById('vlVideoSrcMask');
+      if(mask) mask.classList.add('show');
+    }, true);
+  }
+}
+
+/* 渲染视频库独立页 */
+function renderVideoLibOnly(){
+  var list = document.getElementById('vdlList');
+  var tip = document.getElementById('vdlTip');
+  if(!list) return;
+  if(typeof getVideoLib !== 'function'){ return; }
+  var roleId = getCurrentRoleId();
+  var roleName = getCurrentRoleName();
+  if(tip) tip.textContent = '为「' + roleName + '」上传视频，视频通话时会随机插入播放。';
+  var arr = getVideoLib(roleId);
+  if(!arr.length){
+    list.innerHTML = '<div class="vl-empty">还没有视频<br>点上方「＋ 上传视频」添加</div>';
+    return;
+  }
+  list.innerHTML = arr.map(function(v, i){
+    return '<div class="vl-item" data-i="' + i + '">' +
+      '<button class="vl-play" data-vplay="' + i + '" type="button">▶</button>' +
+      '<div class="vl-info">' +
+        '<div class="vl-name">' + escapeHTML(v.name || ('视频 ' + (i+1))) + '</div>' +
+        '<div class="vl-meta">' + (v.dur || 0) + ' 秒 · ' + ((v.size||0)/1024/1024).toFixed(2) + ' MB</div>' +
+      '</div>' +
+      '<button class="vl-del" data-vdel="' + i + '" type="button">✕</button>' +
+    '</div>';
+  }).join('');
+
+  list.querySelectorAll('[data-vplay]').forEach(function(btn){
+    btn.onclick = function(){
+      var i = +btn.dataset.vplay;
+      var v = getVideoLib(roleId)[i];
+      if(!v) return;
+      var play = function(url){
+        if(!url){ toast('视频丢失'); return; }
+        var mask = document.createElement('div');
+        mask.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;padding:16px';
+        mask.innerHTML = '<video src="' + url + '" controls autoplay playsinline style="width:100%;max-height:80vh;border-radius:12px;background:#000"></video>'
+          + '<button style="position:absolute;top:20px;right:20px;width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,.9);color:#111;font-size:16px;cursor:pointer">✕</button>';
+        mask.addEventListener('click', function(e){ if(e.target === mask) mask.remove(); });
+        mask.querySelector('button').onclick = function(){ mask.remove(); };
+        document.body.appendChild(mask);
+      };
+      if(v.key) __idb.toURL(v.key).then(play);
+      else if(v.url) play(v.url);
+    };
+  });
+
+  list.querySelectorAll('[data-vdel]').forEach(function(btn){
+    btn.onclick = function(){
+      var i = +btn.dataset.vdel;
+      var cur = getVideoLib(roleId);
+      var v = cur[i];
+      if(!v) return;
+      if(!confirm('删除这条视频？')) return;
+      cur.splice(i, 1);
+      setVideoLib(roleId, cur);
+      if(v.key) __idb.del(v.key).catch(function(){});
+      renderVideoLibOnly();
+      toast('已删除');
+    };
+  });
+}
+
 /* ===== 打开语音库（同时渲染视频） ===== */
 function openVoiceLib(){
   showScreen('voiceLibScreen');
@@ -21483,9 +21681,20 @@ function renderGroupList(){
     if(!usedIds[g.id]) orderedGroups.push(g);
   });
 
-  /* ★ 语音文件入口：公用页和角色专属页都显示，插在「普通字卡」后面
-     规则：找到普通字卡（g-normal）就插它后面；找不到就插在最前面 */
-  var voiceEntryHTML = `<div class="group-card vl-entry-card" id="vlEntryBtn"><div class="g-ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="16" cy="16" r="3"/></svg></div><div class="g-name">语音文件<span class="g-sub">角色主动语音</span></div><div class="g-arrow">›</div></div>`;
+  /* ★ 语音文件 / 视频文件入口：公用页和角色专属页都显示，插在「普通字卡」后面
+     规则：找到普通字卡（g-normal）就插它后面；找不到就插在最前面。
+     语音点进去 → 语音库；视频点进去 → 视频库。 */
+  var voiceEntryHTML =
+    '<div class="group-card vl-entry-card" id="vlEntryBtn">' +
+      '<div class="g-ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="16" cy="16" r="3"/></svg></div>' +
+      '<div class="g-name">语音文件<span class="g-sub">角色主动语音</span></div>' +
+      '<div class="g-arrow">›</div>' +
+    '</div>' +
+    '<div class="group-card vl-entry-card" id="vdEntryBtn">' +
+      '<div class="g-ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10 9l5 3-5 3z"/></svg></div>' +
+      '<div class="g-name">视频文件<span class="g-sub">视频通话播放</span></div>' +
+      '<div class="g-arrow">›</div>' +
+    '</div>';
 
   var usedVoice = false;
 
@@ -21535,6 +21744,14 @@ function renderGroupList(){
   if(vlBtn){
     vlBtn.addEventListener('click', ()=>{
       openVoiceLib();
+    });
+  }
+
+  /* ★ 视频文件入口的点击：打开视频库整页 */
+  var vdBtn = box.querySelector('#vdEntryBtn');
+  if(vdBtn){
+    vdBtn.addEventListener('click', ()=>{
+      openVideoLib();
     });
   }
 }
@@ -30545,224 +30762,36 @@ try{ initCalendarPage(); }catch(e){ console.error('日历初始化失败', e); }
 
 <script>
 /* ============================================================
-   节日 / 特殊日期 / 100天 / 周年 · 自动祝福调度
+   兜底：getWeatherPool 全局定义
+   防止 pickCard 里的内部函数没写进去导致报错
    ============================================================ */
-
-const FEST_SCHED_KEY = 'mj_fest_sched_v1';
-
-/* 拿某个节日分类的候选祝福语 */
-function getFestivalCandidates(kind, festName){
-  const g = getGroupsByOwner('public').find(x => x.id === 'g-festival');
-  if(!g || !g.cats) return [];
-  /* kind: 'solar' / 'lunar' / 'term' */
-  const catId = kind === 'solar' ? 'cf-solar' : (kind === 'lunar' ? 'cf-lunar' : 'cf-term');
-  const cat = g.cats.find(c => c.id === catId);
-  if(!cat || !cat.list || !cat.list.length) return [];
-  /* 优先匹配包含节日名的，没有就返回全部 */
-  const all = cat.list.map(cardText).map(s => String(s).trim()).filter(Boolean);
-  const matched = all.filter(t => t.indexOf(festName) >= 0);
-  return matched.length ? matched : all;
-}
-
-/* 拿某个特殊日期分类的候选祝福语 */
-function getSpecialCandidates(catId){
-  const g = getGroupsByOwner('public').find(x => x.id === 'g-special');
-  if(!g || !g.cats) return [];
-  const cat = g.cats.find(c => c.id === catId);
-  if(!cat || !cat.list || !cat.list.length) return [];
-  return cat.list.map(cardText).map(s => String(s).trim()).filter(Boolean);
-}
-
-/* 今天命中的所有事件（可能多个）
-   返回 [{ type, name, catId, text }, ...]
-   可能同时包含：生日 + 纪念日 + 节日（农历） + 节日（公历） + 节气 + 倒计时 + 100天 */
-function getTodaySpecialEvents(){
-  const now = new Date();
-  const y = now.getFullYear(), m = now.getMonth() + 1, d = now.getDate();
-  const todayKey = y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-  const events = [];
-
-  /* 1. 生日 / 恋爱纪念日（来自编辑桌面的特殊日期） */
-  const specials = (typeof getSpecialDates === 'function') ? getSpecialDates() : [];
-  specials.forEach(s => {
-    let hit = false;
-    if(s.type === 'solar' && s.date === m + '-' + d) hit = true;
-    if(s.type === 'lunar'){
-      const lunar = (typeof solarToLunar === 'function') ? solarToLunar(y, m, d) : null;
-      if(lunar && lunar.month === s.month && lunar.day === s.day && !lunar.isLeap) hit = true;
-    }
-    if(!hit) return;
-    if(s.category === 'birthday'){
-      const arr = getSpecialCandidates('cs-birthday');
-      events.push({ type:'birthday', name:s.name, catId:'cs-birthday', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : '生日快乐' });
-    } else if(s.category === 'love'){
-      const arr = getSpecialCandidates('cs-love');
-      events.push({ type:'love', name:s.name, catId:'cs-love', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : '纪念日快乐' });
-    }
-  });
-
-  /* 2. 100 天节点（从恋爱纪念日算起） */
-  specials.forEach(s => {
-    if(s.category !== 'love') return;
-    let baseTs = 0;
-    if(s.type === 'solar'){
-      const parts = s.date.split('-');
-      baseTs = new Date(y, parseInt(parts[0],10) - 1, parseInt(parts[1],10)).getTime();
-    } else if(s.type === 'lunar'){
-      const r = (typeof lunarToSolar === 'function') ? lunarToSolar(y, s.month, s.day, false) : null;
-      if(r) baseTs = new Date(r.year, r.month - 1, r.day).getTime();
-    }
-    if(!baseTs) return;
-    const diffDays = Math.round((new Date(y, m-1, d).getTime() - baseTs) / 86400000);
-    if(diffDays > 0 && diffDays % 100 === 0){
-      const arr = getSpecialCandidates('cs-love');
-      events.push({ type:'love100', name:s.name, catId:'cs-love', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : ('在一起第 ' + diffDays + ' 天') });
-    }
-  });
-
-  /* 3. 节日（农历） */
-  const lunar = (typeof solarToLunar === 'function') ? solarToLunar(y, m, d) : null;
-  if(lunar){
-    const lunarFest = LUNAR_FESTIVALS[lunar.month + '-' + lunar.day];
-    if(lunarFest && !lunar.isLeap){
-      const arr = getFestivalCandidates('lunar', lunarFest);
-      events.push({ type:'festival-lunar', name:lunarFest, catId:'cf-lunar', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : (lunarFest + '快乐') });
-    }
-  }
-
-  /* 4. 节日（公历） */
-  const solarFest = SOLAR_FESTIVALS[m + '-' + d];
-  if(solarFest){
-    const arr = getFestivalCandidates('solar', solarFest);
-    events.push({ type:'festival-solar', name:solarFest, catId:'cf-solar', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : (solarFest + '快乐') });
-  }
-
-  /* 5. 节气 */
-  const term = (typeof getSolarTerm === 'function') ? getSolarTerm(y, m, d) : '';
-  if(term){
-    const arr = getFestivalCandidates('term', term);
-    events.push({ type:'term', name:term, catId:'cf-term', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : ('今天' + term) });
-  }
-
-  /* 6. 倒计时 / 日程结束日 */
-  const todos = (typeof getTodos === 'function') ? getTodos() : [];
-  todos.forEach(t => {
-    if(t.type === 'range' && t.end === todayKey){
-      const arr = getSpecialCandidates('cs-countdown');
-      events.push({ type:'countdown', name:t.title, catId:'cs-countdown', text: arr.length ? arr[Math.floor(Math.random()*arr.length)] : ('今天终于到了：' + t.title) });
-    }
-  });
-
-  return events;
-}
-
-/* 给所有好友各发一条消息（走「角色主动发消息」通道） */
-function broadcastToAllRoles(text, opts){
-  opts = opts || {};
-  const ids = getAllRoleIds();
-  ids.forEach(rid => {
-    const role = getRoleById(rid);
-    if(!role || role.hidden) return;
-    /* 每个角色独立加 0~30 秒抖动，避免同时抵达 */
-    const delay = (opts.baseDelay || 0) + Math.random() * 30000;
-    setTimeout(() => {
-      try{
-        const msg = {
-          id: uid(),
-          role: 'char',
-          text: text,
-          time: Date.now(),
-          active: true
-        };
-        if(opts.type) msg.festivalType = opts.type;
-        appendMsgToRole(rid, msg);
-        if(!isViewingRole(rid)){
-          const r = getRoleById(rid) || {};
-          showMsgNotify(r.name || '角色', text, r.avatar, rid);
-        }
-      }catch(e){ console.error('广播祝福出错', e); }
-    }, delay);
-  });
-}
-
-/* 每天一次的调度：
-   - 检查今天命中的所有事件（可能多个）
-   - 每个事件在今天剩余时间里独立随机挑一个时刻
-   - 到点广播给所有好友
-   存储结构：
-   { date:'2026-10-11', events:[ {type,name,catId,text,at,fired}, ... ] }
-*/
-function buildTodayFestSched(){
-  const todayKey = (function(){
-    const d = new Date();
-    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-  })();
-
-  let sched = lsGet(FEST_SCHED_KEY, null);
-  if(!sched || typeof sched !== 'object') sched = {};
-  if(sched.date === todayKey && Array.isArray(sched.events)) return sched;
-
-  /* 新的一天：重置 */
-  sched = { date: todayKey, events: [] };
-
-  const evs = getTodaySpecialEvents();
-  if(evs && evs.length){
-    const now = Date.now();
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999);
-    const span = endOfDay.getTime() - now;
-    evs.forEach((ev, idx) => {
-      /* 每个事件独立挑一个时刻（可能撞车，但撞车概率小） */
-      const at = (span > 0)
-        ? (now + Math.floor(Math.random() * span))
-        : 0;
-      sched.events.push({
-        type: ev.type,
-        name: ev.name,
-        catId: ev.catId,
-        text: ev.text,
-        at: at,
-        fired: false
-      });
-    });
-  }
-  lsSet(FEST_SCHED_KEY, sched);
-  return sched;
-}
-
-/* 每分钟 tick：检查每个事件是否到点 */
-let _festTickTimer = null;
-function runFestTick(){
-  const sched = buildTodayFestSched();
-  if(!sched || !Array.isArray(sched.events) || !sched.events.length) return;
-  const now = Date.now();
-  let changed = false;
-
-  sched.events.forEach(ev => {
-    if(ev.fired) return;
-    if(!ev.at) return;
-    if(now < ev.at) return;
-    /* 到点：广播 */
+if(typeof window.getWeatherPool !== 'function'){
+  window.getWeatherPool = function(){
     try{
-      broadcastToAllRoles(ev.text, { type: ev.type });
-    }catch(e){ console.error('节日广播失败', e); }
-    ev.fired = true;
-    changed = true;
-  });
-
-  if(changed) lsSet(FEST_SCHED_KEY, sched);
+      if(typeof lsGet !== 'function') return [];
+      if(!lsGet('mj_weather_card_on', true)) return [];
+      if(typeof pickWeatherCard !== 'function') return [];
+      var wText = pickWeatherCard();
+      return wText ? [wText] : [];
+    }catch(e){ return []; }
+  };
 }
+</script>
 
-function scheduleFestTick(){
-  if(_festTickTimer) clearInterval(_festTickTimer);
-  _festTickTimer = setInterval(function(){
-    try{ runFestTick(); }catch(e){ console.error('节日 tick 出错', e); }
-  }, 60 * 1000);
-  /* 启动后 5 秒先跑一次 */
-  setTimeout(function(){ try{ runFestTick(); }catch(e){} }, 5000);
-}
-
-try{ scheduleFestTick(); }catch(e){ console.error('节日调度启动失败', e); }
+<script>
+/* ============================================================
+   视频库独立页 · 文件选择器监听（追加）
+   ============================================================ */
+document.addEventListener('change', function(e){
+  const t = e.target;
+  if(!t || t.id !== 'vdlFile') return;
+  const files = Array.from(t.files || []);
+  t.value = '';
+  if(!files.length) return;
+  if(typeof handleVideoLibUploadFiles === 'function'){
+    handleVideoLibUploadFiles(files);
+  }
+}, true);
 </script>
 
 <script>
@@ -30986,6 +31015,9 @@ function scheduleFestTick(){
 
 try{ scheduleFestTick(); }catch(e){ console.error('节日调度启动失败', e); }
 </script>
+
+<script>
+
 
 
 
