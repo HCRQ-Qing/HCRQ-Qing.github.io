@@ -8735,6 +8735,7 @@ window.__APP_VERSION__ = '1.0.2';
         <div class="drawer" id="drawerFunc">
           <div class="drawer-body">
             <div class="func-grid">
+              <div class="func-item" data-func="quiz"><div class="fi-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7"/><circle cx="12" cy="17" r="0.8" fill="currentColor" stroke="none"/></svg></div><span class="fi-label">问卷</span></div>
               <div class="func-item" data-func="divine"><div class="fi-box"><svg viewBox="0 0 24 24"><path d="M2.5 12 C5 7.5 8.5 5.5 12 5.5 C15.5 5.5 19 7.5 21.5 12 C19 16.5 15.5 18.5 12 18.5 C8.5 18.5 5 16.5 2.5 12 Z"/><circle cx="12" cy="12" r="3.2"/></svg></div><span class="fi-label">占卜</span></div>
               <div class="func-item" data-func="reply"><div class="fi-box"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.3 9 9 0 0 1-3.6-.7L4 20.5l1.4-4.1a8.1 8.1 0 0 1-1.3-4.4A8.4 8.4 0 0 1 12.5 3.2 8.4 8.4 0 0 1 21 11.5z"/></svg></div><span class="fi-label">回复设置</span></div>
               <div class="func-item" data-func="beauty"><div class="fi-box"><svg viewBox="0 0 24 24"><path d="M12 3l2 5 5 .5-4 3.5 1.3 5L12 14.5 7.7 17l1.3-5-4-3.5L10 8z"/></svg></div><span class="fi-label">美化</span></div>
@@ -10339,7 +10340,7 @@ window.__APP_VERSION__ = '1.0.2';
 <div class="modal" id="mChoice">
   <div class="overlay" data-close></div>
   <div class="sheet">
-	<div class="sheet-head"><h3>选择</h3><button class="x" data-close>✕</button></div>
+	<div class="sheet-head"><h3>选择</h3><button class="x" data-close type="button">✕</button></div>
 	<div class="sheet-body" id="choiceBody"></div>
   </div>
 </div>
@@ -12202,6 +12203,33 @@ function loadMsgs(){
   return m;
 }
 function saveMsgs(){ lsSet(msgsKey(), msgs); }
+
+/* ★ 试卷卡结算：到 dueAt 打上 settled 标记
+   触发时机：切后台回来、切角色、每分钟 tick、进页面各跑一次
+   因为答案本来就写死在消息里，settle 只是把状态从「待填写」翻成「已提交」 */
+function settleQuizCards(){
+  if(!Array.isArray(msgs)) return false;
+  const now = Date.now();
+  let changed = false;
+  msgs.forEach(function(m){
+    if(!m || !m.quizCard) return;
+    if(!m.quizCard.dueAt) return;
+    if(now >= m.quizCard.dueAt && !m.quizCard.settled){
+      m.quizCard.settled = true;
+      changed = true;
+    }
+  });
+  if(changed) saveMsgs();
+  return changed;
+}
+/* 每分钟跑一次：聊天开着盯着看的时候，也能到点自动变 */
+setInterval(function(){
+  try{
+    if(settleQuizCards()){
+      renderChat();
+    }
+  }catch(e){}
+}, 60 * 1000);
 function avatarHTML(a){ if(a && String(a).startsWith('data:')) return `<img src="${a}">`; return `<svg viewBox="0 0 100 100"><circle class="silhouette" cx="50" cy="38" r="19"/><path class="silhouette" d="M12 100 C12 74 28 62 50 62 C72 62 88 74 88 100 Z"/></svg>`; }
 function userAvHTML(a){ if(a && String(a).startsWith('data:')) return `<img src="${a}">`; return `<svg viewBox="0 0 100 100"><circle class="silhouette" cx="50" cy="38" r="19"/><path class="silhouette" d="M12 100 C12 74 28 62 50 62 C72 62 88 74 88 100 Z"/></svg>`; }
 function nameClass(name){ const n = Array.from(String(name||'')).length; if(n>=7) return 'xlong-name'; if(n>=5) return 'long-name'; return ''; }
@@ -12422,6 +12450,44 @@ function renderChatFull(forceBottom){
 		</div>
 	  </div>`;
 	}
+	/* ★ 试卷卡 */
+	if(m.quizCard){
+	  const qc = m.quizCard;
+	  /* 判定：到时间就算已完成。settled 标记有则更准，没有则按时间兜底 */
+	  const done = !!qc.settled || (qc.dueAt && Date.now() >= qc.dueAt);
+	  const status = done ? '已 提 交' : '待 填 写';
+	  const statusCls = done ? 'status ok' : 'status';
+	  const ansBody = done
+	    ? escapeHTML(qc.answer || '')
+	    : '<span class="ans-empty">等待回答…</span>';
+	  const ansCls = done ? 'paper-ans done' : 'paper-ans';
+	  const no = qc.no || '001';
+	  return `<div class="msg user" data-id="${m.id}">
+		<div class="msg-av usr-av">${avInner}</div>
+		<div class="msg-body">
+		  <div class="paper">
+			<div class="paper-head">
+			  <span class="pt">问 卷</span>
+			  <span class="pe">QUESTIONNAIRE</span>
+			</div>
+			<div class="paper-asker">
+			  <span class="tag">发问者</span>
+			  <span class="mini-av">${userAvHTML(userProfile.avatar)}</span>
+			  <span class="who">${escapeHTML(userName())}</span>
+			</div>
+			<div class="paper-q">${escapeHTML(qc.q || '')}</div>
+			<div class="${ansCls}">
+			  <div class="ans-label">ANSWER</div>
+			  <div class="ans-main">${ansBody}</div>
+			</div>
+			<div class="paper-foot">
+			  <span>NO. ${no}</span>
+			  <span class="${statusCls}">${status}</span>
+			</div>
+		  </div>
+		</div>
+	  </div>`;
+	}
 	if(m.namecard&&m.namecard.name){
 	  return `<div class="msg user" data-id="${m.id}">
 		<div class="msg-av">${avInner}</div>
@@ -12572,6 +12638,42 @@ function renderChatFull(forceBottom){
   bindMsgLongPress();
   applyBeautyCfg();
   updateScrollBottomBtn();
+
+  /* ★ 试卷卡状态修正：渲染完后，拿数据兜一遍
+     防止某些分支把 done 状态吃掉了 */
+  (function fixQuizCards(){
+    try{
+      const list = document.getElementById('chatList');
+      if(!list) return;
+      list.querySelectorAll('.msg').forEach(function(msgEl){
+        const id = msgEl.dataset.id;
+        if(!id) return;
+        const m = msgs.find(function(x){ return x.id === id; });
+        if(!m || !m.quizCard) return;
+        const qc = m.quizCard;
+        const done = !!qc.settled || (qc.dueAt && Date.now() >= qc.dueAt);
+
+        const ansBox = msgEl.querySelector('.paper-ans');
+        const ansMain = msgEl.querySelector('.ans-main');
+        const statusEl = msgEl.querySelector('.paper-foot .status');
+
+        if(done){
+          if(ansBox) ansBox.classList.add('done');
+          if(ansMain) ansMain.textContent = qc.answer || '';
+          if(statusEl){
+            statusEl.textContent = '已 提 交';
+            statusEl.classList.add('ok');
+          }
+        } else {
+          if(ansBox) ansBox.classList.remove('done');
+          if(statusEl){
+            statusEl.textContent = '待 填 写';
+            statusEl.classList.remove('ok');
+          }
+        }
+      });
+    }catch(e){ console.error('试卷卡修正出错', e); }
+  })();
 }
 
 /* 计算一条消息的状态标签：已读标签（我方）+ 主动标签（对方） */
@@ -12605,9 +12707,14 @@ function renderChat(forceBottom){
   const box = $('#chatList');
   if(!box){ renderChatFull(forceBottom); return; }
 
-  /* 构造当前消息签名：条数 + 最后一条 id */
+  /* 构造当前消息签名：条数 + 最后一条 id + 试卷卡状态
+     加试卷卡状态是为了让「待填写 → 已提交」这种字段变化也能触发重绘 */
   const last = msgs.length ? msgs[msgs.length - 1] : null;
-  const sig = msgs.length + '|' + (last ? last.id : '');
+  let quizSig = '';
+  if(last && last.quizCard){
+    quizSig = '|q' + (last.quizCard.settled ? '1' : '0') + '_' + (last.quizCard.dueAt || 0);
+  }
+  const sig = msgs.length + '|' + (last ? last.id : '') + quizSig;
 
   /* 签名变了 → 全量重建 */
   if(sig !== __lastRenderSig){
@@ -14088,13 +14195,30 @@ function showMsgNotify(roleName, text, roleAvatar, targetRoleId){
       }
     } catch(e){ console.error(e); }
 
-    /* 统一跳到聊天页 */
-    try { goToPage('chat'); } catch(e){}
+    /* 统一跳到聊天页：关掉过渡，瞬间到位 */
+    try {
+      var stack = document.getElementById('pageStack');
+      var app = document.getElementById('app');
+      var prevStack = stack ? stack.style.transition : '';
+      var prevApp = app ? app.style.transition : '';
+      if(stack) stack.style.transition = 'none';
+      if(app) app.style.transition = 'none';
+      goToPage('chat');
+      /* 强制同步一次布局，确保这一帧就已经在目标页 */
+      if(stack) void stack.offsetWidth;
+      /* 下一帧再把过渡恢复，避免影响后续左右滑动切页 */
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          if(stack) stack.style.transition = prevStack;
+          if(app) app.style.transition = prevApp;
+        });
+      });
+    } catch(e){ goToPage('chat'); }
 
-    /* 跳过去后，滚到底部 */
+    /* 跳过去后，滚到底部（也去掉平滑，避免看着像在滑） */
     setTimeout(function(){
       var box = document.getElementById('chatList');
-      if(box) box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
+      if(box) box.scrollTo({ top: box.scrollHeight, behavior: 'auto' });
     }, 100);
   };
 
@@ -15025,7 +15149,215 @@ on('#smileBtn','click',e=>{ e.stopPropagation(); const was=contentOpen; closeAll
 on('#chatInput','click',()=>{ if(contentOpen || funcOpen) closeAllDrawers(); });
 on('#plusBtn','click',e=>{ e.stopPropagation(); const was=funcOpen; closeAllDrawers(); if(was) return; funcOpen=true; $('#drawerFunc').classList.add('open'); });
 $$('.d-tab').forEach(t=>{ t.addEventListener('click',e=>{ e.stopPropagation(); $$('.d-tab').forEach(x=>x.classList.remove('on')); t.classList.add('on'); currentTab=t.dataset.tab; pendingDelete=null; renderDrawer(); }); });
-$$('.func-item').forEach(item=>{ item.addEventListener('click',e=>{ e.stopPropagation(); const fn=item.dataset.func; if(fn==='reply'){ closeAllDrawers(); setTimeout(openReplySettings,200); } else if(fn==='beauty'){ closeAllDrawers(); setTimeout(()=>openBeauty('bubble'),200); } else if(fn==='divine'){ closeAllDrawers(); setTimeout(openDivine,200); } else if(fn==='choice'){ closeAllDrawers(); setTimeout(openChoice,200); } else if(fn==='card'){ closeAllDrawers(); setTimeout(openCardPicker,200); } else if(fn==='voicecall'){ closeAllDrawers(); setTimeout(function(){ if(typeof userCall === 'function'){ userCall('voice'); } else { toast('通话模块还没加载好'); } }, 200); } else if(fn==='videocall'){ closeAllDrawers(); setTimeout(function(){ if(typeof userCall === 'function'){ userCall('video'); } else { toast('通话模块还没加载好'); } }, 200); } }); });
+$$('.func-item').forEach(item=>{ item.addEventListener('click',e=>{ e.stopPropagation(); const fn=item.dataset.func; if(fn==='reply'){ closeAllDrawers(); setTimeout(openReplySettings,200); } else if(fn==='beauty'){ closeAllDrawers(); setTimeout(()=>openBeauty('bubble'),200); } else if(fn==='divine'){ closeAllDrawers(); setTimeout(openDivine,200); } else if(fn==='choice'){ closeAllDrawers(); setTimeout(openChoice,200); } else if(fn==='card'){ closeAllDrawers(); setTimeout(openCardPicker,200); } else if(fn==='voicecall'){ closeAllDrawers(); setTimeout(function(){ if(typeof userCall === 'function'){ userCall('voice'); } else { toast('通话模块还没加载好'); } }, 200); } else if(fn==='videocall'){ closeAllDrawers(); setTimeout(function(){ if(typeof userCall === 'function'){ userCall('video'); } else { toast('通话模块还没加载好'); } }, 200); } else if(fn==='quiz'){ closeAllDrawers(); setTimeout(openQuizDialog,200); } }); });
+
+/* ============================================================
+   问卷功能 v3
+   - 弹窗里填问题 / 设思考时间 / 设抽卡张数
+   - 点发出后：
+       · 弹窗不关，回答区显示「正在填写…」
+       · 倒计时结束，回答区换成答案（一次性出来，不做逐字）
+       · 聊天里同时落下一张已经填好的试卷卡
+   - 退出弹窗 / 退出网页，聊天里的试卷卡照样是已提交
+   ============================================================ */
+let _quizTimers = [];
+function _clearQuizTimers(){
+  _quizTimers.forEach(function(t){ clearTimeout(t); });
+  _quizTimers = [];
+}
+
+/* 打开问卷弹窗 */
+function openQuizDialog(){
+  const mask = document.getElementById('mQuiz');
+  if(!mask) return;
+  const qEl = document.getElementById('quizQText');
+  if(qEl) qEl.value = '';
+  const s1 = document.getElementById('quizThinkMin'); if(s1) s1.value = 2;
+  const s2 = document.getElementById('quizThinkMax'); if(s2) s2.value = 5;
+  const c1 = document.getElementById('quizCntMin');   if(c1) c1.value = 1;
+  const c2 = document.getElementById('quizCntMax');   if(c2) c2.value = 1;
+  /* 重置弹窗内的回答区 */
+  const rw = document.getElementById('quizResultWrap');
+  if(rw) rw.style.display = 'none';
+  const rt = document.getElementById('quizResultText');
+  if(rt) rt.textContent = '正在填写…';
+  const rb = document.getElementById('quizResultBox');
+  if(rb){
+    rb.style.background = '#fcfcfc';
+    rb.style.borderStyle = 'dashed';
+    rb.style.borderColor = 'rgba(0,0,0,.14)';
+  }
+  /* 恢复按钮显示（上次发完被隐藏过） */
+  const btn0 = document.getElementById('btnQuizStart');
+  if(btn0){
+    btn0.style.display = '';
+    btn0.disabled = false;
+    btn0.style.opacity = '';
+    btn0.style.pointerEvents = '';
+  }
+  mask.classList.add('show');
+  setTimeout(function(){ if(qEl) qEl.focus(); }, 200);
+}
+
+/* 关闭问卷弹窗 */
+function closeQuizDialog(){
+  const mask = document.getElementById('mQuiz');
+  if(mask) mask.classList.remove('show');
+}
+
+/* ★ X 按钮和遮罩都单独绑一次关闭，不依赖全局 [data-close] */
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  /* 点 ✕ */
+  if(t.closest('#quizCloseBtn')){
+    e.preventDefault();
+    e.stopPropagation();
+    closeQuizDialog();
+    return;
+  }
+  /* 点遮罩空白处 */
+  const mask = t.closest('#mQuiz');
+  if(mask && t === mask){
+    closeQuizDialog();
+  }
+}, true);
+
+/* 抽一张普通字卡：优先短卡，超过 30 字的跳过 */
+function _drawQuizCard(){
+  const pub  = getAllNormalCards('public');
+  const own  = getAllNormalCards(getCurrentRoleId());
+  const pool = own.concat(pub);
+  if(!pool.length) return '嗯，我在。';
+  const short = pool.filter(function(t){
+    return t && t.length <= 30;
+  });
+  const usePool = short.length ? short : pool;
+  return usePool[Math.floor(Math.random() * usePool.length)];
+}
+
+/* 生成一条答案：抽 1~N 张卡，用空格拼在一起 */
+function _drawQuizAnswer(count){
+  const arr = [];
+  for(let i = 0; i < count; i++){
+    arr.push(_drawQuizCard());
+  }
+  return arr.join('　');
+}
+
+/* 开始问卷 */
+function startQuiz(){
+  const roleId = getCurrentRoleId();
+  const qEl = document.getElementById('quizQText');
+  const q = qEl ? (qEl.value || '').trim() : '';
+  if(!q){ toast('请先填写问题'); return; }
+
+  const sMinRaw = parseInt((document.getElementById('quizThinkMin') || {}).value, 10);
+  const sMaxRaw = parseInt((document.getElementById('quizThinkMax') || {}).value, 10);
+  const cMinRaw = parseInt((document.getElementById('quizCntMin')   || {}).value, 10);
+  const cMaxRaw = parseInt((document.getElementById('quizCntMax')   || {}).value, 10);
+
+  const sMin = Math.max(1, isNaN(sMinRaw) ? 2 : sMinRaw);
+  const sMax = Math.max(sMin, isNaN(sMaxRaw) ? 5 : sMaxRaw);
+  const cMin = Math.max(1, isNaN(cMinRaw) ? 1 : cMinRaw);
+  const cMax = Math.max(cMin, isNaN(cMaxRaw) ? 1 : cMaxRaw);
+
+  /* 摇思考时间 + 抽卡张数 */
+  const secs = sMin + Math.floor(Math.random() * (sMax - sMin + 1));
+  const thinkMs  = secs * 1000;
+  const cardCount = cMin + Math.floor(Math.random() * (cMax - cMin + 1));
+  const answerText = _drawQuizAnswer(cardCount);
+  const dueAt = Date.now() + thinkMs;
+  const quizNo = _nextQuizNo(roleId);
+
+  /* 我方先发一条「待填写」的试卷卡进聊天，答案已经写死在里面 */
+  const quizMsg = {
+    id: uid(),
+    role: 'user',
+    time: Date.now(),
+    quizCard: {
+      q: q,
+      answer: answerText,
+      dueAt: dueAt,
+      no: quizNo
+    }
+  };
+  msgs.push(quizMsg);
+  saveMsgs();
+  renderChat(true);
+
+  /* 弹窗里：显示回答区，写「正在填写…」 */
+  const rw = document.getElementById('quizResultWrap');
+  const rb = document.getElementById('quizResultBox');
+  const rt = document.getElementById('quizResultText');
+  const btn = document.getElementById('btnQuizStart');
+  if(rw) rw.style.display = 'block';
+  if(rb){
+    rb.style.background = '#fcfcfc';
+    rb.style.borderStyle = 'dashed';
+    rb.style.borderColor = 'rgba(0,0,0,.14)';
+  }
+  if(rt) rt.textContent = '正在填写…';
+  /* 顺手锁一下按钮，避免连点发两条 */
+  if(btn){
+    btn.disabled = true;
+    btn.style.opacity = '.45';
+    btn.style.pointerEvents = 'none';
+  }
+
+  /* 聊天里也拉起「对方正在输入」尾巴，跟弹窗同步 */
+  _clearQuizTimers();
+  const _tb = document.getElementById('typingBar');
+  if(_tb) _tb.classList.add('show');
+
+  /* 倒计时结束：弹窗里换成答案，聊天里落定「已提交」 */
+  _quizTimers.push(setTimeout(function(){
+    /* 弹窗回答区：换成答案，实线边框，白底 */
+    if(rt) rt.textContent = answerText;
+    if(rb){
+      rb.style.background = '#fff';
+      rb.style.borderStyle = 'solid';
+      rb.style.borderColor = 'rgba(0,0,0,.10)';
+    }
+    /* 答案出来了，直接把「发出问卷」按钮藏起来 */
+    if(btn){
+      btn.style.display = 'none';
+    }
+    /* 聊天里的输入尾巴收起，重绘让这张卷子变成已提交 */
+    if(_tb) _tb.classList.remove('show');
+    if(getCurrentRoleId() === roleId){
+      try{ if(typeof settleQuizCards === 'function') settleQuizCards(); }catch(e){}
+      renderChat();
+    }
+  }, thinkMs));
+}
+
+/* 给试卷卡生成一个编号，每个角色独立，从 001 开始 */
+function _nextQuizNo(roleId){
+  const KEY = 'mj_quiz_no_v1';
+  let m = lsGet(KEY, null);
+  if(!m || typeof m !== 'object') m = {};
+  const n = (m[roleId] || 0) + 1;
+  m[roleId] = n;
+  lsSet(KEY, m);
+  return String(n).padStart(3, '0');
+}
+
+/* 绑定按钮 */
+document.addEventListener('click', function(e){
+  const t = e.target;
+  if(!t || !t.closest) return;
+  if(t.closest('#btnQuizStart')){
+    e.preventDefault();
+    e.stopPropagation();
+    startQuiz();
+    return;
+  }
+  const mask = t.closest('#mQuiz');
+  if(mask && t === mask){
+    closeQuizDialog();
+  }
+}, true);
 
 const DEFAULT_EMOJI_CATS = [
   {name:'常用',icon:'😮',list:[...'😀😁😂🤣😊😍😘😜🤪😎🤩🥳😭😅😉🙃😋🤗🤔🙄😴🤤😮😱🥺😳🤯😇🥰']},
@@ -16798,7 +17130,7 @@ $('#btnSaveRead').addEventListener('click',()=>{
   const text=$('#readText').value.trim();
   if(!text){ toast('内容不能为空'); return; }
 
-  /* 情况 1：从聊天卡点进来的 → 只写聊天卡，不碰记录库 */
+  /* 情况 1：从聊天卡点进来的 → 边写边显示，保存只是收尾 */
   if(readingMsgId){
     const m = msgs.find(x => x.id === readingMsgId);
     if(m && m.divine){
@@ -16857,93 +17189,151 @@ document.addEventListener('click', function(e){
 on('#drBack','click',()=>{ showScreen('deskScreen'); });
 on('#drSearchInput','input',()=>renderDivineRecords());
 
-let choiceMode='yn';
+let choiceMode='multi';   /* 'yn' | 'multi' */
 let choiceOpts=[''];
+
 function openChoice(){
-  /* 每次打开都重置到默认状态：Yes/No 模式、选项池、结果区 */
-  choiceMode = 'yn';
-  choiceOpts = ['yes','no','再说吧'];
-  $('#choiceBody').innerHTML=`
-	<div class="choice-head"><button class="mode-btn on" data-mode="yn">Yes / No</button><button class="mode-btn" data-mode="pick">多选项</button></div>
-	<textarea class="choice-q" id="cq" rows="2" placeholder="比如：今晚吃什么？"></textarea>
-	<div id="optsWrap">
-	  <div class="opt-label2">OPTIONS</div>
-	  <div id="opts"></div>
-	  <button class="choice-add" id="addOpt">＋ 添加选项</button>
+  choiceMode = 'multi';
+  choiceOpts = [''];
+
+  $('#choiceBody').innerHTML = `
+	<div class="choice-head">
+	  <button class="mode-btn" data-mode="yn" type="button">Yes / No</button>
+	  <button class="mode-btn on" data-mode="multi" type="button">多 选</button>
 	</div>
+
+	<textarea class="choice-q" id="cq" rows="2" placeholder="比如：今晚想干嘛？" style="height:64px;min-height:64px;max-height:64px;overflow-y:auto;line-height:1.6;"></textarea>
+
+	<div id="paneYn" style="display:none">
+	  <div class="choice-opts-row" style="padding:8px 2px;border-bottom:none;margin-top:6px;">
+		<span style="font-size:11.5px;color:#bbb;flex:none;">思考</span>
+		<input class="choice-opt-input" type="number" id="ynMin" value="2" min="1" max="60" style="text-align:center;max-width:52px;">
+		<span style="font-size:11.5px;color:#bbb;flex:none;">秒 到</span>
+		<input class="choice-opt-input" type="number" id="ynMax" value="5" min="1" max="60" style="text-align:center;max-width:52px;">
+		<span style="font-size:11.5px;color:#bbb;flex:none;">秒</span>
+	  </div>
+	</div>
+
+	<div id="paneMulti">
+	  <textarea class="choice-q" id="mOpts" rows="5" placeholder="一行一个选项&#10;吃饭&#10;睡觉&#10;打游戏&#10;看电影" style="height:120px;min-height:120px;max-height:120px;margin-top:6px;"></textarea>
+
+	  <div class="choice-opts-row" style="padding:8px 2px;border-bottom:none;">
+		<span style="font-size:11.5px;color:#bbb;flex:none;">选</span>
+		<input class="choice-opt-input" type="number" id="mCntMin" value="1" min="1" max="5" style="text-align:center;max-width:52px;">
+		<span style="font-size:11.5px;color:#bbb;flex:none;">个 到</span>
+		<input class="choice-opt-input" type="number" id="mCntMax" value="2" min="1" max="5" style="text-align:center;max-width:52px;">
+		<span style="font-size:11.5px;color:#bbb;flex:none;">个</span>
+	  </div>
+
+	  <div class="choice-opts-row" style="padding:8px 2px;border-bottom:none;">
+		<span style="font-size:11.5px;color:#bbb;flex:none;">思考</span>
+		<input class="choice-opt-input" type="number" id="mMin" value="2" min="1" max="60" style="text-align:center;max-width:52px;">
+		<span style="font-size:11.5px;color:#bbb;flex:none;">秒 到</span>
+		<input class="choice-opt-input" type="number" id="mMax" value="5" min="1" max="60" style="text-align:center;max-width:52px;">
+		<span style="font-size:11.5px;color:#bbb;flex:none;">秒</span>
+	  </div>
+	</div>
+
 	<div class="choice-result" id="result"><div class="r-head">TA'S CHOICE</div><div class="r-answer" id="rAns">—</div></div>
-	<button class="choice-go" id="go">让 Ta 选</button>
+	<button class="choice-go" id="go" type="button">让 Ta 选</button>
   `;
-  renderChoiceOpts();
-  /* 根据 choiceMode 同步 #optsWrap 显示状态 */
-  if(choiceMode==='yn'){ $('#optsWrap').style.display='none'; }
-  else { $('#optsWrap').style.display='block'; }
-  $('#addOpt').onclick=()=>{ choiceOpts.push(''); renderChoiceOpts(); };
-  /* ★ #think 已经不在了（选择弹窗改版时删掉了），加了 null 保护 */
-  var thinkEl = $('#think');
-  if(thinkEl){ thinkEl.oninput=function(){ var tv=$('#thinkVal'); if(tv) tv.textContent=this.value+'s'; }; }
-  	  $$('#choiceBody .mode-btn').forEach(b=>{ b.onclick=()=>{ $$('#choiceBody .mode-btn').forEach(x=>x.classList.remove('on')); b.classList.add('on'); choiceMode=b.dataset.mode; if(choiceMode==='yn'){ choiceOpts=['yes','no','再说吧']; $('#optsWrap').style.display='none'; } else{ $('#optsWrap').style.display='block'; choiceOpts=['']; renderChoiceOpts(); } }; });
-  $('#go').onclick=()=>{
-	const q=$('#cq').value.trim()||'（未填写问题）';
-	const maxPick=1;
-	const think=1.5;
-	const valid=choiceOpts.filter(o=>o.trim());
-	if(!valid.length){ alert('至少写一个选项'); return; }
-	$('#rAns').innerHTML='<span class="dots"><span></span><span></span><span></span></span>';
-	$('#result').classList.add('show');
-	setTimeout(()=>{
-	  let answer='';
-	  if(choiceMode==='yn'){
-		/* ★ Yes 40% / No 40% / or 20%，从字卡库对应的分类里等概率抽一条 */
-		function pickYesNoCat(catId, fallback){
-		  try{
-			const g = getGroupsByOwner('public').find(function(x){ return x.id === 'g-yesno'; });
-			if(!g || !g.cats) return fallback;
-			const cat = g.cats.find(function(c){ return c.id === catId; });
-			if(!cat || !cat.list || !cat.list.length) return fallback;
-			const pool = cat.list.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
-			if(!pool.length) return fallback;
-			return pool[Math.floor(Math.random() * pool.length)];
-		  }catch(e){ return fallback; }
-		}
-		const p = Math.random();
-		if(p < 0.40)      answer = pickYesNoCat('cyn-yes', 'yes');
-		else if(p < 0.80) answer = pickYesNoCat('cyn-no',  'no');
-		else              answer = pickYesNoCat('cyn-or',  '再说吧');
+
+  $('#paneYn').style.display = 'none';
+  $('#paneMulti').style.display = 'block';
+
+  $$('#choiceBody .mode-btn').forEach(b => {
+	b.onclick = () => {
+	  $$('#choiceBody .mode-btn').forEach(x => x.classList.remove('on'));
+	  b.classList.add('on');
+	  choiceMode = b.dataset.mode;
+	  if(choiceMode === 'yn'){
+		$('#paneYn').style.display = 'block';
+		$('#paneMulti').style.display = 'none';
 	  } else {
-		const shuffled=[...valid].sort(()=>Math.random()-0.5);
-		answer = shuffled.slice(0,Math.min(maxPick,shuffled.length)).join(' · ');
+		$('#paneYn').style.display = 'none';
+		$('#paneMulti').style.display = 'block';
 	  }
-	  $('#rAns').textContent=answer;
-	  /* ★ 把结果当作一条「系统卡片」推给聊天记录 */
-	  try {
+	};
+  });
+
+  $('#go').onclick = () => {
+	const q = $('#cq').value.trim() || '（未填写问题）';
+	let answer = '';
+	let thinkMs = 3000;
+
+	if(choiceMode === 'yn'){
+	  const sMin = Math.max(1, parseInt(($('#ynMin')||{}).value) || 2);
+	  const sMax = Math.max(sMin, parseInt(($('#ynMax')||{}).value) || 5);
+	  thinkMs = (sMin + Math.floor(Math.random() * (sMax - sMin + 1))) * 1000;
+
+	  function pickYesNoCat(catId, fallback){
+		try{
+		  const g = getGroupsByOwner('public').find(function(x){ return x.id === 'g-yesno'; });
+		  if(!g || !g.cats) return fallback;
+		  const cat = g.cats.find(function(c){ return c.id === catId; });
+		  if(!cat || !cat.list || !cat.list.length) return fallback;
+		  const pool = cat.list.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
+		  if(!pool.length) return fallback;
+		  return pool[Math.floor(Math.random() * pool.length)];
+		}catch(e){ return fallback; }
+	  }
+	  const p = Math.random();
+	  if(p < 0.40)      answer = pickYesNoCat('cyn-yes', 'yes');
+	  else if(p < 0.80) answer = pickYesNoCat('cyn-no',  'no');
+	  else              answer = pickYesNoCat('cyn-or',  '再说吧');
+
+	} else {
+	  const raw = $('#mOpts').value || '';
+	  const opts = raw.split('\n').map(s => s.trim()).filter(Boolean);
+	  if(!opts.length){ toast('至少写一个选项'); return; }
+
+	  let cMin = Math.max(1, parseInt(($('#mCntMin')||{}).value) || 1);
+	  let cMax = Math.max(cMin, parseInt(($('#mCntMax')||{}).value) || 2);
+	  cMax = Math.min(cMax, opts.length);
+	  const cnt = cMin + Math.floor(Math.random() * (cMax - cMin + 1));
+
+	  const sMin = Math.max(1, parseInt(($('#mMin')||{}).value) || 2);
+	  const sMax = Math.max(sMin, parseInt(($('#mMax')||{}).value) || 5);
+	  thinkMs = (sMin + Math.floor(Math.random() * (sMax - sMin + 1))) * 1000;
+
+	  const copy = opts.slice();
+	  const picked = [];
+	  for(let i = 0; i < cnt && copy.length; i++){
+		const idx = Math.floor(Math.random() * copy.length);
+		picked.push(copy.splice(idx, 1)[0]);
+	  }
+	  answer = picked.join('　');
+	}
+
+	/* 结果区先转圈 */
+	$('#rAns').innerHTML = '<span class="dots"><span></span><span></span><span></span></span>';
+	$('#result').classList.add('show');
+
+	/* 思考时间到：显示答案 + 推一张卡片进聊天 */
+	setTimeout(() => {
+	  $('#rAns').textContent = answer;
+	  try{
 		const cardMsg = {
 		  id: uid(),
 		  role: 'char',
 		  time: Date.now(),
 		  choiceCard: {
 			q: q,
-			answer: answer,
-			options: valid.slice()
+			answer: answer
 		  }
 		};
 		msgs.push(cardMsg);
 		saveMsgs();
 		renderChat(true);
-	  } catch(e){ console.error('选择结果发到聊天失败', e); }
-	},think*1000);
+	  }catch(e){ console.error('选择结果发到聊天失败', e); }
+	}, thinkMs);
   };
+
   $('#mChoice').classList.add('show');
 }
-function renderChoiceOpts(){
-  const box=$('#opts'); if(!box) return;
-  box.innerHTML=choiceOpts.map((o,i)=>{
-	const canDel = i > 0;   /* 第 1 个选项不给删除，其余都有 ✕ */
-	return `<div class="choice-opts-row"><span class="choice-idx">${String(i+1).padStart(2,'0')}</span><input class="choice-opt-input" data-i="${i}" value="${escapeHTML(o)}" placeholder="选项">${canDel?`<button class="choice-del" data-i="${i}" type="button">✕</button>`:''}</div>`;
-  }).join('');
-  box.querySelectorAll('.choice-opt-input').forEach(inp=>{ inp.oninput=()=>{ choiceOpts[+inp.dataset.i]=inp.value; }; });
-  box.querySelectorAll('.choice-del').forEach(b=>{ b.onclick=()=>{ const idx=+b.dataset.i; if(idx<=0) return; choiceOpts.splice(idx,1); renderChoiceOpts(); }; });
-}
+
+/* 兼容旧代码里可能的调用，保留一个空壳，避免报错 */
+function renderChoiceOpts(){}
 
 const NAME_CARD_PROB = { agree:0.25, reject:0.55, hold:0.20 };
 const INTRO_AGREE_PROB = 0.30;
@@ -25601,12 +25991,15 @@ function toggleRecConfirmPlay(){
   if(!pendingUrl) return;
   const wave = $('#recWave');
   const getPlayBtn = ()=> document.querySelector('#recActions .rec-act[data-act="play"]');
+  /* 简约线条图标：播放 ▶ / 暂停 ❚❚（用竖线画，不用 emoji） */
+  const ICON_PLAY  = '<svg viewBox="0 0 12 12" width="9" height="9" fill="currentColor" style="vertical-align:-1px;margin-right:4px"><path d="M2.5 1.5 L10 6 L2.5 10.5 Z"/></svg>';
+  const ICON_PAUSE = '<svg viewBox="0 0 12 12" width="9" height="9" fill="currentColor" style="vertical-align:-1px;margin-right:4px"><rect x="3" y="2" width="2" height="8" rx="0.8"/><rect x="7" y="2" width="2" height="8" rx="0.8"/></svg>';
   // 如果正在播放 → 暂停
   if(confirmAudio && !confirmAudio.paused){
     confirmAudio.pause();
     if(wave){ wave.classList.remove('playing'); wave.classList.add('frozen'); }
     const pb = getPlayBtn();
-    if(pb) pb.textContent = '▶ 试 听';
+    if(pb) pb.innerHTML = ICON_PLAY + '试 听';
     return;
   }
   if(!confirmAudio){
@@ -25614,24 +26007,24 @@ function toggleRecConfirmPlay(){
     confirmAudio.onended = ()=>{
       if(wave){ wave.classList.remove('playing'); wave.classList.add('frozen'); }
       const pb = getPlayBtn();
-      if(pb) pb.textContent = '▶ 试 听';
+      if(pb) pb.innerHTML = ICON_PLAY + '试 听';
     };
     confirmAudio.onerror = ()=>{
       toast('试听失败');
       if(wave){ wave.classList.remove('playing'); wave.classList.add('frozen'); }
       const pb = getPlayBtn();
-      if(pb) pb.textContent = '▶ 试 听';
+      if(pb) pb.innerHTML = ICON_PLAY + '试 听';
     };
   }
   confirmAudio.currentTime = 0;
   confirmAudio.play().then(()=>{
     if(wave){ wave.classList.remove('frozen'); wave.classList.add('playing'); }
     const pb = getPlayBtn();
-    if(pb) pb.textContent = '⏸ 暂 停';
+    if(pb) pb.innerHTML = ICON_PAUSE + '暂 停';
   }).catch(()=>{
     toast('播放被拦截，请再点一次');
     const pb = getPlayBtn();
-    if(pb) pb.textContent = '▶ 试 听';
+    if(pb) pb.innerHTML = ICON_PLAY + '试 听';
   });
 }
 function sendRecVoice(){
@@ -25725,6 +26118,7 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	} catch(e){}
 
 	msgs = loadMsgs();
+	try{ settleQuizCards(); }catch(e){ console.error('试卷结算失败', e); }
 	renderChat();
 	renderFriends();
 	/* 刚上线：所有 user 消息 90% 未读 / 10% 已读 */
@@ -27911,6 +28305,7 @@ function switchToRole(id){
   try { clearActiveDivinePending(); } catch(e){}
   setCurrentRoleId(id);
   msgs = loadMsgs();
+  try{ if(typeof settleQuizCards === 'function') settleQuizCards(); }catch(e){}
   refreshChatRole();
   applyMoodUI();
   applyTopbarBg();
@@ -27970,6 +28365,217 @@ function goToPage(name){
 </script>
  
 
+
+<!-- ============ 问卷弹窗 · 方案 A 极简线 ============ -->
+<style>
+#mQuiz .sheet#quizSheet{
+  max-width:340px;
+  border-radius:20px;
+  border:0.7px solid rgba(0,0,0,.08);
+  box-shadow:0 20px 60px rgba(0,0,0,.14);
+  padding:22px 20px 18px;
+  box-sizing:border-box;
+}
+#mQuiz .quiz-close{
+  position:absolute;top:12px;right:12px;
+  width:26px;height:26px;
+  border:none;background:transparent;
+  color:#c8c8c8;font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-family:inherit;
+  transition:color .18s;
+}
+#mQuiz .quiz-close:active{color:#1a1a1a}
+#mQuiz .quiz-title{
+  text-align:center;
+  font-size:15px;font-weight:300;
+  letter-spacing:6px;color:#1a1a1a;
+  margin-bottom:4px;
+}
+#mQuiz .quiz-sub{
+  text-align:center;
+  font-family:Georgia,serif;
+  font-size:8.5px;letter-spacing:5px;
+  color:#d0d0d0;font-weight:400;
+  margin-bottom:22px;
+}
+#mQuiz .quiz-field{margin-bottom:16px}
+#mQuiz .quiz-field label{
+  display:block;
+  font-size:10.5px;color:#bbb;
+  letter-spacing:1.5px;
+  margin-bottom:8px;font-weight:300;
+}
+#mQuiz .quiz-input,
+#mQuiz .quiz-numrow{
+  width:100%;
+  border:none;
+  background:#fafafa;
+  border-radius:12px;
+  padding:14px 16px;
+  font-size:14px;
+  font-family:inherit;
+  color:#1a1a1a;
+  outline:none;
+  resize:none;
+  line-height:1.7;
+  font-weight:300;
+  box-sizing:border-box;
+}
+#mQuiz .quiz-input{min-height:72px}
+#mQuiz .quiz-input::placeholder{color:#d0d0d0}
+#mQuiz .quiz-input:focus{background:#f5f5f5}
+#mQuiz .quiz-numrow{display:flex;align-items:center;gap:8px}
+#mQuiz .quiz-numrow .lbl{
+  font-size:12px;color:#999;
+  letter-spacing:.3px;flex:1;
+}
+#mQuiz .quiz-numrow input[type=number]{
+  width:46px;
+  border:none;
+  border-bottom:0.7px solid #d8d8d8;
+  background:transparent;
+  text-align:center;
+  font-size:14px;
+  font-family:Georgia,serif;
+  color:#1a1a1a;
+  outline:none;
+  padding:2px 0;
+}
+#mQuiz .quiz-numrow input[type=number]:focus{border-bottom-color:#1a1a1a}
+#mQuiz .quiz-numrow .unit{font-size:11px;color:#c8c8c8;flex:none}
+#mQuiz .quiz-numrow .to{font-size:11px;color:#c8c8c8;flex:none;margin:0 2px}
+#mQuiz .quiz-btn{
+  width:100%;
+  padding:14px 0;
+  border-radius:22px;
+  border:none;
+  background:#1a1a1a;
+  color:#fff;
+  font-size:13.5px;
+  letter-spacing:6px;
+  text-indent:6px;
+  font-family:inherit;
+  font-weight:300;
+  cursor:pointer;
+  margin-top:8px;
+  transition:opacity .2s, transform .1s;
+}
+#mQuiz .quiz-btn:active{opacity:.85;transform:scale(.99)}
+
+/* ===== 试卷卡（聊天里发出来的样子） ===== */
+#chatList .paper{
+  width:248px;background:#fff;
+  border:0.7px solid rgba(0,0,0,.14);
+  border-radius:14px;
+  box-shadow:0 1px 4px rgba(0,0,0,.04);
+  padding:14px 14px 12px;
+  display:flex;flex-direction:column;gap:10px;
+  box-sizing:border-box;position:relative;overflow:hidden;
+}
+#chatList .paper::after{
+  content:"";position:absolute;right:-28px;top:-28px;
+  width:70px;height:70px;border-radius:50%;
+  border:0.6px solid rgba(0,0,0,.05);pointer-events:none;
+}
+#chatList .paper-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  padding-bottom:9px;border-bottom:0.6px dashed rgba(0,0,0,.10);
+}
+#chatList .paper-head .pt{font-size:12px;letter-spacing:3px;color:#1a1a1a;font-weight:300}
+#chatList .paper-head .pe{font-size:7.5px;letter-spacing:3px;color:#d0d0d0;font-family:Georgia,serif}
+#chatList .paper-asker{display:flex;align-items:center;gap:7px;
+  font-size:10.5px;color:#999;letter-spacing:1px}
+#chatList .paper-asker .tag{flex:none;font-size:8.5px;letter-spacing:1.5px;
+  color:#bbb;font-family:Georgia,serif}
+#chatList .paper-asker .who{color:#1a1a1a;font-weight:400;font-size:11.5px;letter-spacing:.5px}
+#chatList .paper-asker .mini-av{width:17px;height:17px;border-radius:5px;
+  background:#f0f0f0;overflow:hidden;flex:none;
+  display:flex;align-items:center;justify-content:center}
+#chatList .paper-asker .mini-av svg{width:100%;height:100%}
+#chatList .paper-asker .mini-av .sil,
+#chatList .paper-asker .mini-av .silhouette{fill:#c8c8c8}
+#chatList .paper-q{font-size:13.5px;line-height:1.65;color:#1a1a1a;
+  letter-spacing:.3px;padding:2px 0 4px;word-break:break-word}
+#chatList .paper-ans{
+  border:0.7px dashed rgba(0,0,0,.14);
+  border-radius:10px;padding:10px 12px;
+  min-height:44px;display:flex;flex-direction:column;gap:5px;
+  position:relative;background:#fcfcfc;
+  transition:background .25s ease, border-color .25s ease;
+  box-sizing:border-box;
+}
+#chatList .paper-ans.done{
+  border-style:solid;border-color:rgba(0,0,0,.10);background:#fff;
+}
+#chatList .paper-ans .ans-label{font-size:8.5px;letter-spacing:2px;
+  color:#c8c8c8;font-family:Georgia,serif}
+#chatList .paper-ans .ans-empty{font-size:12.5px;color:#d0d0d0;
+  letter-spacing:1px;font-style:italic;padding:4px 0 2px}
+#chatList .paper-ans .ans-main{
+  font-size:14.5px;line-height:1.8;color:#1a1a1a;
+  letter-spacing:.4px;
+  word-break:break-word;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  min-height:1.4em;
+}
+#chatList .paper-foot{
+  display:flex;align-items:baseline;justify-content:space-between;
+  font-size:8.5px;letter-spacing:2px;color:#d0d0d0;
+  font-family:Georgia,serif;padding-top:2px;
+}
+#chatList .paper-foot .status{color:#bbb}
+#chatList .paper-foot .status.ok{color:#1a1a1a}
+</style>
+
+<div class="modal" id="mQuiz">
+  <div class="overlay" data-close></div>
+  <div class="sheet" id="quizSheet">
+    <button class="quiz-close" id="quizCloseBtn" type="button">✕</button>
+    <div class="quiz-title">问 卷</div>
+    <div class="quiz-sub">QUESTIONNAIRE</div>
+
+    <div class="quiz-field">
+      <label>问 题</label>
+      <textarea class="quiz-input" id="quizQText" placeholder="比如：最近在想什么？"></textarea>
+    </div>
+
+    <div class="quiz-field">
+      <label>思 考 时 间</label>
+      <div class="quiz-numrow">
+        <span class="lbl">最短</span>
+        <input type="number" id="quizThinkMin" value="2" min="1" max="60">
+        <span class="unit">秒</span>
+        <span class="to">到</span>
+        <input type="number" id="quizThinkMax" value="5" min="1" max="60">
+        <span class="unit">秒</span>
+      </div>
+    </div>
+
+    <div class="quiz-field">
+      <label>抽 卡 张 数</label>
+      <div class="quiz-numrow">
+        <span class="lbl">随机</span>
+        <input type="number" id="quizCntMin" value="1" min="1" max="3">
+        <span class="unit">张</span>
+        <span class="to">到</span>
+        <input type="number" id="quizCntMax" value="1" min="1" max="3">
+        <span class="unit">张</span>
+      </div>
+    </div>
+
+    <!-- ★ 弹窗内的回答区：点发出后显示「正在填写 → 答案」 -->
+    <div id="quizResultWrap" style="display:none;margin-top:6px;margin-bottom:4px;">
+      <div id="quizResultBox" style="border:0.7px dashed rgba(0,0,0,.14);border-radius:12px;padding:14px 16px;background:#fcfcfc;transition:background .25s ease, border-color .25s ease;">
+        <div style="font-size:8.5px;letter-spacing:2px;color:#c8c8c8;font-family:Georgia,serif;margin-bottom:8px;">ANSWER</div>
+        <div id="quizResultText" style="font-size:14.5px;line-height:1.9;color:#1a1a1a;letter-spacing:.4px;word-break:break-word;overflow-wrap:anywhere;">正在填写…</div>
+      </div>
+    </div>
+
+    <button class="quiz-btn" id="btnQuizStart" type="button">发 出 问 卷</button>
+  </div>
+</div>
 
 <!-- ============ 聊天信息面板（D 宫格方案） ============ -->
 <div class="chat-info-panel" id="chatInfoPanel">
@@ -31388,6 +31994,48 @@ document.addEventListener('visibilitychange', function(){
   if(document.visibilityState === 'visible'){
     renderBigCardDate();
     renderBigCardEvents();
+    /* ★ 回到前台先结算试卷卡，再重绘聊天 */
+    try{
+      if(typeof settleQuizCards === 'function' && settleQuizCards()){
+        if(typeof renderChat === 'function') renderChat();
+      }
+    }catch(e){ console.error('回到前台结算试卷失败', e); }
+
+    /* 页面回到前台：把挂起期间漏掉的消息，补弹一次系统通知 */
+    try{
+      var LAST_SEEN_KEY = 'mj_last_seen_at_v1';
+      var lastSeen = lsGet(LAST_SEEN_KEY, 0);
+      var nowTs = Date.now();
+      if(lastSeen > 0){
+        var ids = getAllRoleIds();
+        var missed = [];
+        ids.forEach(function(rid){
+          var role = getRoleById(rid);
+          if(!role || role.hidden) return;
+          var arr = lsGet('mj_msgs_' + rid, null);
+          if(!Array.isArray(arr)) return;
+          arr.forEach(function(m){
+            if(!m || m.sys || m.recalled) return;
+            if(m.time <= lastSeen) return;
+            if(m.time > nowTs) return;
+            var txt = m.text || (m.sticker ? '[表情图]' : (m.voice ? '[语音]' : ''));
+            if(!txt) return;
+            missed.push({ role: role, text: txt, time: m.time });
+          });
+        });
+        /* 按时间正序，最多补 3 条，避免回来刷一屏 */
+        missed.sort(function(a,b){ return a.time - b.time; });
+        missed.slice(0, 3).forEach(function(item, i){
+          setTimeout(function(){
+            showSystemNotify(item.role.name || '角色', item.text);
+          }, i * 600);
+        });
+      }
+      lsSet(LAST_SEEN_KEY, nowTs);
+    }catch(e){ console.error('补弹通知出错', e); }
+  } else {
+    /* 页面切到后台：记下时间点，回来时用它算漏了什么 */
+    try{ lsSet('mj_last_seen_at_v1', Date.now()); }catch(e){}
   }
 });
 
