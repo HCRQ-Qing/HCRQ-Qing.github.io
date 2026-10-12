@@ -1295,14 +1295,51 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
 
 .mb{position:absolute;left:calc(100% - 8px);top:-10px;background:#1a1a1a;color:#fff;font-family:"PingFang SC","Hiragino Sans GB",sans-serif;line-height:1;display:inline-flex;align-items:center;justify-content:center;height:20px;padding:0 8px;border-radius:50px;font-size:11px;white-space:nowrap;letter-spacing:0;z-index:20;opacity:0;visibility:hidden;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 .mb::after{content:"";position:absolute;background:#1a1a1a;left:10px;bottom:-3px;width:8px;height:8px;clip-path:polygon(0 0,100% 0,0 100%)}
-.mb.anim-1.play,.tb-mb.anim-1.play{visibility:visible;animation:popA 2s cubic-bezier(.22,1.4,.3,1) forwards}
-@keyframes popA{0%{opacity:0;transform:scale(0)}60%{opacity:1;transform:scale(1.12)}100%{opacity:1;transform:scale(1)}}
-.mb.anim-3.play,.tb-mb.anim-3.play{visibility:visible;animation:popB 2s cubic-bezier(.22,1.3,.3,1) forwards}
-@keyframes popB{0%{opacity:0;transform:translate(-10px,10px) scale(.6)}100%{opacity:1;transform:translate(0,0) scale(1)}}
-.mb.anim-5.play,.tb-mb.anim-5.play{visibility:visible;animation:popC 2.2s ease-out forwards}
-@keyframes popC{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
-.mb.out,.tb-mb.out{animation:fadeOut .9s ease forwards}
-@keyframes fadeOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-6px);visibility:hidden}}
+.mb.anim-1.play,.tb-mb.anim-1.play,
+.mp-mb.anim-1.play{
+  visibility:visible;
+  animation:popA 2s cubic-bezier(.22,1.4,.3,1) forwards;
+}
+@keyframes popA{
+  0%{opacity:0;transform:scale(0)}
+  60%{opacity:1;transform:scale(1.12)}
+  100%{opacity:1;transform:scale(1)}
+}
+/* 聊天 / 顶部栏的气泡：从左下飘 */
+.mb.anim-3.play,.tb-mb.anim-3.play{
+  visibility:visible;
+  animation:popB 2s cubic-bezier(.22,1.3,.3,1) forwards;
+}
+@keyframes popB{
+  0%{opacity:0;transform:translate(-10px,10px) scale(.6)}
+  100%{opacity:1;transform:translate(0,0) scale(1)}
+}
+
+/* 预览区的气泡：从正下方往上飘（配合 top:-10px 的位置） */
+.mp-mb.anim-3.play{
+  visibility:visible;
+  animation:popBPreview 2s cubic-bezier(.22,1.3,.3,1) forwards;
+}
+@keyframes popBPreview{
+  0%{opacity:0;transform:translate(0,14px) scale(.6)}
+  100%{opacity:1;transform:translate(0,0) scale(1)}
+}
+.mb.anim-5.play,.tb-mb.anim-5.play,
+.mp-mb.anim-5.play{
+  visibility:visible;
+  animation:popC 2.2s ease-out forwards;
+}
+@keyframes popC{
+  0%{opacity:0;transform:translateY(8px)}
+  100%{opacity:1;transform:translateY(0)}
+}
+.mb.out,.tb-mb.out,.mp-mb.out{
+  animation:fadeOut .9s ease forwards;
+}
+@keyframes fadeOut{
+  from{opacity:1;transform:translateY(0)}
+  to{opacity:0;transform:translateY(-6px);visibility:hidden}
+}
 
 .msg-body{display:flex;flex-direction:column;max-width:70%}
 .msg.user .msg-body{align-items:flex-end}
@@ -2367,35 +2404,205 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 }
 
 
-.mood-top-actions{display:flex;gap:8px;flex:none;padding:0 20px 12px}
-.mood-btn{flex:1;padding:10px;border-radius:12px;font-size:12.5px;font-family:inherit;cursor:pointer;border:1.5px solid var(--th-accent-line);background:var(--th-accent-soft);color:var(--th-accent);display:flex;align-items:center;justify-content:center;gap:6px}
-.mood-btn.primary{background:var(--th-accent);color:#fff;border-color:var(--th-accent);font-weight:700}
-.mood-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.mood-list{flex:1;overflow-y:auto;padding:0 20px 40px;scrollbar-width:none}
-.mood-list::-webkit-scrollbar{display:none}
-.mood-item{display:flex;align-items:center;gap:10px;padding:12px 12px;border-radius:14px;background:var(--th-accent-soft);border:1.5px solid var(--th-accent-line);margin-bottom:8px}
-.mood-item .mood-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
-.mood-item .mood-name{font-size:14px;color:var(--th-text);font-weight:600}
-.mood-item .mood-kao{font-size:13px;color:var(--th-accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mood-item .mood-anim-wrap{display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:9px;background:var(--th-accent-soft-2);border:1px solid var(--th-accent-line);cursor:pointer;flex:none}
-.mood-item .mood-anim-wrap .mood-anim-label{font-size:11px;color:var(--th-text-soft)}
-.mood-item .mood-anim-wrap .mood-anim-val{font-size:11.5px;color:var(--th-accent);font-weight:600}
-.mood-item .mood-anim-wrap svg{width:11px;height:11px;stroke:var(--th-accent);fill:none;stroke-width:2}
-.mood-item .mood-acts{display:flex;flex:none}
-.mood-item .mood-act{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--th-accent);opacity:.85}
-.mood-item .mood-act svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.mood-top-actions{
+  display:flex;gap:10px;flex:none;
+  padding:14px 22px calc(14px + env(safe-area-inset-bottom));
+  margin-top:auto;
+  background:#ffffff;
+  border-top:0.6px dashed #f0f0f0;
+}
+.mood-btn{
+  flex:1;padding:11px 0;
+  border-radius:20px;
+  font-size:12.5px;font-family:inherit;
+  letter-spacing:1.5px;
+  cursor:pointer;
+  border:0.7px solid rgba(0,0,0,.14);
+  background:transparent;
+  color:#1a1a1a;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  -webkit-font-smoothing:antialiased;
+}
+.mood-btn.primary{
+  background:#1a1a1a;color:#fff;
+  border-color:#1a1a1a;
+  font-weight:400;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+.mood-btn:active{opacity:.85}
+.mood-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 
-.mood-preview{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;background:rgba(0,0,0,.2);border:1px dashed var(--th-accent-line);margin:0 20px 12px;flex:none}
+.mood-list{flex:1;overflow-y:auto;padding:0 22px 20px;scrollbar-width:none}
+.mood-list::-webkit-scrollbar{display:none}
+
+.mood-item{
+  display:flex;align-items:center;gap:14px;
+  padding:20px 0;
+  border-bottom:0.6px dashed #f0f0f0;
+  background:transparent;
+  border-radius:0;
+  margin-bottom:0;
+}
+.mood-item:last-child{border-bottom:none}
+.mood-item .mood-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.mood-item .mood-name{
+  font-size:15px;color:#1a1a1a;font-weight:300;
+  letter-spacing:2px;
+  -webkit-text-stroke:0.1px #1a1a1a;
+  -webkit-font-smoothing:antialiased;
+}
+.mood-item .mood-kao{
+  font-size:13px;color:#999;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  letter-spacing:.5px;
+}
+.mood-item .mood-anim-wrap{
+  display:flex;align-items:center;gap:4px;
+  padding:0;border-radius:0;
+  background:transparent;border:none;
+  cursor:pointer;flex:none;
+}
+.mood-item .mood-anim-wrap .mood-anim-label{display:none}
+.mood-item .mood-anim-wrap .mood-anim-val{
+  font-size:11px;color:#bbb;
+  letter-spacing:1.5px;font-weight:400;
+}
+.mood-item .mood-anim-wrap svg{
+  width:9px;height:9px;
+  stroke:#ccc;fill:none;stroke-width:2;
+}
+.mood-item .mood-acts{display:flex;flex:none;gap:8px}
+.mood-item .mood-act{
+  width:26px;height:26px;border-radius:0;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:#ccc;opacity:1;
+  transition:color .18s ease;
+}
+.mood-item .mood-act:active{color:#1a1a1a}
+.mood-item .mood-act svg{
+  width:13px;height:13px;
+  stroke:currentColor;fill:none;stroke-width:1.4;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+
+/* ===== 心情行 · 内嵌动画选择小菜单 ===== */
+.mood-item{
+  flex-wrap:wrap;   /* 允许面板换行到下面，不影响主行对齐 */
+}
+.mood-anim-panel{
+  flex-basis:100%;
+  width:100%;
+  display:flex;
+  gap:0;
+  padding:10px 0 4px;
+  border-top:0.6px dashed #f0f0f0;
+  margin-top:6px;
+}
+.mood-anim-panel .map-opt{
+  flex:1;
+  padding:9px 0;
+  text-align:center;
+  font-size:12px;
+  letter-spacing:1.5px;
+  color:#bbb;
+  cursor:pointer;
+  position:relative;
+  font-family:inherit;
+  -webkit-font-smoothing:antialiased;
+}
+.mood-anim-panel .map-opt + .map-opt::before{
+  content:"";
+  position:absolute;
+  left:0;top:50%;
+  transform:translateY(-50%);
+  width:0.6px;height:12px;
+  background:#ececec;
+}
+.mood-anim-panel .map-opt.on{
+  color:#1a1a1a;
+  font-weight:400;
+}
+.mood-anim-panel .map-opt.on::after{
+  content:"";
+  position:absolute;
+  left:50%;bottom:2px;
+  transform:translateX(-50%);
+  width:14px;height:1.5px;
+  background:#1a1a1a;
+  border-radius:2px;
+}
+
+.mood-preview{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 0;
+  border-radius:0;
+  background:transparent;
+  border-top:0.6px dashed #ececec;
+  border-bottom:0.6px dashed #ececec;
+  margin:0 22px 16px;
+  flex:none;
+}
 .mood-preview .mp-av-wrap{position:relative;width:44px;height:44px;flex:none}
-.mood-preview .mp-av{position:absolute;inset:0;border-radius:var(--avatar-radius);overflow:hidden;background:var(--th-av-bg)}
+.mood-preview .mp-av{position:absolute;inset:0;border-radius:var(--avatar-radius);overflow:hidden;background:#f2f2f2}
 .mood-preview .mp-av svg{position:absolute;inset:0;width:100%;height:100%}
-.mood-preview .mp-av .silhouette{fill:var(--th-av-sil)}
+.mood-preview .mp-av .silhouette{fill:#c8c8c8}
 .mood-preview .mp-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.mood-preview .mp-mb{position:absolute;left:-6px;top:-12px;background:var(--mb-bg);color:var(--mb-text);font-family:"PingFang SC",sans-serif;line-height:1;display:inline-flex;align-items:center;justify-content:center;height:22px;padding:0 9px;border-radius:50px;font-size:12px;white-space:nowrap;z-index:5;opacity:0;visibility:hidden;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.3)}
-.mood-preview .mp-mb::after{content:"";position:absolute;background:var(--mb-bg);left:10px;bottom:-3px;width:8px;height:8px;clip-path:polygon(0 0,100% 0,0 100%)}
-.mood-preview .mp-info{flex:1;min-width:0;font-size:12px;color:var(--th-text-soft);line-height:1.6}
-.mood-preview .mp-info b{color:var(--th-accent)}
-.mood-preview .mp-replay{padding:7px 12px;border-radius:10px;font-size:11.5px;font-family:inherit;cursor:pointer;border:1.5px solid var(--th-accent-line);background:var(--th-accent-soft);color:var(--th-accent);flex:none}
+.mood-preview .mp-mb{
+  position:absolute;
+  top:-10px;
+  left:calc(100% - 8px);
+  transform:none;
+  background:var(--mb-bg);
+  color:var(--mb-text);
+  font-family:"PingFang SC","Hiragino Sans GB",sans-serif;
+  line-height:1;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:20px;
+  padding:0 8px;
+  border-radius:50px;
+  font-size:11px;
+  white-space:nowrap;
+  letter-spacing:0;
+  z-index:20;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+/* 尖角：底部偏左，指向头像，跟聊天界面 .mb 一致 */
+.mood-preview .mp-mb::after{
+  content:"";
+  position:absolute;
+  background:var(--mb-bg);
+  left:10px;
+  bottom:-3px;
+  top:auto;
+  width:8px;
+  height:8px;
+  transform:none;
+  clip-path:polygon(0 0, 100% 0, 0 100%);
+}
+.mood-preview .mp-info{
+  flex:1;min-width:0;
+  font-size:12px;color:#bbb;
+  line-height:1.6;letter-spacing:.3px;
+}
+.mood-preview .mp-info b{color:#1a1a1a;font-weight:400}
+.mood-preview .mp-replay{
+  padding:7px 14px;
+  border-radius:16px;
+  font-size:11.5px;font-family:inherit;
+  letter-spacing:1.5px;
+  cursor:pointer;
+  border:0.7px solid rgba(0,0,0,.12);
+  background:transparent;
+  color:#1a1a1a;
+  flex:none;
+  -webkit-font-smoothing:antialiased;
+}
+.mood-preview .mp-replay:active{background:#fafafa}
 
 .modal{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
 .modal.show{display:flex}
@@ -6679,7 +6886,8 @@ body[data-bubble="custom"] .preview-bubble{
 /* ===== 收藏页 · 筛选栏 ===== */
 .col-filter-row{
   display:flex;
-  gap:18px;
+  justify-content:center;
+  gap:28px;
   padding:4px 0 14px;
   border-bottom:0.6px dashed #f0f0f0;
   margin-bottom:6px;
@@ -8699,10 +8907,6 @@ window.__APP_VERSION__ = '1.0.2';
 	  <button class="cd-more" id="moodSettingsBtn" type="button">⚙</button>
 	</div>
   </div>
-  <div class="mood-top-actions">
-	<button class="mood-btn primary" id="moodAddBtn" type="button"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>添加心情</button>
-	<button class="mood-btn" id="moodPlayAllBtn" type="button"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>一键预览</button>
-  </div>
   <div class="mood-preview">
 	<div class="mp-av-wrap">
 	  <div class="mp-av" id="mpAv"></div>
@@ -8712,6 +8916,10 @@ window.__APP_VERSION__ = '1.0.2';
 	<button class="mp-replay" id="mpReplay" type="button">重播</button>
   </div>
   <div class="mood-list" id="moodList"></div>
+  <div class="mood-top-actions">
+	<button class="mood-btn primary" id="moodAddBtn" type="button"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>添加心情</button>
+	<button class="mood-btn" id="moodPlayAllBtn" type="button"><svg viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>一键预览</button>
+  </div>.
 </div>
 
 <div class="screen" id="chatSearchScreen">
@@ -8771,6 +8979,8 @@ window.__APP_VERSION__ = '1.0.2';
 
     <input type="file" id="mlAudioFile" accept="audio/*" multiple style="display:none">
     <input type="file" id="mlVideoFile" accept="video/*" multiple style="display:none">
+    <input type="file" id="vlFile" accept="audio/*" multiple style="display:none">
+    <input type="file" id="vlVideoFile" accept="video/*" multiple style="display:none">
   </div>
 </div>
 
@@ -9406,29 +9616,15 @@ window.__APP_VERSION__ = '1.0.2';
   <div class="overlay" data-close></div>
   <div class="sheet"><div class="sheet-head"><h3>心情设置</h3><button class="x" data-close>✕</button></div>
   <div class="sheet-body">
-	<label>新增心情默认动画</label>
-	<div class="mode-tabs" id="defaultAnimTabs">
-	  <div class="mode-tab" data-anim="1">弹一下</div>
-	  <div class="mode-tab" data-anim="3">从左下飘出</div>
-	  <div class="mode-tab" data-anim="5">淡入 + 上浮</div>
-	</div>
 	<label>心情随机</label>
 	<div class="mode-desc">每隔随机时间自动切换一次心情，切换时会弹气泡</div>
-	<div style="display:flex;gap:8px;align-items:center">
+	<div style="display:flex;gap:8px;align-items:center;margin-top:14px">
 	  <input type="number" id="inMoodMin" min="1" max="1440" style="width:80px;text-align:center">
 	  <span style="font-size:12px;color:var(--th-text-soft)">分钟 到</span>
 	  <input type="number" id="inMoodMax" min="1" max="1440" style="width:80px;text-align:center">
 	  <span style="font-size:12px;color:var(--th-text-soft)">分钟</span>
 	</div>
-	<label>状态随机</label>
-	<div class="mode-desc">每隔随机时间自动切换一次状态（<b>不弹气泡</b>，只换顶部栏文字）</div>
-	<div style="display:flex;gap:8px;align-items:center">
-	  <input type="number" id="inStatusMin" min="1" max="1440" style="width:80px;text-align:center">
-	  <span style="font-size:12px;color:var(--th-text-soft)">分钟 到</span>
-	  <input type="number" id="inStatusMax" min="1" max="1440" style="width:80px;text-align:center">
-	  <span style="font-size:12px;color:var(--th-text-soft)">分钟</span>
-	</div>
-	<button class="primary-btn" id="btnMoodSettingsOk">保 存</button>
+	<button class="primary-btn" id="btnMoodSettingsOk" style="margin-top:22px">保 存</button>
   </div></div>
 </div>
 
@@ -10249,6 +10445,16 @@ window.__APP_VERSION__ = '1.0.2';
 		<div class="mode-tab on" data-time="rel">相对（刚刚/昨天）</div>
 		<div class="mode-tab" data-time="abs">绝对（具体时间）</div>
 	  </div>
+
+	  <label style="margin-top:20px">状态随机</label>
+	  <div class="mode-desc">每隔随机时间自动切换一次状态（<b>不弹气泡</b>，只换顶部栏文字）</div>
+	  <div style="display:flex;gap:8px;align-items:center">
+		<input type="number" id="inStatusMin" min="1" max="1440" style="width:80px;text-align:center">
+		<span style="font-size:12px;color:var(--th-text-soft)">分钟 到</span>
+		<input type="number" id="inStatusMax" min="1" max="1440" style="width:80px;text-align:center">
+		<span style="font-size:12px;color:var(--th-text-soft)">分钟</span>
+	  </div>
+	  <button class="primary-btn" id="btnBhStatusOk" style="margin-top:14px">保 存 状 态 随 机</button>
 	</div>
   </div>
 </div>
@@ -11886,13 +12092,9 @@ function pickNamecardKao(kind){
 function genReply(useTimed){
   const r = getReply();
   if(r.ignoreOn && Math.random() < r.ignoreRate) return [];
-  // 撤回：只有对方此前已经说过话，才允许掷中
-  // （已排除自己撤回过的消息，避免「撤回的也算说过话」）
-  /* 撤回：不再走「立即撤回」通道，改成在 runReplyChain 里排定时器。
-     这里只检查「Ta 之前是否说过话」和概率，命中就返回一个标记，
-     由 runReplyChain 决定挑哪条真实消息来撤、什么时候撤。 */
-  const charHasSpokenBefore = msgs.some(x => x.role==='char' && !x.recalled && (x.text || x.sticker || x.voice || x.divine || x.namecard));
-  if(charHasSpokenBefore && r.recallOn && Math.random() < r.recallRate) return [{kind:'recall'}];
+  /* 撤回：本次回复先正常生成，命中撤回概率时在 runReplyChain 里
+     把「即将发出的这条」在 1~60 秒后撤回。不再需要"之前说过话"的前置条件。 */
+  const willRecall = !!(r.recallOn && Math.random() < r.recallRate);
   let bubbleCount = 1;
   if(Math.random() < (r.multiBubbleProb||0)){
 	bubbleCount = 1 + Math.floor(Math.random() * Math.max(1, (r.maxBubbles||1)-1));
@@ -11953,7 +12155,7 @@ function genReply(useTimed){
 	}
 	bubbles.push({parts});
   }
-  return [{kind:'bubbles', bubbles}];
+  return [{kind:'bubbles', bubbles, willRecall: willRecall}];
 }
 
 let msgs = [];
@@ -12155,7 +12357,8 @@ function renderChatFull(forceBottom){
   const wasAtBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
   box.innerHTML = msgs.map((m, idx)=>{
 	const isUser = m.role==='user';
-	const avInner = `<div class="msg-av-inner">${isUser?userAvHTML(userProfile.avatar):avatarHTML(role.avatar)}</div>`;
+	const avSrc = (m.fwdAvatar !== undefined) ? m.fwdAvatar : (isUser ? userProfile.avatar : role.avatar);
+	const avInner = `<div class="msg-av-inner">${isUser?userAvHTML(avSrc):avatarHTML(avSrc)}</div>`;
 	const mb = isUser ? '' : `<div class="mb"></div>`;
 	const av = `<div class="msg-av ${isUser?'usr-av':''}" data-id="${m.id}">${avInner}${mb}</div>`;
 	// 时间戳：每条消息上方都显示时间（同一天只显示 HH:MM）
@@ -12706,15 +12909,11 @@ function renderCollectScreen(tab){
       ? userAvHTML(userProfile.avatar)
       : avatarHTML(role.avatar);
 
-    /* 备注行：只有真有备注时才显示，没备注就整行不渲染 */
+     /* 备注行：只有真有备注时才显示，没备注就整行不渲染 */
     const noteText = it.note ? String(it.note) : '';
-    const collapsed = !!it.noteCollapsed;
-    const noteDisplay = noteText
-      ? (collapsed ? '备注 ▸' : ('备注：' + escapeHTML(noteText) + ' ▾'))
-      : '';
     const noteLine = noteText
       ? ('<div class="col-note" data-note-row="' + it.id + '">' +
-          '<span class="col-note-txt" data-note-edit="' + it.id + '">' + noteDisplay + '</span>' +
+          '<span class="col-note-txt" data-note-edit="' + it.id + '">备注：' + escapeHTML(noteText) + '</span>' +
         '</div>')
       : '';
 
@@ -12955,6 +13154,7 @@ function bindColNoteEvents(body, tab){
   body.querySelectorAll('[data-note-edit]').forEach(function(el){
     el.onclick = function(e){
       e.stopPropagation();
+      e.preventDefault();
       const id = el.dataset.noteEdit;
 
       if(tab !== 'mine'){
@@ -12962,7 +13162,6 @@ function bindColNoteEvents(body, tab){
         return;
       }
 
-      /* 存一下原状态，用于区分点击和三角点击 */
       const arr = getCollectMine(rid);
       const it = arr.find(function(x){ return x.id === id; });
       if(!it) return;
@@ -12974,12 +13173,10 @@ function bindColNoteEvents(body, tab){
         placeholder: '写点什么…'
       }).then(function(v){
         if(v === null) return;
-        const ok = updateCollectNote(rid, id, String(v).trim());
-        if(ok){
-          const activeTab = document.querySelector('#colTabs .memo-tab.on');
-          renderCollectScreen(activeTab ? activeTab.dataset.colTab : 'mine');
-          toast('已保存');
-        }
+        updateCollectNote(rid, id, String(v).trim());
+        const activeTab = document.querySelector('#colTabs .memo-tab.on');
+        renderCollectScreen(activeTab ? activeTab.dataset.colTab : 'mine');
+        toast(String(v).trim() ? '已保存' : '已删除备注');
       });
     };
   });
@@ -13044,11 +13241,18 @@ function shareCollectItem(itemId){
     ? (it.text + '\n备注：' + it.note)
     : it.text;
 
+  /* ★ 合成消息带上原发送者头像，转发后头像才不会空 */
+  const role = getRole();
+  const fwdAvatar = (it.from === 'user')
+    ? (userProfile.avatar || '')
+    : (role.avatar || '');
+
   const synthMsg = {
     id: 'sh' + now.toString(36) + Math.random().toString(36).slice(2,6),
     role: it.from === 'user' ? 'user' : 'char',
     text: synthText,
-    time: now
+    time: now,
+    fwdAvatar: fwdAvatar
   };
 
   /* 塞进 msgs（如果不在当前聊天，就直接挂到 openForwardPicker 上） */
@@ -13447,7 +13651,8 @@ function buildForwardCopyMsg(src, targetId, idx){
 	m.divine.reads = [];
   }
   if(!m.text && !m.sticker && !m.divine){
-	/* 兜底：不支持的源消息，不做任何事 */
+	/* 兜底：不支持的源消息，给一个空占位，避免空气泡把头像挤没 */
+	m.text = '';
   }
   return m;
 }
@@ -13621,9 +13826,7 @@ function scheduleReadReceipt(msgId){
   }, wait);
 }
 
-/* ===== 撤回套娃：辅助函数 ===== */
-const MAX_RECALL_CHAIN = 4;
-
+ /* ===== 撤回：辅助函数 ===== */
 function pickRandomCardText(){
   const pool = getAllNormalCards('public').concat(getAllNormalCards(getCurrentRoleId()));
   if(!pool.length) return '刚刚手滑了';
@@ -13705,123 +13908,10 @@ function markLastUserNoReply(){
   _applyReadStateUpTo(lastUser, 'noReply');
 }
 
-/* ★ 真实撤回：1~60 秒内随机挑一个时刻，把「Ta 自己发过的、还没撤回的」
-   最新一条消息标记成撤回。消息位置不变，只把内容换成撤回提示。
-   找不到可撤回的消息，就什么都不做，直接回调 onDone。 */
-function scheduleRealRecall(roleId, onDone){
-  if(!roleId){ if(onDone) onDone(); return; }
-  if(typeof onDone !== 'function') onDone = function(){};
+/* scheduleRealRecall 已删除：撤回逻辑改为「发出去的这条 1~60 秒后撤回」，
+   在 runReplyChain 里用 willRecall 标记处理。 */
 
-  /* 先找一条可撤回的：角色发的、非撤回、非系统、非名片、有内容 */
-  const arr = (getCurrentRoleId() === roleId)
-    ? msgs
-    : (lsGet('mj_msgs_' + roleId, null) || []);
-  if(!Array.isArray(arr) || !arr.length){ onDone(); return; }
-
-  let pick = null;
-  for(let i = arr.length - 1; i >= 0; i--){
-    const m = arr[i];
-    if(!m) continue;
-    if(m.role !== 'char') continue;
-    if(m.recalled) continue;
-    if(m.sys) continue;
-    if(m.namecard) continue;
-    if(m.mergeCard) continue;
-    if(!(m.text || m.sticker || m.voice || m.divine)) continue;
-    pick = m;
-    break;
-  }
-  if(!pick){ onDone(); return; }
-
-  /* 1~60 秒随机延迟 */
-  const delayMs = 1000 + Math.floor(Math.random() * 59000);
-
-  setTimeout(function(){
-    /* 中途切了角色：直接放弃，不改任何数据 */
-    if(getCurrentRoleId() !== roleId){
-      /* 如果切到别的角色了，也要把撤回写到那个角色的存储里 */
-      const key = 'mj_msgs_' + roleId;
-      let store = lsGet(key, null);
-      if(Array.isArray(store)){
-        const idx = store.findIndex(x => x && x.id === pick.id);
-        if(idx >= 0){
-          store[idx] = {
-            id: store[idx].id,
-            role: 'char',
-            recalled: true,
-            time: store[idx].time || Date.now()
-          };
-          lsSet(key, store);
-        }
-      }
-      onDone();
-      return;
-    }
-
-    /* 当前就在看这个角色：直接改 msgs */
-    const idx = msgs.findIndex(x => x && x.id === pick.id);
-    if(idx < 0){ onDone(); return; }
-    msgs[idx] = {
-      id: msgs[idx].id,
-      role: 'char',
-      recalled: true,
-      time: msgs[idx].time || Date.now()
-    };
-    saveMsgs();
-    renderChat();
-    onDone();
-  }, delayMs);
-}
-
-function runRecallChain(chainCount, baseDelay){
-  /* 锁住进入时的角色，避免 setTimeout 期间被切角色影响 */
-  const roleId = getCurrentRoleId();
-  const r = getReply();
-  if(!r.recallOn) return;
-  if(chainCount >= MAX_RECALL_CHAIN) return;
-
-  const removeTyping = showTypingHint();
-  const typingMs = 500 + Math.random()*1000;
-
-  setTimeout(()=>{
-    removeTyping();
-    /* 中途切了角色就放弃这条链 */
-    if(getCurrentRoleId() !== roleId) return;
-
-    appendMsgToRole(roleId, {id:uid(), role:'char', recalled:true, time:Date.now()});
-
-    const nextChain = chainCount + 1;
-    const canChainAgain = nextChain < MAX_RECALL_CHAIN;
-    const rollAgain = canChainAgain && Math.random() < r.recallRate;
-
-    if(rollAgain){
-      setTimeout(()=>{
-        runRecallChain(nextChain, baseDelay);
-      }, 300 + Math.random()*700);
-      return;
-    }
-
-    const removeTyping2 = showTypingHint();
-    const typingMs2 = 500 + Math.random()*1000;
-
-    setTimeout(()=>{
-      removeTyping2();
-      /* 中途切了角色也放弃 */
-      if(getCurrentRoleId() !== roleId) return;
-      const text = pickRandomCardText();
-      /* 撤回套娃最后一条，用 appendMsgToRole 写回角色自己的库 */
-      const msg = {id:uid(), role:'char', text, time:Date.now()};
-      appendMsgToRole(roleId, msg);
-      /* 只有当前还在看这个角色，才更新已读 + 重绘 */
-      if(getCurrentRoleId() === roleId){
-        markLastUserRead();
-        saveMsgs();
-        renderChat();
-      }
-    }, typingMs2);
-
-  }, typingMs);
-}
+ 
 
 /* ===== 主回复逻辑 ===== */
 /* ============================================================
@@ -13859,8 +13949,9 @@ function appendMsgToRole(roleId, msg){
       }
     }
   }catch(e){ console.error('消息提示出错', e); }
+  /* ★ 返回写入的消息 id，方便调用方后续撤回 */
+  return (msg && msg.id) ? msg.id : '';
 }
-
 /* 顶部滑下的小提示条 */
 /* ===== 未读消息计数 ===== */
 const UNREAD_KEY = 'mj_unread_v1';
@@ -14283,11 +14374,14 @@ function runTimedReplyRounds(){
     const delay = (r.minDelay||800) + Math.random()*Math.max(0,(r.maxDelay||2200)-(r.minDelay||800));
     const box = $('#chatList');
     const res = genReply(true);
-    if(!res.length || res[0].kind === 'recall'){
-      /* 这一轮被跳过/撤回，等延迟后继续下一轮 */
+    if(!res.length){
+      /* 这一轮被跳过，等延迟后继续下一轮 */
       setTimeout(()=>fireOne(idx+1), delay);
       return;
     }
+    /* 记录本轮的撤回标记 */
+    window.__timedWillRecall = !!(res[0] && res[0].willRecall);
+    window.__timedSentIds = { inline:'', standalone:{} };
     const typingDelay = Math.min(delay, 800 + Math.random()*1200);
     setTimeout(()=>{
       if(!box) return;
@@ -14531,21 +14625,14 @@ function runReplyChain(onDone){
 
   const res = genReply();
 
-  /* 空回复 / 撤回：走原有分支，完成后回调 onDone */
-  if(!res.length || res[0].kind === 'recall'){
+  /* 空回复：直接走"已读不回" */
+  if(!res.length){
     setTimeout(()=>{
       if(!stillSameRole()){ onDone(); return; }
-      if(!res.length){
-        markLastUserNoReply();
-        saveMsgs();
-        renderChat();
-        onDone();
-        return;
-      }
-      /* ★ 撤回：不立即执行，改成 1~60 秒内随机挑一个时刻，
-         从「Ta 自己发过的、还没撤回的」消息里挑一条最新的，把它标记成撤回。
-         这条消息原位置不变，只把内容替换成「Ta 撤回了一条消息」。 */
-      scheduleRealRecall(targetRoleId, onDone);
+      markLastUserNoReply();
+      saveMsgs();
+      renderChat();
+      onDone();
     }, delay);
     return;
   }
@@ -14620,7 +14707,10 @@ function runReplyChain(onDone){
             quote = {name:userName(), text:txt};
           }
         }
+        /* ★ 记录本次写入的消息 id，撤回时用 */
+        const _lastSentIds = { inline:'', standalone:{} };
         res[0].bubbles.forEach((bubble,idx)=>{
+          bubble.__bidx = idx;
           const inlineParts = [];
           const standaloneParts = [];
           bubble.parts.forEach(p => {
@@ -14670,14 +14760,57 @@ function runReplyChain(onDone){
             return {id:uid(), role:'char', text:p.text, time:Date.now() + si + 1};
           });
 
-          if(inlineMsg) appendMsgToRole(role.id, inlineMsg);
-          standaloneMsgs.forEach(m => appendMsgToRole(role.id, m));
+          if(inlineMsg){
+            const _id = appendMsgToRole(role.id, inlineMsg);
+            if(_id) window.__lastSentIds.inline = _id;
+          }
+          standaloneMsgs.forEach(function(m, si){
+            const _id = appendMsgToRole(role.id, m);
+            if(_id) window.__lastSentIds.standalone[bubble.__bidx + '_' + si] = _id;
+          });
         });
         if(getCurrentRoleId() === role.id){
           if(lastUser){
             _applyReadStateUpTo(lastUser, 'read');
           } else {
             saveMsgs(); renderChat();
+          }
+        }
+
+        /* ★ 本次命中撤回：把「刚刚发出去的这条」在 1~60 秒后撤回 */
+        if(res[0] && res[0].willRecall){
+          let lastId = '';
+          const ids = window.__lastSentIds || { inline:'', standalone:{} };
+          const allIds = [];
+          if(ids.inline) allIds.push(ids.inline);
+          Object.keys(ids.standalone || {}).forEach(function(k){
+            allIds.push(ids.standalone[k]);
+          });
+          /* 用最后写入的那个 id 作为撤回目标 */
+          if(allIds.length) lastId = allIds[allIds.length - 1];
+
+          if(lastId){
+            const recallDelay = 1000 + Math.floor(Math.random() * 59000);
+            setTimeout(function(){
+              const key = 'mj_msgs_' + role.id;
+              if(getCurrentRoleId() === role.id){
+                const idx = msgs.findIndex(function(x){ return x && x.id === lastId; });
+                if(idx >= 0){
+                  msgs[idx] = { id: msgs[idx].id, role: 'char', recalled: true, time: msgs[idx].time || Date.now() };
+                  saveMsgs();
+                  renderChat();
+                }
+              } else {
+                let arr = lsGet(key, null);
+                if(Array.isArray(arr)){
+                  const idx = arr.findIndex(function(x){ return x && x.id === lastId; });
+                  if(idx >= 0){
+                    arr[idx] = { id: arr[idx].id, role: 'char', recalled: true, time: arr[idx].time || Date.now() };
+                    lsSet(key, arr);
+                  }
+                }
+              }
+            }, recallDelay);
           }
         }
       }
@@ -14716,20 +14849,26 @@ function parseStatusEmoji(str){
 const MOOD_BUBBLE_HOLD = 1800;
 function playAnim(el, anim){
   if(!el) return;
-  const cls = 'anim-'+anim;
+  const a = String(anim || '1');
+  const cls = 'anim-' + a;
+  /* 清掉旧状态 */
   el.classList.remove('anim-1','anim-3','anim-5','play','out');
+  /* 先把可见性打开（否则动画播了也看不见） */
+  el.style.visibility = 'visible';
+  el.style.opacity = '';
+  el.style.display = '';
+  /* 强制重排，让浏览器识别「先清空再加」的过渡 */
   void el.offsetWidth;
   el.classList.add(cls);
   void el.offsetWidth;
   el.classList.add('play');
   clearTimeout(el._outTimer); clearTimeout(el._clearTimer);
   el._outTimer = setTimeout(()=>{
-	el.classList.add('out');
-	el._clearTimer = setTimeout(()=>{
-	  el.classList.remove('play','out','anim-1','anim-3','anim-5');
-	  el.style.opacity = 0;
-	  el.style.visibility = 'hidden';
-	}, 950);
+    el.classList.add('out');
+    el._clearTimer = setTimeout(()=>{
+      el.classList.remove('play','out','anim-1','anim-3','anim-5');
+      el.style.visibility = 'hidden';
+    }, 950);
   }, MOOD_BUBBLE_HOLD);
 }
 function showTopbarMoodBubble(kaomoji, anim){ const el=$('#tbMb'); if(!el) return; el.textContent=kaomoji; el.style.visibility='visible'; playAnim(el,anim); }
@@ -17564,6 +17703,10 @@ on('#bhSet','click',()=>{
   $('#bhSetSub').classList.toggle('on', !!behaviorCfg.sub);
   $('#bhSetCompact').classList.toggle('on', !!behaviorCfg.compact);
   $$('#bhSetTimeTabs .mode-tab').forEach(t=>t.classList.toggle('on', t.dataset.time===behaviorCfg.time));
+  /* ★ 回填状态随机的时间 */
+  const mc = getMoodCfg();
+  const smEl = $('#inStatusMin'); if(smEl) smEl.value = mc.statusMin;
+  const sxEl = $('#inStatusMax'); if(sxEl) sxEl.value = mc.statusMax;
   $('#mBehSet').classList.add('show');
 });
 on('#bhSetAvatar','click',function(){ behaviorCfg.avatar=!behaviorCfg.avatar; this.classList.toggle('on',behaviorCfg.avatar); saveBehaviorCfg(); renderBehavior(); });
@@ -19495,7 +19638,7 @@ function renderMediaLib(){
 
   if(mlCurrentTab === 'audio'){
     tip.textContent = '为「' + roleName + '」上传音频，Ta 主动发消息时会随机抽一条发给你。';
-    renderMediaAudioList(list, roleId);
+    renderMediaVoiceList(list, roleId);
   } else {
     tip.textContent = '为「' + roleName + '」上传视频，视频通话时会随机插入播放。';
     renderMediaVideoList(list, roleId);
@@ -19503,10 +19646,10 @@ function renderMediaLib(){
 }
 
 /* 语音列表 */
-function renderMediaVideoList(list, roleId){
-  var arr = getVideoLib(roleId);
+function renderMediaVoiceList(list, roleId){
+  var arr = getVoiceLib(roleId);
   if(!arr.length){
-    list.innerHTML = '<div class="ml-empty">还没有音频<br>点右上角「上传」添加一个吧</div>';
+    list.innerHTML = '<div class="ml-empty"><span class="ml-empty-icon">♪</span>还没有音频<br>点右上角「上传」添加一个吧</div>';
     return;
   }
   list.innerHTML = arr.map(function(v, i){
@@ -19645,9 +19788,76 @@ document.addEventListener('change', function(e){
     handleVideoLibUploadFiles(files2);
     return;
   }
+  /* ★ 语音库整页的两个 input 也要监听，否则上传没反应 */
+  if(t.id === 'vlFile'){
+    var files3 = Array.from(t.files || []);
+    t.value = '';
+    if(files3.length) handleVoiceLibUpload(files3);
+    return;
+  }
+  if(t.id === 'vlVideoFile'){
+    var files4 = Array.from(t.files || []);
+    t.value = '';
+    if(files4.length) handleVideoLibUploadFiles(files4);
+    return;
+  }
 }, true);
 
-/* 视频上传的两个函数已在上文（openVoiceLib 之前）定义，此处不再重复 */
+/* 视频上传（本地文件） */
+function handleVideoLibUploadFiles(files){
+  const roleId = getCurrentRoleId();
+  const arr = files.slice();
+  if(!arr.length) return;
+  toast('正在处理 ' + arr.length + ' 个视频…');
+  let done = 0;
+  arr.forEach(function(file, idx){
+    const key = 'video_' + roleId + '_' + Date.now().toString(36) + '_' + idx;
+    readVideoDuration(file).then(function(dur){
+      return __idb.set(key, file).then(function(){
+        const cur = getVideoLib(roleId);
+        cur.push({
+          id: uid(),
+          key: key,
+          name: file.name || ('视频 ' + (cur.length + 1)),
+          dur: dur,
+          size: file.size,
+          t: Date.now()
+        });
+        setVideoLib(roleId, cur);
+        done++;
+        if(done === arr.length){
+          if(typeof renderMediaLib === 'function') renderMediaLib();
+          toast('已上传 ' + done + ' 个视频');
+        }
+      });
+    }).catch(function(e){
+      console.error('视频上传失败', e);
+      toast('上传失败：' + e.message);
+    });
+  });
+}
+
+/* 视频上传（粘贴链接） */
+function handleVideoLibUploadUrl(url){
+  const roleId = getCurrentRoleId();
+  const u = String(url || '').trim();
+  if(!u){ toast('链接为空'); return; }
+  if(!/^https?:\/\//i.test(u)){ toast('链接必须以 http:// 或 https:// 开头'); return; }
+  const cur = getVideoLib(roleId);
+  const exists = cur.some(function(v){ return v.url === u; });
+  if(exists){ toast('这条链接已经加过了'); return; }
+  cur.push({
+    id: uid(),
+    url: u,
+    name: '链接视频 ' + (cur.length + 1),
+    dur: 0,
+    size: 0,
+    t: Date.now()
+  });
+  setVideoLib(roleId, cur);
+  if(typeof renderMediaLib === 'function') renderMediaLib();
+  toast('已添加');
+}
 
 /* ===== 视频上传入口事件 ===== */
 /* ★ 上传视频入口：改成通过 #vdlAdd 直接触发文件选择，不再走面板 */
@@ -21891,7 +22101,11 @@ function renderCdTabs(){
   const isTimedGroup = (g.id === 'g-timed');
   const isYesNoGroup = (g.id === 'g-yesno');
   const cats = g.cats || [];
-  box.innerHTML = cats.map(c=>`<div class="cd-tab ${c.id===curCatId?'on':''}" data-cid="${c.id}"><span class="cd-tab-name">${escapeHTML(c.name)}</span><span style="opacity:.6;font-size:11px">${(c.list||[]).length}</span><span class="cd-tab-del" data-del-cid="${c.id}">✕</span></div>`).join('')+`<div class="cd-tab" id="addCatBtn">＋ 分类</div>`;
+  box.innerHTML = cats.map(c=>{
+    const noDel = (c.id === 'ce-edited');
+    const delHTML = noDel ? '' : `<span class="cd-tab-del" data-del-cid="${c.id}">✕</span>`;
+    return `<div class="cd-tab ${c.id===curCatId?'on':''}" data-cid="${c.id}"><span class="cd-tab-name">${escapeHTML(c.name)}</span><span style="opacity:.6;font-size:11px">${(c.list||[]).length}</span>${delHTML}</div>`;
+  }).join('')+`<div class="cd-tab" id="addCatBtn">＋ 分类</div>`;
   box.querySelectorAll('[data-cid]').forEach(el=>{
     el.addEventListener('click',(e)=>{
       if(e.target.closest('.cd-tab-del')) return;
@@ -23394,11 +23608,109 @@ function renderMoodList(){
   box.innerHTML = cat.list.map((item,i)=>{
 	const m = typeof item === 'string' ? {mood:item, kaomoji:'(◍＞◡＜◍)', anim:'1'} : item;
 	const animName = {'1':'弹一下','3':'从左下飘','5':'淡入上浮'}[m.anim||'1'] || '弹一下';
-	return `<div class="mood-item" data-i="${i}"><div class="mood-info"><div class="mood-name">${escapeHTML(m.mood||'')}</div><div class="mood-kao">${escapeHTML(m.kaomoji||'')}</div></div><div class="mood-anim-wrap" data-anim-pick="${i}"><span class="mood-anim-label">动画</span><span class="mood-anim-val">${animName}</span><svg viewBox="0 0 24 24"><polyline points="6,9 12,15 18,9"/></svg></div><div class="mood-acts"><div class="mood-act" data-edit="${i}"><svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg></div><div class="mood-act del" data-del="${i}"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg></div></div></div>`;
+	return `<div class="mood-item" data-i="${i}">` +
+	  `<div class="mood-info"><div class="mood-name">${escapeHTML(m.mood||'')}</div><div class="mood-kao">${escapeHTML(m.kaomoji||'')}</div></div>` +
+	  `<div class="mood-anim-wrap" data-anim-pick="${i}"><span class="mood-anim-val">${animName}</span><svg viewBox="0 0 24 24"><polyline points="6,9 12,15 18,9"/></svg></div>` +
+	  `<div class="mood-acts">` +
+	    `<div class="mood-act" data-edit="${i}"><svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg></div>` +
+	    `<div class="mood-act del" data-del="${i}"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg></div>` +
+	  `</div>` +
+	  `<div class="mood-anim-panel" data-anim-panel="${i}" style="display:none">` +
+	    `<div class="map-opt ${(m.anim||'1')==='1'?'on':''}" data-i="${i}" data-a="1">弹一下</div>` +
+	    `<div class="map-opt ${(m.anim||'1')==='3'?'on':''}" data-i="${i}" data-a="3">从左下飘</div>` +
+	    `<div class="map-opt ${(m.anim||'1')==='5'?'on':''}" data-i="${i}" data-a="5">淡入上浮</div>` +
+	  `</div>` +
+	`</div>`;
   }).join('');
-  box.querySelectorAll('[data-edit]').forEach(el=>{ el.addEventListener('click',()=>openMoodEdit(+el.dataset.edit)); });
-  box.querySelectorAll('[data-del]').forEach(el=>{ el.addEventListener('click',()=>{ const i=+el.dataset.del; const cat2=getMoodCat(); if(!cat2) return; const item=cat2.list[i]; const m=typeof item==='string'?item:(item.mood||''); if(!confirm('删除心情「'+m+'」？')) return; cat2.list.splice(i,1); saveCardStore(); renderMoodList(); }); });
-  box.querySelectorAll('[data-anim-pick]').forEach(el=>{ el.addEventListener('click',()=>openAnimPick(+el.dataset.animPick)); });
+
+  /* 编辑 / 删除 */
+  box.querySelectorAll('[data-edit]').forEach(el=>{ el.addEventListener('click',(e)=>{ e.stopPropagation(); openMoodEdit(+el.dataset.edit); }); });
+  box.querySelectorAll('[data-del]').forEach(el=>{ el.addEventListener('click',(e)=>{
+	e.stopPropagation();
+	const i=+el.dataset.del;
+	const cat2=getMoodCat(); if(!cat2) return;
+	const item=cat2.list[i];
+	const m=typeof item==='string'?item:(item.mood||'');
+	if(!confirm('删除心情「'+m+'」？')) return;
+	cat2.list.splice(i,1);
+	saveCardStore();
+	renderMoodList();
+  }); });
+
+  /* ★ 点整行 → 直接在预览区播这条的动画 */
+  box.querySelectorAll('.mood-item').forEach(row=>{
+	row.addEventListener('click', (e)=>{
+	  /* 点编辑 / 删除 / 小菜单里的选项时，不触发播放 */
+	  if(e.target.closest('[data-edit]')) return;
+	  if(e.target.closest('[data-del]')) return;
+	  if(e.target.closest('.map-opt')) return;
+	  if(e.target.closest('.mood-anim-panel')) return;
+
+	  const i = +row.dataset.i;
+	  const cat2 = getMoodCat();
+	  if(!cat2) return;
+	  const item = cat2.list[i];
+	  const m = typeof item === 'string' ? {mood:item, kaomoji:'', anim:'1'} : item;
+
+	  /* 直接在预览区冒一次 */
+	  const mpMb = $('#mpMb');
+	  if(mpMb){
+	    mpMb.textContent = m.kaomoji || '';
+	    playAnim(mpMb, m.anim || '1');
+	    const info = $('#mpInfo');
+	    if(info) info.innerHTML = '<b>' + escapeHTML(m.mood || '') + '</b> · ' + escapeHTML(m.kaomoji || '');
+	  }
+	});
+  });
+
+  /* ★ 点「弹一下」→ 内嵌展开小菜单（点它本身不播动画，只展开） */
+  box.querySelectorAll('[data-anim-pick]').forEach(el=>{
+	el.addEventListener('click', (e)=>{
+	  e.stopPropagation();
+	  const i = +el.dataset.animPick;
+	  const row = el.closest('.mood-item');
+	  const panel = row ? row.querySelector('[data-anim-panel]') : null;
+	  if(!panel) return;
+	  /* 先把所有其它行的面板关掉 */
+	  box.querySelectorAll('.mood-anim-panel').forEach(p=>{
+	    if(p !== panel) p.style.display = 'none';
+	  });
+	  /* 切换当前行 */
+	  panel.style.display = (panel.style.display === 'flex') ? 'none' : 'flex';
+	});
+  });
+
+  /* ★ 点小菜单里的选项 → 立刻改动画，并播一次预览 */
+  box.querySelectorAll('.map-opt').forEach(el=>{
+	el.addEventListener('click', (e)=>{
+	  e.stopPropagation();
+	  const i = +el.dataset.i;
+	  const a = el.dataset.a;
+	  const cat2 = getMoodCat(); if(!cat2) return;
+	  const item = cat2.list[i];
+	  const m = typeof item === 'string' ? {mood:item, kaomoji:'', anim:'1'} : item;
+	  m.anim = a;
+	  cat2.list[i] = m;
+	  saveCardStore();
+	  /* 立刻在预览区播一次 */
+	  const mpMb = $('#mpMb');
+	  if(mpMb){
+	    mpMb.textContent = m.kaomoji || '';
+	    playAnim(mpMb, a);
+	    const info = $('#mpInfo');
+	    if(info) info.innerHTML = '<b>' + escapeHTML(m.mood || '') + '</b> · ' + escapeHTML(m.kaomoji || '');
+	  }
+	  renderMoodList();
+	});
+  });
+
+  /* 点空白处收起所有小菜单 */
+  if(!box._panelDocBound){
+	box._panelDocBound = true;
+	document.addEventListener('click', function(){
+	  box.querySelectorAll('.mood-anim-panel').forEach(p=>{ p.style.display = 'none'; });
+	}, true);
+  }
 }
 function openMoodEdit(i){
   editingMoodIndex = (i===undefined) ? -1 : i;
@@ -23478,15 +23790,24 @@ on('#moodSettingsBtn','click',()=>{ const c = getMoodCfg(); $('#inMoodMin').valu
 on('#defaultAnimTabs','click',e=>{ const t=e.target.closest('.mode-tab'); if(!t) return; $$('#defaultAnimTabs .mode-tab').forEach(x=>x.classList.remove('on')); t.classList.add('on'); });
 on('#btnMoodSettingsOk','click',()=>{
   const mm = parseInt($('#inMoodMin').value,10); const mx = parseInt($('#inMoodMax').value,10);
-  const sm = parseInt($('#inStatusMin').value,10); const sx = parseInt($('#inStatusMax').value,10);
-  if(!mm||!mx||!sm||!sx||mm<1||mx<mm||sm<1||sx<sm){ alert('区间不合法，请检查'); return; }
+  if(!mm||!mx||mm<1||mx<mm){ alert('区间不合法，请检查'); return; }
   const c = getMoodCfg();
-  c.moodMin=mm; c.moodMax=mx; c.statusMin=sm; c.statusMax=sx;
-  const picked = $('#defaultAnimTabs .mode-tab.on'); if(picked) c.defaultAnim = picked.dataset.anim;
+  c.moodMin=mm; c.moodMax=mx;
   saveMoodCfg(c);
   $('#mMoodSettings').classList.remove('show');
   rescheduleMoodStatus();
   toast('已保存');
+});
+
+/* ★ 状态随机 · 保存入口（挂在角色行为设置面板里） */
+on('#btnBhStatusOk','click',()=>{
+  const sm = parseInt($('#inStatusMin').value,10); const sx = parseInt($('#inStatusMax').value,10);
+  if(!sm||!sx||sm<1||sx<sm){ alert('区间不合法，请检查'); return; }
+  const c = getMoodCfg();
+  c.statusMin=sm; c.statusMax=sx;
+  saveMoodCfg(c);
+  rescheduleMoodStatus();
+  toast('状态随机已保存');
 });
 on('#moodPlayAllBtn','click',()=>{ const cat = getMoodCat(); if(!cat || !cat.list.length){ toast('还没有心情'); return; } let i = 0; function next(){ if(i >= cat.list.length) return; const item = cat.list[i]; const m = typeof item==='string' ? {mood:item,kaomoji:'(◍＞◡＜◍)',anim:'1'} : item; showTopbarMoodBubble(m.kaomoji||'', m.anim||getMoodCfg().defaultAnim||'1'); const mpMb = $('#mpMb'); if(mpMb){ mpMb.textContent = m.kaomoji||''; playAnim(mpMb, m.anim||'1'); $('#mpInfo').innerHTML = '<b>'+escapeHTML(m.mood||'')+'</b> · '+escapeHTML(m.kaomoji||''); } i++; setTimeout(next, 1400); } next(); });
 on('#mpReplay','click',()=>{ const cat = getMoodCat(); if(!cat || !cat.list.length) return; const item = cat.list[0]; const m = typeof item==='string' ? {mood:item,kaomoji:'(◍＞◡＜◍)',anim:'1'} : item; const mpMb = $('#mpMb'); if(mpMb){ mpMb.textContent = m.kaomoji||''; playAnim(mpMb, m.anim||'1'); } });
@@ -26596,13 +26917,12 @@ if(!callState || typeof callState !== 'object'){
 function saveCallState(){ lsSet(CALL_STATE_KEY, callState); }
 
 /* ============ 视频库 ============ */
-const VIDEO_LIB_KEY = 'mj_video_lib_v1';
 function getVideoLibMap(){
-  let m = lsGet(VIDEO_LIB_KEY, null);
+  let m = lsGet('mj_video_lib_v1', null);
   if(!m || typeof m !== 'object') m = {};
   return m;
 }
-function saveVideoLibMap(m){ lsSet(VIDEO_LIB_KEY, m); }
+function saveVideoLibMap(m){ lsSet('mj_video_lib_v1', m); }
 function getVideoLib(roleId){
   const m = getVideoLibMap();
   if(!Array.isArray(m[roleId])) m[roleId] = [];
