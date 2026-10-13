@@ -8627,7 +8627,7 @@ body[data-bubble="custom"] .gch-bubble{
    每次你更新 index.html，把这个数字 +1（或改成日期）
    用户刷新页面时，如果发现版本号变了，就弹提醒让他再刷新一次。
 */
-window.__APP_VERSION__ = '1.0.2';
+window.__APP_VERSION__ = '1.0.3';
 </script>
 
 <script>
@@ -14481,7 +14481,11 @@ function showMsgNotify(roleName, text, roleAvatar, targetRoleId){
      即便页面切到后台，只要 JS 还在跑，就能弹系统通知
    - 手机浏览器切后台后可能暂停 JS 定时器，能不能弹取决于浏览器
 */
-const SYS_NOTIFY_KEY = 'mj_sys_notify_on_v1';
+/* ★ 把 key 从 v1 换成 v2，旧的 v1 数据自动失效，
+   所有浏览器都会回到"默认关"的初始状态 */
+const SYS_NOTIFY_KEY = 'mj_sys_notify_on_v2';
+/* 顺手清掉旧 v1 残留，避免占空间 */
+try{ localStorage.removeItem('mj_sys_notify_on_v1'); }catch(e){}
 function getSysNotifyOn(){
   /* ★ 默认关闭：用户没主动开过，就是关的 */
   return lsGet(SYS_NOTIFY_KEY, false);
