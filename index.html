@@ -14509,9 +14509,94 @@ try{
   localStorage.removeItem('mj_sys_notify_on_v2');
 }catch(e){}
 function getSysNotifyOn(){
-  /* ★ 默认开启：用户没主动关过，就是开的 */
-  return lsGet(SYS_NOTIFY_KEY, true);
+  /* ★ 默认关闭：用户没主动开过，就是关的 */
+  return lsGet(SYS_NOTIFY_KEY, false);
 }
+
+/* ============================================================
+   ★ 后台通知开关：绑定 change 事件
+   - 打开时：请求系统通知权限
+   - 同意 → 开关保持开，写 localStorage
+   - 拒绝 → 开关自动弹回，并 toast 提示
+   - 关闭时：只改本地开关
+   ============================================================ */
+(function bindNotifySysSwitch(){
+  if(window.__notifySysSwitchBound) return;
+  window.__notifySysSwitchBound = true;
+
+  document.addEventListener('change', function(e){
+    var t = e.target;
+    if(!t || t.id !== 'notifySys') return;
+    e.stopPropagation();
+
+    if(!t.checked){
+      setSysNotifyOn(false);
+      if(typeof toast === 'function') toast('已关闭后台通知');
+      return;
+    }
+
+    if(typeof Notification === 'undefined'){
+      t.checked = false;
+      setSysNotifyOn(false);
+      if(typeof toast === 'function') toast('当前浏览器不支持系统通知');
+      return;
+    }
+    if(Notification.permission === 'denied'){
+      t.checked = false;
+      setSysNotifyOn(false);
+      if(typeof toast === 'function') toast('通知权限被拒绝，请到浏览器设置里手动开启');
+      return;
+    }
+    if(Notification.permission === 'granted'){
+      setSysNotifyOn(true);
+      if(typeof toast === 'function') toast('已开启后台通知');
+      return;
+    }
+    try{
+      var p = Notification.requestPermission();
+      if(p && typeof p.then === 'function'){
+        p.then(function(res){
+          if(res === 'granted'){
+            t.checked = true;
+            setSysNotifyOn(true);
+            if(typeof toast === 'function') toast('已开启后台通知');
+            try{
+              var n = new Notification('后台通知已开启', {
+                body: '切到别的应用时，Ta 发消息会在这里提醒你',
+                tag: 'mj-welcome'
+              });
+              setTimeout(function(){ try{ n.close(); }catch(e){} }, 6000);
+            }catch(e){}
+          } else {
+            t.checked = false;
+            setSysNotifyOn(false);
+            if(typeof toast === 'function') toast('未授权通知，无法后台提醒');
+          }
+        }).catch(function(){
+          t.checked = false;
+          setSysNotifyOn(false);
+          if(typeof toast === 'function') toast('请求权限失败');
+        });
+      }
+    }catch(err){
+      t.checked = false;
+      setSysNotifyOn(false);
+      if(typeof toast === 'function') toast('请求权限出错：' + err.message);
+    }
+  }, true);
+
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || !t.closest) return;
+    if(!t.closest('.set-row[data-set="notify"]')) return;
+    setTimeout(function(){
+      var cb = document.getElementById('notifySys');
+      if(!cb) return;
+      var granted = (typeof Notification !== 'undefined' && Notification.permission === 'granted');
+      cb.checked = granted && getSysNotifyOn();
+    }, 60);
+  }, true);
+})();
 
 /* ============================================================
    ★ 自动请求通知权限
