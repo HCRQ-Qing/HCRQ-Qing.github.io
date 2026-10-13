@@ -66,6 +66,45 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
   -webkit-overflow-scrolling:touch;
   scrollbar-width:none;
 }
+/* ===== 日历页 · 顶部栏（右上角 EDIT 入口） ===== */
+.cal-topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:18px 22px 4px;
+  flex:none;
+  max-width:520px;
+  margin:0 auto;
+  width:100%;
+  box-sizing:border-box;
+}
+.cal-topbar-left{
+  width:38px;
+  height:38px;
+  flex:none;
+}
+.cal-topbar-right{
+  flex:none;
+  display:flex;
+  align-items:center;
+}
+.cal-edit-entry{
+  border:none;
+  background:transparent;
+  color:#1a1a1a;
+  font-family:Georgia,serif;
+  font-size:11px;
+  letter-spacing:4px;
+  text-indent:4px;
+  font-weight:400;
+  padding:6px 2px;
+  cursor:pointer;
+  opacity:.55;
+  transition:opacity .18s ease;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+.cal-edit-entry:active{opacity:1}
 #page-calendar::-webkit-scrollbar{display:none}
 
 .cal-page-wrap{
@@ -8880,6 +8919,12 @@ window.__APP_VERSION__ = '1.0.2';
     </div><!-- /#page-chat -->
 
     <div class="page" id="page-calendar">
+      <div class="cal-topbar">
+        <div class="cal-topbar-left"></div>
+        <div class="cal-topbar-right">
+          <button class="cal-edit-entry" id="calEditEntry" type="button">EDIT</button>
+        </div>
+      </div>
       <div class="cal-page-wrap">
 
         <!-- ===== 大卡片 ===== -->
@@ -14438,7 +14483,8 @@ function showMsgNotify(roleName, text, roleAvatar, targetRoleId){
 */
 const SYS_NOTIFY_KEY = 'mj_sys_notify_on_v1';
 function getSysNotifyOn(){
-  return lsGet(SYS_NOTIFY_KEY, true);
+  /* ★ 默认关闭：用户没主动开过，就是关的 */
+  return lsGet(SYS_NOTIFY_KEY, false);
 }
 function setSysNotifyOn(v){
   lsSet(SYS_NOTIFY_KEY, !!v);
@@ -22286,14 +22332,26 @@ document.addEventListener('click', function(e){
     if(key === 'notify'){
       /* 打开通知页前先同步三个开关的真实状态 */
       const cb1 = document.getElementById('notifyChat');
-      const cb2 = document.getElementById('notifySys');       /* ← 改这里 */
+      const cb2 = document.getElementById('notifySys');
       const cb3 = document.getElementById('notifyMoment');
       if(cb1) cb1.checked = getNotifyChat();
-      if(cb2) cb2.checked = getSysNotifyOn();
       if(cb3) cb3.checked = getNotifyMoment();
+
+      /* ★ 后台通知开关：
+         1) 如果本地存的是"开"，但浏览器权限已经不是 granted 了 → 说明权限没了，把开关也置为关
+         2) 否则，回填本地存的值 */
+      if(cb2){
+        if(getSysNotifyOn() && (typeof Notification === 'undefined' || Notification.permission !== 'granted')){
+          /* 本地想开但浏览器没权限，干脆关掉，让用户重新点 */
+          cb2.checked = false;
+          setSysNotifyOn(false);
+        } else {
+          cb2.checked = getSysNotifyOn();
+        }
+      }
+
       showScreen('notifyScreen');
-      /* 后台通知开关：如果用户点开时才授权，这里顺手请求一次 */
-      requestSysNotifyPermission();
+      /* ★ 不再在这里自动请求权限，交给用户点开关时触发 */
     }
     else if(key === 'fullscreen') toggleFullscreen();
     else if(key === 'blocked') openHiddenList('blocked');
@@ -22304,7 +22362,57 @@ document.addEventListener('click', function(e){
 
   if(t.closest('#notifySys')){
     const cb = document.getElementById('notifySys');
-    if(cb) setTimeout(()=>{ setSysNotifyOn(cb.checked); }, 0);
+    if(cb){
+      const wantOn = !!cb.checked;
+      if(wantOn){
+        /* ★ 用户主动开启 → 这时才向浏览器申请权限
+           （必须是用户点击触发，浏览器才认） */
+        try{
+          if(!('Notification' in window)){
+            toast('当前浏览器不支持系统通知');
+            cb.checked = false;
+            setSysNotifyOn(false);
+            return;
+          }
+          if(Notification.permission === 'granted'){
+            setSysNotifyOn(true);
+            toast('已开启后台通知');
+          } else if(Notification.permission === 'denied'){
+            toast('通知权限被拒绝，请去浏览器设置里手动允许');
+            cb.checked = false;
+            setSysNotifyOn(false);
+          } else {
+            /* default：请求授权 */
+            Notification.requestPermission().then(function(p){
+              if(p === 'granted'){
+                setSysNotifyOn(true);
+                toast('已开启后台通知');
+                /* 顺手发一条测试通知，让用户确认能收到 */
+                try{
+                  const n = new Notification('后台通知已开启', {
+                    body: '之后切到后台也能收到消息提醒'
+                  });
+                  setTimeout(function(){ try{ n.close(); }catch(e){} }, 5000);
+                }catch(e){}
+              } else {
+                setSysNotifyOn(false);
+                cb.checked = false;
+                toast(p === 'denied' ? '通知权限被拒绝，请去浏览器设置里手动允许' : '未授权，后台通知未开启');
+              }
+            });
+          }
+        }catch(err){
+          console.error('申请通知权限失败', err);
+          toast('申请通知权限失败');
+          cb.checked = false;
+          setSysNotifyOn(false);
+        }
+      } else {
+        /* 用户主动关闭 */
+        setSysNotifyOn(false);
+        toast('已关闭后台通知');
+      }
+    }
     return;
   }
 }, true);
@@ -27126,14 +27234,7 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 		});
 	  }
 	})();
-	/* 首次启动时请求系统通知权限（用户没授权过才会弹提示） */
-	try {
-	  requestSysNotifyPermission().then(function(p){
-	    if(p === 'granted') console.log('[通知] 已授权');
-	    else if(p === 'denied') console.log('[通知] 被拒绝，想再开要去浏览器设置里手动开启');
-	    else if(p === 'unsupported') console.log('[通知] 当前浏览器不支持');
-	  });
-	} catch(e){}
+
 
 	msgs = loadMsgs();
 	try{ settleQuizCards(); }catch(e){ console.error('试卷结算失败', e); }
@@ -32956,13 +33057,17 @@ function initCalendarPage(){
 
 /* 全局事件绑定 */
 document.addEventListener('click', function(e){
-  const card = e.target.closest('#calBigCard');
-  if(card){
+  /* 右上角 EDIT 入口 → 进编辑桌面 */
+  if(e.target.closest('#calEditEntry')){
+    e.preventDefault();
+    e.stopPropagation();
     showScreen('deskEditScreen');
     renderDeskEdit('date');
     return;
   }
+  /* 刷新按钮 → 只刷新天气，绝不进编辑 */
   if(e.target.closest('#calBigWRefresh')){
+    e.preventDefault();
     e.stopPropagation();
     refreshWeather(true);
     return;
