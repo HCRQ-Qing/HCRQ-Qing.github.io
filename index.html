@@ -14765,32 +14765,8 @@ function _showPersistentNotification(title, body){
 (function bindVisibilityPersistent(){
   if(window.__mjVisibilityBound) return;
   window.__mjVisibilityBound = true;
-
-  /* 切后台时弹一条"无声的保活通知"，用来让雨见内核别急着冻结页面。
-     通知栏里不写任何话（标题和内容都为空），切回来也不会看到那句话。 */
-  document.addEventListener('visibilitychange', function(){
-    if(document.hidden){
-      try{
-        if(typeof Notification === 'undefined') return;
-        if(Notification.permission !== 'granted') return;
-        if(!getSysNotifyOn()) return;
-
-        if('serviceWorker' in navigator){
-          navigator.serviceWorker.ready.then(function(reg){
-            if(reg && typeof reg.showNotification === 'function'){
-              reg.showNotification('', {
-                body: '',
-                tag: 'mj-keepalive',
-                renotify: false,
-                silent: true,
-                requireInteraction: true
-              }).catch(function(e){ console.warn('保活通知失败', e); });
-            }
-          }).catch(function(){});
-        }
-      }catch(e){}
-    }
-  });
+  /* 已移除保活通知：空白弹窗的源头。
+     雨见实测挡不住冻结，留着只会刷空白。 */
 })();
 
 function showSystemNotify(title, body){
