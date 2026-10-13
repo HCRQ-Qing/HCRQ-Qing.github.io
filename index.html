@@ -14831,7 +14831,18 @@ function showSystemNotify(title, body){
             }).catch(function(){});
           }
           try{
-            reg.showNotification(title || '角色', payload).catch(function(e){
+            var finalTitle = String(title || '角色').trim() || '角色';
+            var finalBody  = String(body || '').trim();
+            var finalPayload = {
+              body: finalBody.slice(0, 60),
+              tag: __notifyTag,
+              renotify: true,
+              silent: false,
+              requireInteraction: false,
+              data: { roleId: window.__lastNotifyRoleId || '' }
+            };
+            console.log('[通知] 发出:', finalTitle, finalBody);
+            reg.showNotification(finalTitle, finalPayload).catch(function(e){
               console.warn('showNotification 失败', e);
             });
           }catch(e){ console.warn('showNotification 抛错', e); }
