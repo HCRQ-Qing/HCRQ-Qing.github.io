@@ -14797,15 +14797,7 @@ function showSystemNotify(title, body){
       navigator.serviceWorker.ready.then(function(reg){
         if(reg && typeof reg.showNotification === 'function'){
           /* ★ 先关掉"保活"通知，避免它占着通知栏挡住新消息 */
-          if(typeof reg.getNotifications === 'function'){
-            reg.getNotifications().then(function(list){
-              (list || []).forEach(function(n){
-                try{
-                  if(n.tag === 'mj-keepalive') n.close();
-                }catch(err){}
-              });
-            }).catch(function(){});
-          }
+
           try{
             var finalTitle = String(title || '角色').trim() || '角色';
             var finalBody  = String(body || '').trim();
