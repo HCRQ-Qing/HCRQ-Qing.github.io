@@ -14491,14 +14491,16 @@ function showMsgNotify(roleName, text, roleAvatar, targetRoleId){
      即便页面切到后台，只要 JS 还在跑，就能弹系统通知
    - 手机浏览器切后台后可能暂停 JS 定时器，能不能弹取决于浏览器
 */
-/* ★ 把 key 从 v1 换成 v2，旧的 v1 数据自动失效，
-   所有浏览器都会回到"默认关"的初始状态 */
-const SYS_NOTIFY_KEY = 'mj_sys_notify_on_v2';
-/* 顺手清掉旧 v1 残留，避免占空间 */
-try{ localStorage.removeItem('mj_sys_notify_on_v1'); }catch(e){}
+/* ★ 后台通知默认开启：只要浏览器授权过通知权限，就允许弹系统通知 */
+const SYS_NOTIFY_KEY = 'mj_sys_notify_on_v3';
+/* 顺手清掉旧版本残留 */
+try{
+  localStorage.removeItem('mj_sys_notify_on_v1');
+  localStorage.removeItem('mj_sys_notify_on_v2');
+}catch(e){}
 function getSysNotifyOn(){
-  /* ★ 默认关闭：用户没主动开过，就是关的 */
-  return lsGet(SYS_NOTIFY_KEY, false);
+  /* ★ 默认开启：用户没主动关过，就是开的 */
+  return lsGet(SYS_NOTIFY_KEY, true);
 }
 function setSysNotifyOn(v){
   lsSet(SYS_NOTIFY_KEY, !!v);
@@ -14533,6 +14535,11 @@ function showSystemNotify(title, body){
     }
 
     /* 后台：走系统通知 */
+    /* ★ 记录这条通知对应哪个角色，点通知时用来跳转 */
+    try{
+      if(typeof getCurrentRoleId === 'function'){ window.__lastNotifyRoleId = getCurrentRoleId(); }
+    }catch(e){}
+
     const opts = {
       body: String(body || '').slice(0, 60),
       tag: 'mj-msg',
@@ -29421,6 +29428,108 @@ function switchToRole(id){
     if(activeTab) renderCollectScreen(activeTab.dataset.colTab);
   }
 }
+
+/* ============================================================
+   ★ 后台通知开关：绑定 change 事件，点开关时请求系统通知权限
+   - 打开时：如果权限不是 granted，就主动请求
+   - 请求失败 / 被拒绝 → 开关自动弹回，并给提示
+   - 关闭时：只改本地开关，不动系统权限
+   ============================================================ */
+(function bindNotifySysSwitch(){
+  if(window.__notifySysSwitchBound) return;
+  window.__notifySysSwitchBound = true;
+
+  /* 用事件委托，防止 #notifySys 在 DOM 里被重建 */
+  document.addEventListener('change', function(e){
+    var t = e.target;
+    if(!t || t.id !== 'notifySys') return;
+    e.stopPropagation();
+
+    if(!t.checked){
+      /* 用户主动关闭 */
+      setSysNotifyOn(false);
+      if(typeof toast === 'function') toast('已关闭后台通知');
+      return;
+    }
+
+    /* 用户想打开：请求权限 */
+    if(typeof Notification === 'undefined'){
+      t.checked = false;
+      setSysNotifyOn(false);
+      if(typeof toast === 'function') toast('当前浏览器不支持系统通知');
+      return;
+    }
+    if(Notification.permission === 'denied'){
+      t.checked = false;
+      setSysNotifyOn(false);
+      if(typeof toast === 'function') toast('通知权限被拒绝，请到浏览器设置里手动开启');
+      return;
+    }
+    if(Notification.permission === 'granted'){
+      setSysNotifyOn(true);
+      if(typeof toast === 'function') toast('已开启后台通知');
+      return;
+    }
+    /* permission === 'default'：请求权限 */
+    try{
+      var p = Notification.requestPermission();
+      if(p && typeof p.then === 'function'){
+        p.then(function(res){
+          if(res === 'granted'){
+            t.checked = true;
+            setSysNotifyOn(true);
+            if(typeof toast === 'function') toast('已开启后台通知');
+            /* 发一条测试通知，让用户确认能看到 */
+            try{
+              var n = new Notification('后台通知已开启', {
+                body: '切到别的应用时，Ta 发消息会在这里提醒你',
+                tag: 'mj-test'
+              });
+              setTimeout(function(){ try{ n.close(); }catch(err){} }, 5000);
+            }catch(err){}
+          } else {
+            t.checked = false;
+            setSysNotifyOn(false);
+            if(typeof toast === 'function') toast('未授权通知，无法后台提醒');
+          }
+        }).catch(function(){
+          t.checked = false;
+          setSysNotifyOn(false);
+          if(typeof toast === 'function') toast('请求权限失败');
+        });
+      } else {
+        /* 老浏览器同步回调 */
+        if(Notification.permission === 'granted'){
+          t.checked = true;
+          setSysNotifyOn(true);
+        } else {
+          t.checked = false;
+          setSysNotifyOn(false);
+        }
+      }
+    }catch(err){
+      t.checked = false;
+      setSysNotifyOn(false);
+      if(typeof toast === 'function') toast('请求权限出错：' + err.message);
+    }
+  }, true);
+
+  /* ★ 每次打开通知页时，把开关的 checked 状态跟真实权限同步一次 */
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || !t.closest) return;
+    if(!t.closest('.set-row[data-set="notify"]')) return;
+    /* 延迟一点，等 notifyScreen 显示出来再同步 */
+    setTimeout(function(){
+      var cb = document.getElementById('notifySys');
+      if(!cb) return;
+      /* 有权限 + 本地开关开 → 打勾；否则不打勾 */
+      var granted = (typeof Notification !== 'undefined' && Notification.permission === 'granted');
+      var localOn = getSysNotifyOn();
+      cb.checked = granted && localOn;
+    }, 60);
+  }, true);
+})();
 
 /* 上线触发：应用启动后，每个角色各触发一次主动消息（只走主动消息） */
 let _onlineFireTimers = [];
