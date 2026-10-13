@@ -8627,7 +8627,34 @@ body[data-bubble="custom"] .gch-bubble{
    每次你更新 index.html，把这个数字 +1（或改成日期）
    用户刷新页面时，如果发现版本号变了，就弹提醒让他再刷新一次。
 */
-window.__APP_VERSION__ = '1.0.3';
+window.__APP_VERSION__ = '1.0.4';
+
+/* ★ 把版本号显示在网页标题上，你在雨见标签页就能看到 */
+(function showVersionInTitle(){
+  try{
+    var oldTitle = document.title || 'our-dreamland';
+    document.title = oldTitle + ' · v' + window.__APP_VERSION__;
+  }catch(e){}
+})();
+
+/* ★ 在"关于"页顶部显示版本号 */
+(function bindVersionDisplay(){
+  function tryShow(){
+    try{
+      var el = document.querySelector('#aboutScreen .about-version');
+      if(el){
+        el.textContent = 'our-dreamland · v' + window.__APP_VERSION__;
+      } else {
+        setTimeout(tryShow, 500);
+      }
+    }catch(e){}
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', tryShow);
+  } else {
+    tryShow();
+  }
+})();
 </script>
 
 <script>
@@ -14730,6 +14757,40 @@ function _showPersistentNotification(title, body){
   _fallbackNewNotification(title, payload);
 }
 
+/* ============================================================
+   ★ 页面切后台时，弹一条保活通知
+   - 雨见内核在页面切后台后，会限制新通知弹出
+   - 切后台瞬间先弹一条，让"通知能力"保持存活
+   ============================================================ */
+(function bindVisibilityPersistent(){
+  if(window.__mjVisibilityBound) return;
+  window.__mjVisibilityBound = true;
+
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){
+      try{
+        if(typeof Notification === 'undefined') return;
+        if(Notification.permission !== 'granted') return;
+        if(!getSysNotifyOn()) return;
+
+        if('serviceWorker' in navigator){
+          navigator.serviceWorker.ready.then(function(reg){
+            if(reg && typeof reg.showNotification === 'function'){
+              reg.showNotification('彼岸', {
+                body: '有新消息时会在这里提醒你',
+                tag: 'mj-keepalive-' + Date.now().toString(36),
+                renotify: false,
+                silent: true,
+                requireInteraction: true
+              }).catch(function(e){ console.warn('保活通知失败', e); });
+            }
+          }).catch(function(){});
+        }
+      }catch(e){}
+    }
+  });
+})();
+
 function showSystemNotify(title, body){
   try{
     if(!('Notification' in window)) return;
@@ -14798,158 +14859,9 @@ function _fallbackNewNotification(title, opts){
   }
 }
 
-/* ===== 临时日志埋点（用完删掉） ===== */
-(function bindNotifyLog(){
-  if(window.__notifyLogBound) return;
-  window.__notifyLogBound = true;
+ 
 
-  function log(entry){
-    try{
-      var arr = JSON.parse(localStorage.getItem('mj_notify_log_v1') || '[]');
-      arr.unshift(Object.assign({ t: Date.now() }, entry));
-      if(arr.length > 100) arr.length = 100;
-      localStorage.setItem('mj_notify_log_v1', JSON.stringify(arr));
-    }catch(e){}
-  }
-  window.__notifyLog = log;
-
-  if(typeof window.showMsgNotify === 'function'){
-    var origMsg = window.showMsgNotify;
-    window.showMsgNotify = function(roleName, text, avatar, roleId){
-      log({
-        at: 'showMsgNotify进入',
-        roleName: roleName,
-        text: String(text || '').slice(0, 20),
-        targetRoleId: roleId || '',
-        visState: document.visibilityState,
-        hidden: document.hidden
-      });
-      var r = origMsg.apply(this, arguments);
-      log({ at: 'showMsgNotify返回' });
-      return r;
-    };
-  }
-
-  if(typeof window.showSystemNotify === 'function'){
-    var origSys = window.showSystemNotify;
-    window.showSystemNotify = function(title, body){
-      log({
-        at: 'showSystemNotify进入',
-        title: title,
-        body: String(body || '').slice(0, 20),
-        visState: document.visibilityState,
-        hidden: document.hidden,
-        hasSW: 'serviceWorker' in navigator,
-        hasCtrl: !!(navigator.serviceWorker && navigator.serviceWorker.controller)
-      });
-      var r = origSys.apply(this, arguments);
-      log({ at: 'showSystemNotify返回' });
-      return r;
-    };
-  }
-
-  if(typeof window.appendMsgToRole === 'function'){
-    var origAppend = window.appendMsgToRole;
-    window.appendMsgToRole = function(roleId, msg){
-      log({
-        at: 'appendMsgToRole',
-        roleId: roleId,
-        isCurrentRole: (typeof getCurrentRoleId === 'function' && getCurrentRoleId() === roleId)
-      });
-      return origAppend.apply(this, arguments);
-    };
-  }
-})();
-
-/* ===== 临时日志埋点 v2（用完删掉） ===== */
-(function bindNotifyLog(){
-  if(window.__notifyLogBoundV2) return;
-  window.__notifyLogBoundV2 = true;
-
-  function log(entry){
-    try{
-      var arr = JSON.parse(localStorage.getItem('mj_notify_log_v1') || '[]');
-      arr.unshift(Object.assign({ t: Date.now() }, entry));
-      if(arr.length > 200) arr.length = 200;
-      localStorage.setItem('mj_notify_log_v1', JSON.stringify(arr));
-    }catch(e){}
-  }
-  window.__notifyLog = log;
-
-  /* 直接包装 ServiceWorkerRegistration.prototype.showNotification，
-     把成功/失败都记下来。这一步能看到真实场景下 showNotification 到底干了什么 */
-  try{
-    if('serviceWorker' in navigator && navigator.serviceWorker.ready){
-      navigator.serviceWorker.ready.then(function(reg){
-        if(!reg || !reg.showNotification) return;
-        var proto = Object.getPrototypeOf(reg);
-        if(!proto || proto.__showNotificationPatched) return;
-        var origShow = proto.showNotification;
-        proto.showNotification = function(title, opts){
-          log({
-            at: 'SW.showNotification调用',
-            title: title,
-            body: String((opts && opts.body) || '').slice(0, 30),
-            tag: (opts && opts.tag) || ''
-          });
-          var self = this;
-          var p;
-          try{
-            p = origShow.call(self, title, opts);
-          }catch(e){
-            log({ at: 'SW.showNotification同步抛错', err: String(e && e.message || e) });
-            throw e;
-          }
-          if(p && p.then){
-            p.then(function(){
-              log({ at: 'SW.showNotification成功' });
-            }).catch(function(e){
-              log({ at: 'SW.showNotification失败', err: String(e && e.message || e) });
-            });
-          } else {
-            log({ at: 'SW.showNotification无Promise' });
-          }
-          return p;
-        };
-        proto.__showNotificationPatched = true;
-        log({ at: 'SW.showNotification已打补丁' });
-      }).catch(function(e){
-        log({ at: 'SW ready失败', err: String(e && e.message || e) });
-      });
-    }
-  }catch(e){
-    log({ at: '打补丁失败', err: String(e && e.message || e) });
-  }
-
-  if(typeof window.showMsgNotify === 'function'){
-    var origMsg = window.showMsgNotify;
-    window.showMsgNotify = function(roleName, text, avatar, roleId){
-      log({
-        at: 'showMsgNotify进入',
-        roleName: roleName,
-        text: String(text || '').slice(0, 20),
-        targetRoleId: roleId || '',
-        visState: document.visibilityState,
-        hidden: document.hidden
-      });
-      var r = origMsg.apply(this, arguments);
-      log({ at: 'showMsgNotify返回' });
-      return r;
-    };
-  }
-
-  if(typeof window.appendMsgToRole === 'function'){
-    var origAppend = window.appendMsgToRole;
-    window.appendMsgToRole = function(roleId, msg){
-      log({
-        at: 'appendMsgToRole',
-        roleId: roleId,
-        isCurrentRole: (typeof getCurrentRoleId === 'function' && getCurrentRoleId() === roleId)
-      });
-      return origAppend.apply(this, arguments);
-    };
-  }
-})();
+  
 
 /* 用户是否正在某个角色的聊天页 */
 function isViewingRole(roleId){
@@ -33883,48 +33795,7 @@ function scheduleFestTick(){
 try{ scheduleFestTick(); }catch(e){ console.error('节日调度启动失败', e); }
 </script>
 
-<!-- ========== 临时诊断（用完删掉） ========== -->
-<script>
-setTimeout(function(){
-  var msg = '';
-  msg += 'URL: ' + location.href.slice(0, 60) + '\n';
-  msg += 'protocol: ' + location.protocol + '\n';
-  msg += 'isSecureContext: ' + window.isSecureContext + '\n';
-  msg += '---\n';
-  msg += 'Notification: ' + (typeof Notification) + '\n';
-  msg += 'permission: ' + (typeof Notification !== 'undefined' ? Notification.permission : 'N/A') + '\n';
-  msg += 'requestPermission: ' + (typeof Notification !== 'undefined' ? typeof Notification.requestPermission : 'N/A') + '\n';
-  msg += '---\n';
-  msg += 'ServiceWorker: ' + ('serviceWorker' in navigator) + '\n';
-  msg += 'PushManager: ' + (typeof PushManager) + '\n';
-  msg += 'SW注册: ' + (navigator.serviceWorker && navigator.serviceWorker.controller ? '有控制器' : '无控制器') + '\n';
-  msg += '---\n';
-  msg += 'SYS v3: ' + (localStorage.getItem('mj_sys_notify_on_v3') || 'null') + '\n';
-  msg += 'SYS v2: ' + (localStorage.getItem('mj_sys_notify_on_v2') || 'null') + '\n';
-  msg += 'getSysNotifyOn 类型: ' + (typeof getSysNotifyOn) + '\n';
-  try{ msg += 'getSysNotifyOn(): ' + getSysNotifyOn() + '\n'; }catch(e){ msg += 'getSysNotifyOn() 调用失败: ' + e.message + '\n'; }
-  msg += 'showSystemNotify 类型: ' + (typeof showSystemNotify) + '\n';
-  msg += '#notifySys 存在: ' + !!document.getElementById('notifySys');
-  alert(msg);
-
-  /* 顺便测一下 showNotification 能不能用 */
-  if('serviceWorker' in navigator && navigator.serviceWorker.ready){
-    navigator.serviceWorker.ready.then(function(reg){
-      if(reg && typeof reg.showNotification === 'function'){
-        try{
-          reg.showNotification('SW 测试', { body: '看到这条 = SW 能弹', tag: 'mj-sw-test' });
-        }catch(e){
-          alert('showNotification 抛异常: ' + e.message);
-        }
-      } else {
-        alert('registration 上没有 showNotification 方法');
-      }
-    }).catch(function(e){
-      alert('navigator.serviceWorker.ready 失败: ' + e.message);
-    });
-  }
-}, 2500);
-</script>
+ 
 
 <script>
 
