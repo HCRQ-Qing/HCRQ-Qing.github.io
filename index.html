@@ -33552,36 +33552,47 @@ function scheduleFestTick(){
 try{ scheduleFestTick(); }catch(e){ console.error('节日调度启动失败', e); }
 </script>
 
-<!-- ========== 临时诊断按钮（用完删掉） ========== -->
+<!-- ========== 临时诊断（用完删掉） ========== -->
 <script>
-(function(){
-  var btn = document.createElement('div');
-  btn.textContent = '诊断';
-  btn.style.cssText = 'position:fixed;right:14px;bottom:90px;z-index:999999;background:#1a1a1a;color:#fff;padding:10px 16px;border-radius:22px;font-size:13px;font-family:monospace;box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;';
-  document.body.appendChild(btn);
-  btn.onclick = function(){
-    var lines = [];
-    lines.push('Notification 存在：' + (typeof Notification));
-    lines.push('权限：' + (typeof Notification !== 'undefined' ? Notification.permission : '不支持'));
-    lines.push('协议：' + location.protocol);
-    lines.push('地址：' + location.href.slice(0, 60));
-    try{ lines.push('后台通知开关：' + getSysNotifyOn()); }catch(e){ lines.push('开关读取失败'); }
-    if(typeof Notification === 'undefined'){
-      lines.push('❌ 浏览器不支持 Notification');
-    } else if(Notification.permission === 'granted'){
-      try{
-        var n = new Notification('测试通知', { body: '看到这条=能弹' });
-        setTimeout(function(){ n.close(); }, 5000);
-        lines.push('✅ 已发测试通知，看通知栏');
-      }catch(e){
-        lines.push('❌ 发通知失败：' + e.message);
+setTimeout(function(){
+  var msg = '';
+  msg += 'URL: ' + location.href.slice(0, 60) + '\n';
+  msg += 'protocol: ' + location.protocol + '\n';
+  msg += 'isSecureContext: ' + window.isSecureContext + '\n';
+  msg += '---\n';
+  msg += 'Notification: ' + (typeof Notification) + '\n';
+  msg += 'permission: ' + (typeof Notification !== 'undefined' ? Notification.permission : 'N/A') + '\n';
+  msg += 'requestPermission: ' + (typeof Notification !== 'undefined' ? typeof Notification.requestPermission : 'N/A') + '\n';
+  msg += '---\n';
+  msg += 'ServiceWorker: ' + ('serviceWorker' in navigator) + '\n';
+  msg += 'PushManager: ' + (typeof PushManager) + '\n';
+  msg += 'SW注册: ' + (navigator.serviceWorker && navigator.serviceWorker.controller ? '有控制器' : '无控制器') + '\n';
+  msg += '---\n';
+  msg += 'SYS v3: ' + (localStorage.getItem('mj_sys_notify_on_v3') || 'null') + '\n';
+  msg += 'SYS v2: ' + (localStorage.getItem('mj_sys_notify_on_v2') || 'null') + '\n';
+  msg += 'getSysNotifyOn 类型: ' + (typeof getSysNotifyOn) + '\n';
+  try{ msg += 'getSysNotifyOn(): ' + getSysNotifyOn() + '\n'; }catch(e){ msg += 'getSysNotifyOn() 调用失败: ' + e.message + '\n'; }
+  msg += 'showSystemNotify 类型: ' + (typeof showSystemNotify) + '\n';
+  msg += '#notifySys 存在: ' + !!document.getElementById('notifySys');
+  alert(msg);
+
+  /* 顺便测一下 showNotification 能不能用 */
+  if('serviceWorker' in navigator && navigator.serviceWorker.ready){
+    navigator.serviceWorker.ready.then(function(reg){
+      if(reg && typeof reg.showNotification === 'function'){
+        try{
+          reg.showNotification('SW 测试', { body: '看到这条 = SW 能弹', tag: 'mj-sw-test' });
+        }catch(e){
+          alert('showNotification 抛异常: ' + e.message);
+        }
+      } else {
+        alert('registration 上没有 showNotification 方法');
       }
-    } else {
-      lines.push('⚠️ 权限不是 granted，当前：' + Notification.permission);
-    }
-    alert(lines.join('\n'));
-  };
-})();
+    }).catch(function(e){
+      alert('navigator.serviceWorker.ready 失败: ' + e.message);
+    });
+  }
+}, 2500);
 </script>
 
 <script>
