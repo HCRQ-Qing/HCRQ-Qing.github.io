@@ -22375,8 +22375,10 @@ document.addEventListener('click', function(e){
          1) 如果本地存的是"开"，但浏览器权限已经不是 granted 了 → 说明权限没了，把开关也置为关
          2) 否则，回填本地存的值 */
       if(cb2){
-        if(getSysNotifyOn() && (typeof Notification === 'undefined' || Notification.permission !== 'granted')){
-          /* 本地想开但浏览器没权限，干脆关掉，让用户重新点 */
+        /* ★ 只在权限明确被浏览器拒绝（denied）时才强制关掉本地开关，
+           permission === 'default' 时不动本地值，
+           让用户点开关去触发系统的权限申请弹窗。 */
+        if(getSysNotifyOn() && typeof Notification !== 'undefined' && Notification.permission === 'denied'){
           cb2.checked = false;
           setSysNotifyOn(false);
         } else {
@@ -22394,68 +22396,10 @@ document.addEventListener('click', function(e){
     return;
   }
 
-  if(t.closest('#notifySys')){
-    const cb = document.getElementById('notifySys');
-    if(cb){
-      const wantOn = !!cb.checked;
-      if(wantOn){
-        /* ★ 用户主动开启 → 这时才向浏览器申请权限
-           （必须是用户点击触发，浏览器才认） */
-        try{
-          if(!('Notification' in window)){
-            toast('当前浏览器不支持系统通知');
-            cb.checked = false;
-            setSysNotifyOn(false);
-            return;
-          }
-
-          /* ★ 三种权限状态分开处理，并把当前状态告诉用户，方便排查 */
-          if(Notification.permission === 'granted'){
-            setSysNotifyOn(true);
-            toast('已开启后台通知');
-          } else if(Notification.permission === 'denied'){
-            /* denied 是不可逆状态，浏览器不会再弹窗，必须去设置里手动改 */
-            toast('通知权限已被浏览器拒绝（denied），请点地址栏左边的锁 / ⓘ 图标，把「通知」改成「允许」，然后刷新页面');
-            cb.checked = false;
-            setSysNotifyOn(false);
-          } else {
-            /* default：请求授权，这才是能弹出系统窗的状态 */
-            Notification.requestPermission().then(function(p){
-              if(p === 'granted'){
-                setSysNotifyOn(true);
-                toast('已开启后台通知');
-                /* 顺手发一条测试通知，让用户确认能收到 */
-                try{
-                  const n = new Notification('后台通知已开启', {
-                    body: '之后切到后台也能收到消息提醒'
-                  });
-                  setTimeout(function(){ try{ n.close(); }catch(e){} }, 5000);
-                }catch(e){}
-              } else if(p === 'denied'){
-                setSysNotifyOn(false);
-                cb.checked = false;
-                toast('通知权限已被浏览器拒绝（denied），请点地址栏左边的锁 / ⓘ 图标，把「通知」改成「允许」，然后刷新页面');
-              } else {
-                setSysNotifyOn(false);
-                cb.checked = false;
-                toast('未授权，后台通知未开启');
-              }
-            });
-          }
-        }catch(err){
-          console.error('申请通知权限失败', err);
-          toast('申请通知权限失败：' + err.message);
-          cb.checked = false;
-          setSysNotifyOn(false);
-        }
-      } else {
-        /* 用户主动关闭 */
-        setSysNotifyOn(false);
-        toast('已关闭后台通知');
-      }
-    }
-    return;
-  }
+  /* ★ 后台通知开关：不再走 document 委托，改到初始化时单独绑到 label 的 click 上。
+     原因：用户实际点的是包着 checkbox 的 <label class="switch">，
+     checkbox 的 change / document 委托里的 click 在部分内核（含雨见）里
+     会被判定成非直接手势，requestPermission() 被静默拒绝，弹窗不出。 */
 }, true);
 
 /* ===== 已删除 / 已拉黑：查看和恢复 ===== */
