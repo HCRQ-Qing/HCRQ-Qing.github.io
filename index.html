@@ -14288,10 +14288,20 @@ function _applyReadStateUpTo(anchorMsg, state){
     const x = msgs[i];
     if(!x || x.role !== 'user') continue;
     if(x.recalled || x.sys || x.namecard) continue;
-    /* 只改还没定成"更靠后状态"的：
-       - 已经是 noReply（已读不回）就不动，视为终态
-       - 已经是同一状态也不动
-       - unread / read 可以互相推进 */
+    /* ★ bug1 修复：
+       只要这次是「标记已读」（state === 'read'），
+       就把这条之前所有 user 消息里的 unread 全部一起变已读，
+       不再留着下面一条还是未读。
+       noReply（已读不回）视为终态，不参与本次覆盖。 */
+    if(state === 'read'){
+      if(x.readState === 'noReply') continue;
+      if(x.readState === 'read' && !x.readNoReply) continue;
+      x.readState = 'read';
+      x.readNoReply = false;
+      changed = true;
+      continue;
+    }
+    /* 其它状态（noReply 等）：保持原有逻辑 */
     if(x.readState === 'noReply' && state !== 'noReply') continue;
     if(x.readState === state && !!x.readNoReply === (state === 'noReply')) continue;
     x.readState = state;
@@ -14596,6 +14606,26 @@ function fireActiveMessage(roleId){
     replyMap[roleId] = fresh;
     return fresh;
   })();
+
+  /* ★ bug2 修复：
+     如果这个角色最近一次回复是「已读不回」（noReply），
+     说明 Ta 现在就是不想理你，主动消息也一起压住，
+     避免「显示已读不回、转头又主动发一条」这种自相矛盾。 */
+  try{
+    const key = 'mj_msgs_' + roleId;
+    const arr = lsGet(key, null);
+    if(Array.isArray(arr) && arr.length){
+      const lastUser = [...arr].reverse().find(x =>
+        x && x.role === 'user' && !x.recalled && !x.sys && !x.namecard
+      );
+      if(lastUser && lastUser.readState === 'noReply'){
+        /* 已读不回：这次主动直接取消，并重新排下一次掷骰 */
+        cfg.activeLastFireAt = Date.now();
+        saveReply();
+        return;
+      }
+    }
+  }catch(e){ console.error('已读不回拦截主动消息出错', e); }
 
   const text = pickActiveCardText(roleId);
   if(!text){
@@ -22378,15 +22408,18 @@ document.addEventListener('click', function(e){
             setSysNotifyOn(false);
             return;
           }
+
+          /* ★ 三种权限状态分开处理，并把当前状态告诉用户，方便排查 */
           if(Notification.permission === 'granted'){
             setSysNotifyOn(true);
             toast('已开启后台通知');
           } else if(Notification.permission === 'denied'){
-            toast('通知权限被拒绝，请去浏览器设置里手动允许');
+            /* denied 是不可逆状态，浏览器不会再弹窗，必须去设置里手动改 */
+            toast('通知权限已被浏览器拒绝（denied），请点地址栏左边的锁 / ⓘ 图标，把「通知」改成「允许」，然后刷新页面');
             cb.checked = false;
             setSysNotifyOn(false);
           } else {
-            /* default：请求授权 */
+            /* default：请求授权，这才是能弹出系统窗的状态 */
             Notification.requestPermission().then(function(p){
               if(p === 'granted'){
                 setSysNotifyOn(true);
@@ -22398,16 +22431,20 @@ document.addEventListener('click', function(e){
                   });
                   setTimeout(function(){ try{ n.close(); }catch(e){} }, 5000);
                 }catch(e){}
+              } else if(p === 'denied'){
+                setSysNotifyOn(false);
+                cb.checked = false;
+                toast('通知权限已被浏览器拒绝（denied），请点地址栏左边的锁 / ⓘ 图标，把「通知」改成「允许」，然后刷新页面');
               } else {
                 setSysNotifyOn(false);
                 cb.checked = false;
-                toast(p === 'denied' ? '通知权限被拒绝，请去浏览器设置里手动允许' : '未授权，后台通知未开启');
+                toast('未授权，后台通知未开启');
               }
             });
           }
         }catch(err){
           console.error('申请通知权限失败', err);
-          toast('申请通知权限失败');
+          toast('申请通知权限失败：' + err.message);
           cb.checked = false;
           setSysNotifyOn(false);
         }
