@@ -14616,8 +14616,12 @@ function showSystemNotify(title, body){
     }catch(e){}
 
     /* 前台：交给页内顶部浮层去显示，不重复弹系统通知 */
-    const isBg = (document.visibilityState !== 'visible') || document.hidden;
-    if(!isBg) return;
+    /* ★ 只看 document.hidden，不看 visibilityState —— 手机切后台时后者常不更新 */
+    if(!document.hidden){
+      /* 只有 document.hidden === true（真的切后台）才弹系统通知 */
+      /* document.hidden 是 false 时说明前台，return */
+      return;
+    }
 
     const payload = {
       body: String(body || '').slice(0, 60),
