@@ -14776,12 +14776,12 @@ function _showPersistentNotification(title, body){
         if('serviceWorker' in navigator){
           navigator.serviceWorker.ready.then(function(reg){
             if(reg && typeof reg.showNotification === 'function'){
-              reg.showNotification('彼岸', {
+               reg.showNotification('彼岸', {
                 body: '有新消息时会在这里提醒你',
-                tag: 'mj-keepalive-' + Date.now().toString(36),
+                tag: 'mj-keepalive',
                 renotify: false,
                 silent: true,
-                requireInteraction: true
+                requireInteraction: false
               }).catch(function(e){ console.warn('保活通知失败', e); });
             }
           }).catch(function(){});
@@ -14818,6 +14818,16 @@ function showSystemNotify(title, body){
     if('serviceWorker' in navigator){
       navigator.serviceWorker.ready.then(function(reg){
         if(reg && typeof reg.showNotification === 'function'){
+          /* ★ 先关掉"保活"通知，避免它占着通知栏挡住新消息 */
+          if(typeof reg.getNotifications === 'function'){
+            reg.getNotifications().then(function(list){
+              (list || []).forEach(function(n){
+                try{
+                  if(n.tag === 'mj-keepalive') n.close();
+                }catch(err){}
+              });
+            }).catch(function(){});
+          }
           try{
             reg.showNotification(title || '角色', payload).catch(function(e){
               console.warn('showNotification 失败', e);
