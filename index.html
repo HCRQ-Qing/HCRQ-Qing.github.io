@@ -33416,6 +33416,38 @@ function scheduleFestTick(){
 try{ scheduleFestTick(); }catch(e){ console.error('节日调度启动失败', e); }
 </script>
 
+<!-- ========== 临时诊断按钮（用完删掉） ========== -->
+<script>
+(function(){
+  var btn = document.createElement('div');
+  btn.textContent = '诊断';
+  btn.style.cssText = 'position:fixed;right:14px;bottom:90px;z-index:999999;background:#1a1a1a;color:#fff;padding:10px 16px;border-radius:22px;font-size:13px;font-family:monospace;box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;';
+  document.body.appendChild(btn);
+  btn.onclick = function(){
+    var lines = [];
+    lines.push('Notification 存在：' + (typeof Notification));
+    lines.push('权限：' + (typeof Notification !== 'undefined' ? Notification.permission : '不支持'));
+    lines.push('协议：' + location.protocol);
+    lines.push('地址：' + location.href.slice(0, 60));
+    try{ lines.push('后台通知开关：' + getSysNotifyOn()); }catch(e){ lines.push('开关读取失败'); }
+    if(typeof Notification === 'undefined'){
+      lines.push('❌ 浏览器不支持 Notification');
+    } else if(Notification.permission === 'granted'){
+      try{
+        var n = new Notification('测试通知', { body: '看到这条=能弹' });
+        setTimeout(function(){ n.close(); }, 5000);
+        lines.push('✅ 已发测试通知，看通知栏');
+      }catch(e){
+        lines.push('❌ 发通知失败：' + e.message);
+      }
+    } else {
+      lines.push('⚠️ 权限不是 granted，当前：' + Notification.permission);
+    }
+    alert(lines.join('\n'));
+  };
+})();
+</script>
+
 <script>
 
 
