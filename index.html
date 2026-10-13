@@ -14458,18 +14458,54 @@ function showSystemNotify(title, body){
     if(!('Notification' in window)) return;
     if(Notification.permission !== 'granted') return;
     if(!getSysNotifyOn()) return;
-    /* 页面在前台且可见时，不弹系统通知（顶部条已经够了） */
-    if(document.visibilityState === 'visible') return;
-    const n = new Notification(title || '角色', {
+
+    /* ===== 关键改动：前台也弹，不再 return =====
+       原来这里是：
+         if(document.visibilityState === 'visible') return;
+       现在改成：前台用页内浮层（msgNotify），后台才用系统通知。
+       这样切到后台/锁屏也能弹浏览器通知。 */
+
+    const isBg = (document.visibilityState !== 'visible') || document.hidden;
+
+    if(!isBg){
+      /* 前台：交给页内顶部浮层去显示（showMsgNotify 已经做了），这里不重复弹 */
+      return;
+    }
+
+    /* 后台：走系统通知 */
+    const opts = {
       body: String(body || '').slice(0, 60),
       tag: 'mj-msg',
       renotify: true,
-      silent: false
-    });
+      silent: false,
+      requireInteraction: true
+    };
+    let n;
+    try{
+      n = new Notification(title || '角色', opts);
+    }catch(err){
+      /* 部分安卓浏览器不支持 options 里的 requireInteraction，降级重试 */
+      n = new Notification(title || '角色', { body: opts.body, tag: opts.tag });
+    }
+
+    /* 给通知挂个 id，点开时能精确定位到对应角色 */
     n.onclick = function(){
       try { window.focus(); } catch(e){}
+      try{
+        /* 如果能拿到 targetRoleId，就切到那个角色 */
+        if(window.__lastNotifyRoleId){
+          if(typeof switchToRole === 'function' && getCurrentRoleId() !== window.__lastNotifyRoleId){
+            switchToRole(window.__lastNotifyRoleId);
+          }
+          if(typeof goToPage === 'function') goToPage('chat');
+        }
+      }catch(e){}
       n.close();
     };
+
+    /* 自动关掉，避免一直挂着 */
+    setTimeout(function(){ try{ n.close(); }catch(e){} }, 8000);
+
   }catch(e){
     console.error('系统通知失败', e);
   }
