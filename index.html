@@ -14411,8 +14411,10 @@ function showMsgNotify(roleName, text, roleAvatar, targetRoleId){
   try{ playSoundOnce('inMsg'); }catch(e){}
   /* 聊天界面通知总开关：关了就直接不弹 */
   if(!getNotifyChat()) return;
-  /* 正在看这个角色的聊天页 → 不弹（消息已经在列表里，弹窗多余） */
-  if(targetRoleId && typeof isViewingRole === 'function' && isViewingRole(targetRoleId)) return;
+  /* 只在「页面在前台 + 正在看这个角色的聊天页」时才不弹 */
+  /* ★ 关键：切后台时即使页面栈还停在聊天页，也要允许弹系统通知 */
+  const __inForeground = (document.visibilityState === 'visible') && !document.hidden;
+  if(__inForeground && targetRoleId && typeof isViewingRole === 'function' && isViewingRole(targetRoleId)) return;
   const el = document.getElementById('msgNotify');
   if(!el) return;
 
