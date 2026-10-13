@@ -14502,6 +14502,48 @@ function getSysNotifyOn(){
   /* ★ 默认开启：用户没主动关过，就是开的 */
   return lsGet(SYS_NOTIFY_KEY, true);
 }
+
+/* ============================================================
+   ★ 自动请求通知权限
+   - 本地开关默认是"开"的，用户不会主动点开关去触发权限申请
+   - 所以页面首次加载时，只要浏览器支持 Notification 且权限还是 default
+     就自动请求一次权限
+   - 只在首次加载时请求一次，靠 window.__notifyPermRequested 锁住
+   ============================================================ */
+(function autoRequestNotifyPermission(){
+  if(window.__notifyPermRequested) return;
+  window.__notifyPermRequested = true;
+
+  try{
+    if(typeof Notification === 'undefined') return;
+    if(Notification.permission !== 'default') return;
+    if(!getSysNotifyOn()) return;         /* 本地开关是关的就不请求 */
+
+    /* 延迟 3 秒再请求，避免一进页面就弹权限框 */
+    setTimeout(function(){
+      try{
+        var p = Notification.requestPermission();
+        if(p && typeof p.then === 'function'){
+          p.then(function(res){
+            if(res === 'granted'){
+              /* 授权成功：发一条欢迎通知，让用户确认能看到 */
+              try{
+                var n = new Notification('后台通知已开启', {
+                  body: '切到别的应用时，Ta 发消息会在这里提醒你',
+                  tag: 'mj-welcome'
+                });
+                setTimeout(function(){ try{ n.close(); }catch(e){} }, 6000);
+              }catch(e){}
+            }
+            /* 同步设置页开关的 checked 状态 */
+            var cb = document.getElementById('notifySys');
+            if(cb){ cb.checked = (Notification.permission === 'granted') && getSysNotifyOn(); }
+          }).catch(function(){});
+        }
+      }catch(e){ console.error('自动请求通知权限失败', e); }
+    }, 3000);
+  }catch(e){ console.error('autoRequestNotifyPermission 出错', e); }
+})();
 function setSysNotifyOn(v){
   lsSet(SYS_NOTIFY_KEY, !!v);
 }
