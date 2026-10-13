@@ -14557,53 +14557,108 @@ function requestSysNotifyPermission(){
     return Promise.resolve('error');
   }
 }
+/* ============================================================
+   ★ Service Worker 注册
+   - 手机 Chromium 禁止 new Notification()，必须走 SW 的 showNotification
+   - 页面加载时注册一次，之后 showSystemNotify 直接用它
+   ============================================================ */
+var __swRegistration = null;
+var __swReady = null;
+function ensureServiceWorker(){
+  if(__swReady) return __swReady;
+  if(!('serviceWorker' in navigator)){
+    __swReady = Promise.resolve(null);
+    return __swReady;
+  }
+  __swReady = navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    .then(function(reg){
+      __swRegistration = reg;
+      return navigator.serviceWorker.ready;
+    })
+    .then(function(reg){
+      __swRegistration = reg;
+      return reg;
+    })
+    .catch(function(err){
+      console.warn('Service Worker 注册失败', err);
+      return null;
+    });
+  return __swReady;
+}
+try{ ensureServiceWorker(); }catch(e){ console.error(e); }
+
+/* ★ SW 接管页面后打印一次，方便排查 */
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener('controllerchange', function(){
+    console.log('SW 已接管页面');
+  });
+}
+
 function showSystemNotify(title, body){
   try{
     if(!('Notification' in window)) return;
     if(Notification.permission !== 'granted') return;
     if(!getSysNotifyOn()) return;
 
-    /* ===== 关键改动：前台也弹，不再 return =====
-       原来这里是：
-         if(document.visibilityState === 'visible') return;
-       现在改成：前台用页内浮层（msgNotify），后台才用系统通知。
-       这样切到后台/锁屏也能弹浏览器通知。 */
-
-    const isBg = (document.visibilityState !== 'visible') || document.hidden;
-
-    if(!isBg){
-      /* 前台：交给页内顶部浮层去显示（showMsgNotify 已经做了），这里不重复弹 */
-      return;
-    }
-
-    /* 后台：走系统通知 */
-    /* ★ 记录这条通知对应哪个角色，点通知时用来跳转 */
+    /* 记录这条通知对应哪个角色，点通知时用来跳转 */
     try{
       if(typeof getCurrentRoleId === 'function'){ window.__lastNotifyRoleId = getCurrentRoleId(); }
     }catch(e){}
 
-    const opts = {
+    /* 前台：交给页内顶部浮层去显示，不重复弹系统通知 */
+    const isBg = (document.visibilityState !== 'visible') || document.hidden;
+    if(!isBg) return;
+
+    const payload = {
       body: String(body || '').slice(0, 60),
       tag: 'mj-msg',
       renotify: true,
       silent: false,
-      requireInteraction: true
+      requireInteraction: true,
+      data: { roleId: window.__lastNotifyRoleId || '' }
     };
-    let n;
-    try{
-      n = new Notification(title || '角色', opts);
-    }catch(err){
-      /* 部分安卓浏览器不支持 options 里的 requireInteraction，降级重试 */
-      n = new Notification(title || '角色', { body: opts.body, tag: opts.tag });
+
+    /* 优先走 Service Worker */
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.ready.then(function(reg){
+        if(reg && typeof reg.showNotification === 'function'){
+          try{
+            reg.showNotification(title || '角色', payload).catch(function(e){
+              console.warn('showNotification 失败，降级', e);
+              _fallbackNewNotification(title, payload);
+            });
+          }catch(e){
+            _fallbackNewNotification(title, payload);
+          }
+        } else {
+          _fallbackNewNotification(title, payload);
+        }
+      }).catch(function(){
+        _fallbackNewNotification(title, payload);
+      });
+      return;
     }
 
-    /* 给通知挂个 id，点开时能精确定位到对应角色 */
+    /* 完全不支持 SW：降级 new Notification */
+    _fallbackNewNotification(title, payload);
+
+  }catch(e){
+    console.error('系统通知失败', e);
+  }
+}
+
+/* 降级方案：桌面 Chrome / 支持 new Notification 的环境 */
+function _fallbackNewNotification(title, opts){
+  try{
+    var n = new Notification(title || '角色', {
+      body: opts.body,
+      tag: opts.tag
+    });
     n.onclick = function(){
       try { window.focus(); } catch(e){}
       try{
-        /* 如果能拿到 targetRoleId，就切到那个角色 */
-        if(window.__lastNotifyRoleId){
-          if(typeof switchToRole === 'function' && getCurrentRoleId() !== window.__lastNotifyRoleId){
+        if(window.__lastNotifyRoleId && typeof switchToRole === 'function'){
+          if(getCurrentRoleId() !== window.__lastNotifyRoleId){
             switchToRole(window.__lastNotifyRoleId);
           }
           if(typeof goToPage === 'function') goToPage('chat');
@@ -14611,12 +14666,9 @@ function showSystemNotify(title, body){
       }catch(e){}
       n.close();
     };
-
-    /* 自动关掉，避免一直挂着 */
     setTimeout(function(){ try{ n.close(); }catch(e){} }, 8000);
-
   }catch(e){
-    console.error('系统通知失败', e);
+    console.warn('降级 new Notification 也失败', e);
   }
 }
 
