@@ -14743,55 +14743,35 @@ function showSystemNotify(title, body){
     const isBg = (document.visibilityState !== 'visible') || document.hidden;
     if(!isBg) return;
 
-    /* 雨见路线：切后台时，第一次弹常驻通知；之后复用同一条 */
-    _showPersistentNotification(title, body);
+    /* 每条通知独立 tag，避免互相覆盖 */
+    var __notifyTag = 'mj-msg-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6);
+    var payload = {
+      body: String(body || '').slice(0, 60),
+      tag: __notifyTag,
+      renotify: true,
+      silent: false,
+      requireInteraction: true,
+      data: { roleId: window.__lastNotifyRoleId || '' }
+    };
+
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.ready.then(function(reg){
+        if(reg && typeof reg.showNotification === 'function'){
+          try{
+            reg.showNotification(title || '角色', payload).catch(function(e){
+              console.warn('showNotification 失败', e);
+            });
+          }catch(e){ console.warn('showNotification 抛错', e); }
+        }
+      }).catch(function(e){ console.warn('SW ready 失败', e); });
+    }
 
   }catch(e){
     console.error('系统通知失败', e);
   }
 }
 
-/* ============================================================
-   ★ 页面切后台时，立即弹一条保活通知
-   - 让雨见别把整个页面的通知能力掐掉
-   - 这条通知会一直挂着，后续消息复用同一条 tag
-   ============================================================ */
-(function bindVisibilityPersistent(){
-  if(window.__mjVisibilityBound) return;
-  window.__mjVisibilityBound = true;
 
-  document.addEventListener('visibilitychange', function(){
-    if(document.hidden){
-      /* 切后台了：如果开关开着且权限 granted，立即弹一条保活通知 */
-      try{
-        if(typeof Notification === 'undefined') return;
-        if(Notification.permission !== 'granted') return;
-        if(!getSysNotifyOn()) return;
-
-        _showPersistentNotification('彼岸', '切回来看一眼吧');
-
-        /* 同时启动一个"心跳"，每分钟更新一次这条通知，
-           让雨见知道这个页面还活着 */
-        if(window.__mjKeepAliveTimer) clearInterval(window.__mjKeepAliveTimer);
-        window.__mjKeepAliveTimer = setInterval(function(){
-          try{
-            if(!document.hidden) return;
-            if(!getSysNotifyOn()) return;
-            if(Notification.permission !== 'granted') return;
-            /* 复用同一条通知，保持它不掉 */
-            _showPersistentNotification('彼岸', '切回来看一眼吧');
-          }catch(e){}
-        }, 60 * 1000);
-      }catch(e){}
-    } else {
-      /* 切回前台：清掉心跳定时器 */
-      if(window.__mjKeepAliveTimer){
-        clearInterval(window.__mjKeepAliveTimer);
-        window.__mjKeepAliveTimer = null;
-      }
-    }
-  });
-})();
 
 /* 降级方案：桌面 Chrome / 支持 new Notification 的环境 */
 function _fallbackNewNotification(title, opts){
