@@ -6957,35 +6957,51 @@ body[data-bubble="custom"] .preview-bubble{
   backdrop-filter: var(--mask-blur) !important;
   -webkit-backdrop-filter: var(--mask-blur) !important;
 }
-.ctrl-row{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
-.ctrl-label{font-size:12.5px;color:var(--th-text-soft)}
-.apply-btn{margin-left:auto;padding:7px 14px;border-radius:10px;font-size:12px;color:var(--th-accent);background:var(--th-accent-soft);border:1.5px solid var(--th-accent-line);font-family:inherit;cursor:pointer}
-.moment-rs-tabs{
-  display:flex;gap:6px;overflow-x:auto;
-  padding:10px 20px 0;
-  border-bottom:2px solid #1F1C1D;
-  flex:none;scrollbar-width:none;
-}
-.moment-rs-tabs::-webkit-scrollbar{display:none}
-.moment-rs-tab{
-  flex:none;padding:9px 16px;font-size:13px;
-  color:#8A6E60;cursor:pointer;background:transparent;border:none;
-  font-family:"Kaiti SC","KaiTi",serif;font-weight:700;letter-spacing:1px;
-  border-bottom:3px solid transparent;margin-bottom:-2px;
-  transition:all .18s ease;
-}
-.moment-rs-tab.on{
-  color:#DD1440;
-  font-weight:900;
-  border-bottom-color:#DD1440;
-}
-.rs-card{
-  border-radius:16px;
-  background:#FFFDF5;
-  border:2px solid #1F1C1D;
-  padding:16px 16px 12px;
+.chips-row{
+  padding:0 0 14px;
+  border-bottom:0.6px dashed #ececec;
   margin-bottom:14px;
-  box-shadow:0 3px 0 rgba(31,28,29,.85);
+  flex:none;
+}
+.chips{
+  display:flex;gap:8px;
+  overflow-x:auto;
+  padding-bottom:4px;
+  scrollbar-width:none;
+}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex:none;
+  padding:7px 16px;
+  border-radius:14px;
+  font-size:12.5px;
+  font-weight:300;
+  font-family:inherit;
+  letter-spacing:1.5px;
+  color:#999;
+  background:transparent;
+  border:0.7px solid rgba(0,0,0,.14);
+  cursor:pointer;
+  white-space:nowrap;
+  transition:all .18s ease;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+.chip.on{
+  color:#fff;
+  font-weight:400;
+  background:#1a1a1a;
+  border-color:#1a1a1a;
+}
+.chip.pub{
+  color:#999;
+  background:transparent;
+  border-color:rgba(0,0,0,.14);
+}
+.chip.pub.on{
+  background:#1a1a1a;
+  color:#fff;
+  border-color:#1a1a1a;
 }
 .rs-card .rs-title{font-size:14.5px;font-weight:700;color:var(--th-text)}
 .rs-card .rs-sub{font-size:11.5px;color:var(--th-text-soft);margin-top:4px;line-height:1.55;margin-bottom:12px}
@@ -7003,21 +7019,91 @@ body[data-bubble="custom"] .preview-bubble{
 .rs-card .rs-num{font-size:11.5px;color:var(--th-accent);flex:none;width:60px;text-align:right}
 .rs-card .rs-slider-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:3px;border-radius:2px;background:var(--th-accent-soft-2);outline:none}
 .rs-card .rs-slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--th-accent);cursor:pointer}
-.mm-layout-preview{display:flex;gap:10px;padding:8px 0}
-.mm-layout-opt{flex:1;aspect-ratio:1.1/1;border-radius:14px;border:1.5px solid var(--th-accent-line);background:var(--th-accent-soft);cursor:pointer;position:relative;overflow:hidden;padding:8px;display:flex;flex-direction:column}
-.mm-layout-opt.on{border-color:var(--th-accent);border-width:2px}
-.mm-layout-opt .lo-name{font-size:11.5px;color:var(--th-text-soft);text-align:center;margin-top:auto}
-.mm-layout-opt.on .lo-name{color:var(--th-accent);font-weight:700}
-.mm-layout-opt .lo-demo{flex:1;display:flex;flex-direction:column;gap:3px;justify-content:center;padding:4px 0}
+.mm-layout-preview{display:flex;gap:12px;padding:0;margin-top:14px}
+.mm-layout-opt{
+  flex:1;
+  padding:12px 10px 10px;
+  border-radius:12px;
+  border:0.7px solid transparent;
+  background:#fafafa;
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  transition:all .2s ease;
+}
+.mm-layout-opt.on{
+  background:#fff;
+  border-color:rgba(0,0,0,.22);
+  box-shadow:0 2px 10px rgba(0,0,0,.05);
+}
+.mm-layout-opt .lo-name{
+  font-size:11.5px;
+  color:#999;
+  text-align:center;
+  margin-top:10px;
+  letter-spacing:.8px;
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+}
+.mm-layout-opt.on .lo-name{
+  color:#1a1a1a;
+  font-weight:400;
+}
+.mm-layout-opt .lo-demo{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  justify-content:center;
+  padding:4px 0;
+  height:44px;
+}
 .mm-layout-opt .lo-demo .row{display:flex;gap:3px;align-items:center}
 .mm-layout-opt .lo-demo .row.r{flex-direction:row-reverse}
-.mm-layout-opt .lo-demo .bub{height:8px;border-radius:4px;background:var(--th-accent);opacity:.55;width:60%}
-.mm-shape-row{display:flex;gap:10px;padding:8px 0}
-.mm-shape-btn{flex:1;padding:14px 0;border-radius:12px;font-size:11.5px;color:var(--th-text-soft);background:var(--th-accent-soft);border:1.5px solid var(--th-accent-line);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px}
-.mm-shape-btn.on{background:var(--th-accent);color:#fff;border-color:var(--th-accent)}
-.mm-shape-btn .pv{width:34px;height:34px;background:var(--th-accent);border:1.5px solid var(--th-accent-line)}
-.mm-shape-btn.on .pv{border-color:rgba(255,255,255,.6)}
-.mm-shape-btn .pv.sq{border-radius:12%}
+.mm-layout-opt .lo-demo .bub{
+  height:6px;
+  border-radius:3px;
+  background:#d8d8d8;
+  width:80%;
+}
+.mm-shape-row{display:flex;gap:12px;padding:0;margin-top:14px}
+.mm-shape-btn{
+  flex:1;
+  padding:16px 0 12px;
+  border-radius:12px;
+  font-size:11.5px;
+  color:#999;
+  background:#fafafa;
+  border:0.7px solid transparent;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+  transition:all .2s ease;
+  letter-spacing:1px;
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+}
+.mm-shape-btn.on{
+  background:#fff;
+  color:#1a1a1a;
+  border-color:rgba(0,0,0,.22);
+  box-shadow:0 2px 10px rgba(0,0,0,.05);
+  font-weight:400;
+}
+.mm-shape-btn .pv{
+  width:34px;
+  height:34px;
+  background:#1a1a1a;
+  opacity:.85;
+}
+.mm-shape-btn.on .pv{
+  opacity:1;
+}
+.mm-shape-btn .pv.sq{border-radius:6px}
 .mm-shape-btn .pv.ci{border-radius:50%}
 .apply-role-row{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;margin-bottom:6px;background:var(--th-accent-soft);border:1px solid var(--th-accent-line);cursor:pointer}
 .apply-role-row.on{background:var(--th-accent-soft-2);border-color:var(--th-accent)}
@@ -9491,14 +9577,14 @@ window.__APP_CHANGELOG__ = [
         <div class="drawer" id="drawerFunc">
           <div class="drawer-body">
             <div class="func-grid">
-              <div class="func-item" data-func="quiz"><div class="fi-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7"/><circle cx="12" cy="17" r="0.8" fill="currentColor" stroke="none"/></svg></div><span class="fi-label">问卷</span></div>
-              <div class="func-item" data-func="divine"><div class="fi-box"><svg viewBox="0 0 24 24"><path d="M2.5 12 C5 7.5 8.5 5.5 12 5.5 C15.5 5.5 19 7.5 21.5 12 C19 16.5 15.5 18.5 12 18.5 C8.5 18.5 5 16.5 2.5 12 Z"/><circle cx="12" cy="12" r="3.2"/></svg></div><span class="fi-label">占卜</span></div>
-              <div class="func-item" data-func="reply"><div class="fi-box"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.3 9 9 0 0 1-3.6-.7L4 20.5l1.4-4.1a8.1 8.1 0 0 1-1.3-4.4A8.4 8.4 0 0 1 12.5 3.2 8.4 8.4 0 0 1 21 11.5z"/></svg></div><span class="fi-label">回复设置</span></div>
-              <div class="func-item" data-func="beauty"><div class="fi-box"><svg viewBox="0 0 24 24"><path d="M12 3l2 5 5 .5-4 3.5 1.3 5L12 14.5 7.7 17l1.3-5-4-3.5L10 8z"/></svg></div><span class="fi-label">美化</span></div>
               <div class="func-item" data-func="choice"><div class="fi-box"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 8l7-5 7 5"/><path d="M5 16l7 5 7-5"/></svg></div><span class="fi-label">选择</span></div>
+              <div class="func-item" data-func="divine"><div class="fi-box"><svg viewBox="0 0 24 24"><path d="M2.5 12 C5 7.5 8.5 5.5 12 5.5 C15.5 5.5 19 7.5 21.5 12 C19 16.5 15.5 18.5 12 18.5 C8.5 18.5 5 16.5 2.5 12 Z"/><circle cx="12" cy="12" r="3.2"/></svg></div><span class="fi-label">占卜</span></div>
+              <div class="func-item" data-func="quiz"><div class="fi-box"><svg viewBox="0 0 24 24"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7"/><circle cx="12" cy="17" r="0.8" fill="currentColor" stroke="none"/></svg></div><span class="fi-label">问卷</span></div>
               <div class="func-item" data-func="card"><div class="fi-box"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 9h18"/></svg></div><span class="fi-label">名片</span></div>
               <div class="func-item" data-func="voicecall"><div class="fi-box"><svg viewBox="0 0 24 24"><path d="M21 16.5v2.4a1.6 1.6 0 0 1-1.7 1.6 15.5 15.5 0 0 1-6.7-2.4 15 15 0 0 1-4.6-4.6A15.5 15.5 0 0 1 5.5 6.7 1.6 1.6 0 0 1 7.1 5h2.4a1.6 1.6 0 0 1 1.6 1.4c.1.9.3 1.7.6 2.5a1.6 1.6 0 0 1-.4 1.7l-1 1a12 12 0 0 0 4.6 4.6l1-1a1.6 1.6 0 0 1 1.7-.4c.8.3 1.6.5 2.5.6A1.6 1.6 0 0 1 21 16.5z"/></svg></div><span class="fi-label">语音通话</span></div>
               <div class="func-item" data-func="videocall"><div class="fi-box"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></svg></div><span class="fi-label">视频通话</span></div>
+              <div class="func-item" data-func="reply"><div class="fi-box"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.3 9 9 0 0 1-3.6-.7L4 20.5l1.4-4.1a8.1 8.1 0 0 1-1.3-4.4A8.4 8.4 0 0 1 12.5 3.2 8.4 8.4 0 0 1 21 11.5z"/></svg></div><span class="fi-label">回复设置</span></div>
+              <div class="func-item" data-func="beauty"><div class="fi-box"><svg viewBox="0 0 24 24"><path d="M12 3l2 5 5 .5-4 3.5 1.3 5L12 14.5 7.7 17l1.3-5-4-3.5L10 8z"/></svg></div><span class="fi-label">美化</span></div>
             </div>
           </div>
         </div>
@@ -9948,7 +10034,7 @@ window.__APP_CHANGELOG__ = [
       <span class="id">小红书号：9416318007</span><br><br>
       吐槽、收藏功能借鉴 <b>@言序</b><br>
       <span class="id">小红书号：1842523578</span><br><br>
-      公用字卡和专享字卡、朋友圈、语音、拼好卡功能借鉴 <b>@默玉</b><br>
+      公用字卡和专享字卡、语音、拼好卡功能借鉴 <b>@默玉</b><br>
       <span class="id">小红书号：8012400317</span>
     </div>
 
@@ -10034,7 +10120,7 @@ window.__APP_CHANGELOG__ = [
   <!-- 群聊功能抽屉（和聊天页对齐，去掉回复设置） -->
   <div class="gch-func" id="gchFunc">
     <div class="gch-func-grid">
-      <div class="gch-func-item" data-gfunc="quiz"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7"></path><circle cx="12" cy="17" r="0.8" fill="currentColor" stroke="none"></circle></svg></div><span class="gch-fi-label">问卷</span></div>
+      <div class="gch-func-item" data-gfunc="quiz"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7"></path><circle cx="12" cy="17" r="0.8" fill="currentColor" stroke="none"></circle></svg></div><span class="gch-fi-label">问卷</span></div>
       <div class="gch-func-item" data-gfunc="divine"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><path d="M2.5 12 C5 7.5 8.5 5.5 12 5.5 C15.5 5.5 19 7.5 21.5 12 C19 16.5 15.5 18.5 12 18.5 C8.5 18.5 5 16.5 2.5 12 Z"></path><circle cx="12" cy="12" r="3.2"></circle></svg></div><span class="gch-fi-label">占卜</span></div>
       <div class="gch-func-item" data-gfunc="beauty"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><path d="M12 3l2 5 5 .5-4 3.5 1.3 5L12 14.5 7.7 17l1.3-5-4-3.5L10 8z"></path></svg></div><span class="gch-fi-label">美化</span></div>
       <div class="gch-func-item" data-gfunc="choice"><div class="gch-fi-box"><svg viewBox="0 0 24 24"><path d="M12 3v18"></path><path d="M5 8l7-5 7 5"></path><path d="M5 16l7 5 7-5"></path></svg></div><span class="gch-fi-label">选择</span></div>
@@ -10191,6 +10277,8 @@ window.__APP_CHANGELOG__ = [
   <div class="it" data-act="add"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>添加字卡</div>
   <div class="it" data-act="sort"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h12"/><path d="M3 18h6"/></svg>排序</div>
   <div class="it" data-act="trim"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg>去末尾标点</div>
+  <div class="it" data-act="move-only-same"><svg viewBox="0 0 24 24"><path d="M4 12l4-4M4 12l4 4M4 12h12"/><path d="M18 4v16"/></svg><span id="cdMoveOnlyLabel">只移动到该分组 · 开</span></div>
+  <div class="it" data-act="sign-switch"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>个签切换设置</div>
   <div class="it" data-act="import"><svg viewBox="0 0 24 24"><path d="M12 20V8"/><path d="M7 13l5-5 5 5"/><path d="M5 4h14"/></svg>导入</div>
   <div class="it" data-act="export"><svg viewBox="0 0 24 24"><path d="M12 4v12"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg>导出</div>
   <div class="it" data-act="trash"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/><path d="M10 11l4 4"/><path d="M14 11l-4 4"/></svg>回收站</div>
@@ -10406,6 +10494,15 @@ window.__APP_CHANGELOG__ = [
   <div class="sheet">
     <div class="sheet-head"><h3>时间字卡开关</h3><button class="x" data-close>✕</button></div>
     <div class="sheet-body" id="timedRateBody"></div>
+  </div>
+</div>
+
+<!-- ★ 个签切换设置 -->
+<div class="modal" id="mSignSwitch">
+  <div class="overlay" data-close></div>
+  <div class="sheet">
+    <div class="sheet-head"><h3>个签切换</h3><button class="x" data-close>✕</button></div>
+    <div class="sheet-body" id="signSwitchBody"></div>
   </div>
 </div>
 
@@ -10663,16 +10760,7 @@ window.__APP_CHANGELOG__ = [
 	<span class="lb">签名</span>
 	<input type="text" id="inSign" placeholder="这个人很懒，什么都没有留下。">
   </div>
-  <div class="line-row">
-	<span class="lb">个签切换</span>
-	<div style="flex:1;min-width:0;display:flex;align-items:center;gap:10px">
-	  <div style="flex:1;min-width:0">
-	    <div style="font-size:13px;color:#1a1a1a;letter-spacing:1px;font-weight:300">随机切换角色个签</div>
-	    <div style="font-size:10.5px;color:#bbb;margin-top:3px;letter-spacing:.3px;font-weight:300">1~21 天随机换一次</div>
-	  </div>
-	  <label class="switch"><input type="checkbox" id="roleSignAutoSwitch"><span class="slider"></span></label>
-	</div>
-  </div>
+
   <button class="primary-btn" id="btnSaveEdit">保存</button>
 </div></div></div>
 
@@ -10979,26 +11067,20 @@ window.__APP_CHANGELOG__ = [
 	  <button class="btn-ghost" id="profileVideo">视频</button>
 	</div>
 	<div class="profile-menu">
-	  <div class="row" id="profileStarRow">
-		<span class="num">01</span>
-		<span class="name">特别关心</span>
-		<span class="en">STAR</span>
-		<label class="switch"><input type="checkbox" id="profileStar"><span class="slider"></span></label>
-	  </div>
 	  <div class="row" id="profilePinRow">
-		<span class="num">02</span>
+		<span class="num">01</span>
 		<span class="name">聊天置顶</span>
 		<span class="en">PIN</span>
 		<label class="switch"><input type="checkbox" id="profilePin"><span class="slider"></span></label>
 	  </div>
 	  <div class="row" id="profileMoments">
-		<span class="num">03</span>
+		<span class="num">02</span>
 		<span class="name">动态</span>
 		<span class="en">MOMENTS</span>
 		<span class="arr">→</span>
 	  </div>
 	  <div class="row" id="profileEdit">
-		<span class="num">04</span>
+		<span class="num">03</span>
 		<span class="name">编辑好友</span>
 		<span class="en">EDIT</span>
 		<span class="arr">→</span>
@@ -11657,7 +11739,6 @@ const DEFAULT_CARD_GROUPS = [
 	  {mood:'焦虑',kaomoji:'(>_<)',anim:'1'},
 	  {mood:'羡慕',kaomoji:'(´∀｀)',anim:'1'},
 	  {mood:'怀旧',kaomoji:'(´-ω-`)',anim:'1'},
-	  {mood:'尴尬',kaomoji:'(ಠ .̫.̫ ಠ)',anim:'1'},
 	  {mood:'吃醋',kaomoji:'(｀へ´)',anim:'1'},
 	  {mood:'温柔',kaomoji:'(◕‿◕✿)',anim:'1'},
 	  {mood:'期待',kaomoji:'(✧ω✧)',anim:'1'},
@@ -11679,14 +11760,15 @@ const DEFAULT_CARD_GROUPS = [
   { id:'g-status', name:'状态字卡', icon:'note', sub:'角色当前状态', cats:[ { id:'cs1', name:'状态', list:[
     '🎧 听歌中','💭 发呆中','📖 看书','💼 忙碌','🚫 勿扰','🟢 在线','🫥 离线',
     '💗 爱你','💕 恋爱中','😩 一言难尽','🥲 emo',
-    '📶 信号强','📵 信号弱','💤 睡觉','😪 疲惫',   '🥱 困倦',
+    '📶 信号强','📵 信号弱','💤 睡觉','😪 疲惫','🥱 困倦',
     '😑 无聊','🌙 熬夜',
     '📱 刷手机','🍜 吃饭中','🚿 洗澡中','🛌 赖床','☕ 喝咖啡','🍵 喝茶中',
-    '🎮 打游戏','📺 追剧中','🎬 看电影','🎵 唱歌中','🎨 画画中','✍️ 写东西',
-    '📚 学习','💻 加班','🧘 放松中','😌 放空中','🌧️ 走神','☁️ 走神了',
-    '🐱 撸猫','🐶 遛狗','🛒 逛街','🏃 跑步','🚴 骑车','🌳 散步',
-    '💭 想你','🤍 想你中','🩹 受伤了','🥶 冷到了','🥵 热到了','😴 想睡了',
-    '😋 吃饱了','💧 喝水','🍰 吃甜点','🌸 赏花','☀️ 晒太阳','🌙 看月亮'
+    '🎮 打游戏','📺 追剧中',
+    '🍃 放松',
+    '🛒 逛街','🏃 跑步','🚴 骑车','🌳 散步',
+    '🤍 想你中','🩹 受伤了',
+    '😋 吃饱了',
+    '🌸 赏花'
   ] } ] },
   { id:'g-moment', name:'动态字卡', icon:'star', sub:'专门发动动用', cats:[ { id:'cmo1', name:'日常', list:['今天天气很好。','分享一首歌。','刚看完一本书。'] } ] },
   { id:'g-namecard', name:'名片字卡', icon:'note', sub:'收到名片时角色的回应', cats:[
@@ -11897,6 +11979,105 @@ cardStore.public = cardStore.public.filter(g=>g && g.id !== 'g-open');
 
     lsSet(FLAG, true);
   }catch(e){ console.error('syncNewStatusDefaults 出错', e); }
+})();
+
+/* ★ 一次性清理：把 16 条不要的状态从已存数据里删掉 */
+(function removeUnwantedStatuses(){
+  try{
+    var FLAG = 'mj_status_removed_v1';
+    if(lsGet(FLAG, false)) return;
+
+    /* 要删的 16 条（按文本精确匹配） */
+    var REMOVE = [
+      '☕ 喝咖啡',
+      '🍵 喝茶中',
+      '🎵 唱歌中',
+      '🎨 画画中',
+      '✍️ 写东西',
+      '📚 学习',
+      '💻 加班',
+      '☁️ 走神了',
+      '🐱 撸猫',
+      '💭 想你',
+      '🥶 冷到了',
+      '🥵 热到了',
+      '😴 想睡了',
+      '😋 吃饱了',
+      '💧 喝水',
+      '🌸 赏花'
+    ];
+    var removeSet = {};
+    REMOVE.forEach(function(s){ removeSet[s] = 1; });
+
+    /* 遍历所有分组（公用 + 角色专属）的 g-status → cs1，删掉命中的 */
+    function cleanGroups(groups){
+      if(!Array.isArray(groups)) return;
+      groups.forEach(function(g){
+        if(!g || g.id !== 'g-status') return;
+        (g.cats || []).forEach(function(c){
+          if(!c || c.id !== 'cs1' || !Array.isArray(c.list)) return;
+          var before = c.list.length;
+          c.list = c.list.filter(function(item){
+            var name = '';
+            if(typeof item === 'string') name = item;
+            else if(item && typeof item === 'object') name = item.text || '';
+            return !removeSet[name];
+          });
+          if(c.list.length !== before){
+            console.log('[状态字卡] 清理 ' + (before - c.list.length) + ' 条');
+          }
+        });
+      });
+    }
+
+    cleanGroups(cardStore.public);
+    Object.keys(cardStore.roles || {}).forEach(function(rid){
+      cleanGroups(cardStore.roles[rid]);
+    });
+
+    saveCardStore();
+    lsSet(FLAG, true);
+  }catch(e){ console.error('removeUnwantedStatuses 出错', e); }
+})();
+
+/* ★ 一次性清理：把「尴尬」从已存的心情字卡里删掉 */
+(function removeUnwantedMoods(){
+  try{
+    var FLAG = 'mj_mood_removed_v1';
+    if(lsGet(FLAG, false)) return;
+
+    /* 要删的心情名（按 mood 字段精确匹配） */
+    var REMOVE = { '尴尬': 1 };
+
+    /* 遍历所有分组（公用 + 角色专属）的 g-mood → 第一个分类，删掉命中的 */
+    function cleanGroups(groups){
+      if(!Array.isArray(groups)) return;
+      groups.forEach(function(g){
+        if(!g || g.id !== 'g-mood') return;
+        (g.cats || []).forEach(function(c){
+          if(!Array.isArray(c.list)) return;
+          var before = c.list.length;
+          c.list = c.list.filter(function(item){
+            var name = '';
+            if(typeof item === 'string') name = item;
+            else if(item && typeof item === 'object') name = item.mood || '';
+            return !REMOVE[name];
+          });
+          if(c.list.length !== before){
+            console.log('[心情字卡] 清理 ' + (before - c.list.length) + ' 条');
+          }
+        });
+      });
+    }
+
+    cleanGroups(cardStore.public);
+    Object.keys(cardStore.roles || {}).forEach(function(rid){
+      cleanGroups(cardStore.roles[rid]);
+    });
+
+    saveCardStore();
+    lsSet(FLAG, true);
+  }catch(e){ console.error('removeUnwantedMoods 出错', e); }
 })();
 function ensureCardTimes(){
   function walkGroups(groups){
@@ -13875,9 +14056,18 @@ function getMsgMeta(m, isUser){
    否则只做轻量更新（滚动、更新已读状态文字、更新跳到底部按钮）。
 */
 let __lastRenderSig = '';
-function renderChat(forceBottom){
+function renderChat(forceBottom, force){
   const box = $('#chatList');
   if(!box){ renderChatFull(forceBottom); return; }
+
+  /* ★ force=true → 跳过签名缓存，直接全量重建
+     适用场景：改了消息内容但不改条数 / 不改最后一条 id 时，
+     比如追加占卜理解、编辑消息、贴回应、试卷卡结算等 */
+  if(force){
+    __lastRenderSig = '';
+    renderChatFull(forceBottom);
+    return;
+  }
 
   /* 构造当前消息签名：条数 + 最后一条 id + 试卷卡状态
      加试卷卡状态是为了让「待填写 → 已提交」这种字段变化也能触发重绘 */
@@ -15406,6 +15596,19 @@ function sendMessage(){
 	msgs.push(m);
 	inp.value = ''; inp.style.height = 'auto';
 	m.readState = 'unread';
+	/* ★ 修复：发新消息时，把「已读不回」标记全部清掉。
+	   原因：noReply 是终态，一旦触发，_applyReadStateUpTo 会跳过它，
+	   导致旧消息永远卡在「已读不回」，即使对方已经开始回复。
+	   这里在发消息瞬间就把所有 noReply 清成 unread，
+	   让新的已读状态机从干净状态开始跑。 */
+	msgs.forEach(function(x){
+	  if(x && x.role === 'user' && !x.recalled && !x.sys && !x.namecard){
+	    if(x.readState === 'noReply' || x.readNoReply){
+	      x.readState = 'unread';
+	      x.readNoReply = false;
+	    }
+	  }
+	});
 	saveMsgs(); renderChat(true);
 	armReadCooldown();
 	triggerReply();
@@ -19403,7 +19606,7 @@ function writeDivineRoleRead(opts){
   if(getCurrentRoleId() === roleId){
     saveMsgs();
     /* 清签名，强制重绘 */
-    window.__lastRenderSig = '';
+    if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
     renderChat();
   } else {
     const key = 'mj_msgs_' + roleId;
@@ -19666,27 +19869,51 @@ $('#btnSaveRead').addEventListener('click',()=>{
   }
 
   /* ============================================================
-     ★ 统一重绘（修复"填完不刷、非要整页刷新才显示"）
-     问题根因：
-       renderChat() 内部有签名缓存，签名没变它只做轻量更新，
-       不会重建那条占卜卡，所以新加的理解不显示。
-     修复方式：
-       写完后直接把 __lastRenderSig 清空，强制下一次 renderChat 走全量重建。
-       另外再补一次延时重绘，应对极端情况下 DOM 还没就绪。
+     ★ 关键修复：保存后直接调 renderChatFull(true)，跳过所有包装层
+     为什么这样做：
+       1. window.renderChat 被 patchChatRender 之类的 IIFE 包装过，
+          第二个参数 force 会被吃掉
+       2. 包装层里的 origRender 可能不是最新的 renderChat，
+          它内部读到的 msgs 可能是旧数组
+       3. renderChatFull(true) 是原版全量重建函数，
+          内部直接遍历全局 msgs，没有任何缓存和包装
      ============================================================ */
   try{
-    /* 关键：清掉签名缓存，强制全量重建聊天列表 */
-    window.__lastRenderSig = '';
-    renderChat();
+    /* 关键 1：强制把内存 msgs 从 LS 重新读一遍 */
+    try{ msgs = loadMsgs(); }catch(e){ console.error('重读 msgs 失败', e); }
+    /* 关键 2：清签名 */
+    if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+    /* 关键 3：直调原版全量重建，绕过包装层 */
+    if(typeof renderChatFull === 'function'){
+      renderChatFull(true);
+    } else {
+      renderChat(true);
+    }
   }catch(e){ console.error('重绘聊天失败', e); }
 
-  /* 再补一次延时重绘，双保险 */
+  /* 再补两次延时重绘，双保险 */
   setTimeout(function(){
     try{
-      window.__lastRenderSig = '';
-      renderChat();
+      try{ msgs = loadMsgs(); }catch(e){}
+      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+      if(typeof renderChatFull === 'function'){
+        renderChatFull(true);
+      } else {
+        renderChat(true);
+      }
     }catch(e){}
   }, 60);
+
+  setTimeout(function(){
+    try{
+      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+      if(typeof renderChatFull === 'function'){
+        renderChatFull(true);
+      } else {
+        renderChat(true);
+      }
+    }catch(e){}
+  }, 200);
 
   /* 如果占卜记录页正开着，也一起刷 */
   const drScr = document.getElementById('divineRecordScreen');
@@ -26410,6 +26637,7 @@ function openMovePicker(){
     allGroups.forEach(otherG => {
       if(otherG.id === g.id) return;                   /* 排除当前分组 */
       if(otherG.id === 'g-edited') return;             /* 排除修改字卡存放处 */
+      if(otherG.id === 'g-mood') return;               /* ★ 排除心情字卡 */
       count++;
       html += '<div class="cp-item" data-group="' + otherG.id + '">' +
         '<div class="cp-chk"></div>' +
@@ -26440,6 +26668,12 @@ function openMovePicker(){
   function renderStep3GroupCats(gid){
     const otherG = getGroup(curOwner, gid);
     if(!otherG){ toast('分组不存在'); return; }
+    /* ★ 双保险：即便外面把心情字卡放进来，这里也不显示它的分类 */
+    if(gid === 'g-mood'){
+      toast('心情字卡不支持移动');
+      renderStep2OtherGroups();
+      return;
+    }
     let html = '';
     let count = 0;
     (otherG.cats || []).forEach(c => {
@@ -26471,7 +26705,14 @@ function openMovePicker(){
     });
   }
 
-  renderStep1();
+  /* ★ 只移动到该分组：开 → 直接显示当前分组的分类；
+     关 → 走原来的第一步（选择同分组 / 其它分组） */
+  const _moveOnlySame = lsGet('mj_move_only_same', true);
+  if(_moveOnlySame){
+    renderStep2SameGroup();
+  } else {
+    renderStep1();
+  }
   $('#moveCatMask').classList.add('show');
 
   /* 点空白关闭：只绑一次，绑定在遮罩本身上，不会被内部重绘覆盖 */
@@ -26675,6 +26916,13 @@ if(cdMore) cdMore.addEventListener('click',e=>{
   } else {
     if(timedBtn) timedBtn.style.display = 'none';
   }
+  /* ★ 每次打开菜单，同步「只移动到该分组」开关的文字 */
+  const _mvLabel = document.getElementById('cdMoveOnlyLabel');
+  if(_mvLabel){
+    const _mvOn = lsGet('mj_move_only_same', true);
+    _mvLabel.textContent = '只移动到该分组 · ' + (_mvOn ? '开' : '关');
+  }
+
   const r=cdMore.getBoundingClientRect();
   cdMenu.style.left=Math.max(10,r.right-160)+'px';
   cdMenu.style.top=(r.bottom+6)+'px';
@@ -26717,6 +26965,64 @@ function openTimedRate(){
 
   $('#mTimedRate').classList.add('show');
 }
+
+/* ★ 个签切换设置弹窗：从字卡页 ⋯ 菜单打开 */
+function openSignSwitchSetting(){
+  var s = getSignSwitchStore();
+  var rid = getCurrentRoleId();
+  var slot = s.roles[rid] || { on:false, nextAt:0 };
+  var roleName = (typeof getCurrentRoleName === 'function') ? getCurrentRoleName() : '角色';
+
+  var body = document.getElementById('signSwitchBody');
+  if(!body) return;
+
+
+  var onStr = slot.on ? 'checked' : '';
+  var nextStr = '';
+  if(slot.on){
+    /* ★ 不显示具体时间，保持惊喜感 */
+    nextStr = '已开启 · Ta 会在某个时刻换掉自己的个签';
+  } else {
+    nextStr = '开启后 Ta 会不定时换掉自己的个签';
+  }
+
+  body.innerHTML =
+    '<div class="section">' +
+      '<div class="sw-row">' +
+        '<div class="sw-main">' +
+          '<div class="t1">随机切换「' + roleName + '」的个签</div>' +
+          '<div class="t2">' + nextStr + '</div>' +
+        '</div>' +
+        '<label class="switch"><input type="checkbox" id="signSwCb" ' + onStr + '><span class="slider"></span></label>' +
+      '</div>' +
+    '</div>';
+
+  var cb = document.getElementById('signSwCb');
+  if(cb){
+    cb.onchange = function(){
+      var st = getSignSwitchStore();
+      var id = getCurrentRoleId();
+      if(!st.roles[id]) st.roles[id] = { on:false, nextAt:0 };
+      var sl = st.roles[id];
+      sl.on = !!cb.checked;
+      if(sl.on && !sl.nextAt){
+        sl.nextAt = pickNextSignSwitchAt();
+      }
+      if(!sl.on){
+        sl.nextAt = 0;
+      }
+      saveSignSwitchStore(st);
+      openSignSwitchSetting();   /* 重绘，刷新"下次切换"文字 */
+      if(typeof toast === 'function'){
+        toast(sl.on ? '已开启个签自动切换' : '已关闭个签自动切换');
+      }
+    };
+  }
+
+  var mask = document.getElementById('mSignSwitch');
+  if(mask) mask.classList.add('show');
+}
+
 document.addEventListener('click',e=>{
   /* 点在菜单内部 → 不关（菜单项自己处理） */
   if(e.target.closest('#cdMenu')) return;
@@ -26728,6 +27034,17 @@ document.addEventListener('click',e=>{
 if(cdMenu) cdMenu.addEventListener('click',e=>{
   const it=e.target.closest('.it'); if(!it) return;
   const act=it.dataset.act;
+
+  /* ★ 「只移动到该分组」开关：点一下切换，不关菜单 */
+  if(act === 'move-only-same'){
+    const cur = lsGet('mj_move_only_same', true);
+    lsSet('mj_move_only_same', !cur);
+    const label = document.getElementById('cdMoveOnlyLabel');
+    if(label) label.textContent = '只移动到该分组 · ' + (!cur ? '开' : '关');
+    toast(!cur ? '已开启：移动时只显示该分组' : '已关闭：移动时可选择其它分组');
+    return;
+  }
+
   cdMenu.classList.remove('show');
   if(act==='add') openAddCardsModal();
   else if(act==='import') doImportCards();
@@ -26735,6 +27052,7 @@ if(cdMenu) cdMenu.addEventListener('click',e=>{
   else if(act==='sort') openSortPicker();
   else if(act==='trim') openTrimPicker();
   else if(act==='trash') openCardTrash();
+  else if(act==='sign-switch') openSignSwitchSetting();
 });
 
 /* ===== 回收站桌面 ===== */
@@ -27739,20 +28057,18 @@ on('#replyBack','click',()=>closeScreen());
 on('#replyBack','click',()=>closeScreen());
 (function(){ const el = $('#mpAv'); if(el) el.innerHTML = avatarHTML(getRole().avatar); })();
 
-function openReplySettings(){ renderReplyPanel('pace'); showScreen('mReply'); }
+function openReplySettings(){ renderReplyPanel('reply'); showScreen('mReply'); }
 function renderReplyPanel(tab){
   const r = getReply();
   const body = $('#replyBody');
   const tabs = `<div class="rs-tabs">
-	<button class="rs-tab ${tab==='pace'?'on':''}" data-tab="pace">节奏</button>
 	<button class="rs-tab ${tab==='reply'?'on':''}" data-tab="reply">回复</button>
-	<button class="rs-tab ${tab==='punct'?'on':''}" data-tab="punct">标点</button>
-	<button class="rs-tab ${tab==='active'?'on':''}" data-tab="active">主动</button>
+	<button class="rs-tab ${tab==='special'?'on':''}" data-tab="special">特殊</button>
 	<button class="rs-tab ${tab==='call'?'on':''}" data-tab="call">通话</button>
 	<button class="rs-tab ${tab==='sound'?'on':''}" data-tab="sound">音效</button>
   </div>`;
   let content = '';
-  if(tab === 'pace'){
+  if(tab === 'reply'){
 	content = `
 	  <div class="section"><div class="title">回复延迟</div>
 		<div class="n-row"><span class="lbl">最快</span><input type="number" id="rsMinDelay" value="${((r.minDelay||0)/1000).toFixed(1)}" step="0.1"><span class="unit">秒</span><span class="to">到</span><span class="lbl">最慢</span><input type="number" id="rsMaxDelay" value="${((r.maxDelay||0)/1000).toFixed(1)}" step="0.1"><span class="unit">秒</span></div>
@@ -27762,8 +28078,42 @@ function renderReplyPanel(tab){
 	  </div>
 	  <div class="section"><div class="sw-row"><div class="sw-main"><div class="t1">撤回</div></div><label class="switch"><input type="checkbox" id="rsRecallOn" ${r.recallOn?'checked':''}><span class="slider"></span></label></div>
 		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsRecallRate" min="0" max="50" value="${Math.round((r.recallRate||0)*100)}"><span class="num" id="rsRecallRateVal">${Math.round((r.recallRate||0)*100)}%</span></div>
+	  </div>
+	  <div class="section">
+		<div class="sw-row">
+		  <div class="sw-main"><div class="t1">允许 Ta 主动发消息</div></div>
+		  <label class="switch"><input type="checkbox" id="rsActiveOn" ${r.activeOn?'checked':''}><span class="slider"></span></label>
+		</div>
+	  </div>
+	  <div class="section">
+		<div class="title">触发概率</div>
+		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsActiveRate" min="0" max="100" value="${Math.round((r.activeRate||0)*100)}"><span class="num" id="rsActiveRateVal">${Math.round((r.activeRate||0)*100)}%</span></div>
+	  </div>
+	  <div class="section">
+		<div class="sw-row">
+		  <div class="sw-main"><div class="t1">允许 Ta 主动占卜</div></div>
+		  <label class="switch"><input type="checkbox" id="rsDivineOn" ${r.divineOn?'checked':''}><span class="slider"></span></label>
+		</div>
+	  </div>
+	  <div class="section">
+		<div class="title">触发概率</div>
+		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsDivineRate" min="0" max="100" value="${Math.round((r.divineRate||0)*100)}"><span class="num" id="rsDivineRateVal">${Math.round((r.divineRate||0)*100)}%</span></div>
+	  </div>
+	  <div class="section">
+		<div class="sw-row">
+		  <div class="sw-main"><div class="t1">允许 Ta 写理解</div><div class="t2">占卜完那一刻摇骰子，摇中后会在 1~20 分钟内随机写下理解</div></div>
+		  <label class="switch"><input type="checkbox" id="rsDivineReadOn" ${r.divineReadOn?'checked':''}><span class="slider"></span></label>
+		</div>
+	  </div>
+	  <div class="section">
+		<div class="title">写理解触发概率</div>
+		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsDivineReadRate" min="0" max="100" value="${Math.round((r.divineReadRate||0)*100)}"><span class="num" id="rsDivineReadRateVal">${Math.round((r.divineReadRate||0)*100)}%</span></div>
+	  </div>
+	  <div class="section">
+		<div class="title">每张占卜卡最多追加次数</div>
+		<div class="n-row"><input type="number" id="rsDivineReadMaxTimes" min="1" max="10" value="${r.divineReadMaxTimes||4}"><span class="unit">次</span></div>
 	  </div>`;
-  }else if(tab === 'reply'){
+  }else if(tab === 'special'){
 	content = `
 	  <div class="section">
 		<div class="rs-row">
@@ -27811,9 +28161,6 @@ function renderReplyPanel(tab){
 		  </div>
 		</div>
 	  </div>
-	  `;
-  }else if(tab === 'punct'){
-	content = `
 	  <div class="section"><div class="sw-row"><div class="sw-main"><div class="t1">标点符号</div></div><label class="switch"><input type="checkbox" id="rsPunctOn" ${r.punctOn?'checked':''}><span class="slider"></span></label></div></div>
 	  <div class="section"><div class="title">标点列表</div>
 		<div class="desc">长按标点可删除；输入框可添加新标点</div>
@@ -27847,7 +28194,8 @@ function renderReplyPanel(tab){
 		  })()}
 		</div>
 		<div class="add-punc"><input type="text" id="punctInput" placeholder="添加标点 / emoji"><button id="punctAddBtn">添加</button></div>
-	  </div>`;
+	  </div>
+	  `;
   }else if(tab === 'call'){
 	const callCfg = getCallCfg();
 	content = `
@@ -27949,42 +28297,6 @@ function renderReplyPanel(tab){
 		  <div class="sound-name" data-name="hangup">未设置</div>
 		</div>
 		<input type="file" id="soundFilePicker" accept="audio/*" style="display:none">
-	  </div>`;
-  }else if(tab === 'active'){
-	content = `
-	  <div class="section">
-		<div class="sw-row">
-		  <div class="sw-main"><div class="t1">允许 Ta 主动发消息</div></div>
-		  <label class="switch"><input type="checkbox" id="rsActiveOn" ${r.activeOn?'checked':''}><span class="slider"></span></label>
-		</div>
-	  </div>
-	  <div class="section">
-		<div class="title">触发概率</div>
-		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsActiveRate" min="0" max="100" value="${Math.round((r.activeRate||0)*100)}"><span class="num" id="rsActiveRateVal">${Math.round((r.activeRate||0)*100)}%</span></div>
-	  </div>
-	  <div class="section">
-		<div class="sw-row">
-		  <div class="sw-main"><div class="t1">允许 Ta 主动占卜</div></div>
-		  <label class="switch"><input type="checkbox" id="rsDivineOn" ${r.divineOn?'checked':''}><span class="slider"></span></label>
-		</div>
-	  </div>
-	  <div class="section">
-		<div class="title">触发概率</div>
-		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsDivineRate" min="0" max="100" value="${Math.round((r.divineRate||0)*100)}"><span class="num" id="rsDivineRateVal">${Math.round((r.divineRate||0)*100)}%</span></div>
-	  </div>
-	  <div class="section">
-		<div class="sw-row">
-		  <div class="sw-main"><div class="t1">允许 Ta 写理解</div><div class="t2">占卜完那一刻摇骰子，摇中后会在 1~20 分钟内随机写下理解</div></div>
-		  <label class="switch"><input type="checkbox" id="rsDivineReadOn" ${r.divineReadOn?'checked':''}><span class="slider"></span></label>
-		</div>
-	  </div>
-	  <div class="section">
-		<div class="title">写理解触发概率</div>
-		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsDivineReadRate" min="0" max="100" value="${Math.round((r.divineReadRate||0)*100)}"><span class="num" id="rsDivineReadRateVal">${Math.round((r.divineReadRate||0)*100)}%</span></div>
-	  </div>
-	  <div class="section">
-		<div class="title">每张占卜卡最多追加次数</div>
-		<div class="n-row"><input type="number" id="rsDivineReadMaxTimes" min="1" max="10" value="${r.divineReadMaxTimes||4}"><span class="unit">次</span></div>
 	  </div>`;
   }
   body.innerHTML = tabs + content;
@@ -28574,7 +28886,11 @@ let friendMenuId='';
 function openFriendMenu(fid){ friendMenuId=fid; $('#mFriendMenu').classList.add('show'); }
 on('#fmEditFriend','click',()=>{
   $('#mFriendMenu').classList.remove('show');
-  setTimeout(openEditFriend, 100);
+  /* ★ 改成打开「编辑资料」（含个签切换），而不是「编辑好友」 */
+  setTimeout(function(){
+    if(typeof openEditProfile === 'function') openEditProfile();
+    else openEditFriend();
+  }, 100);
 });
 
 /* ===== 编辑好友：真名 + 关系网 ===== */
@@ -29211,10 +29527,11 @@ function openEditProfile(){
   $('#inName').value = role.name;
   $('#inSign').value = getRoleSign(role);
   renderEditAvPrev();
-  /* ★ 同步「随机切换角色个签」开关状态 */
+  /* ★ 同步「随机切换角色个签」开关状态（per-role） */
   const s = getSignSwitchStore();
   const sw = document.getElementById('roleSignAutoSwitch');
-  if(sw) sw.checked = !!s.role.on;
+  const rid = getCurrentRoleId();
+  if(sw) sw.checked = !!(s.roles[rid] && s.roles[rid].on);
   $('#mEdit').classList.add('show');
 }
 on('#closeEdit','click',()=>$('#mEdit').classList.remove('show'));
@@ -29231,12 +29548,21 @@ on('#btnSaveEdit','click',()=>{
   f.avatar=editAvatarTmp;
   saveFriends(friends);
 
-  /* ★ 同步「随机切换角色个签」开关 */
+  /* ★ 同步「随机切换角色个签」开关（per-role 结构） */
   const s = getSignSwitchStore();
   const sw = document.getElementById('roleSignAutoSwitch');
-  s.role.on = !!(sw && sw.checked);
-  if(s.role.on && !s.role.nextAt) s.role.nextAt = pickNextSignSwitchAt();
-  if(!s.role.on) s.role.nextAt = 0;
+  const rid = getCurrentRoleId();
+  if(!s.roles[rid]) s.roles[rid] = { on:false, nextAt:0 };
+  const slot = s.roles[rid];
+  slot.on = !!(sw && sw.checked);
+  /* 打开时：如果没有下一次时间，立刻生成 */
+  if(slot.on && !slot.nextAt){
+    slot.nextAt = pickNextSignSwitchAt();
+  }
+  /* 关闭时：清掉下一次时间 */
+  if(!slot.on){
+    slot.nextAt = 0;
+  }
   saveSignSwitchStore(s);
 
   refreshChatRole();
@@ -29267,8 +29593,9 @@ function openProfileFor(roleId){
   setCurrentRoleId(bakId);
   msgs = bakMsgs;
   renderProfileTags(roleId);
-  $('#profileStar').checked = !!role.star;
-  $('#profilePin').checked = !!role.pinned;
+  /* ★ 特别关心已移除，这一行删掉 */
+  const _pinEl = $('#profilePin');
+  if(_pinEl) _pinEl.checked = !!role.pinned;
   $('#profileScreen').classList.add('on');
   applyBeautyCfg();
 }
@@ -29279,7 +29606,8 @@ on('#profileEdit','click',()=>{
   if(targetId !== getCurrentRoleId()){
 	switchToRole(targetId);
   }
-  openChatInfo();
+  // ★ 直接打开「编辑资料」（#mEdit），里面有名字 / 头像 / 签名 / 个签切换
+  openEditProfile();
 });
 function closeProfile(){ $('#profileScreen').classList.remove('on'); }
 on('#profileBack','click',()=>closeProfile());
@@ -29305,7 +29633,7 @@ on('#profileVideo','click',()=>{
   else { toast('通话模块还没加载好'); }
 });
 on('#profileMoments','click',()=>{ if(typeof window.openRoleMomentsPage === 'function') window.openRoleMomentsPage(); });
-on('#profileStar','change',function(){ saveRoleField(window.__profileViewId || getCurrentRoleId(),'star',this.checked); toast(this.checked?'已设为特别关心':'已取消特别关心'); });
+ 
 on('#profilePin','change',function(){ saveRoleField(window.__profileViewId || getCurrentRoleId(),'pinned',this.checked); renderFriends(); toast(this.checked?'已置顶':'已取消置顶'); });
 
 on('#chatAvatar','click',openProfile);
@@ -30055,24 +30383,49 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 		bindMomentCards(box);
 	if(postBtn) postBtn.classList.remove('hide');
   }
-  function renderRoleMoments(){
+   function renderRoleMoments(){
 	const box = $('#mmBody');
 	const postBtn = $('#mmPostBtn');
 	if(!box) return;
 	if(postBtn) postBtn.classList.add('hide');
+
 	const roleId = getCurrentRoleId();
+	const role = getRole();
 	const list = getRoleMomentsArr(roleId).slice().sort((a,b) => b.time - a.time);
+
+	/* ★ 顶栏：不显示「我的/别人的」tab（只显示这一个角色的动态），
+	   所以先把 mmTabs 隐藏掉 */
+	const tabs = document.getElementById('mmTabs');
+	if(tabs) tabs.style.display = 'none';
+
 	if(!list.length){
-	  box.innerHTML = '<div class="mm-empty">' + esc(getCurrentRoleName()) + ' 还没有发动态</div>';
+	  box.innerHTML = '<div class="mm-empty">' + esc(role.name) + ' 还没有发动态</div>';
 	  return;
 	}
-	const role = getRole();
-	box.innerHTML = list.map(m => {
-	  const likesHTML = (m.likes && m.likes.length) ? '<div class="like-row"><span class="heart">♥</span><span class="names">' + m.likes.map(n => '<b>' + esc(n) + '</b>').join('、') + ' 觉得赞</span></div>' : '';
+
+	/* ★ 头部：头像 + 名字 + 共 N 条 */
+	const headHTML =
+	  '<div class="role-head">' +
+		'<div class="role-av">' + avatarHTML(role.avatar) + '</div>' +
+		'<div class="role-info">' +
+		  '<div class="role-name">' + esc(role.name) + '</div>' +
+		  '<div class="role-meta">' + list.length + ' POSTS · 共 ' + list.length + ' 条</div>' +
+		'</div>' +
+	  '</div>';
+
+	/* ★ 动态列表 */
+	const listHTML = list.map(m => {
+	  const likesHTML = (m.likes && m.likes.length)
+		? '<div class="like-row"><span class="heart">♥</span><span class="names">' +
+		  m.likes.map(n => '<b>' + esc(n) + '</b>').join('、') + ' 觉得赞</span></div>'
+		: '';
 	  const cmts = m.comments || [];
-	  const cmtItems = cmts.slice(0, 2).map(c => '<div class="ci"><span class="cn">' + esc(c.name) + '：</span>' + esc(c.text) + '</div>').join('');
+	  const cmtItems = cmts.slice(0, 2).map(c =>
+		'<div class="ci"><span class="cn">' + esc(c.name) + '：</span>' + esc(c.text) + '</div>'
+	  ).join('');
 	  const cmtBlock = cmts.length ? '<div class="cmt">' + cmtItems + '</div>' : '';
 	  const likedByMe = !!m.likedByMe;
+
 	  return '<div class="lb-post" data-id="' + m.id + '">' +
 		'<div class="lb-top">' +
 		  '<div class="mm-av">' + avatarHTML(role.avatar) + '</div>' +
@@ -30091,6 +30444,10 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 		cmtBlock +
 	  '</div>';
 	}).join('');
+
+	box.innerHTML = headHTML + listHTML;
+
+	/* ★ 绑定点赞 */
 	box.querySelectorAll('[data-role-like]').forEach(el => {
 	  el.onclick = () => {
 		const list2 = getRoleMomentsArr(roleId);
@@ -30105,16 +30462,23 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 		renderRoleMoments();
 	  };
 	});
+
+	/* ★ 绑定评论按钮 */
 	box.querySelectorAll('[data-cmt]').forEach(el => {
 	  el.onclick = () => { openCommentDialog(el.dataset.cmt, 'role'); };
 	});
 
-  }
+	/* ★ 头像方圆跟随全站设置 */
+	applyBeautyCfg();
+}
   function openMoments(){
 	mmBackTarget = null;
 	const ps = document.getElementById('profileScreen');
 	if(ps) ps.classList.remove('on');
 	if(typeof showScreen === 'function') showScreen('momentsScreen');
+	/* ★ 恢复 tabs 显示（避免从角色动态页跳过来时 tabs 还是隐藏的） */
+	const tabs = document.getElementById('mmTabs');
+	if(tabs) tabs.style.display = '';
 	mmTab = 'all';
 	$$('#mmTabs .mm-tab').forEach(t => t.classList.toggle('on', t.dataset.tab === 'all'));
 	renderMyMoments();
@@ -30161,15 +30525,7 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 		  saveMomentSettingsStore();
 		};
 	  });
-	  $$('#mSetBody .mm-shape-btn').forEach(el => {
-		el.onclick = () => {
-		  $$('#mSetBody .mm-shape-btn').forEach(x => x.classList.remove('on'));
-		  el.classList.add('on');
-		  s.avatarShape = el.dataset.shape;
-		  saveMomentSettingsStore();
-		  if(mOwner === 'public'){ myMomentsAvatarShape = s.avatarShape; saveMyMomentsAvatarShape(); }
-		};
-	  });
+
 	  const bindNum = (id, key) => { const el = $('#'+id); if(el) el.onchange = () => { s[key] = +el.value || 1; saveMomentSettingsStore(); }; };
 	  bindNum('mPubMin','pubMin'); bindNum('mPubMax','pubMax');
 	  bindNum('mPriMin','priMin'); bindNum('mPriMax','priMax');
@@ -30183,7 +30539,7 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 		  if(key === 'momentOn' && mOwner === 'public'){ myMomentsOn = s.momentOn; saveMyMomentsOn(); }
 		};
 	  };
-	  bindSw('mPinyinOn','pinyinOn'); bindSw('mNormalCardOn','normalCardOn'); bindSw('mMomentOn','momentOn');
+	  bindSw('mNormalCardOn','normalCardOn'); bindSw('mMomentOn','momentOn');
 	  const bindSl = (id, valId, key) => {
 		const el = $('#'+id);
 		if(!el) return;
@@ -30193,7 +30549,6 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 		  $('#'+valId).textContent = el.value + '%';
 		};
 	  };
-	  bindSl('mPinyinRate','mPinyinRateVal','pinyinRate');
 	  bindSl('mNormalCardRate','mNormalCardRateVal','normalCardRate');
 	}
 	function renderPanel(){
@@ -30202,15 +30557,14 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	  const roStyle = ro ? 'style="opacity:.5;pointer-events:none"' : '';
 	  let html = '';
 	  if(mTab === 'look'){
-		html = '<div class="rs-card" ' + roStyle + '><div class="rs-title">排版</div><div class="rs-sub">选择动态卡的展示风格</div><div class="mm-layout-preview"><div class="mm-layout-opt ' + (s.layout==='B'?'on':'') + '" data-layout="B"><div class="lo-demo"><div class="row"><div class="bub"></div></div><div class="row r"><div class="bub"></div></div><div class="row"><div class="bub"></div></div></div><div class="lo-name">朋友圈式</div></div><div class="mm-layout-opt ' + (s.layout==='D'?'on':'') + '" data-layout="D"><div class="lo-demo"><div class="row"><div class="bub"></div></div><div class="row"><div class="bub"></div></div><div class="row r"><div class="bub"></div></div></div><div class="lo-name">杂志式</div></div></div></div>' +
-		'<div class="rs-card" ' + roStyle + '><div class="rs-title">头像形状</div><div class="rs-sub">动态卡里的头像样式</div><div class="mm-shape-row"><div class="mm-shape-btn ' + (s.avatarShape==='circle'?'on':'') + '" data-shape="circle"><span class="pv ci"></span>圆形</div><div class="mm-shape-btn ' + (s.avatarShape==='square'?'on':'') + '" data-shape="square"><span class="pv sq"></span>方形</div></div></div>';
+		html = '<div class="rs-card" ' + roStyle + '><div class="rs-title">排版</div><div class="rs-sub">选择动态卡的展示风格</div><div class="mm-layout-preview"><div class="mm-layout-opt ' + (s.layout==='B'?'on':'') + '" data-layout="B"><div class="lo-demo"><div class="row"><div class="bub"></div></div><div class="row r"><div class="bub"></div></div><div class="row"><div class="bub"></div></div></div><div class="lo-name">朋友圈式</div></div><div class="mm-layout-opt ' + (s.layout==='D'?'on':'') + '" data-layout="D"><div class="lo-demo"><div class="row"><div class="bub"></div></div><div class="row"><div class="bub"></div></div><div class="row r"><div class="bub"></div></div></div><div class="lo-name">杂志式</div></div></div></div>';
 	  } else if(mTab === 'time'){
 		html = '<div class="rs-card" ' + roStyle + '><div class="rs-title">公共动态间隔</div><div class="rs-sub">发到公共动态流的间隔</div><div class="rs-fill-row"><span class="f-lbl">最短</span><input type="number" id="mPubMin" min="1" max="1440" value="' + s.pubMin + '"><span class="f-unit">分钟</span><span class="f-to">到</span><span class="f-lbl">最长</span><input type="number" id="mPubMax" min="1" max="1440" value="' + s.pubMax + '"><span class="f-unit">分钟</span></div></div>' +
 		'<div class="rs-card" ' + roStyle + '><div class="rs-title">个人动态间隔</div><div class="rs-sub">发到个人主页动态的间隔</div><div class="rs-fill-row"><span class="f-lbl">最短</span><input type="number" id="mPriMin" min="1" max="1440" value="' + s.priMin + '"><span class="f-unit">分钟</span><span class="f-to">到</span><span class="f-lbl">最长</span><input type="number" id="mPriMax" min="1" max="1440" value="' + s.priMax + '"><span class="f-unit">分钟</span></div></div>';
 	  } else if(mTab === 'content'){
-		html = '<div class="rs-card" ' + roStyle + '><div class="rs-line"><div class="rs-main"><div class="rs-title">启用拼音</div><div class="rs-sub">发动态时随机混拼音字</div></div><label class="switch"><input type="checkbox" id="mPinyinOn" ' + (s.pinyinOn?'checked':'') + '><span class="slider"></span></label></div><div class="rs-slider-row"><span class="rs-tag">概率</span><input type="range" id="mPinyinRate" min="0" max="100" value="' + s.pinyinRate + '"><span class="rs-num" id="mPinyinRateVal">' + s.pinyinRate + '%</span></div></div>' +
-		'<div class="rs-card" ' + roStyle + '><div class="rs-line"><div class="rs-main"><div class="rs-title">启用普通字卡</div><div class="rs-sub">发动态时从普通字卡池抽</div></div><label class="switch"><input type="checkbox" id="mNormalCardOn" ' + (s.normalCardOn?'checked':'') + '><span class="slider"></span></label></div><div class="rs-slider-row"><span class="rs-tag">概率</span><input type="range" id="mNormalCardRate" min="0" max="100" value="' + s.normalCardRate + '"><span class="rs-num" id="mNormalCardRateVal">' + s.normalCardRate + '%</span></div></div>' +
-		'<div class="rs-card" ' + roStyle + '><div class="rs-title">动态字卡张数</div><div class="rs-sub">一条动态由几张字卡拼成</div><div class="rs-fill-row"><span class="f-lbl">最少</span><input type="number" id="mMomentCardMin" min="1" max="10" value="' + s.momentCardMin + '"><span class="f-unit">张</span><span class="f-to">到</span><span class="f-lbl">最多</span><input type="number" id="mMomentCardMax" min="1" max="10" value="' + s.momentCardMax + '"><span class="f-unit">张</span></div></div>';
+		html = '<div class="rs-card" ' + roStyle + '><div class="rs-line"><div class="rs-main"><div class="rs-title">启用普通字卡</div><div class="rs-sub">发动态时从普通字卡池抽</div></div><label class="switch"><input type="checkbox" id="mNormalCardOn" ' + (s.normalCardOn?'checked':'') + '><span class="slider"></span></label></div><div class="rs-slider-row"><span class="rs-tag">概率</span><input type="range" id="mNormalCardRate" min="0" max="100" value="' + s.normalCardRate + '"><span class="rs-num" id="mNormalCardRateVal">' + s.normalCardRate + '%</span></div></div>' +
+		'<div class="rs-card" ' + roStyle + '><div class="rs-title">动态字卡张数</div><div class="rs-sub">一条动态由几张字卡拼成</div><div class="rs-fill-row"><span class="f-lbl">最少</span><input type="number" id="mMomentCardMin" min="1" max="10" value="' + s.momentCardMin + '"><span class="f-unit">张</span><span class="f-to">到</span><span class="f-lbl">最多</span><input type="number" id="mMomentCardMax" min="1" max="10" value="' + s.momentCardMax + '"><span class="f-unit">张</span></div></div>' +
+		'<div class="rs-card" style="opacity:.6;pointer-events:none"><div class="rs-title">拼音</div><div class="rs-sub">跟随「回复设置 → 特殊」里的拼音开关与概率</div></div>';
 	  } else {
 		html = '<div class="rs-card" ' + roStyle + '><div class="rs-line"><div class="rs-main"><div class="rs-title">动态功能总开关</div><div class="rs-sub">关闭后不再自动发动态</div></div><label class="switch"><input type="checkbox" id="mMomentOn" ' + (s.momentOn?'checked':'') + '><span class="slider"></span></label></div></div>';
 	  }
@@ -30374,6 +30728,9 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
   let autoMomentTimer = null;
   function pickMomentText(){
 	const s = getMomentSettings('public');
+	/* ★ 拼音不再用动态设置里的，改成跟随「回复设置」里当前角色的拼音配置 */
+	let replyCfg = { pinyinOn:false, pinyinRate:0 };
+	try{ replyCfg = getReply(getCurrentRoleId()); }catch(e){}
 	const parts = [];
 	const cardCount = Math.max(1, Math.min(5, s.momentCardMin + Math.floor(Math.random() * (s.momentCardMax - s.momentCardMin + 1))));
 	const normalPool = [];
@@ -30387,7 +30744,7 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	if(!pool.length) return '今天也想和你说话。';
 	for(let i = 0; i < cardCount; i++){
 	  let line = pool[Math.floor(Math.random() * pool.length)];
-	  if(s.pinyinOn && Math.random() < (s.pinyinRate / 100)){
+	  if(replyCfg.pinyinOn && Math.random() < (replyCfg.pinyinRate || 0)){
 		const p = randPinyin();
 		line = p.han || line;
 	  }
@@ -30748,11 +31105,25 @@ function getSignSwitchStore(){
   let s = lsGet(SIGN_SWITCH_KEY, null);
   if(!s || typeof s !== 'object') s = {};
   if(!s.me)   s.me   = { on:false, nextAt:0 };
-  if(!s.role) s.role = { on:false, nextAt:0 };
-  if(typeof s.me.on !== 'boolean')       s.me.on = false;
-  if(typeof s.role.on !== 'boolean')     s.role.on = false;
-  if(typeof s.me.nextAt !== 'number')    s.me.nextAt = 0;
-  if(typeof s.role.nextAt !== 'number')  s.role.nextAt = 0;
+  /* ★ 角色个签：改成 per-role 结构
+     旧结构：s.role = { on:false, nextAt:0 }（全局一份）
+     新结构：s.roles = { [roleId]: { on:false, nextAt:0 } }（每个角色一份） */
+  if(!s.roles || typeof s.roles !== 'object') s.roles = {};
+  if(typeof s.me.on !== 'boolean')    s.me.on = false;
+  if(typeof s.me.nextAt !== 'number') s.me.nextAt = 0;
+  /* 兼容：如果旧数据里还有 s.role（全局一份），把它迁移到
+     所有当前存在的角色上，然后删掉旧字段 */
+  if(s.role && typeof s.role === 'object'){
+    try{
+      const allIds = (typeof getAllRoleIds === 'function') ? getAllRoleIds() : [];
+      allIds.forEach(function(rid){
+        if(!s.roles[rid]){
+          s.roles[rid] = { on: !!s.role.on, nextAt: s.role.nextAt || 0 };
+        }
+      });
+    }catch(e){}
+    delete s.role;
+  }
   return s;
 }
 function saveSignSwitchStore(s){ lsSet(SIGN_SWITCH_KEY, s); }
@@ -30809,27 +31180,37 @@ function runSignSwitchTick(){
         saveUser();
         try{ renderMePage(); }catch(e){}
       }
-      /* 不管有没有换成功，都重新排下一次 */
       s.me.nextAt = pickNextSignSwitchAt();
       changed = true;
     }
   }
 
-  /* --- 角色个签（只对当前正在看的角色生效） --- */
-  if(s.role.on){
-    if(!s.role.nextAt) { s.role.nextAt = pickNextSignSwitchAt(); changed = true; }
-    if(now >= s.role.nextAt){
-      var rid = getCurrentRoleId();
-      var roleText = pickSignCardText('cs-role');
-      if(roleText){
-        saveRoleField(rid, 'sub', roleText);
+  /* --- 角色个签：遍历所有角色，各自独立计时 --- */
+  var allIds = (typeof getAllRoleIds === 'function') ? getAllRoleIds() : [];
+  allIds.forEach(function(rid){
+    var slot = s.roles[rid];
+    if(!slot) return;                    /* 这个角色没开开关，跳过 */
+    if(!slot.on) return;
+    if(!slot.nextAt){
+      slot.nextAt = pickNextSignSwitchAt();
+      changed = true;
+      return;
+    }
+    if(now < slot.nextAt) return;        /* 还没到点 */
+
+    /* 到点了：抽一条新的个签，写进这个角色 */
+    var roleText = pickSignCardText('cs-role');
+    if(roleText){
+      try{ saveRoleField(rid, 'sub', roleText); }catch(e){}
+      /* 只有用户正在看这个角色，才刷新顶部栏 */
+      if(typeof getCurrentRoleId === 'function' && getCurrentRoleId() === rid){
         try{ refreshChatRole(); }catch(e){}
         try{ applyTopbarBg(); }catch(e){}
       }
-      s.role.nextAt = pickNextSignSwitchAt();
-      changed = true;
     }
-  }
+    slot.nextAt = pickNextSignSwitchAt();
+    changed = true;
+  });
 
   if(changed) saveSignSwitchStore(s);
 }
@@ -31922,6 +32303,33 @@ function switchToRole(id){
       if(typeof toast === 'function') toast('已关闭后台保活');
     }
   }, true);
+
+  /* ★ 直接绑到 #notifyKeepAlive 元素上：防止全局 change 委托被别的监听器吃掉 */
+  (function bindKeepAliveDirect(){
+    function bindOnce(){
+      var cb = document.getElementById('notifyKeepAlive');
+      if(!cb){
+        /* 元素还没进 DOM，稍后重试 */
+        setTimeout(bindOnce, 300);
+        return;
+      }
+      if(cb._kaBound) return;
+      cb._kaBound = true;
+
+      cb.addEventListener('change', function(e){
+        /* 避免被全局 change 委托重复触发：这里主动 stopPropagation */
+        e.stopPropagation();
+        var on = this.checked;
+        applyKeepAliveSwitch(on);
+        if(on){
+          if(typeof toast === 'function') toast('已开启后台保活，切后台时定时器会继续跑');
+        } else {
+          if(typeof toast === 'function') toast('已关闭后台保活');
+        }
+      }, false);
+    }
+    bindOnce();
+  })();
 })();
 
 /* 上线触发：应用启动后，每个角色各触发一次主动消息（只走主动消息） */
@@ -32964,6 +33372,57 @@ function goToPage(name){
   font-family:inherit;
 }
 #momentsScreen .mm-post-btn.hide{display:none}
+
+/* ★ 方案 A · 角色动态页头部 */
+#momentsScreen .role-head{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:4px 22px 18px;
+  border-bottom:0.6px dashed #ececec;
+  margin-bottom:20px;
+}
+#momentsScreen .role-av{
+  width:52px;
+  height:52px;
+  flex:none;
+  background:#f0f0f0;
+  overflow:hidden;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  /* ★ 方圆跟随全站设置 */
+  border-radius:var(--avatar-radius, 12%);
+}
+#momentsScreen .role-av svg{position:absolute;inset:0;width:100%;height:100%}
+#momentsScreen .role-av .silhouette{fill:#c8c8c8}
+#momentsScreen .role-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+#momentsScreen .role-info{flex:1;min-width:0}
+#momentsScreen .role-name{
+  font-size:16px;
+  font-weight:300;
+  letter-spacing:1.5px;
+  color:#1a1a1a;
+  line-height:1.2;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+#momentsScreen .role-meta{
+  font-size:10.5px;
+  color:#bbb;
+  letter-spacing:.5px;
+  margin-top:5px;
+  font-family:Georgia,serif;
+}
+
+/* ★ 动态列表项：头像方圆跟随全站设置 */
+#momentsScreen .mm-av{
+  border-radius:var(--mm-av-radius, 50%);
+}
+#momentsScreen .mm-av img{
+  border-radius:inherit;
+}
 /* ===== 聊天信息页 · 细体对齐个人主页 ===== */
 .chat-info-panel,
 .chat-info-panel .cip-hero-name,
