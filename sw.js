@@ -80,4 +80,70 @@ self.addEventListener('message', function(e){
       }catch(err){}
     }, delay);
   }
+
+  /* ============================================================
+     页面直接要求 SW 立刻弹一条系统通知。
+     背景：部分内核（含雨见）在页面切后台后，直接调用
+     new Notification() / reg.showNotification() 会被静默拒绝，
+     但从 SW 的 message 事件里调用 showNotification 成功率更高。
+     ============================================================ */
+  if(data.type === 'notify'){
+    var title2 = String(data.title || '角色');
+    var body2   = String(data.body  || '');
+    var tag2    = String(data.tag   || ('mj-msg-' + Date.now().toString(36)));
+    try{
+      self.registration.showNotification(title2, {
+        body: body2,
+        tag: tag2,
+        renotify: true,
+        requireInteraction: true,
+        silent: false,
+        data: { roleId: data.roleId || '' }
+      });
+    }catch(err){
+      /* 兜底：如果 showNotification 失败，再用 new Notification 试一次 */
+      try{
+        new Notification(title2, { body: body2, tag: tag2 });
+      }catch(err2){}
+    }
+  }
+
+  /* ============================================================
+     ★ 页面切后台时，往 SW 里塞一批"定时炸弹"。
+     每个炸弹到点后由 SW 自己弹通知，不依赖 page 侧 JS 是否被冻。
+     页面上线时会重新算一批塞进来。
+
+     消息格式：
+       { type:'schedule-batch', items:[
+           { at: 时间戳, title:'角色', body:'内容', tag:'xxx', roleId:'r1' },
+           ...
+       ]}
+     限制：一次最多 30 条，避免把 SW 撑爆。
+     ============================================================ */
+  if(data.type === 'schedule-batch'){
+    var items = Array.isArray(data.items) ? data.items.slice(0, 30) : [];
+    items.forEach(function(it){
+      var at = Number(it.at) || 0;
+      var delay = Math.max(0, at - Date.now());
+      /* 只接未来 6 小时内的，太远的排了也会被内核清掉，没意义 */
+      if(delay > 6 * 60 * 60 * 1000) return;
+      var title3 = String(it.title || '角色');
+      var body3  = String(it.body  || '');
+      var tag3   = String(it.tag   || ('mj-msg-' + at.toString(36)));
+      setTimeout(function(){
+        try{
+          self.registration.showNotification(title3, {
+            body: body3,
+            tag: tag3,
+            renotify: true,
+            requireInteraction: true,
+            silent: false,
+            data: { roleId: it.roleId || '' }
+          });
+        }catch(err){
+          try{ new Notification(title3, { body: body3, tag: tag3 }); }catch(err2){}
+        }
+      }, delay);
+    });
+  }
 });
