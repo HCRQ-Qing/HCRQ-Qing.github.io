@@ -14442,11 +14442,20 @@ function showMsgNotify(roleName, text, roleAvatar, targetRoleId){
   /* 原因：手机浏览器切后台时 visibilityState 经常不更新，导致误判成"还在前台" */
   /* 不再用 isViewingRole 挡系统通知：切后台时页面栈还是停在聊天页，
      但用户其实已经不在看了，应该弹系统通知 */
-  /* ★ 正在看这个角色的聊天页 → 不弹顶部横幅，也不弹系统通知，直接返回 */
-  if(targetRoleId && typeof isViewingRole === 'function' && isViewingRole(targetRoleId)){
+  /* 正在看这个角色的聊天页 → 不弹顶部横幅。
+     但如果页面已经切到后台，还是要走系统通知，所以这里不能直接 return，
+     只跳过顶部横幅部分。 */
+  const _viewingCur = (targetRoleId && typeof isViewingRole === 'function' && isViewingRole(targetRoleId));
+  const _pageHidden = (document.visibilityState !== 'visible') || document.hidden;
+  if(_viewingCur && !_pageHidden){
+    /* 前台且正在看：什么都不做 */
     return;
   }
-  /* 不做任何 return，直接往下走，让 showSystemNotify 自己决定 */
+  if(_viewingCur && _pageHidden){
+    /* 正在看这个角色，但页面已经切后台 → 只弹系统通知，不弹顶部横幅 */
+    showSystemNotify(roleName, text);
+    return;
+  }
   const el = document.getElementById('msgNotify');
   if(!el) return;
 
@@ -14779,7 +14788,13 @@ function showSystemNotify(title, body){
       if(typeof getCurrentRoleId === 'function'){ window.__lastNotifyRoleId = getCurrentRoleId(); }
     }catch(e){}
 
-    const isBg = (document.visibilityState !== 'visible') || document.hidden;
+    /* 只要不是"明确在前台且页面可见"就允许弹。
+       雨见等国产内核切后台后 visibilityState 有时不更新，
+       原来只靠 visibilityState/hidden 判断会误判成"还在前台"，直接 return。 */
+    const onScreen = (document.visibilityState === 'visible')
+                  && (!document.hidden)
+                  && (!window.visualViewport || window.visualViewport.height > 0);
+    const isBg = !onScreen;
     if(!isBg) return;
 
     /* 每条通知独立 tag，避免互相覆盖 */
@@ -33585,6 +33600,65 @@ document.addEventListener('visibilitychange', function(){
   } else {
     /* 页面切到后台：记下时间点，回来时用它算漏了什么 */
     try{ lsSet('mj_last_seen_at_v1', Date.now()); }catch(e){}
+
+    /* ============================================================
+       ★ 切后台时，把"接下来 6 小时内该弹的通知"算出来，
+         一次性塞给 SW，让 SW 自己到点弹。
+         这样即使 page 侧 JS 被冻，通知还是能出来。
+       ============================================================ */
+    try{
+      if(!getSysNotifyOn()) return;
+      if(typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+      if(!navigator.serviceWorker || !navigator.serviceWorker.controller) return;
+
+      var nowTs = Date.now();
+      var HORIZON = 6 * 60 * 60 * 1000;   /* 只算未来 6 小时 */
+      var items = [];
+      var curId = (typeof getCurrentRoleId === 'function') ? getCurrentRoleId() : '';
+      var ids = (typeof getAllRoleIds === 'function') ? getAllRoleIds() : [];
+
+      ids.forEach(function(rid){
+        var role = getRoleById(rid);
+        if(!role || role.hidden) return;
+        if(rid === curId) return;
+
+        var r = (typeof replyMap !== 'undefined' && replyMap[rid]) ? replyMap[rid] : null;
+        if(!r) return;
+
+        /* ---- 主动发消息：按 activeRate 平均间隔估算 ---- */
+        if(r.activeOn !== false && typeof r.activeRate === 'number' && r.activeRate > 0){
+          var gap = 60 * 1000 / r.activeRate;    /* 平均多少毫秒发一条 */
+          var t = nowTs + gap * (0.5 + Math.random() * 0.5);
+          while(t < nowTs + HORIZON && items.length < 30){
+            /* 从角色的普通字卡池抽一条当预览文本 */
+            var text = '';
+            try{
+              var pub = getAllNormalCards('public');
+              var own = getAllNormalCards(rid);
+              var pool = own.concat(pub);
+              if(pool.length) text = pool[Math.floor(Math.random() * pool.length)];
+            }catch(e){}
+            if(!text) text = '在吗？';
+            items.push({
+              at: Math.floor(t),
+              title: role.name || '角色',
+              body: String(text).slice(0, 60),
+              tag: 'mj-msg-' + Math.floor(t).toString(36),
+              roleId: rid
+            });
+            t += gap;
+          }
+        }
+      });
+
+      if(items.length){
+        navigator.serviceWorker.controller.postMessage({
+          type: 'schedule-batch',
+          items: items
+        });
+        console.log('[通知] 已塞给 SW：' + items.length + ' 条');
+      }
+    }catch(e){ console.error('切后台塞通知失败', e); }
   }
 });
 
