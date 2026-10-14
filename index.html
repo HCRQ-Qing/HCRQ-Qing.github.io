@@ -7491,6 +7491,14 @@ body[data-bubble="custom"] .preview-bubble{
   font-weight:300;
 }
 
+/* ★ 收藏页 · 语音气泡 & 表情图 */
+.col-item .col-voice{
+  margin:2px 0;
+}
+.col-item .col-sticker{
+  margin:2px 0;
+}
+
 /* ===== 收藏页 · 右侧常驻按钮 · 方案A 极简线条 ===== */
 .col-item{position:relative;padding-right:88px}
 .col-act-wrap{
@@ -9712,10 +9720,6 @@ window.__APP_CHANGELOG__ = [
     <div class="memo-tabs" id="colTabs">
       <div class="memo-tab on" data-col-tab="mine" id="colTabMine">我的收藏</div>
       <div class="memo-tab" data-col-tab="theirs" id="colTabTheirs">Ta 的收藏</div>
-      <label class="col-fwd-note">
-        <input type="checkbox" id="colFwdNote" checked>
-        <span>带备注</span>
-      </label>
     </div>
     <div class="sel-bar" id="colSelBar">
       <div class="sel-count" id="colSelCountWrap">已选 <b id="colSelCount">0</b> 条</div>
@@ -10506,7 +10510,6 @@ window.__APP_CHANGELOG__ = [
 <!-- 移动字卡：选择目标分类 -->
 <div class="cat-panel-mask" id="moveCatMask">
   <div class="cat-panel">
-    <div class="cp-title">选择目标分类</div>
     <div id="moveCatList"></div>
   </div>
 </div>
@@ -11655,14 +11658,35 @@ const DEFAULT_CARD_GROUPS = [
 	  {mood:'羡慕',kaomoji:'(´∀｀)',anim:'1'},
 	  {mood:'怀旧',kaomoji:'(´-ω-`)',anim:'1'},
 	  {mood:'尴尬',kaomoji:'(ಠ .̫.̫ ಠ)',anim:'1'},
-	  {mood:'吃醋',kaomoji:'(｀へ´)',anim:'1'}
+	  {mood:'吃醋',kaomoji:'(｀へ´)',anim:'1'},
+	  {mood:'温柔',kaomoji:'(◕‿◕✿)',anim:'1'},
+	  {mood:'期待',kaomoji:'(✧ω✧)',anim:'1'},
+	  {mood:'害羞',kaomoji:'(*/ω＼*)',anim:'1'},
+	  {mood:'认真',kaomoji:'(๑•̀ㅂ•́)✧',anim:'1'},
+	  {mood:'委屈',kaomoji:'(｡•́︿•̀｡)',anim:'1'},
+	  {mood:'得意',kaomoji:'(￣▽￣)~*',anim:'1'},
+	  {mood:'恍惚',kaomoji:'(๑´ㅂ`๑)',anim:'1'},
+	  {mood:'治愈',kaomoji:'(❁´◡`❁)',anim:'1'},
+	  {mood:'心疼',kaomoji:'(｡ŏ﹏ŏ)',anim:'1'},
+	  {mood:'心疼你',kaomoji:'(｡╯︵╰｡)',anim:'1'},
+	  {mood:'想你到疯',kaomoji:'(๑•́ ₃ •̀๑)',anim:'1'},
+	  {mood:'满足',kaomoji:'(๑˘︶˘๑)',anim:'1'},
+	  {mood:'无聊',kaomoji:'(－_－) zzZ',anim:'1'},
+	  {mood:'放空',kaomoji:'(・_・)',anim:'1'},
+	  {mood:'心动',kaomoji:'(♡´▽`♡)',anim:'1'}
 	] }
   ]},
   { id:'g-status', name:'状态字卡', icon:'note', sub:'角色当前状态', cats:[ { id:'cs1', name:'状态', list:[
     '🎧 听歌中','💭 发呆中','📖 看书','💼 忙碌','🚫 勿扰','🟢 在线','🫥 离线',
     '💗 爱你','💕 恋爱中','😩 一言难尽','🥲 emo',
     '📶 信号强','📵 信号弱','💤 睡觉','😪 疲惫',   '🥱 困倦',
-    '😑 无聊','🌙 熬夜'
+    '😑 无聊','🌙 熬夜',
+    '📱 刷手机','🍜 吃饭中','🚿 洗澡中','🛌 赖床','☕ 喝咖啡','🍵 喝茶中',
+    '🎮 打游戏','📺 追剧中','🎬 看电影','🎵 唱歌中','🎨 画画中','✍️ 写东西',
+    '📚 学习','💻 加班','🧘 放松中','😌 放空中','🌧️ 走神','☁️ 走神了',
+    '🐱 撸猫','🐶 遛狗','🛒 逛街','🏃 跑步','🚴 骑车','🌳 散步',
+    '💭 想你','🤍 想你中','🩹 受伤了','🥶 冷到了','🥵 热到了','😴 想睡了',
+    '😋 吃饱了','💧 喝水','🍰 吃甜点','🌸 赏花','☀️ 晒太阳','🌙 看月亮'
   ] } ] },
   { id:'g-moment', name:'动态字卡', icon:'star', sub:'专门发动动用', cats:[ { id:'cmo1', name:'日常', list:['今天天气很好。','分享一首歌。','刚看完一本书。'] } ] },
   { id:'g-namecard', name:'名片字卡', icon:'note', sub:'收到名片时角色的回应', cats:[
@@ -11779,6 +11803,100 @@ cardStore.public = cardStore.public.filter(g=>g && g.id !== 'g-open');
 	  return {mood:'', kaomoji:'', anim:'1'};
 	});
   }
+})();
+
+/* ============================================================
+   ★ 新增：给已存在的老数据补上"内置新增"的心情
+   - 在 DEFAULT_CARD_GROUPS 里新加的几条心情（温柔 / 期待 / 害羞 等）
+   - 老用户 localStorge 里的 cardStore 是旧版，不会自动出现
+   - 这里在每次页面加载时，把"默认里有、但老数据里没有"的心情补进 g-mood
+   - 用 mood 名字去重，同名的跳过
+   - 只补一次，之后用户自己删了不会再补回来（用 flag 标记）
+   ============================================================ */
+(function syncNewMoodDefaults(){
+  try{
+    /* 只在第一次加载补一次。之后用户删了就不再补回来。 */
+    var FLAG = 'mj_mood_default_synced_v2';
+    if(lsGet(FLAG, false)) return;
+
+    var mg = cardStore.public.find(function(g){ return g.id === 'g-mood'; });
+    if(!mg || !mg.cats || !mg.cats[0] || !Array.isArray(mg.cats[0].list)) return;
+
+    var dftMood = DEFAULT_CARD_GROUPS.find(function(g){ return g.id === 'g-mood'; });
+    if(!dftMood || !dftMood.cats || !dftMood.cats[0] || !Array.isArray(dftMood.cats[0].list)) return;
+
+    /* 老数据里已有的心情名集合 */
+    var existNames = {};
+    mg.cats[0].list.forEach(function(item){
+      var name = '';
+      if(typeof item === 'string') name = item;
+      else if(item && typeof item === 'object') name = item.mood || '';
+      if(name) existNames[name] = 1;
+    });
+
+    /* 从默认列表里，把老数据里没有的补进来 */
+    var added = 0;
+    dftMood.cats[0].list.forEach(function(item){
+      var name = (item && item.mood) ? item.mood : '';
+      if(!name) return;
+      if(existNames[name]) return;
+      mg.cats[0].list.push(JSON.parse(JSON.stringify(item)));
+      added++;
+    });
+
+    if(added){
+      saveCardStore();
+      console.log('[心情字卡] 补入了 ' + added + ' 条内置新增心情');
+    }
+
+    lsSet(FLAG, true);
+  }catch(e){ console.error('syncNewMoodDefaults 出错', e); }
+})();
+
+/* ============================================================
+   ★ 新增：给已存在的老数据补上"内置新增"的状态
+   - 跟心情补丁同款逻辑，只是换成 g-status
+   - 只补一次，之后用户删了不会再补回来
+   ============================================================ */
+(function syncNewStatusDefaults(){
+  try{
+    var FLAG = 'mj_status_default_synced_v2';
+    if(lsGet(FLAG, false)) return;
+
+    var gs = cardStore.public.find(function(g){ return g.id === 'g-status'; });
+    if(!gs || !gs.cats || !gs.cats[0] || !Array.isArray(gs.cats[0].list)) return;
+
+    var dftStatus = DEFAULT_CARD_GROUPS.find(function(g){ return g.id === 'g-status'; });
+    if(!dftStatus || !dftStatus.cats || !dftStatus.cats[0] || !Array.isArray(dftStatus.cats[0].list)) return;
+
+    /* 老数据里已有的状态名集合 */
+    var existNames = {};
+    gs.cats[0].list.forEach(function(item){
+      var name = '';
+      if(typeof item === 'string') name = item;
+      else if(item && typeof item === 'object') name = item.text || '';
+      if(name) existNames[name] = 1;
+    });
+
+    /* 从默认列表里，把老数据里没有的补进来 */
+    var added = 0;
+    dftStatus.cats[0].list.forEach(function(item){
+      var name = '';
+      if(typeof item === 'string') name = item;
+      else if(item && typeof item === 'object') name = item.text || '';
+      if(!name) return;
+      if(existNames[name]) return;
+      gs.cats[0].list.push(typeof item === 'string' ? item : JSON.parse(JSON.stringify(item)));
+      added++;
+    });
+
+    if(added){
+      saveCardStore();
+      console.log('[状态字卡] 补入了 ' + added + ' 条内置新增状态');
+    }
+
+    lsSet(FLAG, true);
+  }catch(e){ console.error('syncNewStatusDefaults 出错', e); }
 })();
 function ensureCardTimes(){
   function walkGroups(groups){
@@ -13960,7 +14078,11 @@ function setCollectTheirs(roleId, arr){
   saveCollectTheirsMap(m);
 }
 
-/* 把一条消息收藏进「我的收藏」 */
+/* 把一条消息收藏进「我的收藏」
+   ★ 修复：语音消息要连音频一起收藏
+     - 语音的音频 Blob 原本只挂在 IndexedDB，key 在 msg.voiceIdbKey
+     - 收藏时把这个 key 也存进收藏记录里
+     - 用户点收藏条目可以播放，数据不丢 */
 function collectMsg(m){
   if(!m) return;
   const rid = getCurrentRoleId();
@@ -13968,16 +14090,27 @@ function collectMsg(m){
   if(!text){ toast('这条没什么可收藏的'); return; }
   const arr = getCollectMine(rid);
   if(arr.some(x => x.msgId === m.id)){ toast('已经收藏过了'); return; }
-  arr.unshift({
+  const item = {
     id: uid(),
     msgId: m.id,
     text: text,
     kind: collectKindOf(m),
     from: (m.role === 'user') ? 'user' : 'char',
     time: Date.now(),
-    note: '',            /* ★ 我的备注 */
-    noteCollapsed: false /* ★ 备注是否收起 */
-  });
+    note: '',
+    noteCollapsed: false
+  };
+  /* ★ 语音：把音频 key 也一起存下 */
+  if(m.voice){
+    item.voice = m.voice;                 /* 时长（秒） */
+    item.voiceIdbKey = m.voiceIdbKey || ''; /* IndexedDB 里的 key */
+    item.voiceUrl = m.voiceUrl || '';       /* 临时 URL（会话内有效） */
+  }
+  /* ★ 表情图：把图存下（表情图本身就是 dataURL 或 URL，text 里也带不出来） */
+  if(m.sticker){
+    item.sticker = m.sticker;
+  }
+  arr.unshift(item);
   if(arr.length > 500) arr.length = 500;
   setCollectMine(rid, arr);
   toast('已收藏');
@@ -14235,10 +14368,28 @@ function renderCollectScreen(tab){
       '<button class="col-act-btn col-note-btn" data-note-btn="' + it.id + '" type="button" title="备注">' + iconNote + '</button>' +
       (tab === 'mine' ? '<button class="col-act-btn col-del" data-del="' + it.id + '" type="button" title="删除">' + iconDel + '</button>' : '');
 
+    /* ★ 语音：渲染成一个可点击的语音气泡（跟聊天里同款） */
+    let contentHTML = '';
+    if(it.kind === 'voice' && it.voiceIdbKey){
+      contentHTML =
+        '<div class="col-voice voice-bubble" data-idbkey="' + escapeHTML(it.voiceIdbKey) + '" data-dur="' + (it.voice||0) + '">' +
+          '<div class="vb-play">' +
+            '<svg class="icon-play" viewBox="0 0 12 12"><path d="M3 1.5 L10 6 L3 10.5 Z"/></svg>' +
+            '<svg class="icon-pause" viewBox="0 0 12 12"><rect x="3" y="2" width="2.5" height="8" rx="1"/><rect x="6.5" y="2" width="2.5" height="8" rx="1"/></svg>' +
+          '</div>' +
+          '<div class="vb-wave"><span></span><span></span><span></span><span></span><span></span><span></span></div>' +
+          '<span class="vb-dur">' + (it.voice||0) + '"</span>' +
+        '</div>';
+    } else if(it.kind === 'sticker' && it.sticker){
+      contentHTML = '<div class="col-sticker"><img src="' + it.sticker + '" style="max-width:120px;border-radius:10px;display:block"></div>';
+    } else {
+      contentHTML = '<div class="col-txt">' + escapeHTML(it.text) + '</div>';
+    }
+
     return '<div class="col-item" data-id="' + it.id + '">' +
       '<div class="col-av" style="border-radius:' + avRadius + '">' + avHTML + '</div>' +
       '<div class="col-main">' +
-        '<div class="col-txt">' + escapeHTML(it.text) + '</div>' +
+        contentHTML +
         noteLine +
         '<div class="col-meta">' + escapeHTML(stamp) + '</div>' +
       '</div>' +
@@ -14254,6 +14405,15 @@ function renderCollectScreen(tab){
     btn.onclick = function(e){
       e.stopPropagation();
       const id = btn.dataset.del;
+      /* ★ 如果是语音收藏，把 IndexedDB 里的音频也一起删掉 */
+      try{
+        const curRid = getCurrentRoleId();
+        const src = (tab === 'mine') ? getCollectMine(curRid) : getCollectTheirs(curRid);
+        const it = src.find(function(x){ return x.id === id; });
+        if(it && it.voiceIdbKey && window.__idb && __idb.del){
+          __idb.del(it.voiceIdbKey).catch(function(){});
+        }
+      }catch(err){}
       openCollectDelConfirm(id);
     };
   });
@@ -14451,6 +14611,42 @@ function bindColNoteEvents(body, tab){
   if(!body) return;
   const rid = getCurrentRoleId();
 
+  /* ============================================================
+     ★ 收藏页 · 语音气泡点击播放
+     - 数据从 IndexedDB 的 voiceIdbKey 拿
+     - 跟聊天页的语音气泡用同一套 .voice-bubble 样式
+     ============================================================ */
+  body.querySelectorAll('.col-voice.voice-bubble').forEach(function(vb){
+    /* 预先把 IndexedDB 的音频 URL 塞进 dataset.url */
+    const key = vb.dataset.idbkey;
+    if(key && window.__idb && __idb.toURL){
+      __idb.toURL(key).then(function(url){
+        if(url) vb.dataset.url = url;
+      }).catch(function(){});
+    }
+    vb.onclick = function(e){
+      e.stopPropagation();
+      const url = vb.dataset.url;
+      if(!url){ toast('音频还在加载，请稍候'); return; }
+      if(vb._audio && !vb._audio.paused){
+        vb._audio.pause();
+        vb.classList.remove('playing');
+        return;
+      }
+      if(!vb._audio){
+        vb._audio = new Audio(url);
+        vb._audio.onended = function(){ vb.classList.remove('playing'); };
+        vb._audio.onerror = function(){ toast('播放失败'); vb.classList.remove('playing'); };
+      }
+      vb._audio.currentTime = 0;
+      vb.classList.add('playing');
+      vb._audio.play().catch(function(){
+        vb.classList.remove('playing');
+        toast('播放被拦截，请再点一次');
+      });
+    };
+  });
+
   /* 点备注文字 → 编辑（仅“我的收藏”可编辑） */
   body.querySelectorAll('[data-note-edit]').forEach(function(el){
     el.onclick = function(e){
@@ -14536,9 +14732,8 @@ function shareCollectItem(itemId){
     return;
   }
 
-  /* ★ 带不带备注，由收藏页的开关控制 */
-  const withNote = getCollectForwardNote();
-  const noteText = withNote ? (it.note || '') : '';
+  /* ★ 备注这里"先照常带上"，用户如果在弹层里关掉开关，弹层会把它去掉 */
+  const noteText = it.note || '';
 
   /* ★ 不往 msgs 里塞，避免触发聊天记录变化和顶部弹窗。
      直接把「合成消息」交给一个临时转发通道，走完就丢。
@@ -14826,9 +15021,27 @@ function openForwardPicker(msgIds, mode){
 
   const avRadius = (lsGet('mj_beauty_v1',{}).avatarShape === 'circle') ? '50%' : '12%';
 
+  /* ★ 带备注开关：只在“单条转发”且源数据里确实有备注时，才显示
+     记住上次选择，存 mj_collect_fwd_note_v1 */
+  const showNoteSwitch = (mode === 'single') && (function(){
+    /* 检查源消息里有没有任何一条带 note 或 from（说明是收藏转发） */
+    const tempMap = window.__forwardTempMsgs || {};
+    const hasNote = msgIds.some(function(id){
+      const m = tempMap[id] || msgs.find(function(x){ return x.id === id; });
+      return m && (m.note !== undefined || m.from !== undefined) && m.note;
+    });
+    return hasNote;
+  })();
+
   mask.innerHTML =
 	'<div style="width:100%;max-width:520px;background:#fff;border-radius:22px 22px 0 0;padding:22px 20px calc(18px + env(safe-area-inset-bottom));max-height:70vh;display:flex;flex-direction:column">'
 	+ '<div style="font-size:15px;font-weight:500;letter-spacing:2px;color:#1a1a1a;text-align:center;padding-bottom:14px;border-bottom:0.6px dashed rgba(0,0,0,.08);flex:none">转发给</div>'
+	+ (showNoteSwitch ? (
+	    '<label style="display:flex;align-items:center;gap:8px;padding:10px 2px 6px;font-size:12.5px;color:#1a1a1a;letter-spacing:.5px;cursor:pointer;flex:none">'
+	    + '<input type="checkbox" id="fwNoteSw" style="appearance:none;-webkit-appearance:none;width:30px;height:17px;border-radius:10px;background:#e5e5e5;position:relative;cursor:pointer;outline:none;border:none;flex:none;transition:background .18s">'
+	    + '<span>带上收藏备注</span>'
+	    + '</label>'
+	  ) : '')
 	+ '<div id="forwardTargetList" style="flex:1;overflow-y:auto;padding:6px 0"></div>'
 	+ '<div style="display:flex;gap:10px;margin-top:14px;flex:none">'
 	+   '<button id="fwPickCancel" type="button" style="flex:1;padding:12px 0;border-radius:14px;border:0.7px solid rgba(0,0,0,.14);background:transparent;color:#999;font-size:13.5px;font-family:inherit;cursor:pointer">取消</button>'
@@ -14837,6 +15050,26 @@ function openForwardPicker(msgIds, mode){
 	+ '</div>';
 
   document.body.appendChild(mask);
+
+  /* ★ 回填「带备注」开关状态（记住上次选什么）
+     存 mj_collect_fwd_note_v1，默认 true */
+  const noteSw = mask.querySelector('#fwNoteSw');
+  if(noteSw){
+    const saved = getCollectForwardNote();
+    noteSw.checked = !!saved;
+    /* 视觉上把滑块位置对上 */
+    noteSw.style.background = saved ? '#1a1a1a' : '#e5e5e5';
+    /* 用伪元素做滑块 */
+    const style = document.createElement('style');
+    style.textContent =
+      '#fwNoteSw::after{content:"";position:absolute;left:2px;top:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:transform .18s;box-shadow:0 1px 2px rgba(0,0,0,.15)}'
+      + '#fwNoteSw:checked::after{transform:translateX(13px)}';
+    mask.appendChild(style);
+    noteSw.addEventListener('change', function(){
+      setCollectForwardNote(this.checked);
+      this.style.background = this.checked ? '#1a1a1a' : '#e5e5e5';
+    });
+  }
 
   const targetList = mask.querySelector('#forwardTargetList');
   const selectedTargets = new Set();
@@ -14870,27 +15103,26 @@ function openForwardPicker(msgIds, mode){
   mask.querySelector('#fwPickCancel').onclick = () => {
 	mask.remove();
 	exitForwardSelectMode();
-	/* ★ 如果是从收藏页过来的，关掉收藏页，避免退不出去 */
-	document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
-	if(typeof goToPage === 'function') goToPage('chat');
+	/* ★ 取消不跳页：把弹层关掉，用户继续停在原来的页面上 */
   };
   mask.addEventListener('click', (e) => {
 	if(e.target === mask){
 	  mask.remove();
 	  exitForwardSelectMode();
-	  document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
-	  if(typeof goToPage === 'function') goToPage('chat');
+	  /* ★ 点遮罩也只关弹层，不跳页 */
 	}
   });
   mask.querySelector('#fwPickOk').onclick = () => {
 	if(!selectedTargets.size){ toast('请先选择至少一个角色'); return; }
+	/* ★ 关键：如果弹层里有「带备注」开关，以它的当前值为准
+	   否则读本地保存的（默认 true）
+	   这一句要在 mask.remove() 之前执行，否则拿不到 noteSw 的勾选状态 */
+	const finalWithNote = noteSw ? noteSw.checked : getCollectForwardNote();
 	mask.remove();
-	try { execForward(msgIds, Array.from(selectedTargets), mode); }
+	try { execForward(msgIds, Array.from(selectedTargets), mode, finalWithNote); }
 	finally {
 	  exitForwardSelectMode();
-	  /* ★ 转发完成后关掉收藏页，回到聊天页 */
-	  document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
-	  if(typeof goToPage === 'function') goToPage('chat');
+	  /* ★ 转发完成后只关弹层，不跳页。 */
 	}
   };
 }
@@ -14946,8 +15178,10 @@ window.__openForwardPickerWithTemp = function(tempMsgs, mode){
 
 /* 真正执行转发
    mode: 'single' | 'multi-batch' | 'multi-merge' */
-function execForward(msgIds, targetRoleIds, mode){
+function execForward(msgIds, targetRoleIds, mode, withNote){
   if(!msgIds || !msgIds.length || !targetRoleIds || !targetRoleIds.length) return;
+  /* ★ withNote 是弹层里「带备注」开关的当前值（默认 true） */
+  if(typeof withNote === 'undefined') withNote = getCollectForwardNote();
 
   /* 收集源消息：优先从临时通道拿，其次才从 msgs 里找 */
   const srcMsgs = [];
@@ -14966,7 +15200,7 @@ function execForward(msgIds, targetRoleIds, mode){
 	/* 逐条转发 */
 	if(mode === 'single' || mode === 'multi-batch'){
 	  srcMsgs.forEach((src, idx) => {
-		const copyMsg = buildForwardCopyMsg(src, targetId, idx);
+		const copyMsg = buildForwardCopyMsg(src, targetId, idx, withNote);
 		appendMsgToRole(targetId, copyMsg);
 	  });
 	}
@@ -14990,18 +15224,20 @@ function execForward(msgIds, targetRoleIds, mode){
 }
 
 /* 单条转发：生成一条副本消息
-   - 如果是来自收藏的（带 note / from 标记），渲染成“单条转发卡片”
+   - 如果是来自收藏的（带 note / from 标记），渲染成"单条转发卡片"
    - 否则保留原来的行为（原样文本 / 贴图 / 占卜卡） */
-function buildForwardCopyMsg(src, targetId, idx){
+function buildForwardCopyMsg(src, targetId, idx, withNote){
   const now = Date.now() + idx;
   const m = { id: 'f' + now.toString(36) + Math.random().toString(36).slice(2,6), role: 'user', time: now };
 
-  /* ★ 收藏转发：带 note 字段或 from 字段的，一律按卡片走 */
+  /* ★ 收藏转发：带 note 字段或 from 字段的，一律按卡片走
+     备注是否带上，由 withNote 参数决定 */
   if(src && (src.from !== undefined || src.note !== undefined) && !src.divine && !src.sticker){
     const role = getRole();
+    const keepNote = (typeof withNote === 'boolean') ? withNote : getCollectForwardNote();
     m.forwardCard = {
       text: String(src.text || ''),
-      note: String(src.note || ''),
+      note: keepNote ? String(src.note || '') : '',
       from: (src.from === 'user') ? 'user' : 'char',
       fromName: (src.from === 'user') ? userName() : role.name,
       fromRoleId: (src.from === 'user') ? '' : getCurrentRoleId()
@@ -15421,35 +15657,59 @@ function _buildSilentWavURL(){
    - 开关打开时立即启动
    - 切后台时由 visibilitychange 兜底再拉一次
    - 回到前台也不停
-   - 只有用户手动关开关 或 权限出问题 才停 */
+   - 只有用户手动关开关 或 权限出问题 才停
+   ★ 修复：某些安卓内核（雨见/夸克等）切后台会强制暂停 <audio>，
+          必须靠 Web Audio API 同时跑一份"超低音振荡器"，
+          且用 AudioContext.resume() 主动顶住，才能让 page 侧的定时器活着。 */
+let _keepAliveAudioCtx = null;
+let _keepAliveOsc = null;
 function startKeepAlive(){
   if(!getKeepAliveOn()) return;
-  /* 已经在跑就不重复创建 */
-  if(_keepAliveRunning && _keepAliveAudio && !_keepAliveAudio.paused) return;
 
-  try{
-    if(!_keepAliveWavURL) _keepAliveWavURL = _buildSilentWavURL();
-    const a = new Audio(_keepAliveWavURL);
-    a.loop = true;
-    a.volume = 0.01;         /* 几乎无声，但不为 0，避免被浏览器判定为"静音跳过" */
-    a.setAttribute('playsinline', '');
-    a.setAttribute('webkit-playsinline', '');
-    /* ★ 关键：audio 元素加一个"防被页面隐藏时暂停"的属性 */
-    a.setAttribute('preload', 'auto');
-    a.play().then(function(){
-      _keepAliveAudio = a;
-      _keepAliveRunning = true;
-      console.log('[保活] 已开始');
-    }).catch(function(e){
-      console.warn('[保活] 启动失败', e);
-      _keepAliveAudio = null;
-      _keepAliveRunning = false;
-    });
-  }catch(e){
-    console.warn('[保活] 启动异常', e);
-    _keepAliveAudio = null;
-    _keepAliveRunning = false;
+  /* --- 1. 传统 <audio> loop（能跑就跑，被暂停也无所谓） --- */
+  if(!(_keepAliveRunning && _keepAliveAudio && !_keepAliveAudio.paused)){
+    try{
+      if(!_keepAliveWavURL) _keepAliveWavURL = _buildSilentWavURL();
+      const a = new Audio(_keepAliveWavURL);
+      a.loop = true;
+      a.volume = 0.01;
+      a.setAttribute('playsinline', '');
+      a.setAttribute('webkit-playsinline', '');
+      a.setAttribute('preload', 'auto');
+      a.play().then(function(){
+        _keepAliveAudio = a;
+        _keepAliveRunning = true;
+        console.log('[保活] <audio> 已开始');
+      }).catch(function(e){
+        console.warn('[保活] <audio> 启动失败', e);
+        _keepAliveAudio = null;
+        _keepAliveRunning = false;
+      });
+    }catch(e){ console.warn('[保活] <audio> 异常', e); }
   }
+
+  /* --- 2. 叠加 Web Audio API 振荡器（关键修复） --- */
+  try{
+    if(!_keepAliveAudioCtx){
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(AC){
+        _keepAliveAudioCtx = new AC();
+        _keepAliveOsc = _keepAliveAudioCtx.createOscillator();
+        const gain = _keepAliveAudioCtx.createGain();
+        /* 极低音量，几乎无声。频率设 440 也无所谓，音量决定听不到 */
+        _keepAliveOsc.frequency.value = 440;
+        gain.gain.value = 0.0001;
+        _keepAliveOsc.connect(gain);
+        gain.connect(_keepAliveAudioCtx.destination);
+        _keepAliveOsc.start();
+        console.log('[保活] WebAudio 振荡器 已启动');
+      }
+    }
+    /* 关键：主动 resume，某些内核会把 AudioContext 挂起 */
+    if(_keepAliveAudioCtx && _keepAliveAudioCtx.state === 'suspended'){
+      _keepAliveAudioCtx.resume().catch(function(){});
+    }
+  }catch(e){ console.warn('[保活] WebAudio 异常', e); }
 }
 
 /* 停止保活：只有用户手动关开关，或权限出问题时才调 */
@@ -15458,8 +15718,21 @@ function stopKeepAlive(){
   if(_keepAliveAudio){
     try{ _keepAliveAudio.pause(); }catch(e){}
     _keepAliveAudio = null;
-    console.log('[保活] 已停止');
+    console.log('[保活] <audio> 已停止');
   }
+  /* 同步关掉 Web Audio 振荡器 */
+  try{
+    if(_keepAliveOsc){
+      try{ _keepAliveOsc.stop(); }catch(e){}
+      try{ _keepAliveOsc.disconnect(); }catch(e){}
+      _keepAliveOsc = null;
+    }
+    if(_keepAliveAudioCtx){
+      try{ _keepAliveAudioCtx.close(); }catch(e){}
+      _keepAliveAudioCtx = null;
+    }
+    console.log('[保活] WebAudio 振荡器 已停止');
+  }catch(e){}
 }
 
 /* 开关变了：同步持久化 + 立即生效
@@ -15469,9 +15742,7 @@ function applyKeepAliveSwitch(on){
   setKeepAliveOn(on);
   if(on){
     startKeepAlive();
-    /* ★ 一次性注册一个"每 30 秒自检一次"的定时器：
-       万一被浏览器偷偷暂停了（某些系统省电策略），
-       只要开关还是开的，就自动拉回来 */
+    /* 30 秒看门狗 */
     if(!window.__kaWatchdog){
       window.__kaWatchdog = setInterval(function(){
         try{
@@ -15480,12 +15751,31 @@ function applyKeepAliveSwitch(on){
             console.log('[保活] 检测到被暂停，重新启动');
             startKeepAlive();
           }
+          if(_keepAliveAudioCtx && _keepAliveAudioCtx.state === 'suspended'){
+            _keepAliveAudioCtx.resume().catch(function(){});
+          }
         }catch(e){}
       }, 30000);
+    }
+    /* 5 秒看门狗：更频繁，专门顶"切出去那一瞬间被暂停" */
+    if(!window.__kaFastWatchdog){
+      window.__kaFastWatchdog = setInterval(function(){
+        try{
+          if(!getKeepAliveOn()) return;
+          if(_keepAliveAudioCtx && _keepAliveAudioCtx.state === 'suspended'){
+            _keepAliveAudioCtx.resume().catch(function(){});
+          }
+          if(!_keepAliveRunning || !_keepAliveAudio || _keepAliveAudio.paused){
+            startKeepAlive();
+          }
+        }catch(e){}
+      }, 5000);
     }
   } else {
     stopKeepAlive();
     if(window.__kaWatchdog){ clearInterval(window.__kaWatchdog); window.__kaWatchdog = null; }
+    if(window.__kaFastWatchdog){ clearInterval(window.__kaFastWatchdog); window.__kaFastWatchdog = null; }
+    if(window.__kaForegroundPump){ clearInterval(window.__kaForegroundPump); window.__kaForegroundPump = null; }
   }
 }
 
@@ -15607,10 +15897,13 @@ try{
   localStorage.removeItem('mj_sys_notify_on_v2');
 }catch(e){}
 function getSysNotifyOn(){
-  /* ★ 默认关闭：用户没主动点开过，一律返回 false。
-     想开启必须自己到「设置 → 通知」里打开，打开时会请求系统权限。 */
+  /* ★ 修复：默认应该是"开"，不是"关"。
+     只有用户主动关过（本地存了 false），才返回 false。
+     如果本地没存过（v === null），就默认 true。
+     这样用户第一次进来、系统权限也给了的话，
+     通知开关应该显示为"开"，切后台也能收到通知。 */
   var v = lsGet(SYS_NOTIFY_KEY, null);
-  if(v === null) return false;
+  if(v === null) return true;   /* 从没设过 → 默认开 */
   return !!v;
 }
 
@@ -23573,23 +23866,7 @@ document.addEventListener('change', function(e){
     renderCollectScreen(which);
   }, true);
 
-  /* ★ 带备注开关：回填 + 绑定 */
-  document.addEventListener('change', function(e){
-    const t = e.target;
-    if(!t || t.id !== 'colFwdNote') return;
-    setCollectForwardNote(t.checked);
-    if(typeof toast === 'function') toast(t.checked ? '转发时带备注' : '转发时不带备注');
-  }, true);
-  /* 每次打开收藏页回填一次 */
-  document.addEventListener('click', function(e){
-    const t = e.target;
-    if(!t || !t.closest) return;
-    if(!t.closest('#page-me .me-row[data-func="collect"]')) return;
-    setTimeout(function(){
-      const cb = document.getElementById('colFwdNote');
-      if(cb) cb.checked = getCollectForwardNote();
-    }, 60);
-  }, true);
+
 
   /* 返回 */
   document.addEventListener('click', function(e){
@@ -24354,13 +24631,13 @@ document.addEventListener('click', function(e){
       if(cb3) cb3.checked = getNotifyMoment();
 
       /* ★ 后台通知开关：
-         1) 如果本地存的是"开"，但浏览器权限已经不是 granted 了 → 说明权限没了，把开关也置为关
-         2) 否则，回填本地存的值 */
+         1) 浏览器权限 = denied（明确被拒） → 强制关，且本地也置 false
+         2) 权限 = default（还没问过） → 不强制置关，本地存的值原样回填
+            给用户留出"点开触发权限申请"的机会
+         3) 权限 = granted（已同意） → 本地存的值原样回填
+         4) 本地从没存过 → getSysNotifyOn() 现在返回 true，所以默认显示为"开" */
       if(cb2){
-        /* ★ 只在权限明确被浏览器拒绝（denied）时才强制关掉本地开关，
-           permission === 'default' 时不动本地值，
-           让用户点开关去触发系统的权限申请弹窗。 */
-        if(getSysNotifyOn() && typeof Notification !== 'undefined' && Notification.permission === 'denied'){
+        if(typeof Notification !== 'undefined' && Notification.permission === 'denied'){
           cb2.checked = false;
           setSysNotifyOn(false);
         } else {
@@ -25577,7 +25854,7 @@ function showScreen(id){
 function closeScreen(){ $$('.screen').forEach(s=>s.classList.remove('on')); }
 
 $$('#page-desk .desk-app').forEach(el=>{ el.addEventListener('click',()=>{ const k=el.dataset.open; if(k==='beauty') openBeauty(); else if(k==='divine') renderDivineRecords(),showScreen('divineRecordScreen'); else if(k==='behavior'){ behaviorKeyword=''; const si=$('#bhSearchInput'); if(si) si.value=''; renderBehavior(); showScreen('behaviorScreen'); }
-else if(k==='relation'){ relationKeyword=''; const ri=$('#relSearchInput'); if(ri) ri.value=''; openRelationScreen(); } else if(k==='music') toast('音乐 · 下一步补'); else if(k==='moments'){ if(typeof window.openMoments === 'function') window.openMoments(); } else if(k==='friends'){ if(window.__goPage) window.__goPage(0); } else if(k==='videopool'){ openVideoPool(); } else if(k==='forcevideo'){ forceSendVideo(); } else if(k==='memory'){ toast('回忆 · 下一步补'); } else if(k==='groupchat'){ openGroupList(); } else if(k==='calendar'){ openDeskCalendar(); } }); });
+else if(k==='relation'){ relationKeyword=''; const ri=$('#relSearchInput'); if(ri) ri.value=''; openRelationScreen(); } else if(k==='music'){ openMusicScreen(); } else if(k==='moments'){ if(typeof window.openMoments === 'function') window.openMoments(); } else if(k==='friends'){ if(window.__goPage) window.__goPage(0); } else if(k==='videopool'){ openVideoPool(); } else if(k==='forcevideo'){ forceSendVideo(); } else if(k==='memory'){ toast('回忆 · 下一步补'); } else if(k==='groupchat'){ openGroupList(); } else if(k==='calendar'){ openDeskCalendar(); } }); });
 $$('#page-me .me-row').forEach(el=>{ el.addEventListener('click',()=>{
   const fn = el.dataset.func;
   if(fn==='card') openCardLib();
@@ -26093,7 +26370,7 @@ function openMovePicker(){
 
   /* 第二步 A：当前分组的所有分类（排除原分类、排除修改字卡存放处） */
   function renderStep2SameGroup(){
-    let html = '<div class="cp-title" style="padding:10px 18px 6px;font-size:10.5px;letter-spacing:2px;color:#999">' + escapeHTML(g.name) + '</div>';
+    let html = '';
     let count = 0;
     (g.cats || []).forEach(c => {
       if(c.id === curCatId) return;                    /* 不显示原分类 */
@@ -26128,7 +26405,7 @@ function openMovePicker(){
   /* 第二步 B：先列所有分组（排除当前分组、排除 g-edited），点一个分组再列它的分类 */
   function renderStep2OtherGroups(){
     const allGroups = getGroupsByOwner(curOwner);
-    let html = '<div class="cp-title" style="padding:10px 18px 6px;font-size:10.5px;letter-spacing:2px;color:#999">选择分组</div>';
+    let html = '';
     let count = 0;
     allGroups.forEach(otherG => {
       if(otherG.id === g.id) return;                   /* 排除当前分组 */
@@ -26163,7 +26440,7 @@ function openMovePicker(){
   function renderStep3GroupCats(gid){
     const otherG = getGroup(curOwner, gid);
     if(!otherG){ toast('分组不存在'); return; }
-    let html = '<div class="cp-title" style="padding:10px 18px 6px;font-size:10.5px;letter-spacing:2px;color:#999">' + escapeHTML(otherG.name) + '</div>';
+    let html = '';
     let count = 0;
     (otherG.cats || []).forEach(c => {
       if(c.id === 'ce-edited') return;                 /* 排除「修改后的字卡」 */
@@ -26268,7 +26545,13 @@ on('#confirmDelOk','click',()=>{
   /* 收藏页的删除：走这条分支 */
   if(_colDelPendingId){
     const rid = getCurrentRoleId();
-    const arr = getCollectMine(rid).filter(x => x.id !== _colDelPendingId);
+    const src = getCollectMine(rid);
+    /* ★ 先找出这条，把它的语音音频一起清掉 */
+    const it = src.find(function(x){ return x.id === _colDelPendingId; });
+    if(it && it.voiceIdbKey && window.__idb && __idb.del){
+      __idb.del(it.voiceIdbKey).catch(function(){});
+    }
+    const arr = src.filter(x => x.id !== _colDelPendingId);
     setCollectMine(rid, arr);
     _colDelPendingId = '';
     $('#mConfirmDel').classList.remove('show');
@@ -35371,8 +35654,28 @@ document.addEventListener('visibilitychange', function(){
     /* 页面切到后台：记下时间点，回来时用它算漏了什么 */
     try{ lsSet('mj_last_seen_at_v1', Date.now()); }catch(e){}
 
-    /* ★ 如果开了后台保活，切后台时立刻启动保活音频 */
-    try{ if(typeof startKeepAlive === 'function') startKeepAlive(); }catch(e){}
+    /* ★ 关键修复：切后台时反复顶几次保活，
+       - 有些内核在切后台瞬间会暂停 audio / 挂起 AudioContext
+       - 每 500ms 顶一次，顶 10 秒，把活拉回来
+       - 只要开关是开的，就不允许它死掉 */
+    if(getKeepAliveOn()){
+      try{ startKeepAlive(); }catch(e){}
+      if(window.__kaForegroundPump) clearInterval(window.__kaForegroundPump);
+      let _pump = 0;
+      window.__kaForegroundPump = setInterval(function(){
+        _pump++;
+        try{
+          if(!getKeepAliveOn()){ clearInterval(window.__kaForegroundPump); window.__kaForegroundPump = null; return; }
+          if(!_keepAliveRunning || !_keepAliveAudio || _keepAliveAudio.paused){
+            startKeepAlive();
+          }
+          if(_keepAliveAudioCtx && _keepAliveAudioCtx.state === 'suspended'){
+            _keepAliveAudioCtx.resume().catch(function(){});
+          }
+        }catch(e){}
+        if(_pump >= 20){ clearInterval(window.__kaForegroundPump); window.__kaForegroundPump = null; }
+      }, 500);
+    }
 
     /* ============================================================
        ★ 切后台时，把"接下来 6 小时内该弹的通知"算出来，
@@ -35602,8 +35905,564 @@ function closeDeskCalendar(){
   window.__deskClockTimer = setInterval(updateClock, 1000);
 }
 
-/* 挂到 window */
-window.__calendar = {
+/* ============================================================
+   音乐页 · 外壳（HTML 结构 + CSS + JS 骨架）
+   - 完整可用的 UI，下一组替换点补"上传 mp3 + 播放"逻辑
+   - 打开方式：功能页 → 点「音乐」
+   - 关闭方式：左上角「‹」
+   ============================================================ */
+(function ensureMusicScreen(){
+  if(document.getElementById('musicScreen')) return;
+
+  /* ---- 1. CSS ---- */
+  var st = document.createElement('style');
+  st.id = 'musicScreenStyle';
+  st.textContent = [
+    '#musicScreen{position:fixed;inset:0;z-index:1200;max-width:520px;margin:0 auto;background:#fff;display:none;flex-direction:column;overflow:hidden;',
+      'font-family:"Songti SC","STSong","SimSun","宋体",serif;color:#1a1a1a;',
+      '-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}',
+    '#musicScreen.on{display:flex}',
+    '#musicScreen .ms-top{flex:none;display:flex;align-items:center;gap:12px;padding:22px 24px 14px}',
+    '#musicScreen .ms-back{width:36px;height:36px;flex:none;border:none;background:transparent;',
+      'color:#1a1a1a;font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;',
+      'padding:0 0 4px;font-family:inherit;cursor:pointer;opacity:.55;transition:opacity .18s ease}',
+    '#musicScreen .ms-back:active{opacity:1}',
+    '#musicScreen .ms-title{flex:1;font-size:15px;font-weight:300;letter-spacing:8px;text-align:center;color:#1a1a1a;padding-left:8px}',
+    '#musicScreen .ms-add{width:36px;height:36px;flex:none;border:none;background:transparent;',
+      'color:#1a1a1a;font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;',
+      'padding:0;cursor:pointer;font-family:inherit;opacity:.55;transition:opacity .18s ease}',
+    '#musicScreen .ms-add:active{opacity:1}',
+
+    '#musicScreen .ms-chips{flex:none;display:flex;gap:8px;padding:0 24px 20px}',
+    '#musicScreen .ms-chip{padding:6px 14px;font-size:12px;letter-spacing:2.5px;color:#aaa;',
+      'background:transparent;border:0.7px solid rgba(0,0,0,.12);border-radius:14px;cursor:pointer;',
+      'font-family:inherit;font-weight:300;transition:all .2s ease}',
+    '#musicScreen .ms-chip:active{background:#f5f5f5}',
+    '#musicScreen .ms-chip.on{color:#fff;background:#1a1a1a;border-color:#1a1a1a;font-weight:400}',
+
+    '#musicScreen .ms-mode-row{flex:none;display:flex;gap:24px;padding:0 24px 16px;border-bottom:0.6px dashed #f0f0f0}',
+    '#musicScreen .ms-mode{padding:4px 0;font-size:11.5px;color:#bbb;letter-spacing:2px;',
+      'background:transparent;border:none;cursor:pointer;position:relative;font-family:inherit;font-weight:300}',
+    '#musicScreen .ms-mode.on{color:#1a1a1a;font-weight:400}',
+    '#musicScreen .ms-mode.on::after{content:"";position:absolute;left:50%;bottom:-6px;',
+      'transform:translateX(-50%);width:16px;height:1.5px;background:#1a1a1a;border-radius:2px}',
+
+    '#musicScreen .ms-now{flex:none;padding:28px 28px 10px;text-align:center}',
+    '#musicScreen .ms-cover{width:108px;height:108px;margin:0 auto 20px;border-radius:50%;',
+      'background:radial-gradient(circle at center,#2a2a2a 0%,#2a2a2a 17%,#1a1a1a 18%,#1a1a1a 23%,#2a2a2a 24%,#2a2a2a 41%,#1a1a1a 42%,#1a1a1a 47%,#2a2a2a 48%,#2a2a2a 65%,#1a1a1a 66%);',
+      'display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 6px 20px rgba(0,0,0,.16)}',
+    '#musicScreen .ms-cover.spinning{animation:msSpin 8s linear infinite}',
+    '@keyframes msSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}',
+    '#musicScreen .ms-cover::before{content:"";position:absolute;width:26px;height:26px;border-radius:50%;background:#fff}',
+    '#musicScreen .ms-cover::after{content:"";position:absolute;width:6px;height:6px;border-radius:50%;background:#1a1a1a}',
+    '#musicScreen .ms-now-name{font-size:15px;letter-spacing:1px;color:#1a1a1a;font-weight:300;',
+      'margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 10px}',
+    '#musicScreen .ms-now-sub{font-size:9.5px;letter-spacing:4px;color:#c8c8c8;font-family:Georgia,serif;font-weight:300}',
+
+    '#musicScreen .ms-progress{flex:none;padding:18px 28px 6px;display:flex;align-items:center;gap:12px}',
+    '#musicScreen .ms-time{font-size:10px;color:#bbb;font-family:Georgia,serif;flex:none;min-width:36px;letter-spacing:.5px}',
+    '#musicScreen .ms-time.r{text-align:right}',
+    '#musicScreen .ms-pbar{flex:1;height:1px;background:#ececec;border-radius:2px;position:relative;cursor:pointer}',
+    '#musicScreen .ms-pfill{position:absolute;left:0;top:0;bottom:0;width:0%;background:#1a1a1a;border-radius:2px}',
+    '#musicScreen .ms-pbar::after{content:"";position:absolute;width:8px;height:8px;border-radius:50%;',
+      'background:#1a1a1a;top:50%;transform:translate(-50%,-50%);left:var(--ms-pos,0%);pointer-events:none;transition:left .1s linear}',
+
+    '#musicScreen .ms-controls{flex:none;display:flex;align-items:center;justify-content:center;gap:30px;padding:14px 0 22px}',
+    '#musicScreen .ms-ctl{width:44px;height:44px;border:none;background:transparent;color:#1a1a1a;cursor:pointer;',
+      'padding:0;display:flex;align-items:center;justify-content:center}',
+    '#musicScreen .ms-ctl:active{opacity:.5}',
+    '#musicScreen .ms-ctl.play{width:56px;height:56px;border-radius:50%;background:#1a1a1a;color:#fff;box-shadow:0 2px 12px rgba(0,0,0,.14)}',
+    '#musicScreen .ms-ctl svg{width:16px;height:16px;fill:currentColor}',
+    '#musicScreen .ms-ctl.play svg{width:20px;height:20px}',
+
+    '#musicScreen .ms-list{flex:1;overflow-y:auto;padding:8px 24px 40px;scrollbar-width:none;border-top:0.6px dashed #f0f0f0}',
+    '#musicScreen .ms-list::-webkit-scrollbar{display:none}',
+    '#musicScreen .ms-item{display:flex;align-items:center;gap:14px;padding:16px 2px;',
+      'border-bottom:0.6px dashed rgba(0,0,0,.06);cursor:pointer}',
+    '#musicScreen .ms-item:active{background:rgba(0,0,0,.015)}',
+    '#musicScreen .ms-item.on .ms-n{font-weight:500;letter-spacing:1px}',
+    '#musicScreen .ms-item .ms-idx{width:22px;flex:none;font-size:10px;color:#d8d8d8;',
+      'font-family:Georgia,serif;text-align:right;letter-spacing:1px}',
+    '#musicScreen .ms-item.on .ms-idx{color:#1a1a1a}',
+    '#musicScreen .ms-item .ms-info{flex:1;min-width:0}',
+    '#musicScreen .ms-item .ms-n{font-size:14px;letter-spacing:.5px;font-weight:300;',
+      'white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+    '#musicScreen .ms-item .ms-s{font-size:10px;color:#bbb;margin-top:5px;letter-spacing:.5px;font-family:Georgia,serif}',
+    '#musicScreen .ms-item .ms-del{width:26px;height:26px;flex:none;border:none;background:transparent;',
+      'color:#d0d0d0;font-size:12px;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}',
+    '#musicScreen .ms-item .ms-del:active{color:#1a1a1a}',
+    '#musicScreen .ms-empty{text-align:center;color:#bbb;font-size:13px;padding:70px 30px;',
+      'line-height:2.2;letter-spacing:1.5px;font-weight:300}',
+    '#musicScreen .ms-empty .big{display:block;font-size:26px;color:#e0e0e0;margin-bottom:20px;letter-spacing:0}',
+    '#musicScreen input[type=file]{display:none}'
+  ].join('');
+  document.head.appendChild(st);
+
+  /* ---- 2. HTML ---- */
+  var wrap = document.createElement('div');
+  wrap.className = 'screen';
+  wrap.id = 'musicScreen';
+  wrap.innerHTML =
+    '<div class="ms-top">' +
+      '<button class="ms-back" id="msBack" type="button">‹</button>' +
+      '<div class="ms-title">音 乐</div>' +
+      '<button class="ms-add" id="msAdd" type="button">＋</button>' +
+    '</div>' +
+    '<div class="ms-chips">' +
+      '<button class="ms-chip on" data-g="list" type="button">歌 单</button>' +
+      '<button class="ms-chip" data-g="bgm" type="button">B G M</button>' +
+    '</div>' +
+    '<div class="ms-mode-row" id="msModeRow" style="display:none">' +
+      '<button class="ms-mode on" data-mode="loop" type="button">循 环</button>' +
+      '<button class="ms-mode" data-mode="linear" type="button">直 线</button>' +
+      '<button class="ms-mode" data-mode="shuffle" type="button">随 机</button>' +
+    '</div>' +
+    '<div class="ms-now">' +
+      '<div class="ms-cover" id="msCover"></div>' +
+      '<div class="ms-now-name" id="msNowName">还没选歌</div>' +
+      '<div class="ms-now-sub" id="msNowSub">NO TRACK SELECTED</div>' +
+    '</div>' +
+    '<div class="ms-progress">' +
+      '<span class="ms-time" id="msCur">0:00</span>' +
+      '<div class="ms-pbar" id="msPbar"><div class="ms-pfill" id="msPfill"></div></div>' +
+      '<span class="ms-time r" id="msDur">0:00</span>' +
+    '</div>' +
+    '<div class="ms-controls">' +
+      '<button class="ms-ctl" id="msPrev" type="button">' +
+        '<svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>' +
+      '</button>' +
+      '<button class="ms-ctl play" id="msPlay" type="button">' +
+        '<svg id="msIcoPlay" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>' +
+        '<svg id="msIcoPause" viewBox="0 0 24 24" style="display:none"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>' +
+      '</button>' +
+      '<button class="ms-ctl" id="msNext" type="button">' +
+        '<svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg>' +
+      '</button>' +
+    '</div>' +
+    '<div class="ms-list" id="msList"></div>' +
+    '<input type="file" id="msFilePick" accept="audio/*" multiple>';
+  document.body.appendChild(wrap);
+
+  /* ---- 3. JS 逻辑（上传 + 播放 + 持久化 + BGM 自动播）---- */
+  var _msLists = { list: [], bgm: [] };
+  var _msState = { group:'list', idx:{list:-1,bgm:-1}, mode:'loop', armed:false };
+  var _msAudio = new Audio();
+  _msAudio.preload = 'metadata';
+
+  /* IndexedDB key：所有音频 Blob 存在这里，localStorage 只存元数据 */
+  var MS_IDB_PREFIX = 'music_';
+  var MS_META_KEY = 'mj_music_v1';   /* { list:[{id,name,size,dur,key}], bgm:[...] } */
+
+  /* ---- IndexedDB 小工具（复用全局 __idb） ---- */
+  function msIdbSet(k, blob){
+    return (window.__idb && __idb.set) ? __idb.set(k, blob) : Promise.reject(new Error('IndexedDB 未就绪'));
+  }
+  function msIdbGetURL(k){
+    return (window.__idb && __idb.toURL) ? __idb.toURL(k) : Promise.resolve(null);
+  }
+  function msIdbDel(k){
+    return (window.__idb && __idb.del) ? __idb.del(k) : Promise.resolve();
+  }
+
+  /* ---- 元数据：读写 ---- */
+  function msLoadMeta(){
+    try{
+      var raw = localStorage.getItem(MS_META_KEY);
+      if(!raw) return { list:[], bgm:[] };
+      var m = JSON.parse(raw);
+      if(!m || typeof m !== 'object') return { list:[], bgm:[] };
+      if(!Array.isArray(m.list)) m.list = [];
+      if(!Array.isArray(m.bgm))  m.bgm  = [];
+      return m;
+    }catch(e){ return { list:[], bgm:[] }; }
+  }
+  function msSaveMeta(m){
+    try{ localStorage.setItem(MS_META_KEY, JSON.stringify(m)); }catch(e){}
+  }
+
+  /* ---- 从 IndexedDB 恢复所有音频 URL，塞进 _msLists ---- */
+  function msRestoreAll(){
+    var meta = msLoadMeta();
+    _msLists.list = meta.list.slice();
+    _msLists.bgm  = meta.bgm.slice();
+    /* 异步补上可播 URL */
+    _msLists.list.forEach(function(t){
+      if(t.key) msIdbGetURL(t.key).then(function(u){ if(u) t.url = u; });
+    });
+    _msLists.bgm.forEach(function(t){
+      if(t.key) msIdbGetURL(t.key).then(function(u){ if(u) t.url = u; });
+    });
+  }
+
+  /* ---- 工具 ---- */
+  function msFmt(s){
+    if(!isFinite(s)) return '0:00';
+    var m = Math.floor(s/60), sec = Math.floor(s%60);
+    return m + ':' + (sec<10?'0':'') + sec;
+  }
+  function msEscape(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function msPickShuffle(arr, excludeIdx){
+    if(arr.length <= 1) return 0;
+    var cand = [];
+    for(var i=0;i<arr.length;i++){ if(i!==excludeIdx) cand.push(i); }
+    return cand[Math.floor(Math.random()*cand.length)];
+  }
+
+  /* ---- 播放控制 ---- */
+  function msPlayAt(g, i){
+    var arr = _msLists[g];
+    if(i < 0 || i >= arr.length) return;
+    var t = arr[i];
+    if(!t.url){
+      msIdbGetURL(t.key).then(function(u){
+        if(!u){ toast && toast('音频加载失败'); return; }
+        t.url = u;
+        msPlayAt(g, i);
+      });
+      return;
+    }
+    _msState.group = g;
+    _msState.idx[g] = i;
+    _msAudio.src = t.url;
+    _msAudio.play().then(function(){
+      var cv = document.getElementById('msCover');
+      if(cv) cv.classList.add('spinning');
+      var ip = document.getElementById('msIcoPlay');
+      var ipause = document.getElementById('msIcoPause');
+      if(ip) ip.style.display = 'none';
+      if(ipause) ipause.style.display = '';
+    }).catch(function(){});
+    msUpdateNow();
+    window.renderMusicScreen();
+  }
+
+  function msUpdateNow(){
+    var g = _msState.group;
+    var idx = _msState.idx[g];
+    var nameEl = document.getElementById('msNowName');
+    var subEl  = document.getElementById('msNowSub');
+    var cv = document.getElementById('msCover');
+    var ip = document.getElementById('msIcoPlay');
+    var ipause = document.getElementById('msIcoPause');
+    if(idx < 0 || !_msLists[g][idx]){
+      if(nameEl) nameEl.textContent = '还没选歌';
+      if(subEl)  subEl.textContent  = 'NO TRACK SELECTED';
+      if(cv) cv.classList.remove('spinning');
+      if(ip) ip.style.display = '';
+      if(ipause) ipause.style.display = 'none';
+      return;
+    }
+    var t = _msLists[g][idx];
+    if(nameEl) nameEl.textContent = t.name;
+    if(subEl)  subEl.textContent  = (g === 'bgm' ? 'BGM · ' : 'PLAYING · ') + String(idx+1).padStart(2,'0');
+  }
+
+  function msNextByMode(){
+    var g = _msState.group;
+    var arr = _msLists[g];
+    if(!arr.length) return;
+    var idx = _msState.idx[g];
+    if(_msState.mode === 'loop'){ msPlayAt(g, idx); return; }
+    if(_msState.mode === 'linear'){
+      if(idx < arr.length - 1) msPlayAt(g, idx + 1);
+      else {
+        _msAudio.pause();
+        var cv = document.getElementById('msCover'); if(cv) cv.classList.remove('spinning');
+        var ip = document.getElementById('msIcoPlay'); if(ip) ip.style.display = '';
+        var ipause = document.getElementById('msIcoPause'); if(ipause) ipause.style.display = 'none';
+      }
+      return;
+    }
+    if(_msState.mode === 'shuffle'){ msPlayAt(g, msPickShuffle(arr, idx)); }
+  }
+
+  function _msEscape(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  window.renderMusicScreen = function(){
+    var listEl = document.getElementById('msList');
+    if(!listEl) return;
+    document.querySelectorAll('#musicScreen .ms-chip').forEach(function(c){
+      c.classList.toggle('on', c.dataset.g === _msState.group);
+    });
+    var modeRow = document.getElementById('msModeRow');
+    if(modeRow) modeRow.style.display = (_msState.group === 'bgm') ? 'flex' : 'none';
+
+    var arr = _msLists[_msState.group];
+    var cur = _msState.idx[_msState.group];
+    if(!arr.length){
+      listEl.innerHTML = '<div class="ms-empty"><span class="big">♪</span>还没有歌<br>点右上角 ＋ 导入本地音乐</div>';
+      return;
+    }
+    listEl.innerHTML = arr.map(function(t, i){
+      return '<div class="ms-item ' + (i===cur?'on':'') + '" data-i="' + i + '">' +
+        '<span class="ms-idx">' + String(i+1).padStart(2,'0') + '</span>' +
+        '<div class="ms-info">' +
+          '<div class="ms-n">' + msEscape(t.name) + '</div>' +
+          '<div class="ms-s">' + (t.size ? (t.size/1024/1024).toFixed(2) + ' MB' : '') + '</div>' +
+        '</div>' +
+        '<button class="ms-del" data-del="' + i + '" type="button">✕</button>' +
+      '</div>';
+    }).join('');
+
+    /* 列表点击 */
+    listEl.querySelectorAll('.ms-item').forEach(function(it){
+      it.onclick = function(e){
+        if(e.target.closest('.ms-del')) return;
+        msPlayAt(_msState.group, +it.dataset.i);
+      };
+    });
+    /* 删除 */
+    listEl.querySelectorAll('.ms-del').forEach(function(b){
+      b.onclick = function(e){
+        e.stopPropagation();
+        var i = +b.dataset.del;
+        var g = _msState.group;
+        var meta = msLoadMeta();
+        var track = _msLists[g][i];
+        if(!track) return;
+        if(i === _msState.idx[g]){
+          _msAudio.pause();
+          _msState.idx[g] = -1;
+          msUpdateNow();
+        } else if(i < _msState.idx[g]){
+          _msState.idx[g]--;
+        }
+        _msLists[g].splice(i, 1);
+        /* 同步删 localStorage 元数据 + IndexedDB 里的 blob */
+        meta[g] = meta[g].filter(function(x){ return x.id !== track.id; });
+        msSaveMeta(meta);
+        if(track.key) msIdbDel(track.key).catch(function(){});
+        window.renderMusicScreen();
+      };
+    });
+  };
+
+  window.openMusicScreen = function(){
+    var el = document.getElementById('musicScreen');
+    if(!el) return;
+    if(el.classList.contains('on')) return;
+    document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
+    el.classList.add('on');
+    /* 首次打开时尝试恢复 IndexedDB 里的音频 */
+    if(!el._restored){
+      el._restored = true;
+      msRestoreAll();
+      setTimeout(function(){ window.renderMusicScreen(); }, 100);
+    } else {
+      window.renderMusicScreen();
+    }
+  };
+  window.closeMusicScreen = function(){
+    var el = document.getElementById('musicScreen');
+    if(el) el.classList.remove('on');
+  };
+
+  /* 返回按钮 */
+  document.addEventListener('click', function(e){
+    if(e.target && e.target.closest && e.target.closest('#msBack')){
+      e.preventDefault();
+      e.stopPropagation();
+      window.closeMusicScreen();
+    }
+  }, true);
+
+  /* 分组切换 + 模式切换 + 上传 + 播放控制（统一委托） */
+  document.addEventListener('click', function(e){
+    var t = e.target;
+
+    /* 分组 chip */
+    var chip = t.closest && t.closest('#musicScreen .ms-chip');
+    if(chip){
+      e.preventDefault();
+      _msState.group = chip.dataset.g;
+      _msAudio.pause();
+      var cv = document.getElementById('msCover'); if(cv) cv.classList.remove('spinning');
+      var ip = document.getElementById('msIcoPlay'); if(ip) ip.style.display = '';
+      var ipause = document.getElementById('msIcoPause'); if(ipause) ipause.style.display = 'none';
+      msUpdateNow();
+      window.renderMusicScreen();
+      return;
+    }
+
+    /* 模式 chip */
+    var mode = t.closest && t.closest('#musicScreen .ms-mode');
+    if(mode){
+      e.preventDefault();
+      _msState.mode = mode.dataset.mode;
+      document.querySelectorAll('#musicScreen .ms-mode').forEach(function(x){
+        x.classList.toggle('on', x === mode);
+      });
+      return;
+    }
+
+    /* 上传按钮 */
+    if(t.closest && t.closest('#msAdd')){
+      e.preventDefault();
+      var fp = document.getElementById('msFilePick');
+      if(fp){ fp.value = ''; fp.click(); }
+      return;
+    }
+
+    /* 播放 / 暂停 */
+    if(t.closest && t.closest('#msPlay')){
+      e.preventDefault();
+      var g = _msState.group, arr = _msLists[g], idx = _msState.idx[g];
+      if(idx < 0){
+        if(arr.length) msPlayAt(g, 0);
+        return;
+      }
+      if(_msAudio.paused){
+        _msAudio.play().then(function(){
+          var cvv = document.getElementById('msCover'); if(cvv) cvv.classList.add('spinning');
+          var ipp = document.getElementById('msIcoPlay'); if(ipp) ipp.style.display = 'none';
+          var ipa = document.getElementById('msIcoPause'); if(ipa) ipa.style.display = '';
+        }).catch(function(){});
+      } else {
+        _msAudio.pause();
+        var cv2 = document.getElementById('msCover'); if(cv2) cv2.classList.remove('spinning');
+        var ip2 = document.getElementById('msIcoPlay'); if(ip2) ip2.style.display = '';
+        var ipa2 = document.getElementById('msIcoPause'); if(ipa2) ipa2.style.display = 'none';
+      }
+      return;
+    }
+
+    /* 上一首 */
+    if(t.closest && t.closest('#msPrev')){
+      e.preventDefault();
+      var g2 = _msState.group, arr2 = _msLists[g2], idx2 = _msState.idx[g2];
+      if(idx2 > 0) msPlayAt(g2, idx2 - 1);
+      else if(arr2.length) msPlayAt(g2, arr2.length - 1);
+      return;
+    }
+
+    /* 下一首 */
+    if(t.closest && t.closest('#msNext')){
+      e.preventDefault();
+      var g3 = _msState.group, arr3 = _msLists[g3], idx3 = _msState.idx[g3];
+      if(idx3 < 0 && arr3.length){ msPlayAt(g3, 0); return; }
+      if(_msState.mode === 'shuffle'){ msPlayAt(g3, msPickShuffle(arr3, idx3)); return; }
+      if(_msState.mode === 'loop'){ msPlayAt(g3, idx3); return; }
+      if(idx3 < arr3.length - 1) msPlayAt(g3, idx3 + 1);
+      else msPlayAt(g3, 0);
+      return;
+    }
+  }, true);
+
+  /* 上传文件 */
+  document.addEventListener('change', function(e){
+    var t = e.target;
+    if(!t || t.id !== 'msFilePick') return;
+    var files = Array.prototype.slice.call(t.files || []);
+    t.value = '';
+    if(!files.length) return;
+    var g = _msState.group;
+    var meta = msLoadMeta();
+    if(!Array.isArray(meta[g])) meta[g] = [];
+    var doneCount = 0;
+    files.forEach(function(f, idx){
+      var id = 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+      var key = MS_IDB_PREFIX + id;
+      /* 存 blob 到 IndexedDB */
+      msIdbSet(key, f).then(function(){
+        var track = {
+          id: id, key: key,
+          name: f.name.replace(/\.[^.]+$/, ''),
+          size: f.size
+        };
+        _msLists[g].push(track);
+        meta[g].push({ id: id, key: key, name: track.name, size: track.size });
+        msSaveMeta(meta);
+        /* 直接给 URL 便于立即播放 */
+        track.url = URL.createObjectURL(f);
+        doneCount++;
+        if(doneCount === files.length){
+          window.renderMusicScreen();
+          if(_msState.idx[g] < 0 && _msLists[g].length) msPlayAt(g, 0);
+        }
+      }).catch(function(err){
+        console.error('音乐存 IndexedDB 失败', err);
+        if(window.toast) toast('上传失败：' + (err && err.message ? err.message : '未知错误'));
+      });
+    });
+  }, true);
+
+  /* 进度条 */
+  document.addEventListener('click', function(e){
+    var bar = e.target.closest && e.target.closest('#msPbar');
+    if(!bar) return;
+    e.preventDefault();
+    if(!_msAudio.duration) return;
+    var r = bar.getBoundingClientRect();
+    var p = (e.clientX - r.left) / r.width;
+    _msAudio.currentTime = p * _msAudio.duration;
+  }, true);
+
+  /* 播放器事件 */
+  _msAudio.ontimeupdate = function(){
+    var curEl = document.getElementById('msCur');
+    var fillEl = document.getElementById('msPfill');
+    var barEl = document.getElementById('msPbar');
+    if(curEl) curEl.textContent = msFmt(_msAudio.currentTime);
+    if(_msAudio.duration){
+      var p = _msAudio.currentTime / _msAudio.duration * 100;
+      if(fillEl) fillEl.style.width = p + '%';
+      if(barEl) barEl.style.setProperty('--ms-pos', p + '%');
+    }
+  };
+  _msAudio.onloadedmetadata = function(){
+    var durEl = document.getElementById('msDur');
+    if(durEl) durEl.textContent = msFmt(_msAudio.duration);
+  };
+  _msAudio.onended = function(){
+    msNextByMode();
+  };
+
+  /* ============================================================
+     BGM 进站自动播：用户第一次点击屏幕时触发
+     - 只在"已经上传过 BGM 且还没播过"时触发
+     - 第一次触发后，_msState.armed = true
+     ============================================================ */
+  function msArmBgmAutoPlay(){
+    if(_msState.armed) return;
+    _msState.armed = true;
+    var bgmArr = _msLists.bgm;
+    if(!bgmArr.length) return;
+    /* 如果当前没有在播的，就自动挑一首 BGM 播 */
+    if(_msAudio.paused){
+      var i = (_msState.mode === 'shuffle') ? msPickShuffle(bgmArr, -1) : 0;
+      /* 不改变当前显示的 tab，只在后台播 */
+      var g0 = _msState.group;
+      var i0 = _msState.idx[_msState.group];
+      _msState.group = 'bgm';
+      _msState.idx.bgm = i;
+      msPlayAt('bgm', i);
+      /* 恢复用户之前看的 tab */
+      _msState.group = g0;
+      _msState.idx.list = i0;
+    }
+  }
+  window.addEventListener('touchstart', msArmBgmAutoPlay, {once:false, passive:true});
+  window.addEventListener('click', msArmBgmAutoPlay, {once:false, passive:true});
+
+  /* 暴露给下一组替换点用 */
+  window.__music = {
+    lists: _msLists,
+    state: _msState,
+    audio: _msAudio,
+    render: window.renderMusicScreen,
+    open: window.openMusicScreen,
+    close: window.closeMusicScreen
+  };
+})();
+})();
   init: initCalendarPage,
   refresh: refreshCalendarPage,
   refreshWeather: refreshWeather,
