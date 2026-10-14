@@ -1139,6 +1139,61 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
 }
 
 .toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:var(--th-accent);color:#fff;font-size:12.5px;letter-spacing:1px;padding:9px 18px;border-radius:10px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:4000}
+
+/* ★ 开屏更新公告 */
+.update-mask{
+  position:fixed;inset:0;z-index:99999;
+  background:rgba(0,0,0,.35);
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+  display:none;align-items:center;justify-content:center;
+  padding:24px;
+}
+.update-mask.show{display:flex}
+.update-sheet{
+  width:100%;max-width:320px;
+  background:#fff;border-radius:18px;
+  border:0.7px solid rgba(0,0,0,.06);
+  box-shadow:0 20px 60px rgba(0,0,0,.18);
+  padding:24px 22px 18px;
+  box-sizing:border-box;
+}
+.update-title{
+  font-size:15px;font-weight:300;letter-spacing:4px;
+  color:#1a1a1a;text-align:center;
+  -webkit-text-stroke:.15px #1a1a1a;
+  -webkit-font-smoothing:antialiased;
+}
+.update-sub{
+  font-size:8.5px;letter-spacing:5px;color:#d0d0d0;
+  font-family:Georgia,serif;text-align:center;
+  margin-top:5px;margin-bottom:18px;
+}
+.update-list{
+  max-height:180px;overflow-y:auto;
+  padding-bottom:6px;
+  margin-bottom:14px;
+  border-bottom:0.6px dashed #ececec;
+  scrollbar-width:none;
+}
+.update-list::-webkit-scrollbar{display:none}
+.update-list .up-item{
+  font-size:12.5px;color:#1a1a1a;line-height:1.7;
+  letter-spacing:.3px;padding:5px 0 5px 12px;position:relative;
+  -webkit-font-smoothing:antialiased;
+}
+.update-list .up-item::before{
+  content:"·";position:absolute;left:0;top:5px;
+  color:#1a1a1a;font-size:14px;
+}
+.update-ok{
+  width:100%;padding:12px 0;border-radius:22px;
+  border:none;background:#1a1a1a;color:#fff;
+  font-size:13px;font-family:inherit;
+  letter-spacing:4px;text-indent:4px;cursor:pointer;
+  font-weight:300;
+}
+.update-ok:active{opacity:.85}
 .toast.show{opacity:1}
 
 /* ===== 消息提示气泡 · 顶部滑下 ===== */
@@ -1568,6 +1623,44 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
   line-height:1.5;font-weight:400;
   letter-spacing:.3px;
 }
+/* ===== 单条转发卡片（收藏转发） ===== */
+.fwd-card{
+  background:#fff;
+  border-radius:10px;
+  padding:12px 14px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+  display:flex;flex-direction:column;gap:8px;
+  max-width:100%;
+  box-sizing:border-box;
+}
+.fwd-card .fc-head{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:10.5px;letter-spacing:1px;color:#999;
+  padding-bottom:8px;
+  border-bottom:0.6px dashed rgba(0,0,0,.06);
+}
+.fwd-card .fc-head .fc-tag{
+  color:#1a1a1a;font-weight:400;
+}
+.fwd-card .fc-body{
+  font-size:13.5px;color:#1a1a1a;line-height:1.65;
+  word-break:break-word;white-space:pre-wrap;
+}
+.fwd-card .fc-note{
+  font-size:12px;color:#888;line-height:1.6;
+  padding:7px 10px;border-radius:8px;
+  background:rgba(0,0,0,.03);
+  word-break:break-word;white-space:pre-wrap;
+  font-style:italic;
+}
+.fwd-card .fc-note b{
+  color:#1a1a1a;font-style:normal;font-weight:400;margin-right:4px;
+}
+.fwd-card .fc-from{
+  font-size:10.5px;color:#bbb;letter-spacing:.5px;
+  text-align:right;
+}
+
 /* ===== 合并转发卡片 ===== */
 .merge-card{
   width:240px;
@@ -3493,6 +3586,128 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .mode-tabs{display:flex;gap:8px;margin-bottom:0}
 #mAddEmoji .mode-tabs{gap:28px;margin-bottom:24px}
 #acText{display:block;width:100%;box-sizing:border-box;border:1.5px solid var(--th-accent-line);border-radius:12px;padding:12px 14px;font-size:13.5px;font-family:inherit;color:var(--th-text);outline:none;background:var(--th-accent-soft);resize:vertical;line-height:1.6}
+/* ===== 字卡编辑弹窗 · 方案 C 紧凑轻量 ===== */
+#mCardEdit .sheet{
+  max-width:340px !important;
+  border-radius:18px !important;
+  padding:20px 18px 16px !important;
+  box-sizing:border-box;
+}
+#mCardEdit .sheet-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:16px;
+  padding:0 !important;
+  border-bottom:none !important;
+}
+#mCardEdit .sheet-head h3{
+  margin:0;
+  font-size:14px !important;
+  font-weight:400 !important;
+  letter-spacing:2px !important;
+  color:#1a1a1a;
+}
+#mCardEdit .sheet-head .x{
+  width:24px !important;
+  height:24px !important;
+  border:none;
+  background:transparent;
+  color:#c8c8c8;
+  font-size:12px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  font-family:inherit;
+}
+#mCardEdit .sheet-body{padding:0 !important}
+#mCardEdit .sheet-body > label{
+  display:block;
+  font-size:10.5px !important;
+  color:#bbb !important;
+  letter-spacing:1.5px !important;
+  margin-bottom:6px !important;
+  font-weight:300;
+}
+#mCardEdit #cardEditText{
+  width:100% !important;
+  border:1px solid #ececec !important;
+  border-radius:10px !important;
+  padding:10px 12px !important;
+  font-size:14px !important;
+  font-family:inherit !important;
+  color:#1a1a1a !important;
+  outline:none !important;
+  resize:none !important;
+  line-height:1.6 !important;
+  box-sizing:border-box !important;
+  background:#fff !important;
+  min-height:auto !important;
+  transition:border-color .2s;
+}
+#mCardEdit #cardEditText:focus{
+  border-color:#1a1a1a !important;
+}
+#mCardEdit .card-edit-cats{
+  display:flex !important;
+  gap:6px !important;
+  flex-wrap:wrap !important;
+  padding:0 0 6px !important;
+  overflow:visible !important;
+  white-space:normal !important;
+}
+#mCardEdit .card-edit-cat{
+  flex:none !important;
+  padding:6px 12px !important;
+  border-radius:10px !important;
+  font-size:12px !important;
+  color:#999 !important;
+  background:#f7f7f7 !important;
+  border:none !important;
+  cursor:pointer;
+  font-family:inherit;
+  letter-spacing:.3px;
+  transition:background .18s,color .18s;
+}
+#mCardEdit .card-edit-cat.on{
+  background:#1a1a1a !important;
+  color:#fff !important;
+}
+#mCardEdit .card-edit-cat span{
+  opacity:.6;
+  margin-left:3px;
+  font-size:10.5px;
+}
+#mCardEdit .btn-row{
+  display:flex !important;
+  gap:8px !important;
+  margin-top:18px !important;
+}
+#mCardEdit .btn-row button{
+  flex:1 !important;
+  padding:11px 0 !important;
+  border-radius:10px !important;
+  font-size:13px !important;
+  font-family:inherit !important;
+  letter-spacing:1.5px !important;
+  cursor:pointer;
+  margin-top:0 !important;
+}
+#mCardEdit .btn-row .ghost-btn{
+  background:transparent !important;
+  border:1px solid #ececec !important;
+  color:#999 !important;
+}
+#mCardEdit .btn-row .primary-btn{
+  background:#1a1a1a !important;
+  color:#fff !important;
+  border:none !important;
+  font-weight:400 !important;
+  box-shadow:none !important;
+}
+
 /* ===== #mAddCards 专属美化 · 方案 C · 底部分类 + 无边框 ===== */
 #mAddCards .sheet{
   position:relative;
@@ -6749,13 +6964,53 @@ body[data-bubble="custom"] .preview-bubble{
 /* ===== 收藏页顶部 tab 居中 · 方案 A ===== */
 #collectScreen .memo-tabs{
   display:flex;
-  gap:32px;
+  gap:24px;
   justify-content:center;
   align-items:center;
   padding:18px 0 18px;
   border-bottom:0.6px dashed #ececec;
   margin-bottom:20px;
 }
+/* ★ 收藏页顶部「带备注转发」小开关 */
+.col-fwd-note{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex:none;
+  margin-left:2px;
+  font-size:11.5px;
+  color:#999;
+  letter-spacing:.5px;
+  font-weight:300;
+}
+.col-fwd-note input{
+  appearance:none;
+  -webkit-appearance:none;
+  width:30px;
+  height:17px;
+  border-radius:10px;
+  background:#e5e5e5;
+  position:relative;
+  cursor:pointer;
+  transition:background .18s;
+  outline:none;
+  border:none;
+  flex:none;
+}
+.col-fwd-note input::after{
+  content:"";
+  position:absolute;
+  left:2px;
+  top:2px;
+  width:13px;
+  height:13px;
+  border-radius:50%;
+  background:#fff;
+  transition:transform .18s;
+  box-shadow:0 1px 2px rgba(0,0,0,.15);
+}
+.col-fwd-note input:checked{ background:#1a1a1a; }
+.col-fwd-note input:checked::after{ transform:translateX(13px); }
 #collectScreen .memo-tabs .memo-tab{
   flex:none;
   font-size:13px;
@@ -8691,7 +8946,18 @@ body[data-bubble="custom"] .gch-bubble{
    每次你更新 index.html，把这个数字 +1（或改成日期）
    用户刷新页面时，如果发现版本号变了，就弹提醒让他再刷新一次。
 */
-window.__APP_VERSION__ = '1.0.4';
+window.__APP_VERSION__ = '1.0.5';
+
+/* ★ 更新日志：每次改完代码，把版本号和内容改一下。
+   用户看到版本号变了，开屏就会弹一次，告诉他更新了什么。
+   如果不想弹，把下面的数组清空即可。 */
+window.__APP_CHANGELOG__ = [
+  '新增气泡回应（双击气泡）',
+  '修复收藏转发退不出去的问题',
+  '优化字卡编辑弹窗样式',
+  '通话独立语音/视频概率',
+  '新增后台音频保活开关'
+];
 
 /* ★ 把版本号显示在网页标题上，你在雨见标签页就能看到 */
 (function showVersionInTitle(){
@@ -8699,6 +8965,66 @@ window.__APP_VERSION__ = '1.0.4';
     var oldTitle = document.title || 'our-dreamland';
     document.title = oldTitle + ' · v' + window.__APP_VERSION__;
   }catch(e){}
+})();
+
+/* ★ 开屏更新公告
+   - 存一个 mj_last_seen_version
+   - 跟当前版本不一样，就弹一次
+   - 用户点「知道啦」之后，记下当前版本，下次不弹
+*/
+(function showUpdateNotice(){
+  var KEY = 'mj_last_seen_version';
+  function tryShow(){
+    var el = document.getElementById('updateMask');
+    if(!el){ setTimeout(tryShow, 300); return; }
+
+    var lastSeen = null;
+    try { lastSeen = localStorage.getItem(KEY); } catch(e){}
+    var cur = window.__APP_VERSION__ || '';
+    var list = Array.isArray(window.__APP_CHANGELOG__) ? window.__APP_CHANGELOG__ : [];
+
+    /* 没更新，或没写日志，就不弹 */
+    if(lastSeen === cur) return;
+    if(!list.length) {
+      /* 没写日志也记一下版本号，避免每次都尝试 */
+      try { localStorage.setItem(KEY, cur); } catch(e){}
+      return;
+    }
+
+    /* 填内容 */
+    var vEl = document.getElementById('updateVer');
+    if(vEl) vEl.textContent = 'VERSION · v' + cur;
+    var lEl = document.getElementById('updateList');
+    if(lEl){
+      lEl.innerHTML = list.map(function(t){
+        return '<div class="up-item">' + String(t)
+          .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+          + '</div>';
+      }).join('');
+    }
+    el.classList.add('show');
+
+    /* 点确认 */
+    var ok = document.getElementById('updateOk');
+    if(ok){
+      ok.onclick = function(){
+        try { localStorage.setItem(KEY, cur); } catch(e){}
+        el.classList.remove('show');
+      };
+    }
+    /* 点遮罩也算关闭 */
+    el.addEventListener('click', function(e){
+      if(e.target === el){
+        try { localStorage.setItem(KEY, cur); } catch(e){}
+        el.classList.remove('show');
+      }
+    });
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', tryShow);
+  } else {
+    tryShow();
+  }
 })();
 
 /* ★ 在"关于"页顶部显示版本号 */
@@ -9285,6 +9611,10 @@ window.__APP_VERSION__ = '1.0.4';
     <div class="memo-tabs" id="colTabs">
       <div class="memo-tab on" data-col-tab="mine" id="colTabMine">我的收藏</div>
       <div class="memo-tab" data-col-tab="theirs" id="colTabTheirs">Ta 的收藏</div>
+      <label class="col-fwd-note">
+        <input type="checkbox" id="colFwdNote" checked>
+        <span>带备注</span>
+      </label>
     </div>
     <div class="sel-bar" id="colSelBar">
       <div class="sel-count" id="colSelCountWrap">已选 <b id="colSelCount">0</b> 条</div>
@@ -9849,15 +10179,15 @@ window.__APP_VERSION__ = '1.0.4';
 <div class="modal" id="mCardEdit">
   <div class="overlay" data-close></div>
   <div class="sheet">
-	<div class="sheet-head"><h3>编辑字卡</h3><button class="x" data-close>✕</button></div>
+	<div class="sheet-head"><h3>编辑字卡</h3><button class="x" data-close type="button">✕</button></div>
 	<div class="sheet-body">
 	  <label>内容</label>
 	  <textarea id="cardEditText" rows="4"></textarea>
 	  <label>所在分类</label>
 	  <div class="card-edit-cats" id="cardEditCats"></div>
 	  <div class="btn-row">
-		<button class="ghost-btn" data-close type="button">取 消</button>
-		<button class="primary-btn" id="cardEditOk" type="button" style="margin-top:0">保 存</button>
+		<button class="ghost-btn" data-close type="button">取消</button>
+		<button class="primary-btn" id="cardEditOk" type="button" style="margin-top:0">保存</button>
 	  </div>
 	</div>
   </div>
@@ -10984,6 +11314,16 @@ window.__APP_VERSION__ = '1.0.4';
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- ★ 开屏更新公告 -->
+<div class="update-mask" id="updateMask">
+  <div class="update-sheet">
+    <div class="update-title">更 新 公 告</div>
+    <div class="update-sub" id="updateVer">VERSION</div>
+    <div class="update-list" id="updateList"></div>
+    <button class="update-ok" id="updateOk" type="button">知道啦</button>
+  </div>
+</div>
 <div class="msg-notify" id="msgNotify"></div>
 <!-- ===== 统一输入弹窗 · 方案 A ===== -->
 <div class="uni-mask" id="uniMask" onclick="if(event.target===this)uniCancel()">
@@ -11191,11 +11531,35 @@ const DEFAULT_CARD_GROUPS = [
 	{ id:'cm1', name:'心情', list:[
 	  {mood:'开心',kaomoji:'(◍＞◡＜◍)',anim:'1'},
 	  {mood:'平静',kaomoji:'(´-ω-`)',anim:'1'},
-	  {mood:'有点想你',kaomoji:'(｡•́︿•̀｡)',anim:'1'},
-	  {mood:'小得意',kaomoji:'(๑˃̵ᴗ˂̵)و',anim:'1'}
+	  {mood:'想你',kaomoji:'(｡•́︿•̀｡)',anim:'1'},
+	  {mood:'得意',kaomoji:'(๑˃̵ᴗ˂̵)و',anim:'1'},
+	  {mood:'生气',kaomoji:'(╬ Ò﹏Ó)',anim:'1'},
+	  {mood:'无语',kaomoji:'(눈_눈)',anim:'1'},
+	  {mood:'伤心',kaomoji:'(╥﹏╥)',anim:'1'},
+	  {mood:'烦躁',kaomoji:'(ノಠ益ಠ)ノ',anim:'1'},
+	  {mood:'难过',kaomoji:'(｡•́︿•̀｡)',anim:'1'},
+	  {mood:'害怕',kaomoji:'(⊙﹏⊙)',anim:'1'},
+	  {mood:'恐惧',kaomoji:'(ﾟДﾟ)',anim:'1'},
+	  {mood:'忧伤',kaomoji:'(｡╯︵╰｡)',anim:'1'},
+	  {mood:'厌恶',kaomoji:'(¬_¬)',anim:'1'},
+	  {mood:'慊弃',kaomoji:'(≖_≖ )',anim:'1'},
+	  {mood:'恼火',kaomoji:'(╬ಠ益ಠ)',anim:'1'},
+	  {mood:'乐观',kaomoji:'(๑˃̵ᴗ˂̵)',anim:'1'},
+	  {mood:'积极',kaomoji:'(๑•̀ㅂ•́)و✧',anim:'1'},
+	  {mood:'淡然',kaomoji:'(￣ω￣;)',anim:'1'},
+	  {mood:'焦虑',kaomoji:'(>_<)',anim:'1'},
+	  {mood:'羡慕',kaomoji:'(´∀｀)',anim:'1'},
+	  {mood:'怀旧',kaomoji:'(´-ω-`)',anim:'1'},
+	  {mood:'尴尬',kaomoji:'(ಠ .̫.̫ ಠ)',anim:'1'},
+	  {mood:'吃醋',kaomoji:'(｀へ´)',anim:'1'}
 	] }
   ]},
-  { id:'g-status', name:'状态字卡', icon:'note', sub:'角色当前状态', cats:[ { id:'cs1', name:'状态', list:['🎧 听歌中','💭 发呆中','📖 看书','🌙 在窗边'] } ] },
+  { id:'g-status', name:'状态字卡', icon:'note', sub:'角色当前状态', cats:[ { id:'cs1', name:'状态', list:[
+    '🎧 听歌中','💭 发呆中','📖 看书','💼 忙碌','🚫 勿扰','🟢 在线','🫥 离线',
+    '💗 爱你','💕 恋爱中','😩 一言难尽','🥲 emo',
+    '📶 信号强','📵 信号弱','💤 睡觉','😪 疲惫',   '🥱 困倦',
+    '😑 无聊','🌙 熬夜'
+  ] } ] },
   { id:'g-moment', name:'动态字卡', icon:'star', sub:'专门发动动用', cats:[ { id:'cmo1', name:'日常', list:['今天天气很好。','分享一首歌。','刚看完一本书。'] } ] },
   { id:'g-namecard', name:'名片字卡', icon:'note', sub:'收到名片时角色的回应', cats:[
 	{ id:'cnc1', name:'同意', list:['加了','已加','OK'] },
@@ -12948,6 +13312,30 @@ function renderChatFull(forceBottom){
 		</div>
 	  </div>`;
 	}
+	/* ★ 单条转发卡片（收藏转发） */
+	if(m.forwardCard){
+	  const fc = m.forwardCard;
+	  const dirCls = isUser ? 'user' : 'char';
+	  const fromName = fc.from === 'user' ? userName() : (getRoleNameById(fc.fromRoleId) || fc.fromName || '?');
+	  const noteHTML = fc.note
+	    ? ('<div class="fc-note"><b>备注：</b>' + escapeHTML(fc.note) + '</div>')
+	    : '';
+	  return `<div class="msg ${dirCls}" data-id="${m.id}">
+		${av}
+		<div class="msg-body" style="max-width:100%">
+		  ${timeSep}
+		  <div class="fwd-card">
+			<div class="fc-head">
+			  <span class="fc-tag">转发 · 来自收藏</span>
+			  <span>›</span>
+			</div>
+			<div class="fc-body">${escapeHTML(fc.text || '')}</div>
+			${noteHTML}
+			<div class="fc-from">— ${escapeHTML(fromName)}</div>
+		  </div>
+		</div>
+	  </div>`;
+	}
 	/* ★ 合并转发卡片 */
 	if(m.mergeCard && Array.isArray(m.mergeCard.items)){
 	  const items = m.mergeCard.items;
@@ -13370,6 +13758,10 @@ function bindMsgLongPress(){
      mj_collect_theirs_v1 = { [roleId]: [ { id, text, time, kind } ] }   // Ta 收藏的（模拟）
    ============================================================ */
 const COLLECT_MINE_KEY   = 'mj_collect_mine_v1';
+/* ★ 收藏转发时是否带备注，默认开 */
+const COLLECT_FWD_NOTE_KEY = 'mj_collect_fwd_note_v1';
+function getCollectForwardNote(){ return lsGet(COLLECT_FWD_NOTE_KEY, true); }
+function setCollectForwardNote(v){ lsSet(COLLECT_FWD_NOTE_KEY, !!v); }
 const COLLECT_THEIRS_KEY = 'mj_collect_theirs_v1';
 
 function getCollectMineMap(){
@@ -13982,36 +14374,29 @@ function shareCollectItem(itemId){
     return;
   }
 
-  /* 复制一份合成消息，塞进当前聊天，再走“单条转发”流程 */
+  /* ★ 带不带备注，由收藏页的开关控制 */
+  const withNote = getCollectForwardNote();
+  const noteText = withNote ? (it.note || '') : '';
+
+  /* ★ 不往 msgs 里塞，避免触发聊天记录变化和顶部弹窗。
+     直接把「合成消息」交给一个临时转发通道，走完就丢。
+     合成消息带 from / note 字段，渲染时会变成卡片。 */
   const now = Date.now();
-  const synthText = it.note
-    ? (it.text + '\n备注：' + it.note)
-    : it.text;
-
-  /* ★ 合成消息带上原发送者头像，转发后头像才不会空 */
-  const role = getRole();
-  const fwdAvatar = (it.from === 'user')
-    ? (userProfile.avatar || '')
-    : (role.avatar || '');
-
   const synthMsg = {
     id: 'sh' + now.toString(36) + Math.random().toString(36).slice(2,6),
     role: it.from === 'user' ? 'user' : 'char',
-    text: synthText,
+    text: it.text,
+    note: noteText,
+    from: it.from,
     time: now,
-    fwdAvatar: fwdAvatar
+    fwdAvatar: (it.from === 'user') ? (userProfile.avatar || '') : (getRole().avatar || '')
   };
 
-  /* 塞进 msgs（如果不在当前聊天，就直接挂到 openForwardPicker 上） */
-  const backupMsgs = msgs.slice();
-  msgs.push(synthMsg);
-  try{
-    openForwardPicker([synthMsg.id], 'single');
-  }catch(e){
-    console.error('转发失败', e);
-    toast('转发失败：' + e.message);
-    msgs = backupMsgs;
+  if(typeof window.__openForwardPickerWithTemp !== 'function'){
+    toast('转发模块没加载好');
+    return;
   }
+  window.__openForwardPickerWithTemp([synthMsg], 'single');
 }
 
 function showMsgMenu(msgEl,x,y){
@@ -14323,15 +14708,28 @@ function openForwardPicker(msgIds, mode){
   mask.querySelector('#fwPickCancel').onclick = () => {
 	mask.remove();
 	exitForwardSelectMode();
+	/* ★ 如果是从收藏页过来的，关掉收藏页，避免退不出去 */
+	document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
+	if(typeof goToPage === 'function') goToPage('chat');
   };
   mask.addEventListener('click', (e) => {
-	if(e.target === mask){ mask.remove(); exitForwardSelectMode(); }
+	if(e.target === mask){
+	  mask.remove();
+	  exitForwardSelectMode();
+	  document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
+	  if(typeof goToPage === 'function') goToPage('chat');
+	}
   });
   mask.querySelector('#fwPickOk').onclick = () => {
 	if(!selectedTargets.size){ toast('请先选择至少一个角色'); return; }
 	mask.remove();
 	try { execForward(msgIds, Array.from(selectedTargets), mode); }
-	finally { exitForwardSelectMode(); }
+	finally {
+	  exitForwardSelectMode();
+	  /* ★ 转发完成后关掉收藏页，回到聊天页 */
+	  document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
+	  if(typeof goToPage === 'function') goToPage('chat');
+	}
   };
 }
 
@@ -14358,16 +14756,44 @@ function buildForwardItem(srcMsg){
   return { name: name, text: extractForwardText(srcMsg), src: srcMsg };
 }
 
+/* ★ 临时转发通道：把一条不落库的消息交给转发流程用
+   - 把消息放到 window.__forwardTempMsgs，供 execForward 读取
+   - 调 openForwardPicker 时传它的 id
+   - 转发完成后清空，避免残留 */
+window.__forwardTempMsgs = {};
+window.__openForwardPickerWithTemp = function(tempMsgs, mode){
+  if(!Array.isArray(tempMsgs) || !tempMsgs.length) return;
+  window.__forwardTempMsgs = window.__forwardTempMsgs || {};
+  const ids = [];
+  tempMsgs.forEach(function(m){
+    if(!m || !m.id) return;
+    window.__forwardTempMsgs[m.id] = m;
+    ids.push(m.id);
+  });
+  try{
+    openForwardPicker(ids, mode || 'single');
+  }catch(e){
+    console.error('临时转发失败', e);
+    toast('转发失败：' + e.message);
+  }
+  /* 转完后清掉临时数据（加个小延时，等转发流程读取完） */
+  setTimeout(function(){
+    ids.forEach(function(id){ try{ delete window.__forwardTempMsgs[id]; }catch(e){} });
+  }, 3000);
+};
+
 /* 真正执行转发
    mode: 'single' | 'multi-batch' | 'multi-merge' */
 function execForward(msgIds, targetRoleIds, mode){
   if(!msgIds || !msgIds.length || !targetRoleIds || !targetRoleIds.length) return;
 
-  /* 收集源消息（按聊天记录里的顺序） */
+  /* 收集源消息：优先从临时通道拿，其次才从 msgs 里找 */
   const srcMsgs = [];
+  const tempMap = window.__forwardTempMsgs || {};
   msgIds.forEach(id => {
-	const m = msgs.find(x => x.id === id);
-	if(m && !m.sys && !m.recalled) srcMsgs.push(m);
+    if(tempMap[id]){ srcMsgs.push(tempMap[id]); return; }
+    const m = msgs.find(x => x.id === id);
+    if(m && !m.sys && !m.recalled) srcMsgs.push(m);
   });
   if(!srcMsgs.length){ toast('没有可转发的消息'); return; }
 
@@ -14401,11 +14827,25 @@ function execForward(msgIds, targetRoleIds, mode){
   toast('已转发' + extra);
 }
 
-/* 单条转发：生成一条副本消息（时间用「现在」，逐条不加标记）
-   如果源消息带贴图 / 占卜卡，原样带过去 */
+/* 单条转发：生成一条副本消息
+   - 如果是来自收藏的（带 note / from 标记），渲染成“单条转发卡片”
+   - 否则保留原来的行为（原样文本 / 贴图 / 占卜卡） */
 function buildForwardCopyMsg(src, targetId, idx){
   const now = Date.now() + idx;
   const m = { id: 'f' + now.toString(36) + Math.random().toString(36).slice(2,6), role: 'user', time: now };
+
+  /* ★ 收藏转发：带 note 字段或 from 字段的，一律按卡片走 */
+  if(src && (src.from !== undefined || src.note !== undefined) && !src.divine && !src.sticker){
+    const role = getRole();
+    m.forwardCard = {
+      text: String(src.text || ''),
+      note: String(src.note || ''),
+      from: (src.from === 'user') ? 'user' : 'char',
+      fromName: (src.from === 'user') ? userName() : role.name,
+      fromRoleId: (src.from === 'user') ? '' : getCurrentRoleId()
+    };
+    return m;
+  }
 
   if(src.text) m.text = src.text;
   if(src.sticker) m.sticker = src.sticker;
@@ -14780,7 +15220,8 @@ function getKeepAliveOn(){ return lsGet(KEEPALIVE_KEY, false); }
 function setKeepAliveOn(v){ lsSet(KEEPALIVE_KEY, !!v); }
 
 let _keepAliveAudio = null;
-let _keepAliveCtx = null;
+let _keepAliveWavURL = '';
+let _keepAliveRunning = false;
 
 /* 现场生成一段极短的静音 WAV，作为保活音频源 */
 function _buildSilentWavURL(){
@@ -14814,10 +15255,12 @@ function _buildSilentWavURL(){
   return URL.createObjectURL(blob);
 }
 
-let _keepAliveWavURL = '';
+/* 开启保活：只要开关是开的，就一直跑。
+   注意：这里不再只依靠 visibilitychange，开关打开时立即启动；
+   回到前台也不自动停，避免被误清。 */
 function startKeepAlive(){
   if(!getKeepAliveOn()) return;
-  if(_keepAliveAudio) return;
+  if(_keepAliveRunning && _keepAliveAudio && !_keepAliveAudio.paused) return;
 
   try{
     if(!_keepAliveWavURL) _keepAliveWavURL = _buildSilentWavURL();
@@ -14827,21 +15270,37 @@ function startKeepAlive(){
     a.setAttribute('playsinline', '');
     a.play().then(function(){
       _keepAliveAudio = a;
+      _keepAliveRunning = true;
       console.log('[保活] 已开始');
     }).catch(function(e){
       console.warn('[保活] 启动失败', e);
       _keepAliveAudio = null;
+      _keepAliveRunning = false;
     });
   }catch(e){
     console.warn('[保活] 启动异常', e);
     _keepAliveAudio = null;
+    _keepAliveRunning = false;
   }
 }
+
+/* 停止保活：只有用户手动关开关，或权限出问题时才调 */
 function stopKeepAlive(){
+  _keepAliveRunning = false;
   if(_keepAliveAudio){
     try{ _keepAliveAudio.pause(); }catch(e){}
     _keepAliveAudio = null;
     console.log('[保活] 已停止');
+  }
+}
+
+/* 开关变了：同步持久化 + 立即生效 */
+function applyKeepAliveSwitch(on){
+  setKeepAliveOn(on);
+  if(on){
+    startKeepAlive();
+  } else {
+    stopKeepAlive();
   }
 }
 
@@ -19397,11 +19856,11 @@ function openBeauty(mode){
 	document.querySelectorAll('#beautyPanel .bp-row[data-panel="avatar"]').forEach(el=>el.style.display='none');
 	document.querySelectorAll('#beautyPanel .bp-row[data-panel="layout"]').forEach(el=>el.style.display='none');
   }else{
-	/* 个人界面入口：隐藏气泡行，保留主题 / 头像方圆 / 聊天页布局 */
+	/* 个人界面入口：只保留主题 / 头像方圆，气泡和聊天页布局都隐藏 */
 	document.querySelectorAll('#beautyPanel .bp-row[data-panel="theme"]').forEach(el=>el.style.display='');
 	document.querySelectorAll('#beautyPanel .bp-row[data-panel="bubble"]').forEach(el=>el.style.display='none');
 	document.querySelectorAll('#beautyPanel .bp-row[data-panel="avatar"]').forEach(el=>el.style.display='');
-	document.querySelectorAll('#beautyPanel .bp-row[data-panel="layout"]').forEach(el=>el.style.display='');
+	document.querySelectorAll('#beautyPanel .bp-row[data-panel="layout"]').forEach(el=>el.style.display='none');
   }
   renderBeautyPanel();
   $('#beautyPanel').classList.add('show');
@@ -22414,6 +22873,24 @@ document.addEventListener('change', function(e){
       t.classList.toggle('on', t === tab);
     });
     renderCollectScreen(which);
+  }, true);
+
+  /* ★ 带备注开关：回填 + 绑定 */
+  document.addEventListener('change', function(e){
+    const t = e.target;
+    if(!t || t.id !== 'colFwdNote') return;
+    setCollectForwardNote(t.checked);
+    if(typeof toast === 'function') toast(t.checked ? '转发时带备注' : '转发时不带备注');
+  }, true);
+  /* 每次打开收藏页回填一次 */
+  document.addEventListener('click', function(e){
+    const t = e.target;
+    if(!t || !t.closest) return;
+    if(!t.closest('#page-me .me-row[data-func="collect"]')) return;
+    setTimeout(function(){
+      const cb = document.getElementById('colFwdNote');
+      if(cb) cb.checked = getCollectForwardNote();
+    }, 60);
   }, true);
 
   /* 返回 */
@@ -25481,7 +25958,14 @@ on('#btnTrimOk','click',()=>{
   if(!g){ toast('请先进入一个分组再使用'); return; }
   const picked = Array.from(document.querySelectorAll('#trimCatList .trim-cat-row.on')).map(r=>r.dataset.cid);
   if(!picked.length){ toast('请至少选择一个分类'); return; }
+  /* 末尾标点正则：只去末尾，中间的标点不动 */
+  const TRIM_RE = /[\s]*[。．.，,；;：:！!？?…、～~·・]+[\s]*$/g;
+  /* 判断去掉末尾标点后，是否还有实际内容（汉字/字母/数字/emoji 等都算） */
+  function hasRealContent(str){
+    return /[\u4e00-\u9fa5a-zA-Z0-9\u3040-\u30ff\uac00-\ud7af]/.test(str) || /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u.test(str);
+  }
   let totalChanged = 0;
+  let skippedPurePunct = 0;
   picked.forEach(cid=>{
 	const cat = getCat(g, cid);
 	if(!cat) return;
@@ -25489,8 +25973,14 @@ on('#btnTrimOk','click',()=>{
 	for(let i = 0; i < arr.length; i++){
 	  const item = arr[i];
 	  const oldText = String(cardText(item) || '');
-	  const newText = oldText.replace(/[\s]*[。．.，,；;：:！!？?…]+[\s]*$/g, '');
-	  if(newText === oldText) continue;
+	  if(!oldText) continue;
+	  /* ★ 新逻辑：这条字卡如果去掉末尾标点后，什么都不剩（纯标点），就跳过 */
+	  const newText = oldText.replace(TRIM_RE, '');
+	  if(newText === oldText) continue;      /* 末尾本来就没标点，跳过 */
+	  if(!newText.trim() || !hasRealContent(newText)){
+		skippedPurePunct++;
+		continue;                              /* 纯标点卡，不动它 */
+	  }
 	  if(typeof item === 'string'){
 		arr[i] = { text: newText, t: Date.now() };
 	  } else if(item && typeof item === 'object'){
@@ -25507,7 +25997,9 @@ on('#btnTrimOk','click',()=>{
   $('#mTrimPicker').classList.remove('show');
   renderCdTabs();
   renderCdList();
-  toast(totalChanged ? ('已处理 ' + totalChanged + ' 条字卡') : '这些分类里没有需要去除的末尾标点');
+  let msg = totalChanged ? ('已处理 ' + totalChanged + ' 条字卡') : '这些分类里没有需要去除的末尾标点';
+  if(skippedPurePunct) msg += '，跳过 ' + skippedPurePunct + ' 条纯标点卡';
+  toast(msg);
 });
 
 /* ===== 排序选择（弹窗） ===== */
@@ -26385,8 +26877,20 @@ function renderReplyPanel(tab){
 		</div>
 	  </div>
 	  <div class="section">
-		<div class="title">触发概率</div>
-		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsCallRate" min="0" max="100" value="${Math.round(callCfg.rate*100)}"><span class="num" id="rsCallRateVal">${Math.round(callCfg.rate*100)}%</span></div>
+		<div class="title">语音通话</div>
+		<div class="sw-row">
+		  <div class="sw-main"><div class="t1">允许语音来电</div><div class="t2">关掉后 Ta 不会打语音给你</div></div>
+		  <label class="switch"><input type="checkbox" id="rsCallVoiceOn" ${callCfg.voiceOn?'checked':''}><span class="slider"></span></label>
+		</div>
+		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsCallVoiceRate" min="0" max="100" value="${Math.round(callCfg.voiceRate*100)}"><span class="num" id="rsCallVoiceRateVal">${Math.round(callCfg.voiceRate*100)}%</span></div>
+	  </div>
+	  <div class="section">
+		<div class="title">视频通话</div>
+		<div class="sw-row">
+		  <div class="sw-main"><div class="t1">允许视频来电</div><div class="t2">关掉后 Ta 不会打视频给你</div></div>
+		  <label class="switch"><input type="checkbox" id="rsCallVideoOn" ${callCfg.videoOn?'checked':''}><span class="slider"></span></label>
+		</div>
+		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsCallVideoRate" min="0" max="100" value="${Math.round(callCfg.videoRate*100)}"><span class="num" id="rsCallVideoRateVal">${Math.round(callCfg.videoRate*100)}%</span></div>
 	  </div>
 	  <div class="section">
 		<div class="title">掷骰间隔</div>
@@ -26680,6 +27184,49 @@ function renderReplyPanel(tab){
     if(rateEl) rateEl.addEventListener('input', function(){
       const cur = getCallCfg(rid); cur.rate = parseInt(this.value,10) / 100; saveCallCfg(cur, rid);
       const valEl = $('#rsCallRateVal'); if(valEl) valEl.textContent = this.value + '%';
+    });
+
+    /* ★ 语音通话开关 */
+    const vOnEl = $('#rsCallVoiceOn');
+    if(vOnEl) vOnEl.addEventListener('change', function(){
+      const cur = getCallCfg(rid);
+      cur.voiceOn = this.checked;
+      /* 两个都关时，逼着把另一个留开，避免 Ta 永远不主动打来 */
+      if(!cur.voiceOn && !cur.videoOn){
+        cur.videoOn = true;
+        const vv = $('#rsCallVideoOn'); if(vv) vv.checked = true;
+      }
+      saveCallCfg(cur, rid);
+    });
+
+    /* ★ 语音通话概率 */
+    const vRateEl = $('#rsCallVoiceRate');
+    if(vRateEl) vRateEl.addEventListener('input', function(){
+      const cur = getCallCfg(rid);
+      cur.voiceRate = parseInt(this.value,10) / 100;
+      saveCallCfg(cur, rid);
+      const valEl = $('#rsCallVoiceRateVal'); if(valEl) valEl.textContent = this.value + '%';
+    });
+
+    /* ★ 视频通话开关 */
+    const vdOnEl = $('#rsCallVideoOn');
+    if(vdOnEl) vdOnEl.addEventListener('change', function(){
+      const cur = getCallCfg(rid);
+      cur.videoOn = this.checked;
+      if(!cur.voiceOn && !cur.videoOn){
+        cur.voiceOn = true;
+        const vv = $('#rsCallVoiceOn'); if(vv) vv.checked = true;
+      }
+      saveCallCfg(cur, rid);
+    });
+
+    /* ★ 视频通话概率 */
+    const vdRateEl = $('#rsCallVideoRate');
+    if(vdRateEl) vdRateEl.addEventListener('input', function(){
+      const cur = getCallCfg(rid);
+      cur.videoRate = parseInt(this.value,10) / 100;
+      saveCallCfg(cur, rid);
+      const valEl = $('#rsCallVideoRateVal'); if(valEl) valEl.textContent = this.value + '%';
     });
 
     ['rsCallRollMin','rsCallRollMax','rsCallWinMin','rsCallWinMax','rsCallMaxVoice'].forEach(function(id){
@@ -29295,6 +29842,10 @@ function defaultCallRoleCfg(){
   return {
     on: true,
     rate: 0.05,
+    voiceOn: true,
+    videoOn: true,
+    voiceRate: 0.05,
+    videoRate: 0.05,
     rollMin: 60,
     rollMax: 60,
     winMin: 1,
@@ -29327,11 +29878,19 @@ function getCallCfg(roleId){
   /* 数值兜底 */
   if(c.rate < 0) c.rate = 0;
   if(c.rate > 1) c.rate = 1;
+  if(c.voiceRate < 0) c.voiceRate = 0;
+  if(c.voiceRate > 1) c.voiceRate = 1;
+  if(c.videoRate < 0) c.videoRate = 0;
+  if(c.videoRate > 1) c.videoRate = 1;
   if(c.rollMin < 1) c.rollMin = 1;
   if(c.rollMax < c.rollMin) c.rollMax = c.rollMin;
   if(c.winMin < 1) c.winMin = 1;
   if(c.winMax < c.winMin) c.winMax = c.winMin;
   if(c.maxVoice < 1) c.maxVoice = 1;
+  /* 语音和视频至少留一个开，避免两个都关后角色永远不能主动打来 */
+  if(!c.voiceOn && !c.videoOn){
+    c.voiceOn = true;
+  }
   map[roleId] = c;
   saveCallRoleCfgMap(map);
   return c;
@@ -29479,8 +30038,16 @@ function callTick(){
         changed = true;
       }
       if(now >= pr.nextRollAt){
-        if(rollOnce(rid)){
+        /* ★ 语音和视频独立掷骰，命中哪个就打来哪个 */
+        let hitMode = '';
+        if(cfg.voiceOn && Math.random() < cfg.voiceRate) hitMode = 'voice';
+        if(cfg.videoOn && Math.random() < cfg.videoRate){
+          /* 两个都命中 → 随机挑一个 */
+          if(!hitMode || Math.random() < 0.5) hitMode = 'video';
+        }
+        if(hitMode){
           /* 命中 → 打来 */
+          callState.mode = hitMode;
           callState.roleId = rid;
           triggerIncomingCall(rid);
         } else {
@@ -30333,13 +30900,11 @@ function switchToRole(id){
   document.addEventListener('change', function(e){
     var t = e.target;
     if(!t || t.id !== 'notifyKeepAlive') return;
-    setKeepAliveOn(t.checked);
+    /* 点开 → 立刻开始播放保活音频；点关 → 停 */
+    applyKeepAliveSwitch(t.checked);
     if(t.checked){
-      /* 用户主动打开：立刻尝试启动一次（如果现在就在后台，直接跑） */
-      if(document.hidden) startKeepAlive();
       if(typeof toast === 'function') toast('已开启后台保活，切后台时定时器会继续跑');
     } else {
-      stopKeepAlive();
       if(typeof toast === 'function') toast('已关闭后台保活');
     }
   }, true);
@@ -34023,8 +34588,7 @@ setInterval(() => {
 
 document.addEventListener('visibilitychange', function(){
   if(document.visibilityState === 'visible'){
-    /* ★ 回到前台：先停止保活音频 */
-    try{ if(typeof stopKeepAlive === 'function') stopKeepAlive(); }catch(e){}
+    /* ★ 回到前台：保活不自动停，只在开关关闭时由开关处理 */
     renderBigCardDate();
     renderBigCardEvents();
     /* ★ 回到前台先结算试卷卡，再重绘聊天 */
