@@ -17,7 +17,7 @@ self.addEventListener('notificationclick', function(e){
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(list){
       for(var i = 0; i < list.length; i++){
         var c = list[i];
-        if(c.url.indexOf(location.origin) === 0 && 'focus' in c){
+        if(c.url.indexOf(self.location.origin) === 0 && 'focus' in c){
           return c.focus();
         }
       }
