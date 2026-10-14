@@ -9048,9 +9048,7 @@ window.__APP_VERSION__ = '1.0.4';
 		  <div class="me-row" data-func="shop">
 			<span class="num">03</span><span class="name">商场</span><span class="en">STORE</span><span class="arr">→</span>
 		  </div>
-		  <div class="me-row" data-func="beauty">
-			<span class="num">04</span><span class="name">美化</span><span class="en">BEAUTY</span><span class="arr">→</span>
-		  </div>
+
 		  <div class="me-row" data-func="settings">
 			<span class="num">05</span><span class="name">设置</span><span class="en">SETTINGS</span><span class="arr">→</span>
 		  </div>
@@ -12727,11 +12725,14 @@ function renderChatFull(forceBottom){
 	  const done = !!qc.settled || (qc.dueAt && Date.now() >= qc.dueAt);
 	  const status = done ? '已 提 交' : '待 填 写';
 	  const statusCls = done ? 'status ok' : 'status';
-	  const ansBody = done
-	    ? escapeHTML(qc.answer || '')
+	  /* ★ 修复：只要是有答案（不管到没到点），都渲染出来；到点前也可以显示等待 */
+	  const hasAnswer = qc.answer && String(qc.answer).trim();
+	  const ansBody = done && hasAnswer
+	    ? escapeHTML(qc.answer)
 	    : '<span class="ans-empty">等待回答…</span>';
 	  const ansCls = done ? 'paper-ans done' : 'paper-ans';
 	  const no = qc.no || '001';
+	  /* ★ 修复：miniav 用 avatar-radius 变量保持头像方圆同步 */
 	  return `<div class="msg user" data-id="${m.id}">
 		<div class="msg-av usr-av">${avInner}</div>
 		<div class="msg-body">
@@ -15901,12 +15902,29 @@ function _drawQuizCard(){
   return usePool[Math.floor(Math.random() * usePool.length)];
 }
 
-/* 生成一条答案：抽 1~N 张卡，用空格拼在一起 */
+/* 生成一条答案：抽 1~N 张卡，按当前角色的回复设置（标点开关 / 标点池）拼接 */
 function _drawQuizAnswer(count){
   const arr = [];
   for(let i = 0; i < count; i++){
     arr.push(_drawQuizCard());
   }
+  /* ★ 接入回复设置里的标点池，让问卷答案也有标点 */
+  try{
+    const r = getReply();
+    if(r.punctOn && Array.isArray(r.punctList) && r.punctList.length){
+      const parts = [];
+      for(let i = 0; i < arr.length; i++){
+        parts.push(arr[i]);
+        if(i < arr.length - 1){
+          parts.push(r.punctList[Math.floor(Math.random() * r.punctList.length)]);
+        }
+      }
+      /* 末尾也补一个标点 */
+      parts.push(r.punctList[Math.floor(Math.random() * r.punctList.length)]);
+      return parts.join('');
+    }
+  }catch(e){}
+  /* 没开标点 / 没标点池 → 退回全角空格拼接 */
   return arr.join('　');
 }
 
@@ -21369,30 +21387,7 @@ document.addEventListener('click', function(e){
   }
 }, true);
 
-/* ===== 备注（点击名字修改） ===== */
-on('#cipName','click',(e)=>{
-  if(e) e.stopPropagation();
-  const role = getRole();
-  uniAsk({
-    title: '修改备注',
-    sub: '只有你能看到 · 留空 = 用真名',
-    value: role.remark || '',
-    placeholder: '输入备注',
-    maxlength: 20
-  }).then(v=>{
-    if(v === null) return;
-    const t = String(v).trim();
-    const friends = getFriends();
-    const f = friends.find(x=>x.id===getCurrentRoleId());
-    if(!f) return;
-    f.remark = t;
-    saveFriends(friends);
-    const cipName=$('#cipName'); if(cipName) cipName.textContent = t || f.name;
-    renderFriends();
-    renderChat();
-    toast(t ? '备注已更新' : '已清除备注');
-  });
-});
+
 
 /* ============================================================
    语音库 · 每个角色独立，音频存在 IndexedDB（不占 localStorage）
@@ -25779,8 +25774,7 @@ on('#animPickTabs','click',e=>{
   $('#mAnimPick').classList.remove('show');
   renderMoodList();
 });
-on('#moodSettingsBtn','click',()=>{ const c = getMoodCfg(); $('#inMoodMin').value = c.moodMin; $('#inMoodMax').value = c.moodMax; $('#inStatusMin').value = c.statusMin; $('#inStatusMax').value = c.statusMax; $$('#defaultAnimTabs .mode-tab').forEach(t=>t.classList.toggle('on', t.dataset.anim===c.defaultAnim)); $('#mMoodSettings').classList.add('show'); });
-on('#defaultAnimTabs','click',e=>{ const t=e.target.closest('.mode-tab'); if(!t) return; $$('#defaultAnimTabs .mode-tab').forEach(x=>x.classList.remove('on')); t.classList.add('on'); });
+on('#moodSettingsBtn','click',()=>{ const c = getMoodCfg(); $('#inMoodMin').value = c.moodMin; $('#inMoodMax').value = c.moodMax; $('#inStatusMin').value = c.statusMin; $('#inStatusMax').value = c.statusMax; $('#mMoodSettings').classList.add('show'); });
 on('#btnMoodSettingsOk','click',()=>{
   const mm = parseInt($('#inMoodMin').value,10); const mx = parseInt($('#inMoodMax').value,10);
   if(!mm||!mx||mm<1||mx<mm){ alert('区间不合法，请检查'); return; }
@@ -26455,38 +26449,23 @@ on('#meAvFile','change',function(){
 });
 on('#meQuote','click',()=>{
   const cur = userProfile.sign || '我想睡在梦里，醒在梦境';
-  const inp = $('#signInput');
-  if(inp) inp.value = cur;
-  /* ★ 同步「随机切换我的个签」开关状态 */
-  const s = getSignSwitchStore();
-  const sw = document.getElementById('mySignAutoSwitch');
-  if(sw) sw.checked = !!s.me.on;
-  $('#mSign').classList.add('show');
-  setTimeout(()=>{ if(inp){ inp.focus(); inp.select(); } }, 200);
-});
-on('#signOk','click',()=>{
-  const t = $('#signInput').value.trim();
-  if(!t){ toast('签名不能为空'); return; }
-
-  /* 用户写的签名，自动加入「我的个签」字卡库（去重） */
-  try{ pushSignCardText('cs-me', t); }catch(e){}
-
-  userProfile.sign = t;
-  saveUser();
-  renderMePage();
-
-  /* 同步开关状态 */
-  const s = getSignSwitchStore();
-  const sw = document.getElementById('mySignAutoSwitch');
-  s.me.on = !!(sw && sw.checked);
-  /* 打开时如果还没排下一次，就排一个 */
-  if(s.me.on && !s.me.nextAt) s.me.nextAt = pickNextSignSwitchAt();
-  /* 关闭时清掉 nextAt */
-  if(!s.me.on) s.me.nextAt = 0;
-  saveSignSwitchStore(s);
-
-  $('#mSign').classList.remove('show');
-  toast('签名已更新');
+  uniAsk({
+    title: '写下你的签名',
+    sub: 'SIGN · 这句话会显示在“我的”页',
+    value: cur,
+    placeholder: '我想睡在梦里，醒在梦境',
+    maxlength: 30
+  }).then(t=>{
+    if(t === null) return;
+    const v = String(t).trim();
+    if(!v){ toast('签名不能为空'); return; }
+    /* 用户写的签名，自动加入「我的个签」字卡库（去重） */
+    try{ pushSignCardText('cs-me', v); }catch(e){}
+    userProfile.sign = v;
+    saveUser();
+    renderMePage();
+    toast('签名已更新');
+  });
 });
 $('#signInput').addEventListener('keydown', e=>{
   if(e.key === 'Enter'){ e.preventDefault(); $('#signOk').click(); }
@@ -26494,7 +26473,6 @@ $('#signInput').addEventListener('keydown', e=>{
 
 let editAvatarTmp = '';
 function renderEditAvPrev(){ const el = $('#editAvPrev'); if(el) el.innerHTML = avatarHTML(editAvatarTmp); }
-on('#btnEditUploadAv','click',()=>$('#editAvFile').click());
 on('#editAvFile','change',function(){
   const f = this.files[0]; this.value=''; if(!f) return;
   openCrop(f, 'square', (data)=>{
@@ -26512,7 +26490,6 @@ on('#editAvFile','change',function(){
     }
   });
 });
-on('#btnEditClearAv','click',()=>{ editAvatarTmp=''; renderEditAvPrev(); });
 
 let friendKeyword='';
 function friendHTML(f){ return `<div class="friend" data-id="${f.id}"><div class="f-av">${avatarHTML(f.avatar)}</div><div class="f-main"><div class="f-name">${escapeHTML(displayName(f))}</div><div class="f-sub">${escapeHTML(getRoleSign(f))}</div></div><div class="friend-menu-btn" data-fm="${f.id}">⋯</div></div>`; }
@@ -26845,8 +26822,6 @@ on('#optNewGroup','click',()=>{ $('#mAdd').classList.remove('show'); openNewGrou
 	  $('#mNewBuiltin').classList.add('show');
 	});
 	on('#closeNewBuiltin','click',()=>$('#mNewBuiltin').classList.remove('show'));
-	on('#btnBiClearAv','click',()=>{ biAvatarTmp=''; renderBiAvatar(); });
-	on('#btnBiUploadAv','click',()=>{ biUploadingAv = true; $('#editAvFile').click(); });
 	on('#biAutoAddPick','click',()=>{
 	  biAutoAddTmp = !biAutoAddTmp;
 	  $('#biAutoAddVal').textContent = biAutoAddTmp ? '开' : '关';
@@ -27241,6 +27216,8 @@ on('#btnSaveEdit','click',()=>{
   saveSignSwitchStore(s);
 
   refreshChatRole();
+  /* ★ 修复：修改头像后，强制重绘聊天列表，让旧消息的头像立即刷新 */
+  if(typeof renderChat === 'function') renderChat();
   closeChatInfo();
   toast('已保存');
 });
@@ -27593,8 +27570,10 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	scheduleGroupDivine();
 	/* ★ 启动个签自动切换定时器 */
 	try{ startSignSwitchTimer(); }catch(e){ console.error('个签切换启动失败', e); }
-	/* ★ 启动通话模块 */
-	try{ if(typeof startCallModule === 'function'){ startCallModule(); } }catch(e){ console.error('通话模块启动失败', e); }
+	/* ★ 启动通话模块：延迟到页面初始化完再跑，避免 callState 未初始化完成就访问 */
+	setTimeout(function(){
+	  try{ if(typeof startCallModule === 'function'){ startCallModule(); } }catch(e){ console.error('通话模块启动失败', e); }
+	}, 0);
 
 
 
@@ -30049,7 +30028,7 @@ function goToPage(name){
 #chatList .paper-asker .tag{flex:none;font-size:8.5px;letter-spacing:1.5px;
   color:#bbb;font-family:Georgia,serif}
 #chatList .paper-asker .who{color:#1a1a1a;font-weight:400;font-size:11.5px;letter-spacing:.5px}
-#chatList .paper-asker .mini-av{width:17px;height:17px;border-radius:5px;
+#chatList .paper-asker .mini-av{width:17px;height:17px;border-radius:var(--avatar-radius,12%);
   background:#f0f0f0;overflow:hidden;flex:none;
   display:flex;align-items:center;justify-content:center}
 #chatList .paper-asker .mini-av svg{width:100%;height:100%}
