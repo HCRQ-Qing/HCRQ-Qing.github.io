@@ -14762,33 +14762,12 @@ function _showPersistentNotification(title, body){
    - 雨见内核在页面切后台后，会限制新通知弹出
    - 切后台瞬间先弹一条，让"通知能力"保持存活
    ============================================================ */
+/* 切后台不再弹任何占位/保活通知 */
 (function bindVisibilityPersistent(){
   if(window.__mjVisibilityBound) return;
   window.__mjVisibilityBound = true;
-
-  document.addEventListener('visibilitychange', function(){
-    if(document.hidden){
-      try{
-        if(typeof Notification === 'undefined') return;
-        if(Notification.permission !== 'granted') return;
-        if(!getSysNotifyOn()) return;
-
-        if('serviceWorker' in navigator){
-          navigator.serviceWorker.ready.then(function(reg){
-            if(reg && typeof reg.showNotification === 'function'){
-              reg.showNotification('彼岸', {
-                body: '有新消息时会在这里提醒你',
-                tag: 'mj-keepalive-' + Date.now().toString(36),
-                renotify: false,
-                silent: true,
-                requireInteraction: true
-              }).catch(function(e){ console.warn('保活通知失败', e); });
-            }
-          }).catch(function(){});
-        }
-      }catch(e){}
-    }
-  });
+  /* 保留空监听，只是为了占住这个标志位，避免别处重复绑定 */
+  document.addEventListener('visibilitychange', function(){});
 })();
 
 function showSystemNotify(title, body){
