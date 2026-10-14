@@ -14753,35 +14753,18 @@ function _showPersistentNotification(title, body){
 }
 
 /* ============================================================
-   ★ 页面切后台时，弹一条保活通知
-   - 雨见内核在页面切后台后，会限制新通知弹出
-   - 切后台瞬间先弹一条，让"通知能力"保持存活
+   ★ 页面切后台时：不再弹任何保活通知
+   - 只记录切后台时间，回到前台时用来补算"漏掉的消息"
+   - 真正的消息通知由 showSystemNotify 负责，这里不抢戏
    ============================================================ */
 (function bindVisibilityPersistent(){
   if(window.__mjVisibilityBound) return;
   window.__mjVisibilityBound = true;
-
+  /* 保活通知已关闭，这里只保留一个空的可见性监听占位，
+     防止别处依赖 __mjVisibilityBound 标记的逻辑失效 */
   document.addEventListener('visibilitychange', function(){
     if(document.hidden){
-      try{
-        if(typeof Notification === 'undefined') return;
-        if(Notification.permission !== 'granted') return;
-        if(!getSysNotifyOn()) return;
-
-        if('serviceWorker' in navigator){
-          navigator.serviceWorker.ready.then(function(reg){
-            if(reg && typeof reg.showNotification === 'function'){
-              reg.showNotification('彼岸', {
-                body: '有新消息时会在这里提醒你',
-                tag: 'mj-keepalive-' + Date.now().toString(36),
-                renotify: false,
-                silent: true,
-                requireInteraction: true
-              }).catch(function(e){ console.warn('保活通知失败', e); });
-            }
-          }).catch(function(){});
-        }
-      }catch(e){}
+      try{ lsSet('mj_last_seen_at_v1', Date.now()); }catch(e){}
     }
   });
 })();
@@ -14801,38 +14784,61 @@ function showSystemNotify(title, body){
 
     /* 每条通知独立 tag，避免互相覆盖 */
     var __notifyTag = 'mj-msg-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6);
-    var payload = {
-      body: String(body || '').slice(0, 60),
-      tag: __notifyTag,
-      renotify: true,
-      silent: false,
-      requireInteraction: true,
-      data: { roleId: window.__lastNotifyRoleId || '' }
-    };
+
+    var finalTitle = String(title || '角色').trim() || '角色';
+    var finalBody  = String(body || '').trim();
 
     if('serviceWorker' in navigator){
       navigator.serviceWorker.ready.then(function(reg){
         if(reg && typeof reg.showNotification === 'function'){
-          /* ★ 先关掉"保活"通知，避免它占着通知栏挡住新消息 */
+          /* ★ 先取消掉"保活"通知，避免它占着通知栏
+             —— 保活通知的 tag 前缀是 mj-keepalive-，这里把它们全关掉 */
+          try{
+            reg.getNotifications().then(function(list){
+              (list || []).forEach(function(n){
+                if(n && n.tag && n.tag.indexOf('mj-keepalive-') === 0){
+                  try{ n.close(); }catch(e){}
+                }
+              });
+            }).catch(function(){});
+          }catch(e){}
 
           try{
-            var finalTitle = String(title || '角色').trim() || '角色';
-            var finalBody  = String(body || '').trim();
             var finalPayload = {
               body: finalBody.slice(0, 60),
               tag: __notifyTag,
               renotify: true,
               silent: false,
-              requireInteraction: false,
+              requireInteraction: true,
               data: { roleId: window.__lastNotifyRoleId || '' }
             };
             console.log('[通知] 发出:', finalTitle, finalBody);
             reg.showNotification(finalTitle, finalPayload).catch(function(e){
               console.warn('showNotification 失败', e);
+              _fallbackNewNotification(finalTitle, finalPayload);
             });
-          }catch(e){ console.warn('showNotification 抛错', e); }
+          }catch(e){
+            console.warn('showNotification 抛错', e);
+            _fallbackNewNotification(finalTitle, finalPayload);
+          }
+        } else {
+          _fallbackNewNotification(finalTitle, {
+            body: finalBody.slice(0, 60),
+            tag: __notifyTag
+          });
         }
-      }).catch(function(e){ console.warn('SW ready 失败', e); });
+      }).catch(function(e){
+        console.warn('SW ready 失败', e);
+        _fallbackNewNotification(finalTitle, {
+          body: finalBody.slice(0, 60),
+          tag: __notifyTag
+        });
+      });
+    } else {
+      _fallbackNewNotification(finalTitle, {
+        body: finalBody.slice(0, 60),
+        tag: __notifyTag
+      });
     }
 
   }catch(e){
