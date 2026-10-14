@@ -14442,12 +14442,9 @@ function showMsgNotify(roleName, text, roleAvatar, targetRoleId){
   /* 原因：手机浏览器切后台时 visibilityState 经常不更新，导致误判成"还在前台" */
   /* 不再用 isViewingRole 挡系统通知：切后台时页面栈还是停在聊天页，
      但用户其实已经不在看了，应该弹系统通知 */
+  /* ★ 正在看这个角色的聊天页 → 不弹顶部横幅，也不弹系统通知，直接返回 */
   if(targetRoleId && typeof isViewingRole === 'function' && isViewingRole(targetRoleId)){
-    /* 只有一种情况不弹系统通知：页内浮层能看见（即 visibilityState 真的是 visible） */
-    if(document.visibilityState === 'visible' && !document.hidden){
-      /* 页面确实在前台，交给页内浮层；同时也不弹系统通知 */
-      /* 但不 return，因为页内浮层已经显示了，下面 showSystemNotify 里 isBg 判断会 return */
-    }
+    return;
   }
   /* 不做任何 return，直接往下走，让 showSystemNotify 自己决定 */
   const el = document.getElementById('msgNotify');
@@ -14639,16 +14636,16 @@ function getSysNotifyOn(){
   try{
     if(typeof Notification === 'undefined') return;
     if(Notification.permission !== 'default') return;
-    if(!getSysNotifyOn()) return;         /* 本地开关是关的就不请求 */
 
-    /* 延迟 3 秒再请求，避免一进页面就弹权限框 */
+    /* ★ 关键：不要再看 getSysNotifyOn()。
+       用户没授权过、权限还是 default，就应该请求。
+       本地开关只影响"要不要弹"，不影响"要不要问权限"。 */
     setTimeout(function(){
       try{
         var p = Notification.requestPermission();
         if(p && typeof p.then === 'function'){
           p.then(function(res){
             if(res === 'granted'){
-              /* 授权成功：发一条欢迎通知，让用户确认能看到 */
               try{
                 var n = new Notification('后台通知已开启', {
                   body: '切到别的应用时，Ta 发消息会在这里提醒你',
@@ -14657,10 +14654,15 @@ function getSysNotifyOn(){
                 setTimeout(function(){ try{ n.close(); }catch(e){} }, 6000);
               }catch(e){}
             }
-            /* 同步设置页开关的 checked 状态 */
             var cb = document.getElementById('notifySys');
-            if(cb){ cb.checked = (Notification.permission === 'granted') && getSysNotifyOn(); }
+            if(cb){ cb.checked = (Notification.permission === 'granted'); }
           }).catch(function(){});
+        } else {
+          /* 老浏览器同步回调 */
+          if(Notification.permission === 'granted'){
+            var cb2 = document.getElementById('notifySys');
+            if(cb2) cb2.checked = true;
+          }
         }
       }catch(e){ console.error('自动请求通知权限失败', e); }
     }, 3000);
@@ -14762,12 +14764,43 @@ function _showPersistentNotification(title, body){
    - 雨见内核在页面切后台后，会限制新通知弹出
    - 切后台瞬间先弹一条，让"通知能力"保持存活
    ============================================================ */
-/* 切后台不再弹任何占位/保活通知 */
+/* 切后台：不弹任何占位通知，改为每秒给 SW 发 ping 保活 */
 (function bindVisibilityPersistent(){
   if(window.__mjVisibilityBound) return;
   window.__mjVisibilityBound = true;
-  /* 保留空监听，只是为了占住这个标志位，避免别处重复绑定 */
-  document.addEventListener('visibilitychange', function(){});
+
+  var pingTimer = null;
+
+  function startPing(){
+    if(pingTimer) return;
+    pingTimer = setInterval(function(){
+      try{
+        if(!('serviceWorker' in navigator)) return;
+        if(navigator.serviceWorker.controller){
+          navigator.serviceWorker.controller.postMessage({ type: 'ping', at: Date.now() });
+        } else {
+          navigator.serviceWorker.ready.then(function(reg){
+            if(reg && reg.active){
+              reg.active.postMessage({ type: 'ping', at: Date.now() });
+            }
+          }).catch(function(){});
+        }
+      }catch(e){}
+    }, 1000);
+  }
+  function stopPing(){
+    if(pingTimer){ clearInterval(pingTimer); pingTimer = null; }
+  }
+
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){
+      /* 切后台 → 开始给 SW 发心跳 */
+      startPing();
+    } else {
+      /* 切回前台 → 停止心跳（省电） */
+      stopPing();
+    }
+  });
 })();
 
 function showSystemNotify(title, body){
@@ -15353,19 +15386,43 @@ function runOnlineReadCheck(){
   if(changed){ saveMsgs(); if(!window.__jumpingToMsg) renderChat(); }
 }
 
-/* 已读后每 30 秒摇一次：5% 概率已读 → 未读 */
+/* 已读后每 30 秒摇一次：
+   - 只有「最后一条 user 消息」有资格被摇中回滚
+   - 摇中后，它和它下面所有 user 消息一起变未读（保证不会出现"上面未读、下面已读"）
+   - noReply 是终态，不参与回滚
+   这样"已读"永远是从下往上推进的，绝不会断在中间 */
 setInterval(function(){
   if(!Array.isArray(msgs)) return;
+
+  /* 找最后一条可参与状态的 user 消息 */
+  var lastIdx = -1;
+  for(var i = msgs.length - 1; i >= 0; i--){
+    var m = msgs[i];
+    if(!m || m.role !== 'user') continue;
+    if(m.recalled || m.sys || m.namecard) continue;
+    if(m.readState === 'noReply') continue;
+    lastIdx = i;
+    break;
+  }
+  if(lastIdx < 0) return;
+
+  var last = msgs[lastIdx];
+  if(last.readState !== 'read') return;   /* 只有"已读"才有资格回滚 */
+  if(Math.random() >= 0.05) return;        /* 5% 概率 */
+
+  /* 回滚：从最后一条一直到末尾，全部变未读 */
   var changed = false;
-  msgs.forEach(function(m){
-    if(!m || m.role !== 'user') return;
-    if(m.recalled || m.sys || m.namecard) return;
-    if(m.readState === 'noReply') return;
-    if(m.readState === 'read' && Math.random() < 0.05){
-      m.readState = 'unread';
+  for(var j = lastIdx; j < msgs.length; j++){
+    var x = msgs[j];
+    if(!x || x.role !== 'user') continue;
+    if(x.recalled || x.sys || x.namecard) continue;
+    if(x.readState === 'noReply') continue;
+    if(x.readState !== 'unread'){
+      x.readState = 'unread';
+      x.readNoReply = false;
       changed = true;
     }
-  });
+  }
   if(changed){ saveMsgs(); if(!window.__jumpingToMsg) renderChat(); }
 }, 30 * 1000);
 
@@ -15409,11 +15466,13 @@ function runReplyChain(onDone){
 
   const res = genReply();
 
-  /* 空回复：直接走"已读不回" */
+  /* 空回复：直接走"已读不回"，并终结这条链 */
   if(!res.length){
     setTimeout(()=>{
       if(!stillSameRole()){ onDone(); return; }
       markLastUserNoReply();
+      /* ★ 关键：清掉 pending，防止 onDone 里再触发一次回复链 */
+      if(typeof pendingReply !== 'undefined') pendingReply[targetRoleId] = false;
       saveMsgs();
       renderChat();
       onDone();
@@ -15455,6 +15514,8 @@ function runReplyChain(onDone){
     setTimeout(()=>{
       if(willStopMidway){
         markLastUserNoReply();
+        /* ★ 关键：清掉 pending，防止 onDone 里再触发一次回复链 */
+        if(typeof pendingReply !== 'undefined') pendingReply[targetRoleId] = false;
         saveMsgs();
         renderChat();
         onDone();
