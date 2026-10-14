@@ -1669,6 +1669,56 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
   font-size:10px;display:flex;align-items:center;justify-content:center;
 }
 .msg.hit{position:relative}
+/* ===== 气泡回应 ===== */
+.msg .msg-body .reactions{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  margin-top:5px;
+  align-items:flex-start !important;
+  justify-content:flex-start !important;
+  margin-left:0 !important;
+  margin-right:auto !important;
+  width:100%;
+}
+.msg .msg-body .reactions .r-item{
+  display:flex;align-items:center;gap:5px;
+  font-size:11.5px;color:#1a1a1a;letter-spacing:.3px;line-height:1.2;
+}
+.msg .msg-body .reactions .r-item .who{
+  color:#b0b0b0;font-size:10.5px;letter-spacing:.5px;
+}
+.msg .msg-body .reactions .r-item.me .who{ color:#1a1a1a; }
+.msg .msg-body .reactions .r-item svg{
+  width:14px;height:14px;display:block;
+  stroke:#1a1a1a;fill:none;
+  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+  flex:none;
+}
+.msg .msg-body .reactions .r-item .r-text{
+  font-size:13px;line-height:1;color:#1a1a1a;
+}
+.msg .msg-body .react-bar{
+  display:flex;gap:2px;
+  margin-top:6px;padding:4px 6px;
+  background:#fff;border-radius:14px;
+  box-shadow:0 4px 16px rgba(0,0,0,.10);
+  width:max-content;
+  margin-left:0 !important;margin-right:auto !important;
+}
+.msg .msg-body .react-bar .rb{
+  width:36px;height:36px;border-radius:50%;
+  border:none;background:transparent;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;padding:0;transition:background .15s;
+}
+.msg .msg-body .react-bar .rb:hover{ background:#f5f5f5; }
+.msg .msg-body .react-bar .rb svg{
+  width:21px;height:21px;display:block;
+  stroke:#1a1a1a;fill:none;
+  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+}
+
 /* 跳转定位高亮：黑底反白 + 轻放大 */
 .msg.hit .bubble{
   background:#1a1a1a !important;
@@ -5254,10 +5304,11 @@ html[data-theme="bw"] .tarot .t-suit-en{
 .divine-card .dc-cards{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0 4px}
 .divine-card .dc-read-btn{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;width:100%;padding:12px 0;background:transparent;border:none;color:var(--th-text);font-size:11px;letter-spacing:4px;font-family:inherit;font-weight:300;cursor:pointer;text-indent:4px}
 .divine-card .dc-read-btn::before{content:"✦";font-size:9px;color:var(--th-text);text-indent:0}
-.divine-card .dc-reads{margin-top:10px;padding-top:10px;border-top:1px dashed var(--th-accent-line)}
-.divine-card .dc-read-item{font-size:12px;color:var(--th-text);line-height:1.6;padding:6px 0 6px 12px;position:relative;white-space:pre-wrap;word-break:break-word}
-.divine-card .dc-read-item::before{content:"✦";position:absolute;left:0;top:6px;color:var(--th-accent);font-size:10px;opacity:.6}
-.divine-card .dc-read-item .rt{font-size:10px;color:var(--th-text-mute);display:block;margin-bottom:2px}
+.divine-card .dc-reads{margin-top:2px}
+.divine-card .dc-read-item{padding:1px 0;font-size:12.5px;color:#1a1a1a;line-height:1.75;letter-spacing:.3px;word-break:break-word;white-space:normal}
+.divine-card .dc-read-item .rn{display:inline-block;font-size:10px;color:#c0c0c0;letter-spacing:0;font-family:Georgia,serif;margin-right:4px;vertical-align:0.5px}
+.divine-card .dc-read-item .rt{font-size:9.5px;color:#c0c0c0;letter-spacing:1px;font-family:Georgia,serif}
+.divine-card .dc-read-item .rt::before{content:"·";margin:0 4px;color:#d0d0d0}
 
 /* ===== #mDivine 极简纯文字（紧凑版） ===== */
 #mDivine .divine-title{
@@ -9402,6 +9453,13 @@ window.__APP_VERSION__ = '1.0.4';
         </div>
         <label class="switch"><input type="checkbox" id="notifyMoment"><span class="slider"></span></label>
       </div>
+      <div class="sw-row">
+        <div class="sw-main">
+          <div class="t1">后台音频保活</div>
+          <div class="t2">切到后台时循环播放一段极轻的音频，让角色定时器继续运行（费电，谨慎开启）</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="notifyKeepAlive"><span class="slider"></span></label>
+      </div>
     </div>
   </div>
 </div>
@@ -9422,7 +9480,6 @@ window.__APP_VERSION__ = '1.0.4';
     <div class="notice">
       <p>感谢你使用 our-dreamland。</p>
       <p>本网站包含较多功能，其中一部分来自朋友的反馈与需求。如果使用习惯不太契合，你也可以选择其它字卡工具，或自行使用 AI 生成一个更适合自己的字卡网站。</p>
-      <p>如果进行二传，请标注原作者署名。</p>
       <p>如果有任何问题和建议，也欢迎随时提出。</p>
     </div>
 
@@ -9431,7 +9488,7 @@ window.__APP_VERSION__ = '1.0.4';
     <div class="notice">
       <p>本网站的部分功能（包含但不限于拼音字卡、时间段字卡、天气字卡等功能），均为本人独立构思的设计。</p>
       <p>功能本身没有专利，灵感也可能撞车。说句情绪话，自己的想法被当成别人的原创多少会有点难受。</p>
-      <p>但不管怎么样，我的功能随意借鉴使用，但如果借鉴了我的功能，请标注署名。感谢理解！</p>
+      <p>但不管怎么样，我的功能随意借鉴使用，标注署名就好，感谢理解！</p>
       <p style="font-size:11.5px;color:#bbb;margin-top:18px">联系作者请找：@001（小红书号 27739216821）</p>
     </div>
 
@@ -11596,6 +11653,86 @@ function behaviorText(e){
 }
 
 const REPLY_KEY = 'mj_reply_settings_v1';
+
+/* ============================================================
+   气泡回应
+   - 存每条消息下面挂的回应：msgId -> [{ who, type, value }]
+   - who：'me' 或 角色 id
+   - type：'line'（5 个内置图标）或 'text'（emoji / 颜文字）
+   - value：type 是 line 时存 'check' / 'no' / 'q' / 'heart' / 'broken'
+   - 每个角色一份配置（因为颜文字和 emoji 要按角色抽）
+   ============================================================ */
+const REACTIONS_KEY = 'mj_reactions_v1';
+function getReactionsMap(){
+  let m = lsGet(REACTIONS_KEY, null);
+  if(!m || typeof m !== 'object') m = {};
+  return m;
+}
+function saveReactionsMap(m){ lsSet(REACTIONS_KEY, m); }
+
+/* 拿一条消息的回应数组 */
+function getReactions(msgId){
+  const m = getReactionsMap();
+  return Array.isArray(m[msgId]) ? m[msgId] : [];
+}
+/* 覆盖写回一条消息的回应 */
+function setReactions(msgId, arr){
+  const m = getReactionsMap();
+  if(!arr || !arr.length) delete m[msgId];
+  else m[msgId] = arr;
+  saveReactionsMap(m);
+}
+/* 单人贴 / 换 / 取消
+   who：'me' 或 角色 id
+   type：'line' / 'text'
+   value：图标名 或 表情文本 */
+function setOneReaction(msgId, who, type, value){
+  let arr = getReactions(msgId);
+  arr = arr.filter(r => r.who !== who);
+  if(type && value) arr.push({ who, type, value });
+  setReactions(msgId, arr);
+  return arr;
+}
+/* 角色自动贴：随机从 emoji / 颜文字池里抽一个 */
+function pickRoleReactionValue(roleId){
+  const panel = getPanel(roleId);
+  const emojiCats = Array.isArray(panel.emojiCats) ? panel.emojiCats : [];
+  const kaoCats   = Array.isArray(panel.kaoCats) ? panel.kaoCats : [];
+  const disabledEmoji = Array.isArray(panel.disabledEmojiCats) ? panel.disabledEmojiCats : [];
+  const disabledKao   = Array.isArray(panel.disabledKaoCats) ? panel.disabledKaoCats : [];
+
+  const emojiPool = [];
+  emojiCats.filter(c => !disabledEmoji.includes(c.name)).forEach(c => {
+    (c.list || []).forEach(ch => { if(ch) emojiPool.push(String(ch)); });
+  });
+  const kaoPool = [];
+  kaoCats.filter(c => !disabledKao.includes(c.name)).forEach(c => {
+    (c.list || []).forEach(k => { if(k) kaoPool.push(String(k)); });
+  });
+
+  const pool = emojiPool.concat(kaoPool);
+  if(!pool.length) return null;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+/* 角色自动贴：随机选一条消息，1% 概率摇中，1~25 秒后贴 */
+const ROLE_REACT_PROB = 0.01;
+function tryRoleReaction(roleId, msgId){
+  if(!roleId || !msgId) return;
+  if(Math.random() >= ROLE_REACT_PROB) return;
+  const value = pickRoleReactionValue(roleId);
+  if(!value) return;
+  const delay = 1000 + Math.floor(Math.random() * 24000);   /* 1~25 秒 */
+  setTimeout(function(){
+    /* 中途切角色 / 消息被删了，就不贴了 */
+    const arr = getReactions(msgId);
+    /* 角色自己已经贴过就不重复 */
+    if(arr.some(r => r.who === roleId)) return;
+    setOneReaction(msgId, roleId, 'text', value);
+    if(getCurrentRoleId() === roleId){
+      renderChat();
+    }
+  }, delay);
+}
 const DEFAULT_REPLY = {
   minDelay:1000,maxDelay:10000,
   ignoreOn:true,ignoreRate:0.08,
@@ -12725,14 +12862,14 @@ function renderChatFull(forceBottom){
 	  const done = !!qc.settled || (qc.dueAt && Date.now() >= qc.dueAt);
 	  const status = done ? '已 提 交' : '待 填 写';
 	  const statusCls = done ? 'status ok' : 'status';
-	  /* ★ 修复：只要是有答案（不管到没到点），都渲染出来；到点前也可以显示等待 */
 	  const hasAnswer = qc.answer && String(qc.answer).trim();
 	  const ansBody = done && hasAnswer
 	    ? escapeHTML(qc.answer)
 	    : '<span class="ans-empty">等待回答…</span>';
 	  const ansCls = done ? 'paper-ans done' : 'paper-ans';
 	  const no = qc.no || '001';
-	  /* ★ 修复：miniav 用 avatar-radius 变量保持头像方圆同步 */
+	  /* ★ 修复：mini-av 用内联 style 直接套 --avatar-radius，保证跟全站方圆同步 */
+	  const avRadius = getComputedStyle(document.documentElement).getPropertyValue('--avatar-radius').trim() || '12%';
 	  return `<div class="msg user" data-id="${m.id}">
 		<div class="msg-av usr-av">${avInner}</div>
 		<div class="msg-body">
@@ -12743,7 +12880,7 @@ function renderChatFull(forceBottom){
 			</div>
 			<div class="paper-asker">
 			  <span class="tag">发问者</span>
-			  <span class="mini-av">${userAvHTML(userProfile.avatar)}</span>
+			  <span class="mini-av" style="border-radius:${avRadius}">${userAvHTML(userProfile.avatar)}</span>
 			  <span class="who">${escapeHTML(userName())}</span>
 			</div>
 			<div class="paper-q">${escapeHTML(qc.q || '')}</div>
@@ -12828,7 +12965,27 @@ function renderChatFull(forceBottom){
 	  body = `<div class="bubble ${stickerBubbleCls}" data-side="${isUser?'user':'char'}" style="padding:4px"><img src="${m.sticker}" style="max-width:140px;border-radius:12px;display:block"></div>`;
 	}else if(m.divine){
 	  const reads = m.divine.reads || [];
-	  const readsHTML = reads.length ? `<div class="dc-reads">${reads.map(r=>`<div class="dc-read-item"><span class="rt">${new Date(r.time).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>${escapeHTML(r.text)}</div>`).join('')}</div>` : '';
+	  /* ★ 默认只显示第 1 条，序号从 1 开始，时间放末尾 */
+	  const readsHTML = reads.length ? (()=>{
+	    const list = reads.slice();
+	    const first = list[0];
+	    const rest = list.slice(1);
+	    const fmt = t => new Date(t).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+	    let inner = `<div class="dc-reads" id="dcReads-${m.id}">`;
+	    inner += `<div class="dc-read-item"><span class="rn">1.</span>${escapeHTML(first.text)}<span class="rt">${fmt(first.time)}</span></div>`;
+	    if(rest.length){
+	      inner += `<div class="dc-read-hidden">`;
+	      rest.forEach((r, i)=>{
+	        inner += `<div class="dc-read-item"><span class="rn">${i+2}.</span>${escapeHTML(r.text)}<span class="rt">${fmt(r.time)}</span></div>`;
+	      });
+	      inner += `</div>`;
+	      inner += `</div>`;
+	      inner += `<div class="dc-read-tag" data-dc-toggle="dcReads-${m.id}">展开全部 · 共 ${list.length} 条 <span class="caret">›</span></div>`;
+	    } else {
+	      inner += `</div>`;
+	    }
+	    return inner;
+	  })() : '';
 	  const btnHTML = `<button class="dc-read-btn" data-divine-read="${m.divine.recordId||''}" data-divine-msg="${m.id}">${reads.length?'追加新的理解':'填写答案 / 解读'}</button>`;
 	  body = `<div class="divine-card"><div class="dc-head">DIVINE</div><div class="dc-q">${escapeHTML(m.divine.q)}</div><div class="dc-cards">${m.divine.cards.map(c=>tarotHTML(c.card,c.reversed)).join('')}</div><div class="dc-cards-text" style="font-size:11.5px;color:#1a1a1a;line-height:1.8;padding:4px 2px 0;letter-spacing:.5px">${m.divine.cards.map(c=>escapeHTML(((c.card&&c.card.name)||'?') + (c.reversed?' 逆':''))).join('　')}</div>${readsHTML}${btnHTML}</div>`;
 	}else{
@@ -12855,7 +13012,30 @@ function renderChatFull(forceBottom){
 	const meta = getMsgMeta(m, isUser);
 	const readFlush = meta.readFlush;
 	const activeMark = meta.activeMark;
-	const msgHTML = `<div class="msg ${isUser?'user':'char'}" data-id="${m.id}">${av}<div class="msg-body">${timeSep}${activeMark}${quote}${body}${readFlush}</div></div>`;
+
+	/* ★ 气泡回应：贴在气泡下方，固定靠左 */
+	const reactList = getReactions(m.id);
+	const reactHTML = reactList.length ? (
+	  '<div class="reactions">' + reactList.map(function(r){
+	    let whoName = '';
+	    if(r.who === 'me') whoName = userName();
+	    else {
+	      const rr = getRoleById(r.who);
+	      whoName = rr ? displayName(rr) : '?';
+	    }
+	    let inner = '';
+	    if(r.type === 'line'){
+	      inner = reactLineIcon(r.value);
+	    } else {
+	      inner = '<span class="r-text">' + escapeHTML(r.value) + '</span>';
+	    }
+	    return '<div class="r-item' + (r.who === 'me' ? ' me' : '') + '" data-who="' + escapeHTML(r.who) + '">' +
+	      '<span class="who">' + escapeHTML(whoName) + '：</span>' + inner +
+	    '</div>';
+	  }).join('') + '</div>'
+	) : '';
+
+	const msgHTML = `<div class="msg ${isUser?'user':'char'}" data-id="${m.id}">${av}<div class="msg-body">${timeSep}${activeMark}${quote}${body}${readFlush}${reactHTML}</div></div>`;
 	// 给气泡本身补上通用别名：message-sent / message-received
 	// （放在这里是因为 bubble 是动态拼进去的，用字符串替换最稳）
 	if(isUser){
@@ -12884,6 +13064,31 @@ function renderChatFull(forceBottom){
 	  const m = msgs.find(x => x.id === mid);
 	  if(m && m.mergeCard) openMergeDetail(m.mergeCard);
 	});
+  });
+  /* ★ 占卜卡：点「展开全部」标签切换展开/收起 */
+  box.querySelectorAll('[data-dc-toggle]').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const targetId = el.dataset.dcToggle;
+      const wrap = document.getElementById(targetId);
+      if(!wrap) return;
+      wrap.classList.toggle('open');
+      const caret = el.querySelector('.caret');
+      if(caret) caret.style.transform = wrap.classList.contains('open') ? 'rotate(90deg)' : '';
+    });
+  });
+  /* ★ 点已写的理解行 → 直接打开写理解弹窗，方便追加 */
+  box.querySelectorAll('.dc-read-item').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const parent = el.closest('.dc-reads');
+      if(!parent) return;
+      const msgId = parent.id.replace('dcReads-', '');
+      const btn = box.querySelector('[data-divine-msg="' + msgId + '"]');
+      if(btn){
+        openReadDialog(btn.dataset.divineRead, btn.dataset.divineMsg);
+      }
+    });
   });
   box.querySelectorAll('[data-divine-read]').forEach(el=>{ el.addEventListener('click',e=>{ e.stopPropagation(); openReadDialog(el.dataset.divineRead, el.dataset.divineMsg); }); });
   box.querySelectorAll('.quote-block[data-quote-id]').forEach(el=>{
@@ -12945,6 +13150,18 @@ function renderChatFull(forceBottom){
       });
     }catch(e){ console.error('试卷卡修正出错', e); }
   })();
+}
+
+/* ★ 气泡回应：5 个内置线条图标 */
+const REACT_ICONS = {
+  check:  '<svg viewBox="0 0 24 24"><polyline points="4.5 12.8 9.5 17.8 19.5 6.2"/></svg>',
+  no:     '<svg viewBox="0 0 24 24"><line x1="5.5" y1="5.5" x2="18.5" y2="18.5"/><line x1="18.5" y1="5.5" x2="5.5" y2="18.5"/></svg>',
+  q:      '<svg viewBox="0 0 24 24"><path d="M8.8 9.2a3.2 3.2 0 1 1 4.5 3c-1 .5-1.3 1.1-1.3 2.1"/><circle cx="12" cy="18.4" r="0.9" fill="#1a1a1a" stroke="none"/></svg>',
+  heart:  '<svg viewBox="0 0 24 24"><path d="M12 20.2S4.8 15.6 4.8 10.2A4.2 4.2 0 0 1 9 6c1.4 0 2.6.8 3 2 .4-1.2 1.6-2 3-2a4.2 4.2 0 0 1 4.2 4.2c0 5.4-7.2 10-7.2 10z"/></svg>',
+  broken: '<svg viewBox="0 0 24 24"><path d="M12 20.2S4.8 15.6 4.8 10.2A4.2 4.2 0 0 1 9 6c1.4 0 2.6.8 3 2 .4-1.2 1.6-2 3-2a4.2 4.2 0 0 1 4.2 4.2c0 5.4-7.2 10-7.2 10z"/><path d="M12 7.6l-1.3 2.8 2.3 1.8-1.8 2.8"/></svg>'
+};
+function reactLineIcon(name){
+  return REACT_ICONS[name] || '';
 }
 
 /* 计算一条消息的状态标签：已读标签（我方）+ 主动标签（对方） */
@@ -13022,6 +13239,67 @@ function renderChat(forceBottom){
   /* 3. 刷新跳到底部按钮 */
   updateScrollBottomBtn();
 }
+/* ============================================================
+   气泡回应：双击气泡，弹出选择条
+   - 选择条固定靠左
+   - 一条气泡可以被多人贴，一人一个，换就替换
+   ============================================================ */
+function showReactionBar(msgEl){
+  if(!msgEl) return;
+  /* 已经有就关掉（再双击一次收起） */
+  const old = msgEl.querySelector('.react-bar');
+  if(old){ old.remove(); return; }
+
+  const msgId = msgEl.dataset.id;
+  const roleId = getCurrentRoleId();
+  const body = msgEl.querySelector('.msg-body');
+  if(!body) return;
+
+  const bar = document.createElement('div');
+  bar.className = 'react-bar';
+  bar.dataset.msgId = msgId;
+  bar.innerHTML =
+    '<button class="rb" data-line="check" type="button">' + REACT_ICONS.check + '</button>' +
+    '<button class="rb" data-line="no"    type="button">' + REACT_ICONS.no    + '</button>' +
+    '<button class="rb" data-line="q"     type="button">' + REACT_ICONS.q     + '</button>' +
+    '<button class="rb" data-line="heart" type="button">' + REACT_ICONS.heart + '</button>' +
+    '<button class="rb" data-line="broken" type="button">' + REACT_ICONS.broken + '</button>';
+
+  bar.querySelectorAll('.rb').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      const name = btn.dataset.line;
+      const arr = getReactions(msgId);
+      const mine = arr.find(r => r.who === 'me');
+      /* 已经贴了同一个 → 取消 */
+      if(mine && mine.type === 'line' && mine.value === name){
+        setOneReaction(msgId, 'me', '', '');
+      } else {
+        setOneReaction(msgId, 'me', 'line', name);
+      }
+      bar.remove();
+      renderChat();
+    });
+  });
+
+  body.appendChild(bar);
+}
+/* 双击气泡 → 弹选择条（事件委托，聊天列表里任何气泡都管用） */
+(function bindReactionDblClick(){
+  if(window.__reactionDblBound) return;
+  window.__reactionDblBound = true;
+  const list = document.getElementById('chatList');
+  if(!list) return;
+  list.addEventListener('dblclick', function(e){
+    const bubble = e.target.closest('.bubble');
+    if(!bubble) return;
+    if(e.target.closest('.react-bar')) return;
+    const msgEl = bubble.closest('.msg');
+    if(!msgEl) return;
+    showReactionBar(msgEl);
+  });
+})();
+
 let curMsgMenu=null;
 function bindMsgLongPress(){
   const list = $('#chatList'); if(!list) return;
@@ -13834,6 +14112,8 @@ function showMsgMenu(msgEl,x,y){
 		const i = msgs.indexOf(m);
 		if(i >= 0){
 		  m.recalled = true;
+		  /* ★ 清掉这条消息的回应，避免撤回后小图标还挂着 */
+		  try{ setReactions(m.id, []); }catch(e){}
 		  saveMsgs(); renderChat();
 		}
 	  }
@@ -14424,6 +14704,83 @@ function getNotifyChat(){ return lsGet(NOTIFY_CHAT_KEY, true); }
 function setNotifyChat(v){ lsSet(NOTIFY_CHAT_KEY, !!v); }
 function getNotifyMoment(){ return lsGet(NOTIFY_MOMENT_KEY, true); }
 function setNotifyMoment(v){ lsSet(NOTIFY_MOMENT_KEY, !!v); }
+
+/* ============================================================
+   后台音频保活
+   - 开关存 localStorage：mj_keepalive_on_v1
+   - 打开时：页面切到后台 → 循环播放一段静音 WAV（极小音量）
+   - 页面回到前台 → 暂停
+   - 这段音频用 Web Audio API 现场生成，不占任何网络或存储
+   ============================================================ */
+const KEEPALIVE_KEY = 'mj_keepalive_on_v1';
+function getKeepAliveOn(){ return lsGet(KEEPALIVE_KEY, false); }
+function setKeepAliveOn(v){ lsSet(KEEPALIVE_KEY, !!v); }
+
+let _keepAliveAudio = null;
+let _keepAliveCtx = null;
+
+/* 现场生成一段极短的静音 WAV，作为保活音频源 */
+function _buildSilentWavURL(){
+  /* 0.5 秒静音，8kHz，单声道，8bit PCM */
+  const sampleRate = 8000;
+  const duration = 0.5;
+  const numSamples = Math.floor(sampleRate * duration);
+  const dataSize = numSamples;
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
+  function writeStr(offset, str){
+    for(let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+  }
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + dataSize, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate, true);
+  view.setUint16(32, 1, true);
+  view.setUint16(34, 8, true);
+  writeStr(36, 'data');
+  view.setUint32(40, dataSize, true);
+  for(let i = 0; i < numSamples; i++){
+    view.setUint8(44 + i, 128);   /* 静音中点 */
+  }
+  const blob = new Blob([buffer], { type: 'audio/wav' });
+  return URL.createObjectURL(blob);
+}
+
+let _keepAliveWavURL = '';
+function startKeepAlive(){
+  if(!getKeepAliveOn()) return;
+  if(_keepAliveAudio) return;
+
+  try{
+    if(!_keepAliveWavURL) _keepAliveWavURL = _buildSilentWavURL();
+    const a = new Audio(_keepAliveWavURL);
+    a.loop = true;
+    a.volume = 0.01;         /* 几乎无声，但不为 0，避免被浏览器判定为"静音跳过" */
+    a.setAttribute('playsinline', '');
+    a.play().then(function(){
+      _keepAliveAudio = a;
+      console.log('[保活] 已开始');
+    }).catch(function(e){
+      console.warn('[保活] 启动失败', e);
+      _keepAliveAudio = null;
+    });
+  }catch(e){
+    console.warn('[保活] 启动异常', e);
+    _keepAliveAudio = null;
+  }
+}
+function stopKeepAlive(){
+  if(_keepAliveAudio){
+    try{ _keepAliveAudio.pause(); }catch(e){}
+    _keepAliveAudio = null;
+    console.log('[保活] 已停止');
+  }
+}
 
 let _msgNotifyTimer = null;
 function showMsgNotify(roleName, text, roleAvatar, targetRoleId){
@@ -15614,11 +15971,18 @@ function runReplyChain(onDone){
 
           if(inlineMsg){
             const _id = appendMsgToRole(role.id, inlineMsg);
-            if(_id) window.__lastSentIds.inline = _id;
+            if(_id){
+              window.__lastSentIds.inline = _id;
+              /* ★ 角色自己发的气泡，1% 概率被自己贴一个图标（1~25 秒后） */
+              try{ tryRoleReaction(role.id, _id); }catch(e){}
+            }
           }
           standaloneMsgs.forEach(function(m, si){
             const _id = appendMsgToRole(role.id, m);
-            if(_id) window.__lastSentIds.standalone[bubble.__bidx + '_' + si] = _id;
+            if(_id){
+              window.__lastSentIds.standalone[bubble.__bidx + '_' + si] = _id;
+              try{ tryRoleReaction(role.id, _id); }catch(e){}
+            }
           });
         });
         if(getCurrentRoleId() === role.id){
@@ -17813,45 +18177,82 @@ $('#btnSaveRead').addEventListener('click',()=>{
   const text=$('#readText').value.trim();
   if(!text){ toast('内容不能为空'); return; }
 
-  /* 情况 1：从聊天卡点进来的 → 边写边显示，保存只是收尾 */
-  if(readingMsgId){
-    const m = msgs.find(x => x.id === readingMsgId);
-    if(m && m.divine){
-      if(!m.divine.reads) m.divine.reads = [];
-      m.divine.reads.push({ time: Date.now(), text: text });
-      saveMsgs();
-      renderChat();
-      $('#mRead').classList.remove('show');
-      toast('已保存');
-      readingMsgId = null;
-      return;
-    }
-  }
+  /* 统一收口：不管从哪个入口进来，都做这几件事：
+     1. 写进 mj_divine_records（记录库）
+     2. 写进聊天消息里的 m.divine.reads（同步到聊天卡）
+     3. 重绘聊天记录
+     4. 重绘占卜记录页（如果开着）
+  */
+  const roleId = getCurrentRoleId();
+  const recId = readingRecordId;
+  const msgId = readingMsgId;
+  let saved = false;
 
-  /* 情况 2：从占卜记录页点进来的 → 写回记录库 */
-  if(readingRecordId){
-    const roleId = getCurrentRoleId();
+  /* ---- 1. 写记录库 ---- */
+  if(recId){
     const arr = getDivineRecords(roleId);
-    const rec = arr.find(r => r.id === readingRecordId);
+    const rec = arr.find(r => r.id === recId);
     if(rec){
       if(!rec.reads) rec.reads = [];
       rec.reads.push({ time: Date.now(), text: text });
       saveDivineRecords(roleId, arr);
-      // 顺便同步到聊天里对应那张卡（如果有）
-      msgs.forEach(m => { if(m.divine && m.divine.recordId === readingRecordId) m.divine.reads = rec.reads; });
-      saveMsgs();
-      renderChat();
-      renderDivineRecords();
-      $('#mRead').classList.remove('show');
-      toast('已保存');
-      readingRecordId = null;
-      return;
+      saved = true;
     }
   }
 
-  /* 情况 3：都没有 → 真的找不到 */
-  toast('找不到这张占卜卡');
+  /* ---- 2. 写聊天消息里的 divine.reads ---- */
+  /* 优先按 msgId 找；找不到就按 recordId 找（聊天记录里所有带这个记录 id 的卡） */
+  let targetMsg = null;
+  if(msgId){
+    targetMsg = msgs.find(x => x.id === msgId);
+  }
+  if(!targetMsg && recId){
+    targetMsg = msgs.find(x => x.divine && x.divine.recordId === recId);
+  }
+  /* 如果当前角色聊天里没有，就去当前角色的存储里找 */
+  if(!targetMsg && recId){
+    const arr = lsGet('mj_msgs_' + roleId, null);
+    if(Array.isArray(arr)){
+      const hit = arr.find(x => x.divine && x.divine.recordId === recId);
+      if(hit){
+        if(!hit.divine.reads) hit.divine.reads = [];
+        hit.divine.reads.push({ time: Date.now(), text: text });
+        lsSet('mj_msgs_' + roleId, arr);
+        saved = true;
+      }
+    }
+  }
+  if(targetMsg){
+    if(!targetMsg.divine) targetMsg.divine = {};
+    if(!targetMsg.divine.reads) targetMsg.divine.reads = [];
+    targetMsg.divine.reads.push({ time: Date.now(), text: text });
+    /* 顺便把 recordId 补上，方便以后同步 */
+    if(recId && !targetMsg.divine.recordId) targetMsg.divine.recordId = recId;
+    saveMsgs();
+    saved = true;
+  }
+
+  /* ---- 3. 两个都写不上：说明卡真的没了，给个提示 ---- */
+  if(!saved){
+    toast('找不到这张占卜卡');
+    $('#mRead').classList.remove('show');
+    readingMsgId = null;
+    readingRecordId = null;
+    return;
+  }
+
+  /* ---- 4. 统一重绘 ---- */
+  try{ renderChat(); }catch(e){}
+  /* 如果占卜记录页正开着，也一起刷 */
+  const drScr = document.getElementById('divineRecordScreen');
+  if(drScr && drScr.classList.contains('on')){
+    try{ renderDivineRecords(); }catch(e){}
+  }
+
   $('#mRead').classList.remove('show');
+  readingMsgId = null;
+  readingRecordId = null;
+  toast('已保存');
 });
 /* ★ 占卜记录：展开/收起理解（全局委托，重渲染后也生效） */
 if(!window.__drExpandedSet) window.__drExpandedSet = new Set();
@@ -18934,13 +19335,17 @@ function syncCallValLabel(){
 
 function openBeauty(mode){
   if(mode === 'bubble'){
+	/* 抽屉入口：只显示气泡，隐藏其余三项 */
 	document.querySelectorAll('#beautyPanel .bp-row[data-panel="theme"]').forEach(el=>el.style.display='none');
+	document.querySelectorAll('#beautyPanel .bp-row[data-panel="bubble"]').forEach(el=>el.style.display='');
 	document.querySelectorAll('#beautyPanel .bp-row[data-panel="avatar"]').forEach(el=>el.style.display='none');
-	document.querySelectorAll('#beautyPanel .bp-row[data-panel="layout"]').forEach(el=>el.style.display='');
-  }else{
-	document.querySelectorAll('#beautyPanel .bp-row[data-panel="theme"]').forEach(el=>el.style.display='');
-	document.querySelectorAll('#beautyPanel .bp-row[data-panel="avatar"]').forEach(el=>el.style.display='');
 	document.querySelectorAll('#beautyPanel .bp-row[data-panel="layout"]').forEach(el=>el.style.display='none');
+  }else{
+	/* 个人界面入口：隐藏气泡行，保留主题 / 头像方圆 / 聊天页布局 */
+	document.querySelectorAll('#beautyPanel .bp-row[data-panel="theme"]').forEach(el=>el.style.display='');
+	document.querySelectorAll('#beautyPanel .bp-row[data-panel="bubble"]').forEach(el=>el.style.display='none');
+	document.querySelectorAll('#beautyPanel .bp-row[data-panel="avatar"]').forEach(el=>el.style.display='');
+	document.querySelectorAll('#beautyPanel .bp-row[data-panel="layout"]').forEach(el=>el.style.display='');
   }
   renderBeautyPanel();
   $('#beautyPanel').classList.add('show');
@@ -22733,6 +23138,9 @@ document.addEventListener('click', function(e){
       }
 
       showScreen('notifyScreen');
+      /* ★ 回填「后台音频保活」开关状态 */
+      const ka = document.getElementById('notifyKeepAlive');
+      if(ka) ka.checked = getKeepAliveOn();
       /* ★ 不再在这里自动请求权限，交给用户点开关时触发 */
     }
     else if(key === 'fullscreen') toggleFullscreen();
@@ -24014,8 +24422,7 @@ function renderGroupList(){
     if(!usedIds[g.id]) orderedGroups.push(g);
   });
 
-  /* ★ 语音 + 视频合并成一个入口：插在「普通字卡」后面；
-     找不到普通字卡就插在最前面。点进去 → 语音与视频合并页。 */
+  /* ★ 语音 + 视频入口：只在「角色专属字卡」显示，公用字卡不显示 */
   var voiceEntryHTML =
     '<div class="group-card vl-entry-card" id="mlEntryBtn">' +
       '<div class="g-ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10 9l5 3-5 3z"/><path d="M3 17h18"/></svg></div>' +
@@ -24032,16 +24439,16 @@ function renderGroupList(){
 	const gname = (g && g.name) ? g.name : '未命名';
 	const gsub = (g && g.sub) ? g.sub : '';
 	var card = `<div class="group-card" data-open="${escapeHTML(gid)}"><div class="g-ic">${iconSVG(iconKey)}</div><div class="g-name">${escapeHTML(gname)}<span class="g-sub">${escapeHTML(gsub)}</span></div><div class="g-count">${total}</div><div class="g-arrow">›</div></div>`;
-	/* 普通字卡后面跟上语音入口 */
-	if(g && g.id === 'g-normal'){
+	/* ★ 只有角色专属字卡（curOwner !== 'public'），才在普通字卡后面插入语音入口 */
+	if(curOwner !== 'public' && g && g.id === 'g-normal'){
 	  card += voiceEntryHTML;
 	  usedVoice = true;
 	}
 	return card;
   }).join('');
 
-  /* 没有普通字卡 → 语音入口插在最前面 */
-  if(!usedVoice){
+  /* ★ 专属字卡如果没找到普通字卡，就把语音入口插在最前面；公用字卡不插 */
+  if(!usedVoice && curOwner !== 'public'){
     html = voiceEntryHTML + html;
   }
 
@@ -29855,6 +30262,21 @@ function switchToRole(id){
       cb.checked = granted && localOn;
     }, 60);
   }, true);
+
+  /* ★ 后台音频保活开关：change 事件 */
+  document.addEventListener('change', function(e){
+    var t = e.target;
+    if(!t || t.id !== 'notifyKeepAlive') return;
+    setKeepAliveOn(t.checked);
+    if(t.checked){
+      /* 用户主动打开：立刻尝试启动一次（如果现在就在后台，直接跑） */
+      if(document.hidden) startKeepAlive();
+      if(typeof toast === 'function') toast('已开启后台保活，切后台时定时器会继续跑');
+    } else {
+      stopKeepAlive();
+      if(typeof toast === 'function') toast('已关闭后台保活');
+    }
+  }, true);
 })();
 
 /* 上线触发：应用启动后，每个角色各触发一次主动消息（只走主动消息） */
@@ -30028,7 +30450,7 @@ function goToPage(name){
 #chatList .paper-asker .tag{flex:none;font-size:8.5px;letter-spacing:1.5px;
   color:#bbb;font-family:Georgia,serif}
 #chatList .paper-asker .who{color:#1a1a1a;font-weight:400;font-size:11.5px;letter-spacing:.5px}
-#chatList .paper-asker .mini-av{width:17px;height:17px;border-radius:var(--avatar-radius,12%);
+#chatList .paper-asker .mini-av{width:22px;height:22px;border-radius:var(--avatar-radius,12%);
   background:#f0f0f0;overflow:hidden;flex:none;
   display:flex;align-items:center;justify-content:center}
 #chatList .paper-asker .mini-av svg{width:100%;height:100%}
@@ -33535,6 +33957,8 @@ setInterval(() => {
 
 document.addEventListener('visibilitychange', function(){
   if(document.visibilityState === 'visible'){
+    /* ★ 回到前台：先停止保活音频 */
+    try{ if(typeof stopKeepAlive === 'function') stopKeepAlive(); }catch(e){}
     renderBigCardDate();
     renderBigCardEvents();
     /* ★ 回到前台先结算试卷卡，再重绘聊天 */
@@ -33579,6 +34003,9 @@ document.addEventListener('visibilitychange', function(){
   } else {
     /* 页面切到后台：记下时间点，回来时用它算漏了什么 */
     try{ lsSet('mj_last_seen_at_v1', Date.now()); }catch(e){}
+
+    /* ★ 如果开了后台保活，切后台时立刻启动保活音频 */
+    try{ if(typeof startKeepAlive === 'function') startKeepAlive(); }catch(e){}
 
     /* ============================================================
        ★ 切后台时，把"接下来 6 小时内该弹的通知"算出来，
