@@ -14533,8 +14533,18 @@ try{
   localStorage.removeItem('mj_sys_notify_on_v2');
 }catch(e){}
 function getSysNotifyOn(){
-  /* ★ 默认关闭：用户没主动开过，就是关的 */
-  return lsGet(SYS_NOTIFY_KEY, false);
+  /* ★ 默认开启：权限已授权的环境下，用户没主动关过，就默认开 */
+  var v = lsGet(SYS_NOTIFY_KEY, null);
+  if(v === null){
+    /* 没存过 → 看浏览器权限，已授权就默认开 */
+    try{
+      if(typeof Notification !== 'undefined' && Notification.permission === 'granted'){
+        return true;
+      }
+    }catch(e){}
+    return false;
+  }
+  return !!v;
 }
 
 /* ============================================================
@@ -15552,8 +15562,10 @@ function runReplyChain(onDone){
             quote = {name:userName(), text:txt};
           }
         }
-        /* ★ 记录本次写入的消息 id，撤回时用 */
-        const _lastSentIds = { inline:'', standalone:{} };
+        /* ★ 记录本次写入的消息 id，撤回时用（挂到 window 上，方便撤回分支读取） */
+        if(!window.__lastSentIds) window.__lastSentIds = { inline:'', standalone:{} };
+        window.__lastSentIds.inline = '';
+        window.__lastSentIds.standalone = {};
         res[0].bubbles.forEach((bubble,idx)=>{
           bubble.__bidx = idx;
           const inlineParts = [];
@@ -28270,6 +28282,9 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 
   let pendingTasks = lsGet(PENDING_KEY, []);
   if(!Array.isArray(pendingTasks)) pendingTasks = [];
+  /* ★ 补上 lastSettle 的声明，避免 settleMoments 里引用未定义变量 */
+  let lastSettle = lsGet(LAST_SETTLE_KEY, 0);
+  if(typeof lastSettle !== 'number') lastSettle = 0;
   function saveLastSettle(){ lsSet(LAST_SETTLE_KEY, lastSettle); }
   function savePendingTasks(){ lsSet(PENDING_KEY, pendingTasks); }
   function bindEvents(){
