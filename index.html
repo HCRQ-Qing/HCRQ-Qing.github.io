@@ -35884,7 +35884,7 @@ function closeDeskCalendar(){
       else if(k === 'divine'){ renderDivineRecords(); showScreen('divineRecordScreen'); }
       else if(k === 'behavior'){ behaviorKeyword=''; const si=$('#bhSearchInput'); if(si) si.value=''; renderBehavior(); showScreen('behaviorScreen'); }
       else if(k === 'relation'){ relationKeyword=''; const ri=$('#relSearchInput'); if(ri) ri.value=''; openRelationScreen(); }
-      else if(k === 'music') toast('音乐 · 下一步补');
+      else if(k === 'music'){ openMusicScreen(); }
       else if(k === 'moments'){ if(typeof window.openMoments === 'function') window.openMoments(); }
       else if(k === 'friends'){ if(window.__goPage) window.__goPage(0); }
       else if(k === 'videopool'){ openVideoPool(); }
@@ -36462,7 +36462,7 @@ function closeDeskCalendar(){
     close: window.closeMusicScreen
   };
 })();
-})();
+window.__calendar = {
   init: initCalendarPage,
   refresh: refreshCalendarPage,
   refreshWeather: refreshWeather,
