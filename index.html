@@ -14646,33 +14646,16 @@ function getSysNotifyOn(){
   try{
     if(typeof Notification === 'undefined') return;
     if(Notification.permission !== 'default') return;
+    if(!getSysNotifyOn()) return;
 
-    /* ★ 关键：不要再看 getSysNotifyOn()。
-       用户没授权过、权限还是 default，就应该请求。
-       本地开关只影响"要不要弹"，不影响"要不要问权限"。 */
     setTimeout(function(){
       try{
         var p = Notification.requestPermission();
         if(p && typeof p.then === 'function'){
           p.then(function(res){
-            if(res === 'granted'){
-              try{
-                var n = new Notification('后台通知已开启', {
-                  body: '切到别的应用时，Ta 发消息会在这里提醒你',
-                  tag: 'mj-welcome'
-                });
-                setTimeout(function(){ try{ n.close(); }catch(e){} }, 6000);
-              }catch(e){}
-            }
             var cb = document.getElementById('notifySys');
-            if(cb){ cb.checked = (Notification.permission === 'granted'); }
+            if(cb){ cb.checked = (res === 'granted') && getSysNotifyOn(); }
           }).catch(function(){});
-        } else {
-          /* 老浏览器同步回调 */
-          if(Notification.permission === 'granted'){
-            var cb2 = document.getElementById('notifySys');
-            if(cb2) cb2.checked = true;
-          }
         }
       }catch(e){ console.error('自动请求通知权限失败', e); }
     }, 3000);
@@ -14774,41 +14757,31 @@ function _showPersistentNotification(title, body){
    - 雨见内核在页面切后台后，会限制新通知弹出
    - 切后台瞬间先弹一条，让"通知能力"保持存活
    ============================================================ */
-/* 切后台：不弹任何占位通知，改为每秒给 SW 发 ping 保活 */
 (function bindVisibilityPersistent(){
   if(window.__mjVisibilityBound) return;
   window.__mjVisibilityBound = true;
 
-  var pingTimer = null;
-
-  function startPing(){
-    if(pingTimer) return;
-    pingTimer = setInterval(function(){
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){
       try{
-        if(!('serviceWorker' in navigator)) return;
-        if(navigator.serviceWorker.controller){
-          navigator.serviceWorker.controller.postMessage({ type: 'ping', at: Date.now() });
-        } else {
+        if(typeof Notification === 'undefined') return;
+        if(Notification.permission !== 'granted') return;
+        if(!getSysNotifyOn()) return;
+
+        if('serviceWorker' in navigator){
           navigator.serviceWorker.ready.then(function(reg){
-            if(reg && reg.active){
-              reg.active.postMessage({ type: 'ping', at: Date.now() });
+            if(reg && typeof reg.showNotification === 'function'){
+              reg.showNotification('彼岸', {
+                body: '有新消息时会在这里提醒你',
+                tag: 'mj-keepalive-' + Date.now().toString(36),
+                renotify: false,
+                silent: true,
+                requireInteraction: true
+              }).catch(function(e){ console.warn('保活通知失败', e); });
             }
           }).catch(function(){});
         }
       }catch(e){}
-    }, 1000);
-  }
-  function stopPing(){
-    if(pingTimer){ clearInterval(pingTimer); pingTimer = null; }
-  }
-
-  document.addEventListener('visibilitychange', function(){
-    if(document.hidden){
-      /* 切后台 → 开始给 SW 发心跳 */
-      startPing();
-    } else {
-      /* 切回前台 → 停止心跳（省电） */
-      stopPing();
     }
   });
 })();
