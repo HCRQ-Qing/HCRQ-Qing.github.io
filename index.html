@@ -1675,11 +1675,19 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
   flex-direction:column;
   gap:2px;
   margin-top:5px;
+  width:100%;
+}
+.msg.char .msg-body .reactions{
   align-items:flex-start !important;
   justify-content:flex-start !important;
   margin-left:0 !important;
   margin-right:auto !important;
-  width:100%;
+}
+.msg.user .msg-body .reactions{
+  align-items:flex-end !important;
+  justify-content:flex-end !important;
+  margin-left:auto !important;
+  margin-right:0 !important;
 }
 .msg .msg-body .reactions .r-item{
   display:flex;align-items:center;gap:5px;
@@ -1704,7 +1712,12 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
   background:#fff;border-radius:14px;
   box-shadow:0 4px 16px rgba(0,0,0,.10);
   width:max-content;
+}
+.msg.char .msg-body .react-bar{
   margin-left:0 !important;margin-right:auto !important;
+}
+.msg.user .msg-body .react-bar{
+  margin-left:auto !important;margin-right:0 !important;
 }
 .msg .msg-body .react-bar .rb{
   width:36px;height:36px;border-radius:50%;
@@ -9099,6 +9112,9 @@ window.__APP_VERSION__ = '1.0.4';
 		  <div class="me-row" data-func="shop">
 			<span class="num">03</span><span class="name">商场</span><span class="en">STORE</span><span class="arr">→</span>
 		  </div>
+		  <div class="me-row" data-func="beauty">
+			<span class="num">04</span><span class="name">美化</span><span class="en">BEAUTY</span><span class="arr">→</span>
+		  </div>
 
 		  <div class="me-row" data-func="settings">
 			<span class="num">05</span><span class="name">设置</span><span class="en">SETTINGS</span><span class="arr">→</span>
@@ -13278,11 +13294,46 @@ function showReactionBar(msgEl){
         setOneReaction(msgId, 'me', 'line', name);
       }
       bar.remove();
-      renderChat();
+      /* ★ 不调 renderChat（它有签名缓存，回应变了不会重建），
+         直接就地刷新这条消息的回应区 */
+      refreshMsgReactions(msgEl);
     });
   });
 
   body.appendChild(bar);
+}
+/* ★ 只刷一条消息的回应区，不重建整个聊天列表 */
+function refreshMsgReactions(msgEl){
+  if(!msgEl) return;
+  const msgId = msgEl.dataset.id;
+  const body = msgEl.querySelector('.msg-body');
+  if(!body) return;
+  const old = body.querySelector('.reactions');
+  if(old) old.remove();
+
+  const reactList = getReactions(msgId);
+  if(!reactList.length) return;
+
+  const box = document.createElement('div');
+  box.className = 'reactions';
+  box.innerHTML = reactList.map(function(r){
+    let whoName = '';
+    if(r.who === 'me') whoName = userName();
+    else {
+      const rr = getRoleById(r.who);
+      whoName = rr ? displayName(rr) : '?';
+    }
+    let inner = '';
+    if(r.type === 'line'){
+      inner = reactLineIcon(r.value);
+    } else {
+      inner = '<span class="r-text">' + escapeHTML(r.value) + '</span>';
+    }
+    return '<div class="r-item' + (r.who === 'me' ? ' me' : '') + '" data-who="' + escapeHTML(r.who) + '">' +
+      '<span class="who">' + escapeHTML(whoName) + '：</span>' + inner +
+    '</div>';
+  }).join('');
+  body.appendChild(box);
 }
 /* 双击气泡 → 弹选择条（事件委托，聊天列表里任何气泡都管用） */
 (function bindReactionDblClick(){
@@ -14574,15 +14625,41 @@ function showTypingHint(){
    后面的消息都读了，前面的不可能还停在"未读"。 */
 function _applyReadStateUpTo(anchorMsg, state){
   if(!Array.isArray(msgs) || !msgs.length) return;
-  /* 用 id 找锚点索引（不用 msgs.indexOf），
-     因为 lastUser 有时来自 localStorage 读出的副本，indexOf 会返回 -1 导致整段失效 */
+
+  /* ★ 只要触发的是「已读」，就把整条聊天里所有还停在
+     「未读」的用户消息一次性全部改成「已读」。
+     理由：消息是有顺序的，只要有任意一条被读了，
+     它之前的所有消息都不可能还停在未读。
+     这里不再只处理锚点之前，而是全局扫一遍，避免漏掉。
+     noReply（已读不回）视为终态，不参与。 */
+  if(state === 'read'){
+    let changed = false;
+    for(let i = 0; i < msgs.length; i++){
+      const x = msgs[i];
+      if(!x || x.role !== 'user') continue;
+      if(x.recalled || x.sys || x.namecard) continue;
+      if(x.readState === 'noReply') continue;
+      if(x.readState === 'read' && !x.readNoReply) continue;
+      x.readState = 'read';
+      x.readNoReply = false;
+      changed = true;
+    }
+    if(changed){
+      saveMsgs();
+      /* 跳转定位时不要顺手重绘，避免把用户滚动位置抢掉 */
+      if(!window.__jumpingToMsg) renderChat();
+    }
+    return;
+  }
+
+  /* 非 read 的状态（比如 noReply），沿用原逻辑：
+     从最后一条 user 消息往前找锚点，只影响它前面 */
   let idx = -1;
   if(anchorMsg && anchorMsg.id){
     for(let i = 0; i < msgs.length; i++){
       if(msgs[i].id === anchorMsg.id){ idx = i; break; }
     }
   }
-  /* 找不到锚点：退化为"以最后一条 user 消息为准" */
   if(idx < 0){
     for(let i = msgs.length - 1; i >= 0; i--){
       const x = msgs[i];
@@ -14596,20 +14673,6 @@ function _applyReadStateUpTo(anchorMsg, state){
     const x = msgs[i];
     if(!x || x.role !== 'user') continue;
     if(x.recalled || x.sys || x.namecard) continue;
-    /* ★ bug1 修复：
-       只要这次是「标记已读」（state === 'read'），
-       就把这条之前所有 user 消息里的 unread 全部一起变已读，
-       不再留着下面一条还是未读。
-       noReply（已读不回）视为终态，不参与本次覆盖。 */
-    if(state === 'read'){
-      if(x.readState === 'noReply') continue;
-      if(x.readState === 'read' && !x.readNoReply) continue;
-      x.readState = 'read';
-      x.readNoReply = false;
-      changed = true;
-      continue;
-    }
-    /* 其它状态（noReply 等）：保持原有逻辑 */
     if(x.readState === 'noReply' && state !== 'noReply') continue;
     if(x.readState === state && !!x.readNoReply === (state === 'noReply')) continue;
     x.readState = state;
@@ -14618,7 +14681,7 @@ function _applyReadStateUpTo(anchorMsg, state){
   }
   if(changed){
     saveMsgs();
-    renderChat();
+    if(!window.__jumpingToMsg) renderChat();
   }
 }
 
@@ -14900,17 +14963,10 @@ try{
   localStorage.removeItem('mj_sys_notify_on_v2');
 }catch(e){}
 function getSysNotifyOn(){
-  /* ★ 默认开启：权限已授权的环境下，用户没主动关过，就默认开 */
+  /* ★ 默认关闭：用户没主动点开过，一律返回 false。
+     想开启必须自己到「设置 → 通知」里打开，打开时会请求系统权限。 */
   var v = lsGet(SYS_NOTIFY_KEY, null);
-  if(v === null){
-    /* 没存过 → 看浏览器权限，已授权就默认开 */
-    try{
-      if(typeof Notification !== 'undefined' && Notification.permission === 'granted'){
-        return true;
-      }
-    }catch(e){}
-    return false;
-  }
+  if(v === null) return false;
   return !!v;
 }
 
@@ -30178,32 +30234,39 @@ function switchToRole(id){
     if(!t || t.id !== 'notifySys') return;
     e.stopPropagation();
 
+    /* 关掉：只改本地，不动系统权限 */
     if(!t.checked){
-      /* 用户主动关闭 */
       setSysNotifyOn(false);
       if(typeof toast === 'function') toast('已关闭后台通知');
       return;
     }
 
-    /* 用户想打开：请求权限 */
+    /* 想打开：先要求浏览器支持 */
     if(typeof Notification === 'undefined'){
       t.checked = false;
       setSysNotifyOn(false);
       if(typeof toast === 'function') toast('当前浏览器不支持系统通知');
       return;
     }
+
+    /* 权限被拒过：无法再请求，只能去浏览器设置手动开 */
     if(Notification.permission === 'denied'){
       t.checked = false;
       setSysNotifyOn(false);
       if(typeof toast === 'function') toast('通知权限被拒绝，请到浏览器设置里手动开启');
       return;
     }
+
+    /* 已有权限：直接开 */
     if(Notification.permission === 'granted'){
       setSysNotifyOn(true);
       if(typeof toast === 'function') toast('已开启后台通知');
       return;
     }
-    /* permission === 'default'：请求权限 */
+
+    /* permission === 'default'：向系统请求权限。
+       浏览器会弹出「允许 / 取消」对话框，
+       点允许 → granted，点取消 → denied，两种都要收尾。 */
     try{
       var p = Notification.requestPermission();
       if(p && typeof p.then === 'function'){
@@ -30221,11 +30284,13 @@ function switchToRole(id){
               setTimeout(function(){ try{ n.close(); }catch(err){} }, 5000);
             }catch(err){}
           } else {
+            /* 用户点了取消 */
             t.checked = false;
             setSysNotifyOn(false);
             if(typeof toast === 'function') toast('未授权通知，无法后台提醒');
           }
         }).catch(function(){
+          /* 请求过程中异常 / 被浏览器拒绝 */
           t.checked = false;
           setSysNotifyOn(false);
           if(typeof toast === 'function') toast('请求权限失败');
@@ -30256,7 +30321,8 @@ function switchToRole(id){
     setTimeout(function(){
       var cb = document.getElementById('notifySys');
       if(!cb) return;
-      /* 有权限 + 本地开关开 → 打勾；否则不打勾 */
+      /* ★ 默认关：只有当本地开关是开的、且浏览器权限确实为 granted，
+         才打勾。否则一律不打勾，让用户自己点开去触发权限请求。 */
       var granted = (typeof Notification !== 'undefined' && Notification.permission === 'granted');
       var localOn = getSysNotifyOn();
       cb.checked = granted && localOn;
