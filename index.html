@@ -5538,6 +5538,118 @@ html[data-theme="bw"] .tarot .t-suit-en{
 .divine-card .dc-read-item .rt{font-size:9.5px;color:#c0c0c0;letter-spacing:1px;font-family:Georgia,serif}
 .divine-card .dc-read-item .rt::before{content:"·";margin:0 4px;color:#d0d0d0}
 
+/* ============================================================
+   ★ 占卜卡「展开全部」修复
+   问题根因：
+     1. .dc-read-hidden 没写 display:none，默认是 block，
+        所以你渲染时它就已经把后面 2、3 条全显示出来了，
+        看起来像"展开后变得好大"。
+     2. .dc-reads.open 没写展开时的样式。
+     3. .dc-read-tag 是"展开按钮"的样式，原代码里没写，
+        是靠默认样式 + 内联 caret 撑的。
+   修复方式：
+     1. 隐藏时用 display:none，展开时用 display:block。
+     2. .dc-read-tag 给一个极简按钮样式，和占卜卡整体风格一致。
+     3. 加一个 .caret 的过渡，点开时小箭头旋转。
+   ============================================================ */
+.divine-card .dc-read-hidden{display:none}
+.divine-card .dc-reads.open .dc-read-hidden{display:block}
+
+.divine-card .dc-read-tag{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  margin-top:6px;
+  padding:3px 0;
+  font-size:11.5px;
+  color:#999;
+  letter-spacing:.5px;
+  cursor:pointer;
+  font-family:inherit;
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  transition:color .18s ease;
+  user-select:none;
+}
+.divine-card .dc-read-tag:active{color:#1a1a1a}
+.divine-card .dc-read-tag .caret{
+  display:inline-block;
+  font-size:11px;
+  color:#bbb;
+  transition:transform .2s ease;
+  font-family:Georgia,serif;
+  line-height:1;
+}
+
+/* ============================================================
+   ★ 角色写理解 · 新增样式
+   - 用一条细虚线跟「我的理解」隔开
+   - 每条前缀：角色名 + 小圆点
+   - 时间放末尾
+   ============================================================ */
+.divine-card .dc-from{
+  font-size:9.5px;
+  color:#c8c8c8;
+  letter-spacing:2px;
+  font-family:Georgia,serif;
+  text-align:center;
+  margin-bottom:8px;
+}
+.divine-card .dc-role-reads{
+  margin-top:10px;
+  padding-top:10px;
+  border-top:0.6px dashed rgba(0,0,0,.08);
+}
+.divine-card .dc-role-read-item{
+  padding:2px 0;
+  font-size:12.5px;
+  color:#1a1a1a;
+  line-height:1.75;
+  letter-spacing:.3px;
+  word-break:break-word;
+  white-space:normal;
+  margin-bottom:6px;
+  display:flex;
+  gap:6px;
+  align-items:flex-start;
+}
+.divine-card .dc-role-read-item .who{
+  flex:none;
+  font-size:10.5px;
+  color:#999;
+  letter-spacing:.5px;
+  padding-top:2px;
+  font-weight:300;
+}
+.divine-card .dc-role-read-item .who::before{
+  content:"";
+  display:inline-block;
+  width:4px;height:4px;
+  border-radius:50%;
+  background:#1a1a1a;
+  opacity:.45;
+  margin-right:6px;
+  vertical-align:2px;
+}
+.divine-card .dc-role-read-item .rtx{flex:1;min-width:0}
+.divine-card .dc-role-read-item .rt2{
+  font-size:9.5px;
+  color:#c0c0c0;
+  letter-spacing:1px;
+  font-family:Georgia,serif;
+  margin-left:6px;
+}
+.divine-card .dc-role-read-item .rt2::before{
+  content:"·";
+  margin:0 4px;
+  color:#d0d0d0;
+}
+.divine-card .dc-reads.open .dc-read-tag .caret,
+.divine-card .dc-read-tag.open .caret{
+  transform:rotate(90deg);
+}
+
 /* ===== #mDivine 极简纯文字（紧凑版） ===== */
 #mDivine .divine-title{
   font-size:12px !important;
@@ -5843,6 +5955,50 @@ html[data-theme="bw"] .tarot .t-suit-en{
 .dr-search svg{flex:none}
 .dr-search input{flex:1;border:none;background:transparent;outline:none;font-size:13px;color:#1a1a1a;font-family:inherit;font-weight:300;letter-spacing:.5px}
 .dr-search input::placeholder{color:#bbb;font-weight:300}
+
+/* ★ 占卜记录 · 谁抽的筛选栏 */
+.dr-filter-row{
+  display:flex;
+  gap:22px;
+  padding:6px 22px 12px;
+  border-bottom:0.6px dashed #ececec;
+  margin-bottom:6px;
+  flex:none;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.dr-filter-row::-webkit-scrollbar{display:none}
+.dr-filter{
+  flex:none;
+  padding:6px 0;
+  font-size:12.5px;
+  letter-spacing:1.5px;
+  color:#bbb;
+  background:transparent;
+  border:none;
+  cursor:pointer;
+  position:relative;
+  font-family:inherit;
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  transition:color .18s ease;
+}
+.dr-filter:active{opacity:.6}
+.dr-filter.on{
+  color:#1a1a1a;
+  font-weight:400;
+}
+.dr-filter.on::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-4px;
+  transform:translateX(-50%);
+  width:16px;height:1.5px;
+  background:#1a1a1a;
+  border-radius:2px;
+}
 .dr-card{border:0.7px solid rgba(0,0,0,.12);border-radius:22px;background:#ffffff;padding:22px 20px 18px;margin-bottom:14px;position:relative}
 .dr-card .dr-head{display:flex;align-items:center;justify-content:space-between;font-size:10.5px;color:#ccc;font-family:Georgia,serif;letter-spacing:2px;margin-bottom:0}
 .dr-card .dr-head::before{display:none}
@@ -8946,17 +9102,23 @@ body[data-bubble="custom"] .gch-bubble{
    每次你更新 index.html，把这个数字 +1（或改成日期）
    用户刷新页面时，如果发现版本号变了，就弹提醒让他再刷新一次。
 */
-window.__APP_VERSION__ = '1.0.5';
+window.__APP_VERSION__ = '1.0.6';
 
 /* ★ 更新日志：每次改完代码，把版本号和内容改一下。
    用户看到版本号变了，开屏就会弹一次，告诉他更新了什么。
    如果不想弹，把下面的数组清空即可。 */
 window.__APP_CHANGELOG__ = [
-  '新增气泡回应（双击气泡）',
-  '修复收藏转发退不出去的问题',
-  '优化字卡编辑弹窗样式',
-  '通话独立语音/视频概率',
-  '新增后台音频保活开关'
+  '修复已读状态：对方回复后历史消息全部标记为已读，不再夹杂未读',
+  '修复已读不回：显示"已读不回"时角色不会再回复你',
+  '修复对方一直未读：切角色后回到聊天，消息也已标记为已读',
+  '修复后台保活：切到其他应用再回来，通知不会自动关闭',
+  '新增占卜角色写理解：占卜完 50% 概率 1~20 分钟内角色自己写理解',
+  '新增占卜追加理解：我写完理解后，1~3 天 15%、3~7 天 10%、7~30 天 5%、30~365 天 1% 概率角色追加',
+  '新增占卜卡最多追加 4 次角色理解，回复设置里可调',
+  '新增占卜记录筛选：全部 / 我抽的 / Ta 抽的',
+  '新增天气字卡晴天时段：9~18 点才出现，避免晚上说"天气真好"',
+  '日历合并进功能页：功能页点「日历」原地变日历，左上角「‹」退出，独立日历页已移除',
+  '修复抽屉的美化点不进去：聊天气泡面板正常打开'
 ];
 
 /* ★ 把版本号显示在网页标题上，你在雨见标签页就能看到 */
@@ -9335,68 +9497,6 @@ window.__APP_CHANGELOG__ = [
       </div><!-- /split-main -->
     </div><!-- /#page-chat -->
 
-    <div class="page" id="page-calendar">
-      <div class="cal-topbar">
-        <div class="cal-topbar-left"></div>
-        <div class="cal-topbar-right">
-          <button class="cal-edit-entry" id="calEditEntry" type="button">EDIT</button>
-        </div>
-      </div>
-      <div class="cal-page-wrap">
-
-        <!-- ===== 大卡片 ===== -->
-        <div class="big-card" id="calBigCard">
-          <div class="bc-head">
-            <div class="bc-date-wrap">
-              <span class="bc-date" id="calBigDate">--月--日</span>
-              <small id="calBigWeek">---</small>
-            </div>
-            <div class="bc-time" id="calBigTime">--:--<small id="calBigAmpm"></small></div>
-          </div>
-
-          <div class="bc-lunar" id="calBigLunar">
-            <svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 8l7-5 7 5"/><path d="M5 16l7 5 7-5"/></svg>
-            <span id="calBigLunarText">农历 —</span>
-          </div>
-
-          <div class="bc-weather" id="calBigWeather">
-            <div class="bc-w-ico" id="calBigWIcon">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>
-            </div>
-            <div class="bc-w-txt">
-              <div class="bc-w-main" id="calBigWMain">天气加载中…</div>
-              <div class="bc-w-sub" id="calBigWSub">正在获取定位</div>
-            </div>
-            <button class="bc-w-refresh" id="calBigWRefresh" type="button" title="刷新天气">
-              <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 4 21 10 15 10"/></svg>
-            </button>
-          </div>
-
-          <div class="bc-events" id="calBigEvents"></div>
-        </div>
-
-        <!-- ===== 月历 ===== -->
-        <div class="cal-head">
-          <button class="cal-arrow" id="calPrevMonth" type="button">
-            <svg viewBox="0 0 24 24"><polyline points="15,6 9,12 15,18"/></svg>
-          </button>
-          <div class="cal-title" id="calTitle">— 月<small id="calTitleYear">----</small></div>
-          <button class="cal-arrow" id="calNextMonth" type="button">
-            <svg viewBox="0 0 24 24"><polyline points="9,6 15,12 9,18"/></svg>
-          </button>
-        </div>
-
-        <div class="cal-grid" id="calGrid"></div>
-
-        <!-- ===== 本月事件 ===== -->
-        <div class="cal-events">
-          <div class="ce-head">This Month</div>
-          <div id="calMonthEvents"></div>
-        </div>
-
-      </div>
-    </div><!-- /#page-calendar -->
-
     <div class="page" id="page-desk">
 	  <div class="desk-top"><div class="desk-title">功 能 页<small>FUNCTIONS</small></div><div class="desk-clock" id="deskClock">--:--</div></div>
 	  <div class="desk-grid">
@@ -9411,6 +9511,7 @@ window.__APP_CHANGELOG__ = [
 		<div class="desk-app" data-open="gameres"><div class="da-ic"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 11v4"/><path d="M5 13h4"/><circle cx="16" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="18.5" cy="14" r="1" fill="currentColor" stroke="none"/></svg></div><div class="da-name">游戏资源</div></div>
 		<div class="desk-app" data-open="msgstat"><div class="da-ic"><svg viewBox="0 0 24 24"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg></div><div class="da-name">消息统计</div></div>
 		<div class="desk-app" data-open="memory"><div class="da-ic"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg></div><div class="da-name">回忆</div></div>
+		<div class="desk-app" data-open="calendar"><div class="da-ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/><circle cx="8" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="14" r="1" fill="currentColor" stroke="none"/></svg></div><div class="da-name">日历</div></div>
 	  </div>
 	</div>
 
@@ -9825,16 +9926,14 @@ window.__APP_CHANGELOG__ = [
     <div class="sec-title-cn">写 在 最 后</div>
     <div class="notice">
       <p>感谢你使用 our-dreamland。</p>
-      <p>本网站包含较多功能，其中一部分来自朋友的反馈与需求。如果使用习惯不太契合，你也可以选择其它字卡工具，或自行使用 AI 生成一个更适合自己的字卡网站。</p>
+      <p>本网站包含较多功能，其中一部分来自朋友的反馈与需求。如果使用习惯不太契合或者感到害怕，你也可以选择其它字卡网站，或自行使用 AI 生成一个更适合自己的字卡网站。</p>
       <p>如果有任何问题和建议，也欢迎随时提出。</p>
     </div>
 
     <div class="sec-title">NOTICE</div>
     <div class="sec-title-cn">借 鉴 声 明</div>
     <div class="notice">
-      <p>本网站的部分功能（包含但不限于拼音字卡、时间段字卡、天气字卡等功能），均为本人独立构思的设计。</p>
-      <p>功能本身没有专利，灵感也可能撞车。说句情绪话，自己的想法被当成别人的原创多少会有点难受。</p>
-      <p>但不管怎么样，我的功能随意借鉴使用，标注署名就好，感谢理解！</p>
+      <p>本网站的部分功能（包含但不限于拼音字卡、时间段字卡、天气字卡等功能），均为本人构思的设计，虽然做出的时间较晚，但曾在自己的评论区透露出不少灵感。功能本身没有专利，灵感也可能撞车。但不管怎么样，如果借鉴使用我的功能或想法，请标注署名，感谢理解！</p>
       <p style="font-size:11.5px;color:#bbb;margin-top:18px">联系作者请找：@001（小红书号 27739216821）</p>
     </div>
 
@@ -10999,6 +11098,11 @@ window.__APP_CHANGELOG__ = [
 	  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#999" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
 	  <input type="text" id="drSearchInput" placeholder="搜索问题或理解…">
 	</div>
+	<div class="dr-filter-row" id="drWhoRow">
+	  <button class="dr-filter on" data-who="all" type="button">全部</button>
+	  <button class="dr-filter" data-who="me" type="button">我抽的</button>
+	  <button class="dr-filter" data-who="role" type="button">Ta 抽的</button>
+	</div>
 	<div id="drList"></div>
   </div>
 </div>
@@ -12129,7 +12233,13 @@ const DEFAULT_REPLY = {
   activeLastFireAt:0,
   divineOn:true,
   divineRate:0.05,
-  divineLastFireAt:0
+  divineLastFireAt:0,
+  /* ★ 角色写理解 */
+  divineReadOn:true,          /* 开关 */
+  divineReadRate:0.50,        /* 占卜完那一刻的触发概率（默认 50%） */
+  divineReadCardMax:3,        /* 用几张字卡拼理解（默认 3） */
+  divineReadMaxTimes:4,       /* 每张占卜卡最多追加 4 次角色理解 */
+  divineReadLastFireAt:0
 };
 let replyMap = lsGet(REPLY_KEY, {});
 function getReply(roleId){
@@ -12162,6 +12272,12 @@ function getReply(roleId){
   if(typeof r.divineOn !== 'boolean') r.divineOn = true;
   if(typeof r.divineRate !== 'number')  r.divineRate = 0.05;
   if(typeof r.divineLastFireAt !== 'number') r.divineLastFireAt = 0;
+  /* ★ 角色写理解 · 兼容老数据 */
+  if(typeof r.divineReadOn !== 'boolean')        r.divineReadOn = true;
+  if(typeof r.divineReadRate !== 'number')       r.divineReadRate = 0.50;
+  if(typeof r.divineReadCardMax !== 'number')    r.divineReadCardMax = 3;
+  if(typeof r.divineReadMaxTimes !== 'number')   r.divineReadMaxTimes = 4;
+  if(typeof r.divineReadLastFireAt !== 'number') r.divineReadLastFireAt = 0;
   /* 兜底：disabledPunctList 必须是数组 */
   if(!Array.isArray(r.disabledPunctList)) r.disabledPunctList = [];
   /* 迁移：把标点池里的换行 '\n' 删掉；把老的空格 '\n\n' 换成 ' ' */
@@ -12258,6 +12374,13 @@ function pickWeatherCard(){
   const cfg = (typeof getWeatherCfg === 'function') ? getWeatherCfg() : null;
   if(!cfg || !cfg.cache) return '';
   const w = cfg.cache;
+
+  /* ★ 晴天时段限制：非 9~18 点 → 晴天字卡不触发 */
+  const codeNow = Number(w.code);
+  if(codeNow === 0){
+    const h = new Date().getHours();
+    if(h < 9 || h >= 18) return '';
+  }
   /* 天气类型 → 分类 id */
   let catId = 'cw-cloudy';
   const code = Number(w.code);
@@ -12323,7 +12446,9 @@ function pickCard(){
   }
 
   /* ★ 天气字卡：跟时间字卡同款逻辑，只是判定依据换成当前天气。
-     天气变了 → 自动换成新天气对应的分类；天气分类的字卡被删空 → 不参与。 */
+     天气变了 → 自动换成新天气对应的分类；天气分类的字卡被删空 → 不参与。
+     ★ 附加规则：天气为「晴」时，只在白天 9:00~18:00 参与抽卡，
+                避免角色在傍晚以后 / 上午太早说"天气真好" */
   function getWeatherPool(){
     try{
       /* 天气字卡总开关（编辑桌面 → 设置 → 天气字卡） */
@@ -12331,6 +12456,13 @@ function pickCard(){
       const cfg = (typeof getWeatherCfg === 'function') ? getWeatherCfg() : null;
       if(!cfg || !cfg.cache) return [];
       const w = cfg.cache;
+
+      /* ★ 晴天时段限制：非 9~18 点 → 晴天字卡不参与 */
+      const codeNow = Number(w.code);
+      if(codeNow === 0){
+        const h = new Date().getHours();
+        if(h < 9 || h >= 18) return [];
+      }
 
       /* 天气类型 → 分类 id（9 个分类） */
       let catId = 'cw-cloudy';
@@ -13369,12 +13501,14 @@ function renderChatFull(forceBottom){
 	  body = `<div class="bubble ${stickerBubbleCls}" data-side="${isUser?'user':'char'}" style="padding:4px"><img src="${m.sticker}" style="max-width:140px;border-radius:12px;display:block"></div>`;
 	}else if(m.divine){
 	  const reads = m.divine.reads || [];
-	  /* ★ 默认只显示第 1 条，序号从 1 开始，时间放末尾 */
+	  const roleReads = m.divine.roleReads || [];
+	  const fmt = t => new Date(t).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+
+	  /* ---- 我的理解 ---- */
 	  const readsHTML = reads.length ? (()=>{
 	    const list = reads.slice();
 	    const first = list[0];
 	    const rest = list.slice(1);
-	    const fmt = t => new Date(t).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
 	    let inner = `<div class="dc-reads" id="dcReads-${m.id}">`;
 	    inner += `<div class="dc-read-item"><span class="rn">1.</span>${escapeHTML(first.text)}<span class="rt">${fmt(first.time)}</span></div>`;
 	    if(rest.length){
@@ -13390,8 +13524,36 @@ function renderChatFull(forceBottom){
 	    }
 	    return inner;
 	  })() : '';
+
+	  /* ---- 角色的理解 ---- */
+	  const roleReadsHTML = roleReads.length ? (
+	    '<div class="dc-role-reads">' + roleReads.map(function(rr){
+	      return '<div class="dc-role-read-item">' +
+	        '<span class="who">' + escapeHTML(rr.name || 'Ta') + '</span>' +
+	        '<span class="rtx">' +
+	          escapeHTML(rr.text || '') +
+	          '<span class="rt2">' + fmt(rr.time) + '</span>' +
+	        '</span>' +
+	      '</div>';
+	    }).join('') + '</div>'
+	  ) : '';
+
+	  /* ---- 占卜者标签（谁占的） ---- */
+	  const whoLabel = m.divine.who === 'role'
+	    ? (escapeHTML(m.divine.head || 'Ta') + ' · Ta 抽')
+	    : '我 · 自抽';
+
 	  const btnHTML = `<button class="dc-read-btn" data-divine-read="${m.divine.recordId||''}" data-divine-msg="${m.id}">${reads.length?'追加新的理解':'填写答案 / 解读'}</button>`;
-	  body = `<div class="divine-card"><div class="dc-head">DIVINE</div><div class="dc-q">${escapeHTML(m.divine.q)}</div><div class="dc-cards">${m.divine.cards.map(c=>tarotHTML(c.card,c.reversed)).join('')}</div><div class="dc-cards-text" style="font-size:11.5px;color:#1a1a1a;line-height:1.8;padding:4px 2px 0;letter-spacing:.5px">${m.divine.cards.map(c=>escapeHTML(((c.card&&c.card.name)||'?') + (c.reversed?' 逆':''))).join('　')}</div>${readsHTML}${btnHTML}</div>`;
+	  body = `<div class="divine-card">
+	    <div class="dc-head">DIVINE</div>
+	    <div class="dc-from">${whoLabel}</div>
+	    <div class="dc-q">${escapeHTML(m.divine.q)}</div>
+	    <div class="dc-cards">${m.divine.cards.map(c=>tarotHTML(c.card,c.reversed)).join('')}</div>
+	    <div class="dc-cards-text" style="font-size:11.5px;color:#1a1a1a;line-height:1.8;padding:4px 2px 0;letter-spacing:.5px">${m.divine.cards.map(c=>escapeHTML(((c.card&&c.card.name)||'?') + (c.reversed?' 逆':''))).join('　')}</div>
+	    ${readsHTML}
+	    ${roleReadsHTML}
+	    ${btnHTML}
+	  </div>`;
 	}else{
 	  const failedMark = m.sendFailed ? `<span class="send-failed-mark" title="发送失败">!</span>` : '';
 	  // text 若为对象，按 text / mood / kaomoji 顺序取第一个可用值
@@ -15066,19 +15228,22 @@ function showTypingHint(){
 function _applyReadStateUpTo(anchorMsg, state){
   if(!Array.isArray(msgs) || !msgs.length) return;
 
-  /* ★ 只要触发的是「已读」，就把整条聊天里所有还停在
-     「未读」的用户消息一次性全部改成「已读」。
-     理由：消息是有顺序的，只要有任意一条被读了，
-     它之前的所有消息都不可能还停在未读。
-     这里不再只处理锚点之前，而是全局扫一遍，避免漏掉。
-     noReply（已读不回）视为终态，不参与。 */
+  /* ============================================================
+     规则（已按你的需求重写）：
+     1. 只要触发的是「已读」，就把全聊天里所有 user 消息
+        全部一次性改成「已读」，包括之前标成 noReply 的（已读不回）
+        —— 因为对方一旦回复了，就说明前面的都看了，不能还挂着"已读不回"
+     2. noReply（已读不回）是"对方还没回"时才允许存在的状态，
+        一旦对方回复、进入 read 状态，全部清成 read
+     3. 其他状态（noReply 本身）只影响从锚点往前，不动后面的
+     ============================================================ */
   if(state === 'read'){
     let changed = false;
     for(let i = 0; i < msgs.length; i++){
       const x = msgs[i];
       if(!x || x.role !== 'user') continue;
       if(x.recalled || x.sys || x.namecard) continue;
-      if(x.readState === 'noReply') continue;
+      /* 关键修复：不再跳过 noReply，一律清成 read */
       if(x.readState === 'read' && !x.readNoReply) continue;
       x.readState = 'read';
       x.readNoReply = false;
@@ -15086,14 +15251,12 @@ function _applyReadStateUpTo(anchorMsg, state){
     }
     if(changed){
       saveMsgs();
-      /* 跳转定位时不要顺手重绘，避免把用户滚动位置抢掉 */
       if(!window.__jumpingToMsg) renderChat();
     }
     return;
   }
 
-  /* 非 read 的状态（比如 noReply），沿用原逻辑：
-     从最后一条 user 消息往前找锚点，只影响它前面 */
+  /* 非 read 的状态（noReply）：从锚点往前影响 */
   let idx = -1;
   if(anchorMsg && anchorMsg.id){
     for(let i = 0; i < msgs.length; i++){
@@ -15113,7 +15276,6 @@ function _applyReadStateUpTo(anchorMsg, state){
     const x = msgs[i];
     if(!x || x.role !== 'user') continue;
     if(x.recalled || x.sys || x.namecard) continue;
-    if(x.readState === 'noReply' && state !== 'noReply') continue;
     if(x.readState === state && !!x.readNoReply === (state === 'noReply')) continue;
     x.readState = state;
     x.readNoReply = (state === 'noReply');
@@ -15256,10 +15418,13 @@ function _buildSilentWavURL(){
 }
 
 /* 开启保活：只要开关是开的，就一直跑。
-   注意：这里不再只依靠 visibilitychange，开关打开时立即启动；
-   回到前台也不自动停，避免被误清。 */
+   - 开关打开时立即启动
+   - 切后台时由 visibilitychange 兜底再拉一次
+   - 回到前台也不停
+   - 只有用户手动关开关 或 权限出问题 才停 */
 function startKeepAlive(){
   if(!getKeepAliveOn()) return;
+  /* 已经在跑就不重复创建 */
   if(_keepAliveRunning && _keepAliveAudio && !_keepAliveAudio.paused) return;
 
   try{
@@ -15268,6 +15433,9 @@ function startKeepAlive(){
     a.loop = true;
     a.volume = 0.01;         /* 几乎无声，但不为 0，避免被浏览器判定为"静音跳过" */
     a.setAttribute('playsinline', '');
+    a.setAttribute('webkit-playsinline', '');
+    /* ★ 关键：audio 元素加一个"防被页面隐藏时暂停"的属性 */
+    a.setAttribute('preload', 'auto');
     a.play().then(function(){
       _keepAliveAudio = a;
       _keepAliveRunning = true;
@@ -15294,13 +15462,30 @@ function stopKeepAlive(){
   }
 }
 
-/* 开关变了：同步持久化 + 立即生效 */
+/* 开关变了：同步持久化 + 立即生效
+   - 打开 → 立刻启动，之后哪怕页面切后台、回前台、反复切换，也不会被自动停
+   - 关闭 → 立刻停止，同样不会因为别的地方误调 start 又跑起来 */
 function applyKeepAliveSwitch(on){
   setKeepAliveOn(on);
   if(on){
     startKeepAlive();
+    /* ★ 一次性注册一个"每 30 秒自检一次"的定时器：
+       万一被浏览器偷偷暂停了（某些系统省电策略），
+       只要开关还是开的，就自动拉回来 */
+    if(!window.__kaWatchdog){
+      window.__kaWatchdog = setInterval(function(){
+        try{
+          if(!getKeepAliveOn()) return;
+          if(!_keepAliveRunning || !_keepAliveAudio || _keepAliveAudio.paused){
+            console.log('[保活] 检测到被暂停，重新启动');
+            startKeepAlive();
+          }
+        }catch(e){}
+      }, 30000);
+    }
   } else {
     stopKeepAlive();
+    if(window.__kaWatchdog){ clearInterval(window.__kaWatchdog); window.__kaWatchdog = null; }
   }
 }
 
@@ -15635,18 +15820,28 @@ function _showPersistentNotification(title, body){
 }
 
 /* ============================================================
-   ★ 页面切后台时：不再弹任何保活通知
-   - 只记录切后台时间，回到前台时用来补算"漏掉的消息"
-   - 真正的消息通知由 showSystemNotify 负责，这里不抢戏
+   ★ 页面切后台时：只记录时间，不动保活音频
+   - 保活音频的启停完全由「设置 → 通知 → 后台音频保活」开关控制
+   - 开关开 → 一直跑，不管切前后台
+   - 开关关 → 一直停
+   - 这样切后台 / 回前台 / 反复切换，保活音频都不会被莫名关掉
    ============================================================ */
 (function bindVisibilityPersistent(){
   if(window.__mjVisibilityBound) return;
   window.__mjVisibilityBound = true;
-  /* 保活通知已关闭，这里只保留一个空的可见性监听占位，
-     防止别处依赖 __mjVisibilityBound 标记的逻辑失效 */
   document.addEventListener('visibilitychange', function(){
+    /* 切后台：记一下时间点，回来时用来补算漏掉的消息 */
     if(document.hidden){
       try{ lsSet('mj_last_seen_at_v1', Date.now()); }catch(e){}
+      /* ★ 关键：如果开关是开的，切后台时再确保保活音频在跑一次
+         （防止某些浏览器在切换时把 <audio> 暂停了） */
+      try{
+        if(getKeepAliveOn()){
+          if(!_keepAliveRunning || !_keepAliveAudio || _keepAliveAudio.paused){
+            startKeepAlive();
+          }
+        }
+      }catch(e){}
     }
   });
 })();
@@ -16271,13 +16466,32 @@ function runOnlineReadCheck(){
 setInterval(function(){
   if(!Array.isArray(msgs)) return;
 
-  /* 找最后一条可参与状态的 user 消息 */
+  /* ============================================================
+     已读回滚规则（按你的需求收紧）：
+     1. noReply（已读不回）不允许被回滚，保持终态
+     2. 只要聊天里还有任意一条 user 消息处于 noReply 状态，
+        整个聊天都禁止回滚 —— 避免出现"上面已读不回、下面又变未读"的错乱
+     3. 回滚只能把「最后一条 read」及它之后的全部 user 消息一起变成未读，
+        绝不允许出现"某一条 read 上面还有 unread"的夹层
+     4. 若回滚后会导致"read 上面夹 unread"，则放弃本次回滚
+     ============================================================ */
+
+  /* 第一步：检查聊天里有没有 noReply，一旦存在，禁止任何回滚 */
+  var hasNoReply = false;
+  for(var i = 0; i < msgs.length; i++){
+    var m = msgs[i];
+    if(!m || m.role !== 'user') continue;
+    if(m.recalled || m.sys || m.namecard) continue;
+    if(m.readState === 'noReply'){ hasNoReply = true; break; }
+  }
+  if(hasNoReply) return;
+
+  /* 第二步：找最后一条可参与状态的 user 消息 */
   var lastIdx = -1;
   for(var i = msgs.length - 1; i >= 0; i--){
     var m = msgs[i];
     if(!m || m.role !== 'user') continue;
     if(m.recalled || m.sys || m.namecard) continue;
-    if(m.readState === 'noReply') continue;
     lastIdx = i;
     break;
   }
@@ -16287,7 +16501,7 @@ setInterval(function(){
   if(last.readState !== 'read') return;   /* 只有"已读"才有资格回滚 */
   if(Math.random() >= 0.05) return;        /* 5% 概率 */
 
-  /* 回滚：从最后一条一直到末尾，全部变未读 */
+  /* 第三步：回滚 —— 把最后一条 read 及其之后所有 user 消息一起变未读 */
   var changed = false;
   for(var j = lastIdx; j < msgs.length; j++){
     var x = msgs[j];
@@ -16300,6 +16514,29 @@ setInterval(function(){
       changed = true;
     }
   }
+
+  /* 第四步：兜底 —— 检查有没有"read 上面夹 unread"的错乱，
+     一旦出现，本聊天整体统一成 unread，避免半截已读半截未读 */
+  var sawUnread = false;
+  var sawReadAfterUnread = false;
+  for(var k = 0; k < msgs.length; k++){
+    var y = msgs[k];
+    if(!y || y.role !== 'user') continue;
+    if(y.recalled || y.sys || y.namecard) continue;
+    if(y.readState === 'noReply') continue;
+    if(y.readState === 'unread') sawUnread = true;
+    else if(y.readState === 'read' && sawUnread){ sawReadAfterUnread = true; break; }
+  }
+  if(sawReadAfterUnread){
+    for(var p = 0; p < msgs.length; p++){
+      var z = msgs[p];
+      if(!z || z.role !== 'user') continue;
+      if(z.recalled || z.sys || z.namecard) continue;
+      if(z.readState === 'noReply') continue;
+      if(z.readState !== 'unread'){ z.readState = 'unread'; z.readNoReply = false; changed = true; }
+    }
+  }
+
   if(changed){ saveMsgs(); if(!window.__jumpingToMsg) renderChat(); }
 }, 30 * 1000);
 
@@ -16694,7 +16931,70 @@ on('#smileBtn','click',e=>{ e.stopPropagation(); const was=contentOpen; closeAll
 on('#chatInput','click',()=>{ if(contentOpen || funcOpen) closeAllDrawers(); });
 on('#plusBtn','click',e=>{ e.stopPropagation(); const was=funcOpen; closeAllDrawers(); if(was) return; funcOpen=true; $('#drawerFunc').classList.add('open'); });
 $$('.d-tab').forEach(t=>{ t.addEventListener('click',e=>{ e.stopPropagation(); $$('.d-tab').forEach(x=>x.classList.remove('on')); t.classList.add('on'); currentTab=t.dataset.tab; pendingDelete=null; renderDrawer(); }); });
-$$('.func-item').forEach(item=>{ item.addEventListener('click',e=>{ e.stopPropagation(); const fn=item.dataset.func; if(fn==='reply'){ closeAllDrawers(); setTimeout(openReplySettings,200); } else if(fn==='beauty'){ closeAllDrawers(); setTimeout(()=>openBeauty('bubble'),200); } else if(fn==='divine'){ closeAllDrawers(); setTimeout(openDivine,200); } else if(fn==='choice'){ closeAllDrawers(); setTimeout(openChoice,200); } else if(fn==='card'){ closeAllDrawers(); setTimeout(openCardPicker,200); } else if(fn==='voicecall'){ closeAllDrawers(); setTimeout(function(){ if(typeof userCall === 'function'){ userCall('voice'); } else { toast('通话模块还没加载好'); } }, 200); } else if(fn==='videocall'){ closeAllDrawers(); setTimeout(function(){ if(typeof userCall === 'function'){ userCall('video'); } else { toast('通话模块还没加载好'); } }, 200); } else if(fn==='quiz'){ closeAllDrawers(); setTimeout(openQuizDialog,200); } }); });
+/* ============================================================
+   ★ 抽屉 → 美化（聊天气泡）修复
+   问题根因：
+     openBeauty('bubble') 内部先切 .bp-row 的显示状态，然后调 renderBeautyPanel()。
+     但 #beautyPanel 是一个 fixed 全屏面板（.beauty-panel），它的显示
+     完全靠 .show 类。如果 closeAllDrawers() 之后紧接着 setTimeout 调用，
+     在某些机型上 drawerContent 的过渡动画（.32s）还没结束，
+     面板拿到的定位 / 显隐状态就是错的。
+   修复方式：
+     1. 先 closeAllDrawers()，等 60ms 再 openBeauty。
+     2. openBeauty 里加一次"强制刷新"：先 remove .show，再 requestAnimationFrame
+        加回 .show，逼浏览器重新走一次进入动画。
+     3. 无论从抽屉还是从个人页进，都保证 #beautyPanel 真的切到 .show。
+   ============================================================ */
+$$('.func-item').forEach(item=>{ item.addEventListener('click',e=>{
+  e.stopPropagation();
+  const fn = item.dataset.func;
+  if(fn === 'reply'){
+    closeAllDrawers();
+    setTimeout(openReplySettings, 200);
+  } else if(fn === 'beauty'){
+    closeAllDrawers();
+    setTimeout(function(){
+      if(typeof openBeauty === 'function'){
+        openBeauty('bubble');
+      } else {
+        toast('美化模块还没加载好');
+      }
+      /* ★ 兜底：如果 200ms 后 .beauty-panel 还没 .show，再强制打开一次 */
+      setTimeout(function(){
+        var bp = document.getElementById('beautyPanel');
+        if(bp && !bp.classList.contains('show')){
+          bp.classList.remove('show');
+          void bp.offsetWidth;
+          bp.classList.add('show');
+        }
+      }, 220);
+    }, 60);
+  } else if(fn === 'divine'){
+    closeAllDrawers();
+    setTimeout(openDivine, 200);
+  } else if(fn === 'choice'){
+    closeAllDrawers();
+    setTimeout(openChoice, 200);
+  } else if(fn === 'card'){
+    closeAllDrawers();
+    setTimeout(openCardPicker, 200);
+  } else if(fn === 'voicecall'){
+    closeAllDrawers();
+    setTimeout(function(){
+      if(typeof userCall === 'function'){ userCall('voice'); }
+      else { toast('通话模块还没加载好'); }
+    }, 200);
+  } else if(fn === 'videocall'){
+    closeAllDrawers();
+    setTimeout(function(){
+      if(typeof userCall === 'function'){ userCall('video'); }
+      else { toast('通话模块还没加载好'); }
+    }, 200);
+  } else if(fn === 'quiz'){
+    closeAllDrawers();
+    setTimeout(openQuizDialog, 200);
+  }
+}); });
 
 /* ============================================================
    问卷功能 v3
@@ -18491,30 +18791,85 @@ function tarotBackHTML(){
 const DIVINE_RECORDS_KEY = 'mj_divine_records_v2';
 function getDivineRecords(roleId){ let m=lsGet(DIVINE_RECORDS_KEY,{}); if(!m[roleId]) m[roleId]=[]; return m[roleId]; }
 function saveDivineRecords(roleId, arr){ let m=lsGet(DIVINE_RECORDS_KEY,{}); m[roleId]=arr; lsSet(DIVINE_RECORDS_KEY,m); }
+/* ============================================================
+   占卜设置持久化
+   - mj_divine_pref_v1 = { count: 3, who: 'self' }
+   - openDivine 每次都读这份配置回填按钮状态
+   - 点按钮时立即写回，下次打开还是上次选的
+   ============================================================ */
+const DIVINE_PREF_KEY = 'mj_divine_pref_v1';
+function getDivinePref(){
+  let p = lsGet(DIVINE_PREF_KEY, null);
+  if(!p || typeof p !== 'object') p = {};
+  if(p.count !== 1 && p.count !== 3) p.count = 3;
+  if(p.who !== 'self' && p.who !== 'role') p.who = 'self';
+  return p;
+}
+function saveDivinePref(p){ lsSet(DIVINE_PREF_KEY, p); }
+
 let divineCount=3, divineWho='self';
+
 function openDivine(){
-  $('#divineBody').innerHTML=`<div class="divine-title">向 宇 宙 提 问</div><div class="divine-sub">DIVINE</div><textarea class="q-input" id="qInput" rows="1" placeholder="请输入问题"></textarea><div style="display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:nowrap;"><div class="count-row"><button class="count-btn on" data-count="3">3 张</button><button class="count-btn" data-count="1">1 张</button></div><div class="drawer-row"><button class="drawer-btn on" data-who="self">自抽</button><button class="drawer-btn" data-who="role">Ta 抽</button></div></div><button class="primary-btn" id="btnStartDivine">开 始 占 卜</button>`;
-  $('#divineBody').onclick=(e)=>{ 
-    const t=e.target; 
-    const c=t.closest('.count-btn'); 
-    if(c){ 
-      $('#divineBody').querySelectorAll('.count-btn').forEach(x=>x.classList.remove('on')); 
-      c.classList.add('on'); 
-      divineCount=+c.dataset.count; 
-      return; 
-    } 
-    const w=t.closest('.drawer-btn'); 
-    if(w){ 
-      $('#divineBody').querySelectorAll('.drawer-btn').forEach(x=>x.classList.remove('on')); 
-      w.classList.add('on'); 
-      divineWho=w.dataset.who; 
-      return; 
-    } 
-    if(t.closest('#btnStartDivine')){ 
-      startDivine(); 
-      return; 
-    } 
+  /* ★ 先从本地读上次的设置 */
+  const pref = getDivinePref();
+  divineCount = pref.count;
+  divineWho   = pref.who;
+
+  /* ★ 按当前值回填按钮 on 状态 */
+  const c3On = (divineCount === 3) ? 'on' : '';
+  const c1On = (divineCount === 1) ? 'on' : '';
+  const wSelfOn = (divineWho === 'self') ? 'on' : '';
+  const wRoleOn = (divineWho === 'role') ? 'on' : '';
+
+  $('#divineBody').innerHTML = `
+    <div class="divine-title">向 宇 宙 提 问</div>
+    <div class="divine-sub">DIVINE</div>
+    <textarea class="q-input" id="qInput" rows="1" placeholder="请输入问题"></textarea>
+    <div style="display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:nowrap;">
+      <div class="count-row">
+        <button class="count-btn ${c3On}" data-count="3">3 张</button>
+        <button class="count-btn ${c1On}" data-count="1">1 张</button>
+      </div>
+      <div class="drawer-row">
+        <button class="drawer-btn ${wSelfOn}" data-who="self">自抽</button>
+        <button class="drawer-btn ${wRoleOn}" data-who="role">Ta 抽</button>
+      </div>
+    </div>
+    <button class="primary-btn" id="btnStartDivine">开 始 占 卜</button>`;
+
+  $('#divineBody').onclick = (e)=>{
+    const t = e.target;
+
+    const c = t.closest('.count-btn');
+    if(c){
+      $('#divineBody').querySelectorAll('.count-btn').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+      divineCount = +c.dataset.count;
+      /* ★ 立即写回，下次打开保留 */
+      const p = getDivinePref();
+      p.count = divineCount;
+      saveDivinePref(p);
+      return;
+    }
+
+    const w = t.closest('.drawer-btn');
+    if(w){
+      $('#divineBody').querySelectorAll('.drawer-btn').forEach(x=>x.classList.remove('on'));
+      w.classList.add('on');
+      divineWho = w.dataset.who;
+      /* ★ 立即写回，下次打开保留 */
+      const p = getDivinePref();
+      p.who = divineWho;
+      saveDivinePref(p);
+      return;
+    }
+
+    if(t.closest('#btnStartDivine')){
+      startDivine();
+      return;
+    }
   };
+
   $('#mDivine').classList.add('show');
 }
 function startDivine(){
@@ -18527,13 +18882,52 @@ function startDivine(){
 }
 function showDrawAnimation(q,picked){
   $('#divineBody').innerHTML=`<div class="divine-title">抽 牌 中</div><div class="divine-sub">✦ 保持专注 ✦</div><div class="result-cards" id="drawCards">${picked.map(()=>tarotBackHTML()).join('')}</div>`;
-  picked.forEach((p,i)=>{ setTimeout(()=>{ const slots=$('#drawCards').querySelectorAll('.tarot'); if(slots[i]) slots[i].outerHTML=tarotHTML(p.card,p.reversed); if(i===picked.length-1){ setTimeout(()=>{ $('#divineBody').insertAdjacentHTML('beforeend',`<button class="primary-btn" id="btnSendDivine">发 送 到 聊 天</button>`); $('#btnSendDivine').addEventListener('click',()=>{ const recordId=uid(); $('#mDivine').classList.remove('show'); setTimeout(()=>{ const roleName=getCurrentRoleName(); const headText=divineWho==='self'?'占卜':`${roleName}抽牌结果`; msgs.push({id:uid(),role:divineWho==='self'?'user':'char',divine:{head:headText,q,cards:picked,recordId,reads:[],saved:false,time:Date.now(),who:divineWho},time:Date.now()}); saveMsgs(); renderChat(); toast('已发送，长按可保存到占卜记录'); },300); }); },400); } },400+i*500); });
+  picked.forEach((p,i)=>{ setTimeout(()=>{ const slots=$('#drawCards').querySelectorAll('.tarot'); if(slots[i]) slots[i].outerHTML=tarotHTML(p.card,p.reversed); if(i===picked.length-1){ setTimeout(()=>{ $('#divineBody').insertAdjacentHTML('beforeend',`<button class="primary-btn" id="btnSendDivine">发 送 到 聊 天</button>`); $('#btnSendDivine').addEventListener('click',()=>{ const recordId=uid(); $('#mDivine').classList.remove('show'); setTimeout(()=>{ const roleName=getCurrentRoleName(); const headText=divineWho==='self'?'占卜':`${roleName}抽牌结果`; msgs.push({id:uid(),role:divineWho==='self'?'user':'char',divine:{head:headText,q,cards:picked,recordId,reads:[],roleReads:[],saved:false,time:Date.now(),who:divineWho},time:Date.now()}); saveMsgs(); renderChat(); toast('已发送，长按可保存到占卜记录'); },300); }); },400); } },400+i*500); });
 }
+/* ============================================================
+   占卜记录 · 筛选状态
+   - drWhoFilter: 'all' | 'me' | 'role'
+     me   = 我抽的（divine.who === 'self'）
+     role = Ta 抽的（divine.who === 'role'）
+   - 从聊天卡里进来的"我让 Ta 抽"这类，也按 who 归类
+   ============================================================ */
+let drWhoFilter = 'all';
+
+/* 判断一条记录是谁抽的
+   优先读 divine.who；
+   老数据可能没有 who，则按"来源"兜底：
+     - 从聊天卡来的，chatWho 有 'self'/'role'，用它
+     - 从主动占卜来的，肯定有 who='role'
+   兜底策略：没有 who 时，看 head 里有没有"占卜"字样？不可靠。
+   所以：没有 who 一律当"我抽的"处理（老数据基本都是用户自己发起的）。 */
+function drWhoOf(rec){
+  if(rec && rec.who === 'role') return 'role';
+  if(rec && rec.who === 'self') return 'self';
+  return 'self';
+}
+
 function renderDivineRecords(){
   const kw=($('#drSearchInput')?.value||'').trim().toLowerCase();
-  const list=getDivineRecords(getCurrentRoleId()).slice().sort((a,b)=>b.time-a.time).filter(rec=>{ if(!kw) return true; const q=(rec.question||'').toLowerCase(); const reads=(rec.reads||[]).map(r=>(r.text||'').toLowerCase()).join(' '); return q.includes(kw)||reads.includes(kw); });
+  const allRecs = getDivineRecords(getCurrentRoleId()).slice().sort((a,b)=>b.time-a.time);
+  const list = allRecs.filter(rec=>{
+    /* 谁抽的筛选 */
+    if(drWhoFilter !== 'all'){
+      const who = drWhoOf(rec);
+      if(drWhoFilter === 'me'   && who !== 'self') return false;
+      if(drWhoFilter === 'role' && who !== 'role') return false;
+    }
+    /* 关键词筛选 */
+    if(!kw) return true;
+    const q=(rec.question||'').toLowerCase();
+    const reads=(rec.reads||[]).map(r=>(r.text||'').toLowerCase()).join(' ');
+    const roleReads=(rec.roleReads||[]).map(r=>(r.text||'').toLowerCase()).join(' ');
+    return q.includes(kw) || reads.includes(kw) || roleReads.includes(kw);
+  });
   const box=$('#drList');
-  if(!list.length){ box.innerHTML=`<div class="dr-empty" style="text-align:center;padding:80px 30px;font-size:13px;color:#bbb;line-height:2;font-weight:300"><span style="display:block;margin-bottom:14px;font-size:10.5px;letter-spacing:6px;color:#d8d8d8;font-family:Georgia,serif">DIVINE</span>${kw?'没有匹配的占卜记录':'还没有占卜记录<br>去占卜一次，并把理解写下来吧'}</div>`; return; }
+  if(!list.length){
+    box.innerHTML=`<div class="dr-empty" style="text-align:center;padding:80px 30px;font-size:13px;color:#bbb;line-height:2;font-weight:300"><span style="display:block;margin-bottom:14px;font-size:10.5px;letter-spacing:6px;color:#d8d8d8;font-family:Georgia,serif">DIVINE</span>${kw || drWhoFilter!=='all'?'没有匹配的占卜记录':'还没有占卜记录<br>去占卜一次，并把理解写下来吧'}</div>`;
+    return;
+  }
   const roleName=getCurrentRoleName();
   box.innerHTML=list.map(rec=>{
 	const allReads = rec.reads || [];
@@ -18574,7 +18968,9 @@ function saveDivineMsg(m){
       who: m.divine.who || 'self',
       cards: m.divine.cards || [],
       /* ★ 把聊天卡里已经写的理解，一起搬进记录库 */
-      reads: JSON.parse(JSON.stringify(m.divine.reads || []))
+      reads: JSON.parse(JSON.stringify(m.divine.reads || [])),
+      /* ★ 顺便把角色的理解也一起搬进来 */
+      roleReads: JSON.parse(JSON.stringify(m.divine.roleReads || []))
     });
     saveDivineRecords(roleId, arr);
   } else {
@@ -18619,6 +19015,226 @@ function openMergeDetail(mergeCard){
   mask.addEventListener('click', (e) => { if(e.target === mask) mask.remove(); });
   mask.querySelector('#mergeDetailClose').onclick = () => mask.remove();
 }
+
+/* ============================================================
+   ★ 角色写理解 · 完整逻辑
+   一、数据结构
+     msg.divine.roleReads = [{ roleId, name, text, time }]
+     存在聊天消息对象里，跟 divine.reads 平级
+   二、触发方式
+     1. 占卜完成那一刻 → 掷骰子（divineReadRate 默认 0.5）
+        摇中 → 1~20 分钟内随机写一条
+     2. 我保存理解后 → 每天 00:00 检查一次
+        1~3 天内 15%、3~7 天 10%、7~30 天 5%、30~365 天 1%
+        摇中 → 追加一条
+   三、写理解时从「普通字卡池」抽 1~3 条拼接
+   ============================================================ */
+
+/* 抽 1~3 条普通字卡拼成理解文本 */
+function pickDivineRoleReadText(roleId, maxN){
+  const n = 1 + Math.floor(Math.random() * (Math.max(1, maxN||3)));
+  const pub = getAllNormalCards('public');
+  const own = getAllNormalCards(roleId);
+  const pool = own.concat(pub);
+  if(!pool.length) return '……';
+  const parts = [];
+  for(let i = 0; i < n; i++){
+    parts.push(pool[Math.floor(Math.random() * pool.length)]);
+  }
+  /* 用标点池拼一下，让文本不显得生硬 */
+  try{
+    const r = getReply(roleId);
+    if(r.punctOn && Array.isArray(r.punctList) && r.punctList.length){
+      const seg = [];
+      for(let i = 0; i < parts.length; i++){
+        seg.push(parts[i]);
+        if(i < parts.length - 1){
+          seg.push(r.punctList[Math.floor(Math.random() * r.punctList.length)]);
+        }
+      }
+      return seg.join('') + r.punctList[Math.floor(Math.random() * r.punctList.length)];
+    }
+  }catch(e){}
+  return parts.join('　');
+}
+
+/* 找一张占卜卡消息（用来挂理解）
+   - 优先：当前正在看的角色聊天里，最近一条带该 recordId 的
+   - 也支持传入具体 msgId */
+function findDivineMsg(roleId, recordId, preferMsgId){
+  const key = 'mj_msgs_' + roleId;
+  const arr = (getCurrentRoleId() === roleId) ? msgs : lsGet(key, null);
+  if(!Array.isArray(arr)) return null;
+  if(preferMsgId){
+    const hit = arr.find(m => m.id === preferMsgId && m.divine);
+    if(hit) return hit;
+  }
+  /* 没指定 msgId 就找该 recordId 最近一条 */
+  for(let i = arr.length - 1; i >= 0; i--){
+    const m = arr[i];
+    if(m && m.divine && m.divine.recordId === recordId) return m;
+  }
+  return null;
+}
+
+/* 写一条角色理解
+   opts: { roleId, recordId, msgId, from: 'auto' | 'user-save', text } */
+function writeDivineRoleRead(opts){
+  const roleId = opts.roleId || getCurrentRoleId();
+  const role = getRoleById(roleId);
+  if(!role) return false;
+  const target = findDivineMsg(roleId, opts.recordId, opts.msgId);
+  if(!target){
+    console.warn('[写理解] 找不到目标占卜卡', opts);
+    return false;
+  }
+  if(!target.divine.roleReads) target.divine.roleReads = [];
+
+  /* 检查最大追加次数 */
+  const r = getReply(roleId);
+  const maxTimes = Math.max(1, Math.min(10, r.divineReadMaxTimes || 4));
+  if(target.divine.roleReads.length >= maxTimes){
+    return false;
+  }
+
+  /* 抽字卡拼文本 */
+  const text = opts.text || pickDivineRoleReadText(roleId, r.divineReadCardMax || 3);
+  target.divine.roleReads.push({
+    roleId: roleId,
+    name: role.displayName || role.name || 'Ta',
+    text: text,
+    time: Date.now()
+  });
+
+  /* 写回 */
+  if(getCurrentRoleId() === roleId){
+    saveMsgs();
+    /* 清签名，强制重绘 */
+    window.__lastRenderSig = '';
+    renderChat();
+  } else {
+    const key = 'mj_msgs_' + roleId;
+    const arr = (getCurrentRoleId() === roleId) ? msgs : lsGet(key, null);
+    if(Array.isArray(arr)) lsSet(key, arr);
+  }
+  return true;
+}
+
+/* 占卜完成那一刻的骰子：摇中就在 1~20 分钟内随机写一条 */
+function rollDivineRoleRead(roleId, recordId, msgId){
+  const r = getReply(roleId);
+  if(!r.divineReadOn) return;
+  if(Math.random() >= (r.divineReadRate || 0.5)) return;
+  /* 1~20 分钟 = 60s~1200s */
+  const delay = (60 + Math.floor(Math.random() * 1140)) * 1000;
+  setTimeout(function(){
+    try{
+      writeDivineRoleRead({ roleId: roleId, recordId: recordId, msgId: msgId, from: 'auto' });
+    }catch(e){ console.error('角色写理解出错', e); }
+  }, delay);
+}
+
+/* ============================================================
+   我保存理解后 → 角色 N 天后追加
+   存 mj_divine_pending_reads_v1 = [
+     { roleId, recordId, msgId, savedAt, resolved:false }, ...
+   ]
+   每天 00:00 检查一次：
+     - 1~3 天内：15%
+     - 3~7 天内：10%
+     - 7~30 天内：5%
+     - 30~365 天内：1%
+     - 超过 365 天：标 resolved
+   ============================================================ */
+const DIVINE_PENDING_KEY = 'mj_divine_pending_reads_v1';
+function getDivinePendingReads(){
+  let a = lsGet(DIVINE_PENDING_KEY, null);
+  if(!Array.isArray(a)) a = [];
+  return a;
+}
+function saveDivinePendingReads(a){ lsSet(DIVINE_PENDING_KEY, a); }
+
+function addPendingRoleRead(roleId, recordId, msgId){
+  if(!recordId) return;
+  const arr = getDivinePendingReads();
+  /* 去重 */
+  if(arr.some(x => x.roleId === roleId && x.recordId === recordId)) return;
+  arr.push({
+    roleId: roleId,
+    recordId: recordId,
+    msgId: msgId || '',
+    savedAt: Date.now(),
+    resolved: false
+  });
+  saveDivinePendingReads(arr);
+}
+
+function runPendingRoleReadCheck(){
+  const arr = getDivinePendingReads();
+  if(!arr.length) return;
+  const now = Date.now();
+  const DAY = 86400000;
+  let changed = false;
+
+  arr.forEach(function(item){
+    if(item.resolved) return;
+    const age = now - item.savedAt;
+    const days = age / DAY;
+
+    /* 超过一年：作废 */
+    if(days > 365){
+      item.resolved = true;
+      changed = true;
+      return;
+    }
+
+    /* 选概率 */
+    let prob = 0;
+    if(days <= 3) prob = 0.15;
+    else if(days <= 7) prob = 0.10;
+    else if(days <= 30) prob = 0.05;
+    else prob = 0.01;
+
+    /* 每天检查一次，每次按这个概率摇 */
+    if(Math.random() >= prob) return;
+
+    /* 摇中 → 写一条理解 */
+    try{
+      const ok = writeDivineRoleRead({
+        roleId: item.roleId,
+        recordId: item.recordId,
+        msgId: item.msgId,
+        from: 'user-save'
+      });
+      if(ok){
+        item.resolved = true;
+        changed = true;
+      }
+    }catch(e){ console.error('角色追加理解出错', e); }
+  });
+
+  if(changed) saveDivinePendingReads(arr);
+}
+
+/* 每天 00:00 触发的定时器 */
+function scheduleDivineReadCheck(){
+  function nextMidnight(){
+    const d = new Date();
+    d.setHours(24, 0, 0, 0);
+    return d.getTime();
+  }
+  function loop(){
+    const wait = nextMidnight() - Date.now();
+    setTimeout(function(){
+      try{ runPendingRoleReadCheck(); }catch(e){ console.error(e); }
+      loop();
+    }, Math.max(1000, wait));
+  }
+  loop();
+  /* 启动时先跑一次（防止关机期间错过） */
+  setTimeout(function(){ try{ runPendingRoleReadCheck(); }catch(e){} }, 5000);
+}
+try{ scheduleDivineReadCheck(); }catch(e){ console.error('写理解调度启动失败', e); }
 
 let readingRecordId=null;
 let readingMsgId=null;      /* 新增：记录是从哪条聊天消息点进来的 */
@@ -18756,13 +19372,48 @@ $('#btnSaveRead').addEventListener('click',()=>{
     return;
   }
 
-  /* ---- 4. 统一重绘 ---- */
-  try{ renderChat(); }catch(e){}
+  /* ============================================================
+     ★ 统一重绘（修复"填完不刷、非要整页刷新才显示"）
+     问题根因：
+       renderChat() 内部有签名缓存，签名没变它只做轻量更新，
+       不会重建那条占卜卡，所以新加的理解不显示。
+     修复方式：
+       写完后直接把 __lastRenderSig 清空，强制下一次 renderChat 走全量重建。
+       另外再补一次延时重绘，应对极端情况下 DOM 还没就绪。
+     ============================================================ */
+  try{
+    /* 关键：清掉签名缓存，强制全量重建聊天列表 */
+    window.__lastRenderSig = '';
+    renderChat();
+  }catch(e){ console.error('重绘聊天失败', e); }
+
+  /* 再补一次延时重绘，双保险 */
+  setTimeout(function(){
+    try{
+      window.__lastRenderSig = '';
+      renderChat();
+    }catch(e){}
+  }, 60);
+
   /* 如果占卜记录页正开着，也一起刷 */
   const drScr = document.getElementById('divineRecordScreen');
   if(drScr && drScr.classList.contains('on')){
     try{ renderDivineRecords(); }catch(e){}
   }
+
+  /* ★ 保存理解后，登记一条"未来可能触发角色追加"的任务 */
+  try{
+    if(recId){
+      addPendingRoleRead(roleId, recId, msgId || targetMsg ? (msgId || (targetMsg && targetMsg.id) || '') : '');
+    }
+  }catch(e){ console.error('登记追加任务失败', e); }
+
+  /* ★ 保存理解后，登记一条"未来可能触发角色追加"的任务 */
+  try{
+    if(recId){
+      addPendingRoleRead(roleId, recId, msgId || targetMsg ? (msgId || (targetMsg && targetMsg.id) || '') : '');
+    }
+  }catch(e){ console.error('登记追加任务失败', e); }
 
   $('#mRead').classList.remove('show');
   readingMsgId = null;
@@ -18787,6 +19438,24 @@ document.addEventListener('click', function(e){
 
 on('#drBack','click',()=>{ showScreen('deskScreen'); });
 on('#drSearchInput','input',()=>renderDivineRecords());
+
+/* ★ 占卜记录 · 谁抽的筛选按钮 */
+(function bindDrWhoFilter(){
+  if(window.__drWhoBound) return;
+  window.__drWhoBound = true;
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest && e.target.closest('#drWhoRow .dr-filter');
+    if(!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const who = btn.dataset.who || 'all';
+    drWhoFilter = who;
+    document.querySelectorAll('#drWhoRow .dr-filter').forEach(function(b){
+      b.classList.toggle('on', b === btn);
+    });
+    renderDivineRecords();
+  }, true);
+})();
 
 let choiceMode='multi';   /* 'yn' | 'multi' */
 let choiceOpts=[''];
@@ -19863,7 +20532,36 @@ function openBeauty(mode){
 	document.querySelectorAll('#beautyPanel .bp-row[data-panel="layout"]').forEach(el=>el.style.display='none');
   }
   renderBeautyPanel();
-  $('#beautyPanel').classList.add('show');
+
+  /* ============================================================
+     ★ 关键修复：强制重新走一次进入动画
+     问题根因：抽屉刚关（.drawer 的 transition 是 .32s），
+              beautyPanel 是 fixed 全屏面板，
+              在过渡未结束时调用 .classList.add('show')，
+              某些机型会判定"没变"，直接吞掉。
+     修复方式：
+       1. 先确保 .show 已经移除
+       2. 强制重排（offsetWidth）
+       3. 下一帧（requestAnimationFrame）再加回 .show
+     ============================================================ */
+  var bp = document.getElementById('beautyPanel');
+  if(bp){
+    bp.classList.remove('show');
+    void bp.offsetWidth;
+    requestAnimationFrame(function(){
+      bp.classList.add('show');
+      /* 再兜一层：下一帧如果还没 show 就强制加 */
+      requestAnimationFrame(function(){
+        if(!bp.classList.contains('show')){
+          bp.classList.add('show');
+        }
+      });
+    });
+  } else {
+    /* 万一 DOM 还没就绪，直接加类 */
+    var old = $('#beautyPanel');
+    if(old) old.classList.add('show');
+  }
 }
 function closeBeauty(){
   $('#beautyPanel').classList.remove('show');
@@ -24817,7 +25515,7 @@ function applyTopbarBg(){
 
 (function(){
   const stack = $('#pageStack'); if(!stack) return;
-  const pages = ['page-friends','page-chat','page-calendar','page-desk','page-me'];
+  const pages = ['page-friends','page-chat','page-desk','page-me'];
   let cur = 1; let sx=0,sy=0,dragging=false,dx=0;
   const app = $('#app');
   function go(n){
@@ -24879,7 +25577,7 @@ function showScreen(id){
 function closeScreen(){ $$('.screen').forEach(s=>s.classList.remove('on')); }
 
 $$('#page-desk .desk-app').forEach(el=>{ el.addEventListener('click',()=>{ const k=el.dataset.open; if(k==='beauty') openBeauty(); else if(k==='divine') renderDivineRecords(),showScreen('divineRecordScreen'); else if(k==='behavior'){ behaviorKeyword=''; const si=$('#bhSearchInput'); if(si) si.value=''; renderBehavior(); showScreen('behaviorScreen'); }
-else if(k==='relation'){ relationKeyword=''; const ri=$('#relSearchInput'); if(ri) ri.value=''; openRelationScreen(); } else if(k==='music') toast('音乐 · 下一步补'); else if(k==='moments'){ if(typeof window.openMoments === 'function') window.openMoments(); } else if(k==='friends'){ if(window.__goPage) window.__goPage(0); } else if(k==='videopool'){ openVideoPool(); } else if(k==='forcevideo'){ forceSendVideo(); } else if(k==='memory'){ toast('回忆 · 下一步补'); } else if(k==='groupchat'){ openGroupList(); } }); });
+else if(k==='relation'){ relationKeyword=''; const ri=$('#relSearchInput'); if(ri) ri.value=''; openRelationScreen(); } else if(k==='music') toast('音乐 · 下一步补'); else if(k==='moments'){ if(typeof window.openMoments === 'function') window.openMoments(); } else if(k==='friends'){ if(window.__goPage) window.__goPage(0); } else if(k==='videopool'){ openVideoPool(); } else if(k==='forcevideo'){ forceSendVideo(); } else if(k==='memory'){ toast('回忆 · 下一步补'); } else if(k==='groupchat'){ openGroupList(); } else if(k==='calendar'){ openDeskCalendar(); } }); });
 $$('#page-me .me-row').forEach(el=>{ el.addEventListener('click',()=>{
   const fn = el.dataset.func;
   if(fn==='card') openCardLib();
@@ -26990,6 +27688,20 @@ function renderReplyPanel(tab){
 	  <div class="section">
 		<div class="title">触发概率</div>
 		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsDivineRate" min="0" max="100" value="${Math.round((r.divineRate||0)*100)}"><span class="num" id="rsDivineRateVal">${Math.round((r.divineRate||0)*100)}%</span></div>
+	  </div>
+	  <div class="section">
+		<div class="sw-row">
+		  <div class="sw-main"><div class="t1">允许 Ta 写理解</div><div class="t2">占卜完那一刻摇骰子，摇中后会在 1~20 分钟内随机写下理解</div></div>
+		  <label class="switch"><input type="checkbox" id="rsDivineReadOn" ${r.divineReadOn?'checked':''}><span class="slider"></span></label>
+		</div>
+	  </div>
+	  <div class="section">
+		<div class="title">写理解触发概率</div>
+		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsDivineReadRate" min="0" max="100" value="${Math.round((r.divineReadRate||0)*100)}"><span class="num" id="rsDivineReadRateVal">${Math.round((r.divineReadRate||0)*100)}%</span></div>
+	  </div>
+	  <div class="section">
+		<div class="title">每张占卜卡最多追加次数</div>
+		<div class="n-row"><input type="number" id="rsDivineReadMaxTimes" min="1" max="10" value="${r.divineReadMaxTimes||4}"><span class="unit">次</span></div>
 	  </div>`;
   }
   body.innerHTML = tabs + content;
@@ -27273,6 +27985,25 @@ function renderReplyPanel(tab){
     if(descEls[1]){
       descEls[1].innerHTML = '每 30 分钟摇一次，摇中概率 <b>' + v + '%</b>，摇中后会在接下来 30 分钟内随机挑一个时刻发。';
     }
+  });
+
+  /* ★ 角色写理解 · 开关 / 概率 / 最多追加次数 */
+  const drOn = $('#rsDivineReadOn');
+  if(drOn) drOn.addEventListener('change', function(){
+    r.divineReadOn = this.checked;
+    saveReply();
+  });
+  const drRate = $('#rsDivineReadRate');
+  if(drRate) drRate.addEventListener('input', function(){
+    r.divineReadRate = parseInt(this.value, 10) / 100;
+    saveReply();
+    const valEl = $('#rsDivineReadRateVal');
+    if(valEl) valEl.textContent = this.value + '%';
+  });
+  const drMax = $('#rsDivineReadMaxTimes');
+  if(drMax) drMax.addEventListener('change', function(){
+    r.divineReadMaxTimes = Math.max(1, Math.min(10, parseInt(this.value, 10) || 4));
+    saveReply();
   });
 }
 
@@ -30946,9 +31677,8 @@ function goToPage(name){
   var PAGE_INDEX = {
     friends:  0,
     chat:     1,
-    calendar: 2,
-    desk:     3,
-    me:       4
+    desk:     2,
+    me:       3
   };
   var idx = PAGE_INDEX[name];
   if(typeof idx !== 'number') return;
@@ -34598,6 +35328,13 @@ document.addEventListener('visibilitychange', function(){
       }
     }catch(e){ console.error('回到前台结算试卷失败', e); }
 
+    /* ★ 回到前台：如果保活开关是开的，但音频被浏览器暂停了，立刻拉回来 */
+    try{
+      if(getKeepAliveOn() && (!_keepAliveRunning || !_keepAliveAudio || _keepAliveAudio.paused)){
+        startKeepAlive();
+      }
+    }catch(e){}
+
     /* 页面回到前台：把挂起期间漏掉的消息，补弹一次系统通知 */
     try{
       var LAST_SEEN_KEY = 'mj_last_seen_at_v1';
@@ -34698,16 +35435,190 @@ document.addEventListener('visibilitychange', function(){
   }
 });
 
+/* ============================================================
+   ★ 日历在功能页内切换
+   - 点功能页的「日历」app → 功能页原地变成日历页
+   - 日历页左上角有「‹」按钮 → 退回功能页
+   - 功能页 pageStack 左右滑动照常可用
+   - 不打开新的 .screen，所以其他二级页不受影响
+   ============================================================ */
+function openDeskCalendar(){
+  const desk = document.getElementById('page-desk');
+  if(!desk) return;
+  /* ★ 每次进入都强制重建，避免被外部恢复过 / 被 pageStack 移动过 / 结构残留 */
+  desk._calInited = true;
+  /* 直接清空 desk，然后重新注入日历结构 */
+  desk.innerHTML = '';
+  {
+
+    /* 2. 换成日历页结构 */
+    desk.innerHTML =
+      '<div class="cal-topbar" style="display:flex;align-items:center;padding:18px 22px 4px;">' +
+        '<button class="cal-desk-back" id="calDeskBack" type="button" style="width:38px;height:38px;flex:none;border:none;background:transparent;color:#1a1a1a;font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0 0 4px;font-family:inherit;cursor:pointer;opacity:.55;transition:opacity .18s ease;">‹</button>' +
+        '<div style="flex:1"></div>' +
+        '<button class="cal-edit-entry" id="calEditEntry" type="button" style="border:none;background:transparent;color:#1a1a1a;font-family:Georgia,serif;font-size:11px;letter-spacing:4px;text-indent:4px;font-weight:400;padding:6px 2px;cursor:pointer;opacity:.55;">EDIT</button>' +
+      '</div>' +
+      '<div class="cal-page-wrap">' +
+        '<div class="big-card" id="calBigCard">' +
+          '<div class="bc-head">' +
+            '<div class="bc-date-wrap">' +
+              '<span class="bc-date" id="calBigDate">--月--日</span>' +
+              '<small id="calBigWeek">---</small>' +
+            '</div>' +
+            '<div class="bc-time" id="calBigTime">--:--<small id="calBigAmpm"></small></div>' +
+          '</div>' +
+          '<div class="bc-lunar" id="calBigLunar">' +
+            '<svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 8l7-5 7 5"/><path d="M5 16l7 5 7-5"/></svg>' +
+            '<span id="calBigLunarText">农历 —</span>' +
+          '</div>' +
+          '<div class="bc-weather" id="calBigWeather">' +
+            '<div class="bc-w-ico" id="calBigWIcon">' +
+              '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>' +
+            '</div>' +
+            '<div class="bc-w-txt">' +
+              '<div class="bc-w-main" id="calBigWMain">天气加载中…</div>' +
+              '<div class="bc-w-sub" id="calBigWSub">正在获取定位</div>' +
+            '</div>' +
+            '<button class="bc-w-refresh" id="calBigWRefresh" type="button" title="刷新天气">' +
+              '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 4 21 10 15 10"/></svg>' +
+            '</button>' +
+          '</div>' +
+          '<div class="bc-events" id="calBigEvents"></div>' +
+        '</div>' +
+        '<div class="cal-head">' +
+          '<button class="cal-arrow" id="calPrevMonth" type="button">' +
+            '<svg viewBox="0 0 24 24"><polyline points="15,6 9,12 15,18"/></svg>' +
+          '</button>' +
+          '<div class="cal-title" id="calTitle">— 月<small id="calTitleYear">----</small></div>' +
+          '<button class="cal-arrow" id="calNextMonth" type="button">' +
+            '<svg viewBox="0 0 24 24"><polyline points="9,6 15,12 9,18"/></svg>' +
+          '</button>' +
+        '</div>' +
+        '<div class="cal-grid" id="calGrid"></div>' +
+        '<div class="cal-events">' +
+          '<div class="ce-head">This Month</div>' +
+          '<div id="calMonthEvents"></div>' +
+        '</div>' +
+      '</div>';
+
+    /* 3. 把日历页根节点换成可滑动的 flex 布局 */
+    desk.style.display = 'flex';
+    desk.style.flexDirection = 'column';
+    desk.style.overflow = 'hidden';
+
+    /* 4. 给日历区加滚动能力（跟原来 #page-calendar 一样） */
+    const wrap = desk.querySelector('.cal-page-wrap');
+    if(wrap){
+      /* 让整个 desk 可以垂直滚动 */
+      desk.style.overflowY = 'auto';
+      desk.style.overflowX = 'hidden';
+      desk.style.webkitOverflowScrolling = 'touch';
+      desk.style.scrollbarWidth = 'none';
+      desk.style.padding = '0';
+      desk.style.background = '#ffffff';
+    }
+
+    /* 5. 返回按钮 */
+    const back = desk.querySelector('#calDeskBack');
+    if(back){
+      back.addEventListener('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        closeDeskCalendar();
+      });
+    }
+  }
+
+  /* 每次进入都刷新一次日期
+     ★ 补充：把万年历 / 天气 / 事件列表都刷一遍
+     ★ 如果还没初始化过 calCurrentYear / calCurrentMonth，就按今天初始化 */
+  try{
+    if(typeof initCalendarPage === 'function'){
+      initCalendarPage();
+    } else {
+      refreshCalendarPage();
+    }
+  }catch(e){ console.error('日历刷新失败', e); }
+  try{ refreshWeather(false); }catch(e){}
+}
+
+function closeDeskCalendar(){
+  const desk = document.getElementById('page-desk');
+  if(!desk) return;
+  /* 恢复功能页结构：重新注入原始 HTML */
+  desk.innerHTML =
+    '<div class="desk-top"><div class="desk-title">功 能 页<small>FUNCTIONS</small></div><div class="desk-clock" id="deskClock">--:--</div></div>' +
+    '<div class="desk-grid">' +
+      '<div class="desk-app" data-open="music"><div class="da-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.4"/></svg></div><div class="da-name">音乐</div></div>' +
+      '<div class="desk-app" data-open="divine"><div class="da-ic"><svg viewBox="0 0 24 24"><path d="M2.5 12 C5 7.5 8.5 5.5 12 5.5 C15.5 5.5 19 7.5 21.5 12 C19 16.5 15.5 18.5 12 18.5 C8.5 18.5 5 16.5 2.5 12 Z"/><circle cx="12" cy="12" r="3.2"/></svg></div><div class="da-name">占卜记录</div></div>' +
+      '<div class="desk-app" data-open="behavior"><div class="da-ic"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg></div><div class="da-name">角色行为</div></div>' +
+      '<div class="desk-app" data-open="relation"><div class="da-ic"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="19" cy="19" r="2"/><path d="M6.7 11.3l10.6-5.6"/><path d="M6.7 12.7l10.6 5.6"/><path d="M12 12h0"/></svg></div><div class="da-name">关系网</div></div>' +
+      '<div class="desk-app" data-open="moments"><div class="da-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><circle cx="8.5" cy="10" r="1.6"/><path d="M3.5 17l5-5 4 4 3-3 5 5"/></svg></div><div class="da-name">动态</div></div>' +
+      '<div class="desk-app" data-open="groupchat"><div class="da-ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M3 19c0-2.8 2.2-5 5-5s5 2.2 5 5"/><path d="M13 19c0-2.8 2.2-5 5-5s3 .6 3 2"/></svg></div><div class="da-name">群聊</div></div>' +
+      '<div class="desk-app" data-open="videopool"><div class="da-ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10 9l5 3-5 3z"/></svg></div><div class="da-name">共享池</div></div>' +
+      '<div class="desk-app" data-open="forcevideo"><div class="da-ic"><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg></div><div class="da-name">让Ta刷</div></div>' +
+      '<div class="desk-app" data-open="gameres"><div class="da-ic"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 11v4"/><path d="M5 13h4"/><circle cx="16" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="18.5" cy="14" r="1" fill="currentColor" stroke="none"/></svg></div><div class="da-name">游戏资源</div></div>' +
+      '<div class="desk-app" data-open="msgstat"><div class="da-ic"><svg viewBox="0 0 24 24"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg></div><div class="da-name">消息统计</div></div>' +
+      '<div class="desk-app" data-open="memory"><div class="da-ic"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg></div><div class="da-name">回忆</div></div>' +
+      '<div class="desk-app" data-open="calendar"><div class="da-ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/><circle cx="8" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="14" r="1" fill="currentColor" stroke="none"/></svg></div><div class="da-name">日历</div></div>' +
+    '</div>';/* 恢复滚动 / 布局属性 */
+  desk.style.display = '';
+  desk.style.flexDirection = '';
+  desk.style.overflow = '';
+  desk.style.overflowY = '';
+  desk.style.overflowX = '';
+  desk.style.webkitOverflowScrolling = '';
+  desk.style.scrollbarWidth = '';
+  desk.style.padding = '';
+  desk.style.background = '';
+
+  /* 重新绑定 desk-app 点击（含新的 calendar） */
+  $$('#page-desk .desk-app').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const k = el.dataset.open;
+      if(k === 'calendar'){ openDeskCalendar(); return; }
+      if(k === 'beauty') openBeauty();
+      else if(k === 'divine'){ renderDivineRecords(); showScreen('divineRecordScreen'); }
+      else if(k === 'behavior'){ behaviorKeyword=''; const si=$('#bhSearchInput'); if(si) si.value=''; renderBehavior(); showScreen('behaviorScreen'); }
+      else if(k === 'relation'){ relationKeyword=''; const ri=$('#relSearchInput'); if(ri) ri.value=''; openRelationScreen(); }
+      else if(k === 'music') toast('音乐 · 下一步补');
+      else if(k === 'moments'){ if(typeof window.openMoments === 'function') window.openMoments(); }
+      else if(k === 'friends'){ if(window.__goPage) window.__goPage(0); }
+      else if(k === 'videopool'){ openVideoPool(); }
+      else if(k === 'forcevideo'){ forceSendVideo(); }
+      else if(k === 'memory'){ toast('回忆 · 下一步补'); }
+      else if(k === 'groupchat'){ openGroupList(); }
+    });
+  });
+
+  /* 重建时钟 */
+  function updateClock(){
+    const d = new Date();
+    const el = document.getElementById('deskClock');
+    if(el) el.textContent = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  updateClock();
+  if(window.__deskClockTimer) clearInterval(window.__deskClockTimer);
+  window.__deskClockTimer = setInterval(updateClock, 1000);
+}
+
 /* 挂到 window */
 window.__calendar = {
   init: initCalendarPage,
   refresh: refreshCalendarPage,
   refreshWeather: refreshWeather,
-  openDeskEdit: () => { showScreen('deskEditScreen'); renderDeskEdit('date'); }
+  openDeskEdit: () => { showScreen('deskEditScreen'); renderDeskEdit('date'); },
+  openInDesk: openDeskCalendar,
+  closeInDesk: closeDeskCalendar
 };
 
-/* 启动 */
-try{ initCalendarPage(); }catch(e){ console.error('日历初始化失败', e); }
+/* 启动：
+   - 原来独立日历页的初始化已去掉，因为那一页已从 pageStack 移除
+   - 日历数据现在由 openDeskCalendar() 内部按需初始化 / 刷新
+   - 这里只把页面挂载点准备好 */
+try{
+  window.__calendarReady = true;
+}catch(e){ console.error('日历初始化失败', e); }
 </script>
 
 <script>
