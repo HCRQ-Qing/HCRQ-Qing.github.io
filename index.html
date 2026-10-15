@@ -1282,7 +1282,7 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
 }
 /* ===== 统一输入弹窗 · 方案 A ===== */
 .uni-mask{
-  position:fixed;inset:0;z-index:99999;
+  position:fixed;inset:0;z-index:2147483646;
   background:var(--mask-bg);
   backdrop-filter:var(--mask-blur);
   -webkit-backdrop-filter:var(--mask-blur);
@@ -7518,6 +7518,292 @@ body[data-bubble="custom"] .preview-bubble{
 }
 
 
+/* ===== 收藏页 · 右上角「…」按钮 ===== */
+.col-more-btn{
+  width:38px;
+  height:38px;
+  flex:none;
+  border:none;
+  background:transparent;
+  color:#1a1a1a;
+  font-size:22px;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 0 6px;
+  font-family:inherit;
+  cursor:pointer;
+  opacity:.55;
+  transition:opacity .18s ease;
+}
+.col-more-btn:active{opacity:1}
+
+/* ===== 收藏页 · 「…」居中弹窗 ===== */
+.col-more-mask{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  background:rgba(0,0,0,.4);
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+.col-more-mask.show{display:flex}
+.col-more-sheet{
+  width:100%;
+  max-width:340px;
+  background:#fff;
+  border-radius:18px;
+  border:0.7px solid rgba(0,0,0,.06);
+  box-shadow:0 20px 60px rgba(0,0,0,.12);
+  padding:22px 20px 18px;
+  box-sizing:border-box;
+  max-height:80vh;
+  overflow-y:auto;
+  scrollbar-width:none;
+  animation:colMorePop .26s cubic-bezier(.22,1,.36,1);
+  position:relative;
+}
+.col-more-sheet::-webkit-scrollbar{display:none}
+@keyframes colMorePop{
+  from{opacity:0;transform:translateY(10px) scale(.96)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.col-more-title{
+  font-size:14.5px;
+  font-weight:300;
+  letter-spacing:4px;
+  text-align:center;
+  text-indent:4px;
+  color:#1a1a1a;
+  padding-bottom:14px;
+  border-bottom:0.6px dashed rgba(0,0,0,.08);
+  margin-bottom:6px;
+}
+.col-more-sec{
+  padding:14px 0 6px;
+  border-bottom:0.6px dashed rgba(0,0,0,.06);
+}
+.col-more-sec:last-child{border-bottom:none}
+.col-more-sec-title{
+  font-size:11px;
+  letter-spacing:2.5px;
+  color:#bbb;
+  padding:0 0 8px;
+  font-family:Georgia,serif;
+}
+.col-more-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 2px;
+  border-bottom:0.6px dashed rgba(0,0,0,.05);
+  cursor:pointer;
+  transition:background .15s ease;
+  border-radius:8px;
+}
+.col-more-row:last-child{border-bottom:none}
+.col-more-row:active{background:rgba(0,0,0,.02)}
+.col-more-row .r-name{
+  flex:1;
+  font-size:14px;
+  color:#1a1a1a;
+  font-weight:300;
+  letter-spacing:.5px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.col-more-row .r-name.on{font-weight:500}
+.col-more-row .r-del{
+  width:24px;
+  height:24px;
+  flex:none;
+  border:none;
+  background:transparent;
+  color:#ccc;
+  font-size:11px;
+  cursor:pointer;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+}
+.col-more-row .r-del:active{color:#1a1a1a}
+.col-more-row .r-val{
+  font-size:12px;
+  color:#999;
+  flex:none;
+  font-family:Georgia,serif;
+  letter-spacing:.5px;
+}
+.col-more-row .r-arr{
+  color:#d0d0d0;
+  font-size:12px;
+  flex:none;
+}
+/* 旧的新建分组按钮：改造成无虚线的行样式（保留类名兼容旧代码） */
+.col-more-add{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:11px 0;
+  margin-top:4px;
+  font-size:12.5px;
+  color:#1a1a1a;
+  letter-spacing:2px;
+  cursor:pointer;
+  border:none;
+  border-radius:12px;
+  background:transparent;
+  font-family:inherit;
+  transition:background .15s ease;
+}
+.col-more-add:active{background:rgba(0,0,0,.02)}
+.col-more-close{
+  width:100%;
+  margin-top:14px;
+  padding:11px 0;
+  border:none;
+  background:transparent;
+  color:#999;
+  font-size:13px;
+  letter-spacing:2px;
+  font-family:inherit;
+  cursor:pointer;
+  border-radius:12px;
+  transition:color .15s ease;
+}
+.col-more-close:active{color:#1a1a1a}
+
+/* ============================================================
+   ★ 收藏设置 · 新版分组区（目前分组 + 下拉 + 新建分组）
+   ============================================================ */
+.current-group-row{
+  display:flex;
+  align-items:center;
+  padding:12px 2px;
+  cursor:pointer;
+  transition:background .15s ease;
+  border-radius:8px;
+  gap:4px;
+}
+.current-group-row:active{background:rgba(0,0,0,.02)}
+.current-group-row .cg-label{
+  font-size:14px;
+  font-weight:300;
+  letter-spacing:1px;
+  color:#1a1a1a;
+  flex:none;
+}
+.current-group-row .cg-value{
+  font-size:14px;
+  font-weight:400;
+  letter-spacing:1px;
+  color:#1a1a1a;
+  flex:1;
+  min-width:0;
+  text-align:right;
+  padding-right:4px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.current-group-row .cg-arrow{
+  font-size:12px;
+  color:#d0d0d0;
+  flex:none;
+}
+
+.add-group-row{
+  display:flex;
+  align-items:center;
+  padding:12px 2px;
+  cursor:pointer;
+  transition:background .15s ease;
+  border-radius:8px;
+}
+.add-group-row:active{background:rgba(0,0,0,.02)}
+.add-group-row .ag-name{
+  font-size:14px;
+  font-weight:300;
+  letter-spacing:1px;
+  color:#1a1a1a;
+  flex:1;
+  min-width:0;
+}
+.add-group-row .ag-plus{
+  font-size:16px;
+  font-weight:300;
+  color:#1a1a1a;
+  flex:none;
+  width:20px;
+  text-align:right;
+  line-height:1;
+}
+
+/* 下拉菜单：绝对定位，由 JS 实时算 left / top */
+.group-dropdown{
+  position:absolute;
+  background:#ffffff;
+  border:0.7px solid rgba(0,0,0,.06);
+  border-radius:12px;
+  padding:6px;
+  display:none;
+  width:max-content;
+  min-width:130px;
+  box-shadow:0 8px 32px rgba(0,0,0,.12), 0 1px 3px rgba(0,0,0,.04);
+  z-index:60;
+}
+.group-dropdown.show{
+  display:block;
+  animation:dropPop .22s cubic-bezier(.22,1.2,.36,1);
+}
+@keyframes dropPop{
+  from{opacity:0;transform:translateY(-6px) scale(.98)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.group-dropdown .it{
+  padding:10px 12px;
+  font-size:13px;
+  font-weight:400;
+  color:#1a1a1a;
+  font-family:inherit;
+  letter-spacing:1px;
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  white-space:nowrap;
+  cursor:pointer;
+  transition:background .15s ease;
+}
+.group-dropdown .it:hover{background:rgba(0,0,0,.04)}
+.group-dropdown .it:active{background:rgba(0,0,0,.08)}
+.group-dropdown .it svg{
+  width:14px;
+  height:14px;
+  stroke:#1a1a1a;
+  fill:none;
+  stroke-width:1.6;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  flex:none;
+}
+.group-dropdown .it .ck{
+  margin-left:auto;
+  font-size:11px;
+  color:#1a1a1a;
+  padding-left:12px;
+}
+.group-dropdown .it.on{font-weight:500}
+
 /* ===== 收藏页 · 筛选栏 ===== */
 .col-filter-row{
   display:flex;
@@ -7584,6 +7870,25 @@ body[data-bubble="custom"] .preview-bubble{
 .col-note-txt{display:inline}
 
 
+
+/* ===== 收藏页 · 当前分组提示条 ===== */
+.col-group-tip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:5px 12px;
+  margin:0 0 10px 2px;
+  border-radius:14px;
+  background:#1a1a1a;
+  color:#fff;
+  font-size:11.5px;
+  letter-spacing:1px;
+  font-weight:300;
+  cursor:pointer;
+  font-family:inherit;
+  transition:opacity .15s ease;
+}
+.col-group-tip:active{opacity:.7}
 
 .col-empty{
   text-align:center;
@@ -9812,7 +10117,7 @@ window.__APP_CHANGELOG__ = [];
     <div class="memo-top">
       <button class="memo-back" id="colBack" type="button">‹</button>
       <div class="memo-title">收 藏</div>
-      <div class="memo-top-right"></div>
+      <button class="col-more-btn" id="colMoreBtn" type="button">⋯</button>
     </div>
     <div class="memo-tabs" id="colTabs">
       <div class="memo-tab on" data-col-tab="mine" id="colTabMine">我的收藏</div>
@@ -12537,23 +12842,6 @@ function userName(){ return (userProfile.name || '我').trim() || '我'; }
 
 /* ★ 个签自动切换的存储 key，提前到此处声明，避免 TDZ 报错 */
 const SIGN_SWITCH_KEY = 'mj_sign_switch_v1';
-/* ★ 我的个签：全局唯一一份，所有角色共享 */
-const MY_SIGN_LIST_KEY = 'mj_my_sign_list_v1';
-function getMySignList(){
-  let a = lsGet(MY_SIGN_LIST_KEY, null);
-  if(!Array.isArray(a) || !a.length){
-    a = [
-      '云和阳光不过一公尺',
-      '我想睡在梦里，醒在梦境',
-      { text:'如果我住在你梦里\n愿与你共眠 不想再苏醒', t:Date.now() },
-      { text:'自顾自己已经有了定义\n何时该靠近什么应该摒弃', t:Date.now() },
-      '眷恋唯一的星光就是你'
-    ];
-    lsSet(MY_SIGN_LIST_KEY, a);
-  }
-  return a;
-}
-function saveMySignList(a){ lsSet(MY_SIGN_LIST_KEY, a); }
 
 const ROLE_FRIENDS_KEY = 'mj_role_friends_v1';
 function getRoleFriendsMap(){ let m = lsGet(ROLE_FRIENDS_KEY, null); if(!m || typeof m !== 'object') m = {}; return m; }
@@ -12824,7 +13112,13 @@ function getGroupsByOwner(owner){
     }
     if(!Array.isArray(g.cats)) g.cats = [];
     if(!g.cats.some(function(c){ return c.id === 'cs-me'; })){
-      g.cats.push({ id:'cs-me', name:'我的个签', list: [] });
+      g.cats.push({ id:'cs-me', name:'我的个签', list: [
+        '云和阳光不过一公尺',
+        '我想睡在梦里，醒在梦境',
+        { text:'如果我住在你梦里\n愿与你共眠 不想再苏醒', t:Date.now() },
+        { text:'自顾自己已经有了定义\n何时该靠近什么应该摒弃', t:Date.now() },
+        '眷恋唯一的星光就是你'
+      ]});
     }
     if(!g.cats.some(function(c){ return c.id === 'cs-role'; })){
       g.cats.push({ id:'cs-role', name:'角色个签', list: [
@@ -14698,7 +14992,7 @@ function runTheirsCollectTick(){
     if(list.some(x => x.msgId === pick.id)) return;
     /* ★ 65% 概率带角色备注 */
     const note = (Math.random() < 0.65) ? buildRoleNoteText(rid) : '';
-    list.unshift({
+    var _newTheirsItem = {
       id: uid(),
       msgId: pick.id,
       text: text,
@@ -14707,16 +15001,237 @@ function runTheirsCollectTick(){
       time: Date.now(),
       note: note,
       noteRolled: true,
-      noteCollapsed: false
-    });
+      noteCollapsed: false,
+      group: '',
+      comments: []
+    };
+    list.unshift(_newTheirsItem);
     if(list.length > 500) list.length = 500;
     setCollectTheirs(rid, list);
+    /* ★ 给这条「Ta 的收藏」排一个角色评论任务 */
+    try{ scheduleCollectComment(rid, _newTheirsItem.id, 'theirs'); }catch(e){}
   });
 }
 setInterval(function(){ try{ runTheirsCollectTick(); }catch(e){ console.error('Ta 收藏 tick 出错', e); } }, 30 * 60 * 1000);
 
+/* ============================================================
+   收藏 · 分组数据层
+   ============================================================ */
+const COLLECT_GROUPS_KEY = 'mj_collect_groups_v1';
+function getCollectGroups(){
+  let a = lsGet(COLLECT_GROUPS_KEY, null);
+  if(!Array.isArray(a)) a = [];
+  return a.filter(function(x){ return typeof x === 'string' && x.trim(); });
+}
+function saveCollectGroups(a){ lsSet(COLLECT_GROUPS_KEY, a); }
+function ensureCollectGroup(name){
+  var t = String(name || '').trim();
+  if(!t) return '';
+  var g = getCollectGroups();
+  if(g.indexOf(t) < 0){ g.push(t); saveCollectGroups(g); }
+  return t;
+}
+
+/* ============================================================
+   收藏 · 评论数据层
+   ============================================================ */
+const COLLECT_COMMENTS_KEY = 'mj_collect_comments_v1';
+function getCollectCommentsMap(){
+  let m = lsGet(COLLECT_COMMENTS_KEY, null);
+  if(!m || typeof m !== 'object') m = {};
+  return m;
+}
+function saveCollectCommentsMap(m){ lsSet(COLLECT_COMMENTS_KEY, m); }
+/* 用 itemId 做 key，跟收藏条目一一对应 */
+function getCollectComments(itemId){
+  if(!itemId) return [];
+  var m = getCollectCommentsMap();
+  if(!Array.isArray(m[itemId])) m[itemId] = [];
+  return m[itemId];
+}
+function setCollectComments(itemId, arr){
+  if(!itemId) return;
+  var m = getCollectCommentsMap();
+  m[itemId] = Array.isArray(arr) ? arr : [];
+  saveCollectCommentsMap(m);
+}
+function addCollectComment(itemId, c){
+  if(!itemId || !c) return;
+  var arr = getCollectComments(itemId);
+  arr.push(c);
+  setCollectComments(itemId, arr);
+}
+function delCollectComment(itemId, cid){
+  if(!itemId || !cid) return;
+  var arr = getCollectComments(itemId).filter(function(x){ return x.id !== cid; });
+  setCollectComments(itemId, arr);
+}
+
+/* ============================================================
+   收藏评论 · 设置
+   ============================================================ */
+const COLLECT_CMT_CFG_KEY = 'mj_collect_cmt_cfg_v1';
+function defaultCollectCmtCfg(){
+  return {
+    on: true,             /* 总开关：允许角色评论我的收藏 */
+    rate: 0.50,           /* 评论概率 */
+    cntMin: 1,            /* 评论条数最少 */
+    cntMax: 3,            /* 评论条数最多 */
+    cardMin: 1,           /* 每条评论拼几张卡 */
+    cardMax: 3,
+    delayMin: 1,          /* 延迟秒数最少 */
+    delayMax: 86400       /* 延迟秒数最多（24h） */
+  };
+}
+function getCollectCmtCfg(){
+  var c = lsGet(COLLECT_CMT_CFG_KEY, null);
+  if(!c || typeof c !== 'object') c = {};
+  var d = defaultCollectCmtCfg();
+  Object.keys(d).forEach(function(k){
+    if(typeof c[k] !== typeof d[k]) c[k] = d[k];
+  });
+  if(c.rate < 0) c.rate = 0;
+  if(c.rate > 1) c.rate = 1;
+  if(c.cntMin < 1) c.cntMin = 1;
+  if(c.cntMax < c.cntMin) c.cntMax = c.cntMin;
+  if(c.cardMin < 1) c.cardMin = 1;
+  if(c.cardMax < c.cardMin) c.cardMax = c.cardMin;
+  if(c.delayMin < 1) c.delayMin = 1;
+  if(c.delayMax < c.delayMin) c.delayMax = c.delayMin;
+  return c;
+}
+function saveCollectCmtCfg(c){ lsSet(COLLECT_CMT_CFG_KEY, c); }
+
+/* ============================================================
+   收藏评论 · 调度（角色评论）
+   - 收藏那一刻，掷骰子：命中 50% → 排一个 1s~24h 内的评论任务
+   - 到点后按 cntMin~cntMax 发 N 条评论
+   - 每条评论内部拼 cardMin~cardMax 张卡
+   ============================================================ */
+const COLLECT_CMT_TASK_KEY = 'mj_collect_cmt_tasks_v1';
+function getCollectCmtTasks(){
+  let a = lsGet(COLLECT_CMT_TASK_KEY, null);
+  if(!Array.isArray(a)) a = [];
+  return a;
+}
+function saveCollectCmtTasks(a){ lsSet(COLLECT_CMT_TASK_KEY, a); }
+
+/* 从「普通字卡」池里抽一张（当前角色优先，回退公用） */
+function _pickOneCardForCollectComment(roleId){
+  try{
+    var own = getAllNormalCards(roleId);
+    var pub = getAllNormalCards('public');
+    var pool = own.length ? own : pub;
+    if(!pub.length && !own.length) return '嗯，我在。';
+    return pool[Math.floor(Math.random() * pool.length)];
+  }catch(e){ return '嗯，我在。'; }
+}
+
+/* 拼一条评论文本（cardMin~cardMax 张卡拼） */
+function _buildCollectCommentText(roleId){
+  var cfg = getCollectCmtCfg();
+  var n = cfg.cardMin + Math.floor(Math.random() * (cfg.cardMax - cfg.cardMin + 1));
+  var parts = [];
+  for(var i = 0; i < n; i++){
+    parts.push(_pickOneCardForCollectComment(roleId));
+  }
+  /* 按回复设置里的标点池拼 */
+  try{
+    var r = getReply(roleId);
+    if(r.punctOn && Array.isArray(r.punctList) && r.punctList.length){
+      var seg = [];
+      for(var j = 0; j < parts.length; j++){
+        seg.push(parts[j]);
+        if(j < parts.length - 1){
+          seg.push(r.punctList[Math.floor(Math.random() * r.punctList.length)]);
+        }
+      }
+      return seg.join('') + r.punctList[Math.floor(Math.random() * r.punctList.length)];
+    }
+  }catch(e){}
+  return parts.join('　');
+}
+
+/* 收藏时调用：给一条收藏排「角色评论」任务 */
+function scheduleCollectComment(roleId, itemId, ownerKind){
+  /* ownerKind: 'mine' = 我的收藏；'theirs' = Ta 的收藏 */
+  var cfg = getCollectCmtCfg();
+  /* ★ 总开关关闭 → 对自己收藏 / 用户收藏都不排评论任务 */
+  if(!cfg.on) return;
+  if(Math.random() >= cfg.rate) return;    /* 按概率命中 */
+
+  var delay = cfg.delayMin + Math.floor(Math.random() * (cfg.delayMax - cfg.delayMin + 1));
+  var tasks = getCollectCmtTasks();
+  tasks.push({
+    id: 'ct' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+    roleId: roleId,
+    itemId: itemId,
+    ownerKind: ownerKind,
+    at: Date.now() + delay * 1000,
+    fired: false
+  });
+  saveCollectCmtTasks(tasks);
+}
+
+/* 到点执行：发 N 条评论 */
+function fireCollectCommentTask(task){
+  if(!task || !task.itemId || !task.roleId) return;
+  var cfg = getCollectCmtCfg();
+  /* ★ 总开关关闭 → 不管是对自己收藏还是对用户收藏，一律不评论 */
+  if(!cfg.on) return;
+  var role = getRoleById(task.roleId);
+  if(!role) return;
+
+  var n = cfg.cntMin + Math.floor(Math.random() * (cfg.cntMax - cfg.cntMin + 1));
+  var baseTime = Date.now();
+
+  for(var i = 0; i < n; i++){
+    var text = _buildCollectCommentText(task.roleId);
+    var c = {
+      id: 'cc' + (baseTime + i).toString(36) + Math.random().toString(36).slice(2, 5),
+      who: task.roleId,
+      text: text,
+      time: baseTime + i * 1000,
+      quote: null
+    };
+    addCollectComment(task.itemId, c);
+  }
+
+  /* 如果用户正在看这个角色的收藏页，重绘 */
+  if(getCurrentRoleId() === task.roleId){
+    var colScr = document.getElementById('collectScreen');
+    if(colScr && colScr.classList.contains('on')){
+      var activeTab = document.querySelector('#colTabs .memo-tab.on');
+      if(activeTab) renderCollectScreen(activeTab.dataset.colTab);
+    }
+  }
+}
+
+/* 每分钟检查一次 */
+setInterval(function(){
+  try{
+    var tasks = getCollectCmtTasks();
+    var now = Date.now();
+    var changed = false;
+    tasks.forEach(function(t){
+      if(t.fired) return;
+      if(now < t.at) return;
+      t.fired = true;
+      changed = true;
+      try{ fireCollectCommentTask(t); }catch(e){ console.error('评论执行失败', e); }
+    });
+    if(changed){
+      /* 只保留最近 500 条 */
+      tasks = tasks.filter(function(t){ return !t.fired || (now - t.at < 7 * 86400000); });
+      if(tasks.length > 500) tasks = tasks.slice(-500);
+      saveCollectCmtTasks(tasks);
+    }
+  }catch(e){ console.error('评论调度出错', e); }
+}, 60 * 1000);
+
 /* ===== 收藏页 · 筛选状态 ===== */
 let colFilterFrom = 'all';   /* all / me / char */
+let colFilterGroup = 'all';  /* all / '' (未分组) / 具体分组名 */
 
 /* 打开收藏页 */
 function openCollectScreen(){
@@ -14772,23 +15287,28 @@ function renderCollectScreen(tab){
 
   const rid = getCurrentRoleId();
   const roleName = getCurrentRoleName();
-  /* ★ 更新「Ta 的收藏」tab 文字，跟随角色名 */
   const tabTheirs = document.getElementById('colTabTheirs');
   if(tabTheirs) tabTheirs.textContent = roleName + ' 的收藏';
 
-  /* ★ Ta 的收藏：渲染前补一遍备注（幂等） */
   if(tab !== 'mine'){ try{ buildTheirsNotes(rid); }catch(e){} }
 
   let list = (tab === 'mine') ? getCollectMine(rid) : getCollectTheirs(rid);
 
-  /* ★ 按发送者筛选 */
   if(colFilterFrom === 'me'){
     list = list.filter(function(it){ return it.from === 'user'; });
   } else if(colFilterFrom === 'char'){
     list = list.filter(function(it){ return it.from !== 'user'; });
   }
 
-  /* ★ 渲染筛选栏（放在正文最前面） */
+  if(colFilterGroup !== 'all'){
+    if(colFilterGroup === ''){
+      list = list.filter(function(it){ return !it.group || !String(it.group).trim(); });
+    } else {
+      list = list.filter(function(it){ return String(it.group || '').trim() === colFilterGroup; });
+    }
+  }
+
+  /* 第一行：全部 / 只看我 / 只看 Ta（保留在页面上） */
   const filterBarHTML =
     '<div class="col-filter-row" id="colFilterRow">' +
       '<button class="col-filter' + (colFilterFrom === 'all'  ? ' on' : '') + '" data-cf="all"  type="button">全部</button>' +
@@ -14796,19 +15316,26 @@ function renderCollectScreen(tab){
       '<button class="col-filter' + (colFilterFrom === 'char' ? ' on' : '') + '" data-cf="char" type="button">只看 Ta</button>' +
     '</div>';
 
+  /* 分组筛选：不再显示在页面上，改从「…」菜单里选。这里只放一个小提示条 */
+  var groupTipHTML = (colFilterGroup !== 'all')
+    ? ('<div class="col-group-tip" id="colGroupTip">' +
+        '分组筛选：' + escapeHTML(colFilterGroup === '' ? '未分组' : colFilterGroup) +
+        ' ✕' +
+      '</div>')
+    : '';
+
   if(!list.length){
-    body.innerHTML = filterBarHTML + '<div class="col-empty">' +
+    body.innerHTML = filterBarHTML + groupTipHTML + '<div class="col-empty">' +
       (tab === 'mine' ? '还没有收藏的消息<br>长按任意消息 → 收藏' : 'Ta 还没有收藏过你的消息') +
       '</div>';
     bindColFilterBar(body);
     return;
   }
 
-  /* 头像形状跟随全站设置 */
   const avRadius = (beautyCfg.avatarShape === 'circle') ? '50%' : '12%';
   const role = getRole();
 
-  body.innerHTML = filterBarHTML + list.map(function(it){
+  body.innerHTML = filterBarHTML + groupTipHTML + list.map(function(it){
     const d = new Date(it.time);
     const stamp = d.getFullYear() + '-' +
       String(d.getMonth()+1).padStart(2,'0') + '-' +
@@ -14821,7 +15348,6 @@ function renderCollectScreen(tab){
       ? userAvHTML(userProfile.avatar)
       : avatarHTML(role.avatar);
 
-     /* 备注行：只有真有备注时才显示，没备注就整行不渲染 */
     const noteText = it.note ? String(it.note) : '';
     const noteLine = noteText
       ? ('<div class="col-note" data-note-row="' + it.id + '">' +
@@ -14829,8 +15355,11 @@ function renderCollectScreen(tab){
         '</div>')
       : '';
 
-    /* 默认状态下，右侧常驻：分享 + 备注 + ✕（仅我的收藏有 ✕）
-       方案A：三个 SVG 线条图标 */
+    const groupText = it.group ? String(it.group).trim() : '';
+    const groupLine = groupText
+      ? ('<div class="col-group-tag" data-group-tag="' + it.id + '">分组：' + escapeHTML(groupText) + '</div>')
+      : '';
+
     const iconShare =
       '<svg viewBox="0 0 24 24">' +
         '<path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/>' +
@@ -14853,7 +15382,6 @@ function renderCollectScreen(tab){
       '<button class="col-act-btn col-note-btn" data-note-btn="' + it.id + '" type="button" title="备注">' + iconNote + '</button>' +
       (tab === 'mine' ? '<button class="col-act-btn col-del" data-del="' + it.id + '" type="button" title="删除">' + iconDel + '</button>' : '');
 
-    /* ★ 语音：渲染成一个可点击的语音气泡（跟聊天里同款） */
     let contentHTML = '';
     if(it.kind === 'voice' && it.voiceIdbKey){
       contentHTML =
@@ -14871,12 +15399,16 @@ function renderCollectScreen(tab){
       contentHTML = '<div class="col-txt">' + escapeHTML(it.text) + '</div>';
     }
 
+    const commentsHTML = renderCollectCommentsHTML(it, tab);
+
     return '<div class="col-item" data-id="' + it.id + '">' +
       '<div class="col-av" style="border-radius:' + avRadius + '">' + avHTML + '</div>' +
       '<div class="col-main">' +
         contentHTML +
         noteLine +
+        groupLine +
         '<div class="col-meta">' + escapeHTML(stamp) + '</div>' +
+        commentsHTML +
       '</div>' +
       '<div class="col-act-wrap">' + actBtns + '</div>' +
     '</div>';
@@ -14884,13 +15416,13 @@ function renderCollectScreen(tab){
 
   bindColFilterBar(body);
   bindColNoteEvents(body, tab);
+  bindColCommentsEvents(body, tab);
+  bindColGroupTip(body);
 
-  /* 删除：走系统确认弹窗 */
   body.querySelectorAll('[data-del]').forEach(function(btn){
     btn.onclick = function(e){
       e.stopPropagation();
       const id = btn.dataset.del;
-      /* ★ 如果是语音收藏，把 IndexedDB 里的音频也一起删掉 */
       try{
         const curRid = getCurrentRoleId();
         const src = (tab === 'mine') ? getCollectMine(curRid) : getCollectTheirs(curRid);
@@ -14903,7 +15435,6 @@ function renderCollectScreen(tab){
     };
   });
 
-  /* 分享：走原来的 shareCollectItem */
   body.querySelectorAll('[data-share]').forEach(function(btn){
     btn.onclick = function(e){
       e.stopPropagation();
@@ -14911,40 +15442,28 @@ function renderCollectScreen(tab){
     };
   });
 
-  /* 备注按钮：点它 = 弹备注编辑框 */
   body.querySelectorAll('[data-note-btn]').forEach(function(btn){
     btn.onclick = function(e){
       e.stopPropagation();
       const id = btn.dataset.noteBtn;
-      if(tab !== 'mine'){ toast('只能修改自己的备注'); return; }
-      const arr = getCollectMine(rid);
+      if(tab !== 'mine'){ toast('只能修改自己的收藏'); return; }
+       const arr = getCollectMine(rid);
       const it = arr.find(function(x){ return x.id === id; });
       if(!it) return;
-      uniAsk({
-        title: '备注',
-        sub: 'NOTE · 留空 = 删除备注',
-        value: it.note || '',
-        placeholder: '写点什么…'
-      }).then(function(v){
-        if(v === null) return;
-        const ok = updateCollectNote(rid, id, String(v).trim());
-        if(ok){
-          const activeTab = document.querySelector('#colTabs .memo-tab.on');
-          renderCollectScreen(activeTab ? activeTab.dataset.colTab : 'mine');
-          toast('已保存');
-        }
-      });
+      openCollectEditDialog(rid, id, tab);
     };
   });
 
-  /* ★ 长按条目 → 进入多选模式（跟字卡一样） */
   body.querySelectorAll('.col-item').forEach(function(el){
     let pressTimer = null;
     let startX = 0, startY = 0;
     let longPressed = false;
 
     function onStart(e){
-      if(colSelMode) return;   /* 已经在多选中，不再触发长按 */
+      if(colSelMode) return;
+      if(e.target.closest && e.target.closest('.cmt-a')) return;
+      if(e.target.closest && e.target.closest('.inp-c')) return;
+      if(e.target.closest && e.target.closest('[data-cmt-toggle]')) return;
       const p = e.touches ? e.touches[0] : e;
       startX = p.clientX; startY = p.clientY;
       el.classList.add('press');
@@ -14980,10 +15499,9 @@ function renderCollectScreen(tab){
     el.addEventListener('mousemove', onMove);
     el.addEventListener('mouseup', onEnd);
 
-    /* 多选模式下点击 → 切换选中 */
     el.addEventListener('click', function(e){
       if(!colSelMode) return;
-      if(e.target.closest('[data-del]') || e.target.closest('[data-share]') || e.target.closest('[data-note-btn]') || e.target.closest('.col-note')) return;
+      if(e.target.closest('[data-del]') || e.target.closest('[data-share]') || e.target.closest('[data-note-btn]') || e.target.closest('.col-note') || e.target.closest('.cmt-a') || e.target.closest('.inp-c')) return;
       e.preventDefault();
       e.stopPropagation();
       const id = el.dataset.id;
@@ -14997,6 +15515,609 @@ function renderCollectScreen(tab){
       colUpdateSelCount();
     });
   });
+}
+/* ===== 收藏页 · 评论区开合 ===== */
+let colOpenCommentId = '';
+function toggleCollectComments(itemId){
+  if(!itemId) return;
+  if(colOpenCommentId === itemId){ colOpenCommentId = ''; }
+  else { colOpenCommentId = itemId; }
+  const activeTab = document.querySelector('#colTabs .memo-tab.on');
+  renderCollectScreen(activeTab ? activeTab.dataset.colTab : 'mine');
+}
+
+/* ===== 渲染某条收藏的评论区 HTML ===== */
+function renderCollectCommentsHTML(item, ownerKind){
+  var comments = getCollectComments(item.id);
+  var isOpen = (colOpenCommentId === item.id);
+
+  if(!isOpen){
+    var tip = comments.length
+      ? ('展开评论 · ' + comments.length + ' 条')
+      : '写条评论…';
+    return '<div class="cmt-collapsed" data-cmt-toggle="' + item.id + '">' +
+      '<svg viewBox="0 0 24 24"><polyline points="6,9 12,15 18,9"/></svg>' +
+      '<span>' + escapeHTML(tip) + '</span>' +
+    '</div>';
+  }
+
+  var myName = userName();
+  var listHTML = comments.length
+    ? comments.map(function(c){
+        var whoName;
+        if(c.who === 'me') whoName = myName;
+        else {
+          var r = getRoleById(c.who);
+          whoName = r ? displayName(r) : '?';
+        }
+        var isMe = (c.who === 'me');
+        var quoteHTML = '';
+        if(c.quote){
+          var qWho = (c.quote.who === 'me') ? myName : (function(){
+            var rr = getRoleById(c.quote.who);
+            return rr ? displayName(rr) : '?';
+          })();
+          quoteHTML =
+            '<div class="reply-a">' +
+              '<div class="q"><b>' + escapeHTML(qWho) + '：</b>' + escapeHTML(c.quote.text) + '</div>' +
+            '</div>';
+        }
+        return '<div class="cmt-row' + (isMe ? ' me' : '') + '" data-cmtid="' + c.id + '">' +
+          '<span class="cn">' + escapeHTML(whoName) + '：</span>' + escapeHTML(c.text) +
+          quoteHTML +
+        '</div>';
+      }).join('')
+    : '<div style="font-size:12px;color:#ccc;padding:6px 0">还没有评论</div>';
+
+  return '<div class="cmt-a">' +
+    listHTML +
+    '<div class="inp-c">' +
+      '<textarea placeholder="说点什么…" data-cmt-input="' + item.id + '" maxlength="200"></textarea>' +
+      '<div class="inp-foot">' +
+        '<span class="cnt">0/200</span>' +
+        '<button data-cmt-send="' + item.id + '" data-owner-kind="' + ownerKind + '" type="button">发 送</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="cmt-collapsed" data-cmt-toggle="' + item.id + '" style="margin-top:8px">' +
+      '<svg viewBox="0 0 24 24" style="transform:rotate(180deg)"><polyline points="6,9 12,15 18,9"/></svg>' +
+      '<span>收起评论</span>' +
+    '</div>' +
+  '</div>';
+}
+
+/* ===== 发送一条评论（我方） ===== */
+function submitCollectComment(itemId, ownerKind){
+  if(!itemId) return;
+  var ta = document.querySelector('[data-cmt-input="' + itemId + '"]');
+  if(!ta) return;
+  var text = String(ta.value || '').trim();
+  if(!text){ toast('内容不能为空'); return; }
+
+  var quote = null;
+  var replied = window.__collectReplyMap && window.__collectReplyMap[itemId];
+  if(replied){
+    var src = getCollectComments(itemId).find(function(c){ return c.id === replied; });
+    if(src){
+      quote = { commentId: src.id, who: src.who, text: src.text };
+    }
+    window.__collectReplyMap[itemId] = null;
+  }
+
+  var c = {
+    id: 'cc' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+    who: 'me',
+    text: text,
+    time: Date.now(),
+    quote: quote
+  };
+  addCollectComment(itemId, c);
+
+  var activeTab = document.querySelector('#colTabs .memo-tab.on');
+  renderCollectScreen(activeTab ? activeTab.dataset.colTab : 'mine');
+  toast('已发送');
+}
+
+/* ===== 评论区事件绑定 ===== */
+function bindColCommentsEvents(body, tab){
+  if(!body) return;
+
+  body.querySelectorAll('[data-cmt-toggle]').forEach(function(el){
+    el.onclick = function(e){
+      e.stopPropagation();
+      toggleCollectComments(el.dataset.cmtToggle);
+    };
+  });
+
+  body.querySelectorAll('[data-cmt-input]').forEach(function(ta){
+    ta.oninput = function(){
+      var cntEl = ta.parentNode.querySelector('.cnt');
+      if(cntEl) cntEl.textContent = ta.value.length + '/200';
+    };
+    ta.onclick = function(e){ e.stopPropagation(); };
+  });
+
+  body.querySelectorAll('[data-cmt-send]').forEach(function(btn){
+    btn.onclick = function(e){
+      e.stopPropagation();
+      submitCollectComment(btn.dataset.cmtSend, btn.dataset.ownerKind || tab);
+    };
+  });
+
+  body.querySelectorAll('.cmt-row').forEach(function(row){
+    var pressTimer = null;
+    var cid = row.dataset.cmtid;
+    var itemEl = row.closest('.col-item');
+    var itemId = itemEl ? itemEl.dataset.id : '';
+    function showMenu(){
+      var menu = document.createElement('div');
+      menu.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px';
+      menu.innerHTML =
+        '<div style="width:100%;max-width:280px;background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.08);overflow:hidden">' +
+          '<div style="padding:14px 18px;font-size:14px;color:#1a1a1a;cursor:pointer;border-bottom:0.6px dashed #f0f0f0" data-act="reply">回复</div>' +
+          '<div style="padding:14px 18px;font-size:14px;color:#999;cursor:pointer" data-act="cancel">取消</div>' +
+        '</div>';
+      document.body.appendChild(menu);
+      menu.addEventListener('click', function(ev){
+        var act = ev.target.dataset.act;
+        if(act === 'reply'){
+          if(!window.__collectReplyMap) window.__collectReplyMap = {};
+          window.__collectReplyMap[itemId] = cid;
+          menu.remove();
+          if(colOpenCommentId !== itemId) colOpenCommentId = itemId;
+          var activeTab = document.querySelector('#colTabs .memo-tab.on');
+          renderCollectScreen(activeTab ? activeTab.dataset.colTab : 'mine');
+          setTimeout(function(){
+            var ta2 = document.querySelector('[data-cmt-input="' + itemId + '"]');
+            if(ta2) ta2.focus();
+          }, 80);
+          toast('已引用，去输入框写点什么吧');
+        } else if(act === 'cancel' || ev.target === menu){
+          menu.remove();
+        }
+      });
+    }
+    function onStart(e){
+      if(e.target.closest('.reply-a')) return;
+      pressTimer = setTimeout(function(){
+        if(navigator.vibrate) navigator.vibrate(15);
+        showMenu();
+      }, 500);
+    }
+    function onEnd(){ clearTimeout(pressTimer); }
+    row.addEventListener('touchstart', onStart, {passive:true});
+    row.addEventListener('touchend', onEnd);
+    row.addEventListener('touchmove', onEnd);
+    row.addEventListener('mousedown', onStart);
+    row.addEventListener('mouseup', onEnd);
+    row.addEventListener('mouseleave', onEnd);
+  });
+}
+
+/* ===== 收藏页 · 分组提示条（点了清掉筛选） ===== */
+function bindColGroupTip(body){
+  if(!body) return;
+  var tip = body.querySelector('#colGroupTip');
+  if(!tip) return;
+  tip.onclick = function(e){
+    e.stopPropagation();
+    colFilterGroup = 'all';
+    var activeTab = document.querySelector('#colTabs .memo-tab.on');
+    renderCollectScreen(activeTab ? activeTab.dataset.colTab : 'mine');
+  };
+}
+/* ===== 收藏页 ·「…」按钮点击绑定 ===== */
+(function bindColMoreBtn(){
+  if(window.__colMoreBtnBound) return;
+  window.__colMoreBtnBound = true;
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || !t.closest) return;
+    if(t.closest('#colMoreBtn')){
+      e.preventDefault();
+      e.stopPropagation();
+      openCollectMoreDialog();
+      return;
+    }
+  }, true);
+})();
+/* ============================================================
+   收藏页 ·「…」菜单（居中弹窗）
+   包含：分组管理 + 评论设置
+   ============================================================ */
+function openCollectMoreDialog(){
+  var old = document.getElementById('colMoreMask');
+  if(old) old.remove();
+
+  var mask = document.createElement('div');
+  mask.id = 'colMoreMask';
+  mask.className = 'col-more-mask show';
+
+  function renderContent(){
+    var groups = getCollectGroups();
+    var cfg = getCollectCmtCfg();
+
+    /* 当前分组文字：用于「目前分组：xxx」显示 */
+    var curGroupText = (colFilterGroup === 'all') ? '全部分组'
+                     : (colFilterGroup === '')    ? '未分组'
+                     : colFilterGroup;
+
+    /* 生成下拉菜单里的项 */
+    var dropdownItems = '';
+    dropdownItems += '<div class="it' + (colFilterGroup === 'all' ? ' on' : '') + '" data-cg="all">' +
+      '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>' +
+      '<span>全部分组</span>' +
+      '<span class="ck"' + (colFilterGroup === 'all' ? '' : ' style="display:none"') + '>✓</span>' +
+    '</div>';
+    dropdownItems += '<div class="it' + (colFilterGroup === '' ? ' on' : '') + '" data-cg="__none__">' +
+      '<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/></svg>' +
+      '<span>未分组</span>' +
+      '<span class="ck"' + (colFilterGroup === '' ? '' : ' style="display:none"') + '>✓</span>' +
+    '</div>';
+    groups.forEach(function(g){
+      var on = (colFilterGroup === g);
+      dropdownItems += '<div class="it' + (on ? ' on' : '') + '" data-cg="' + escapeHTML(g) + '">' +
+        '<svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h3.5l1.8 2H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>' +
+        '<span>' + escapeHTML(g) + '</span>' +
+        '<span class="ck"' + (on ? '' : ' style="display:none"') + '>✓</span>' +
+      '</div>';
+    });
+
+    mask.innerHTML =
+      '<div class="col-more-sheet">' +
+        '<div class="col-more-title">收 藏 设 置</div>' +
+
+        '<div class="col-more-sec">' +
+          '<div class="col-more-sec-title">分组筛选 / 管理</div>' +
+          '<div class="current-group-row" id="cgRow">' +
+            '<span class="cg-label">目前分组：</span>' +
+            '<span class="cg-value" id="cgValue">' + escapeHTML(curGroupText) + '</span>' +
+            '<span class="cg-arrow">›</span>' +
+          '</div>' +
+          '<div class="group-dropdown" id="groupDropdown">' + dropdownItems + '</div>' +
+          '<div class="add-group-row" id="colAddGroupBtn">' +
+            '<span class="ag-name">新建分组</span>' +
+            '<span class="ag-plus">＋</span>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="col-more-sec">' +
+          '<div class="col-more-sec-title">评论设置</div>' +
+          '<div class="col-more-row" data-cmt-toggle-on>' +
+            '<span class="r-name">角色是否可以评论</span>' +
+            '<label class="switch"><input type="checkbox" id="colCmtOn"' + (cfg.on ? ' checked' : '') + '><span class="slider"></span></label>' +
+          '</div>' +
+          '<div class="col-more-row" data-cmt-num="rate">' +
+            '<span class="r-name">评论概率</span>' +
+            '<span class="r-val">' + Math.round(cfg.rate * 100) + '%</span>' +
+            '<span class="r-arr">›</span>' +
+          '</div>' +
+          '<div class="col-more-row" data-cmt-num="cnt">' +
+            '<span class="r-name">评论条数</span>' +
+            '<span class="r-val">' + cfg.cntMin + '~' + cfg.cntMax + '</span>' +
+            '<span class="r-arr">›</span>' +
+          '</div>' +
+          '<div class="col-more-row" data-cmt-num="card">' +
+            '<span class="r-name">拼卡条数</span>' +
+            '<span class="r-val">' + cfg.cardMin + '~' + cfg.cardMax + '</span>' +
+            '<span class="r-arr">›</span>' +
+          '</div>' +
+          '<div class="col-more-row" data-cmt-num="delay">' +
+            '<span class="r-name">延迟时间</span>' +
+            '<span class="r-val">' + cfg.delayMin + '秒~' + Math.round(cfg.delayMax / 3600) + '小时</span>' +
+            '<span class="r-arr">›</span>' +
+          '</div>' +
+        '</div>' +
+
+        '<button class="col-more-close" id="colMoreClose" type="button">关 闭</button>' +
+      '</div>';
+
+    bindContent();
+  }
+
+  function bindContent(){
+    /* ---- 分组下拉菜单 ---- */
+    var cgRow = mask.querySelector('#cgRow');
+    var dropdown = mask.querySelector('#groupDropdown');
+    var cgValue = mask.querySelector('#cgValue');
+
+    function closeDropdown(){
+      if(dropdown) dropdown.classList.remove('show');
+    }
+
+    function positionDropdown(){
+      if(!cgRow || !dropdown || !mask) return;
+      var sheetEl = mask.querySelector('.col-more-sheet');
+      if(!sheetEl) return;
+      /* 用 offsetTop / offsetLeft 沿 DOM 累加，算到相对 .col-more-sheet 的坐标 */
+      function offsetTo(el, ancestor){
+        var x = 0, y = 0;
+        var node = el;
+        while(node && node !== ancestor && node.offsetParent){
+          x += node.offsetLeft;
+          y += node.offsetTop;
+          node = node.offsetParent;
+        }
+        return { x: x, y: y };
+      }
+      var pos = offsetTo(cgRow, sheetEl);
+      /* 菜单左边缘：行左边缘 + 右移量 */
+      var OFFSET_X = 80;
+      var left = pos.x + OFFSET_X;
+      /* 菜单顶部紧贴该行底部 + 2px */
+      var top = pos.y + cgRow.offsetHeight + 2;
+      /* 防止超出 sheet 右边界 */
+      var menuW = dropdown.offsetWidth || 150;
+      var sheetW = sheetEl.clientWidth;
+      if(left + menuW > sheetW - 8){
+        left = Math.max(8, sheetW - menuW - 8);
+      }
+      dropdown.style.left = left + 'px';
+      dropdown.style.top = top + 'px';
+    }
+
+    if(cgRow){
+      cgRow.addEventListener('click', function(e){
+        if(e.target.closest('#groupDropdown')) return;
+        e.stopPropagation();
+        if(dropdown.classList.contains('show')){
+          closeDropdown();
+        } else {
+          positionDropdown();
+          dropdown.classList.add('show');
+        }
+      });
+    }
+
+    if(dropdown){
+      dropdown.querySelectorAll('.it[data-cg]').forEach(function(item){
+        item.addEventListener('click', function(e){
+          e.stopPropagation();
+          var cg = item.dataset.cg;
+          if(cg === '__none__') colFilterGroup = '';
+          else colFilterGroup = cg;
+          mask.remove();
+          var activeTab = document.querySelector('#colTabs .memo-tab.on');
+          renderCollectScreen(activeTab ? activeTab.dataset.colTab : 'mine');
+        });
+      });
+    }
+
+    /* 点遮罩空白处关闭下拉 */
+    mask.addEventListener('click', function(e){
+      if(e.target.closest('#cgRow')) return;
+      if(e.target.closest('#groupDropdown')) return;
+      closeDropdown();
+    });
+
+    /* ---- 新建分组 ---- */
+    var addBtn = mask.querySelector('#colAddGroupBtn');
+    if(addBtn){
+      addBtn.onclick = function(e){
+        e.stopPropagation();
+        if(typeof uniAsk !== 'function'){ toast('无法新建'); return; }
+        uniAsk({
+          title: '新建分组',
+          sub: 'GROUP · 给这个分组起个名字',
+          value: '',
+          placeholder: '例如：喜欢的句子',
+          maxlength: 20
+        }).then(function(v){
+          if(v === null) return;
+          var t = String(v).trim();
+          if(!t){ toast('名字不能为空'); return; }
+          var g = getCollectGroups();
+          if(g.indexOf(t) >= 0){ toast('已存在'); return; }
+          g.push(t);
+          saveCollectGroups(g);
+          toast('已创建：' + t);
+          renderContent();
+        });
+      };
+    }
+
+    /* ---- 评论总开关 ---- */
+    var cbOn = mask.querySelector('#colCmtOn');
+    if(cbOn){
+      cbOn.onchange = function(){
+        var cfg = getCollectCmtCfg();
+        cfg.on = this.checked;
+        saveCollectCmtCfg(cfg);
+        toast(this.checked ? '已开启角色评论' : '已关闭角色评论');
+      };
+    }
+
+    /* ---- 评论概率 / 条数 / 拼卡 / 延迟 ---- */
+    mask.querySelectorAll('.col-more-row[data-cmt-num]').forEach(function(row){
+      row.onclick = function(e){
+        e.stopPropagation();
+        var kind = row.dataset.cmtNum;
+        var cfg = getCollectCmtCfg();
+
+        if(kind === 'rate'){
+          uniAsk({
+            title: '评论概率',
+            sub: '0~100，例如 50 表示 50%',
+            value: String(Math.round(cfg.rate * 100)),
+            placeholder: '50',
+            maxlength: 3
+          }).then(function(v){
+            if(v === null) return;
+            var n = parseInt(v, 10);
+            if(isNaN(n) || n < 0 || n > 100){ toast('请输入 0~100'); return; }
+            cfg.rate = n / 100;
+            saveCollectCmtCfg(cfg);
+            toast('已设置：' + n + '%');
+            renderContent();
+          });
+          return;
+        }
+
+        var titles = { cnt: '评论条数', card: '拼卡条数', delay: '延迟时间' };
+        var subs = {
+          cnt: '最少 到 最多，例如 1 到 3',
+          card: '最少 到 最多，例如 1 到 3',
+          delay: '最少 到 最多，单位秒，例如 1 到 86400'
+        };
+        var vals = {
+          cnt: cfg.cntMin + '-' + cfg.cntMax,
+          card: cfg.cardMin + '-' + cfg.cardMax,
+          delay: cfg.delayMin + '-' + cfg.delayMax
+        };
+
+        uniAsk({
+          title: titles[kind],
+          sub: subs[kind],
+          value: vals[kind],
+          placeholder: '1-3',
+          maxlength: 20
+        }).then(function(v){
+          if(v === null) return;
+          var m = String(v).match(/^\s*(\d+)\s*[-~到]\s*(\d+)\s*$/);
+          if(!m){ toast('格式不对，要写成 1-3'); return; }
+          var a = parseInt(m[1], 10), b = parseInt(m[2], 10);
+          if(isNaN(a) || isNaN(b) || a < 1 || b < a){ toast('数值不合法'); return; }
+          if(kind === 'cnt'){ cfg.cntMin = a; cfg.cntMax = b; }
+          if(kind === 'card'){ cfg.cardMin = a; cfg.cardMax = b; }
+          if(kind === 'delay'){
+            if(a < 1){ a = 1; }
+            if(b > 86400 * 7){ b = 86400 * 7; }
+            cfg.delayMin = a; cfg.delayMax = b;
+          }
+          saveCollectCmtCfg(cfg);
+          toast('已保存');
+          renderContent();
+        });
+      };
+    });
+
+    /* ---- 关闭 ---- */
+    var closeBtn = mask.querySelector('#colMoreClose');
+    if(closeBtn){
+      closeBtn.onclick = function(){ mask.remove(); };
+    }
+  }
+
+  /* 点遮罩关闭 */
+  mask.addEventListener('click', function(e){
+    if(e.target === mask) mask.remove();
+  });
+
+  document.body.appendChild(mask);
+  renderContent();
+}
+function openCollectEditDialog(rid, itemId, tab){
+  var arr = (tab === 'mine') ? getCollectMine(rid) : getCollectTheirs(rid);
+  var it = arr.find(function(x){ return x.id === itemId; });
+  if(!it) return;
+
+  var groups = getCollectGroups();
+
+  var old = document.getElementById('collectEditMask');
+  if(old) old.remove();
+
+  var mask = document.createElement('div');
+  mask.id = 'collectEditMask';
+  mask.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.4);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px';
+
+  var options = ['未分组'].concat(groups);
+  var curGroup = String(it.group || '').trim();
+
+  mask.innerHTML =
+    '<div style="width:100%;max-width:340px;background:#fff;border-radius:16px;border:0.7px solid rgba(0,0,0,.10);box-shadow:0 16px 50px rgba(0,0,0,.12);padding:20px 20px 16px;box-sizing:border-box">' +
+      '<div style="font-size:14px;font-weight:400;letter-spacing:2px;color:#1a1a1a;margin-bottom:16px;padding-bottom:12px;border-bottom:0.6px solid rgba(0,0,0,.06)">编辑收藏</div>' +
+      '<div style="margin-bottom:14px">' +
+        '<label style="font-size:11px;color:#999;letter-spacing:1px;margin-bottom:6px;display:block">备注</label>' +
+        '<input id="ceNote" type="text" placeholder="写点什么…" value="' + escapeHTML(it.note || '') + '" ' +
+          'style="width:100%;border:0.7px solid #e0e0e0;border-radius:10px;padding:10px 12px;font-size:13.5px;font-family:inherit;color:#1a1a1a;outline:none;box-sizing:border-box">' +
+      '</div>' +
+      '<div style="margin-bottom:14px">' +
+        '<label style="font-size:11px;color:#999;letter-spacing:1px;margin-bottom:6px;display:block">分组</label>' +
+        '<div style="display:flex;gap:8px;align-items:center">' +
+          '<select id="ceGroup" style="flex:1;border:0.7px solid #e0e0e0;border-radius:10px;padding:10px 12px;font-size:13.5px;font-family:inherit;color:#1a1a1a;outline:none;background:#fff;cursor:pointer;box-sizing:border-box">' +
+            options.map(function(g){
+              var realValue = (g === '未分组') ? '' : g;
+              var on = (realValue === curGroup) ? ' selected' : '';
+              return '<option value="' + escapeHTML(realValue) + '"' + on + '>' + escapeHTML(g) + '</option>';
+            }).join('') +
+          '</select>' +
+          '<button id="ceNewGroup" type="button" style="width:38px;height:38px;flex:none;border:0.7px solid #e0e0e0;border-radius:10px;background:#fff;color:#999;font-size:16px;cursor:pointer;font-family:inherit">＋</button>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;margin-top:18px;padding-top:14px;border-top:0.6px solid rgba(0,0,0,.06)">' +
+        '<button id="ceCancel" type="button" style="flex:1;padding:10px 0;border-radius:10px;font-size:13px;font-family:inherit;letter-spacing:1.5px;cursor:pointer;border:0.7px solid rgba(0,0,0,.12);background:transparent;color:#999">取 消</button>' +
+        '<button id="ceOk" type="button" style="flex:1;padding:10px 0;border-radius:10px;font-size:13px;font-family:inherit;letter-spacing:1.5px;cursor:pointer;border:none;background:#1a1a1a;color:#fff">保 存</button>' +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(mask);
+
+  mask.addEventListener('click', function(e){
+    if(e.target === mask) mask.remove();
+  });
+
+  mask.querySelector('#ceCancel').onclick = function(){ mask.remove(); };
+
+  mask.querySelector('#ceNewGroup').onclick = function(e){
+    e.stopPropagation();
+    if(typeof uniAsk !== 'function'){ toast('无法新建'); return; }
+    uniAsk({
+      title: '新建分组',
+      sub: 'GROUP · 给这个分组起个名字',
+      value: '',
+      placeholder: '例如：喜欢的句子',
+      maxlength: 20
+    }).then(function(v){
+      if(v === null) return;
+      var t = String(v).trim();
+      if(!t){ toast('名字不能为空'); return; }
+      var g = getCollectGroups();
+      if(g.indexOf(t) < 0){ g.push(t); saveCollectGroups(g); }
+      var sel = mask.querySelector('#ceGroup');
+      if(sel){
+        var opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        opt.selected = true;
+        sel.appendChild(opt);
+      }
+      toast('已创建：' + t);
+    });
+  };
+
+  mask.querySelector('#ceOk').onclick = function(){
+    var noteVal = String(mask.querySelector('#ceNote').value || '').trim();
+    var groupVal = String(mask.querySelector('#ceGroup').value || '').trim();
+
+    if(tab === 'mine'){
+      var arrMine = getCollectMine(rid);
+      var itMine = arrMine.find(function(x){ return x.id === itemId; });
+      if(itMine){
+        itMine.note = noteVal;
+        itMine.group = groupVal;
+        setCollectMine(rid, arrMine);
+        if(groupVal) ensureCollectGroup(groupVal);
+      }
+    } else {
+      var arrTheirs = getCollectTheirs(rid);
+      var itTheirs = arrTheirs.find(function(x){ return x.id === itemId; });
+      if(itTheirs){
+        itTheirs.note = noteVal;
+        itTheirs.group = groupVal;
+        setCollectTheirs(rid, arrTheirs);
+        if(groupVal) ensureCollectGroup(groupVal);
+      }
+    }
+
+    mask.remove();
+    var activeTab = document.querySelector('#colTabs .memo-tab.on');
+    renderCollectScreen(activeTab ? activeTab.dataset.colTab : 'mine');
+    toast('已保存');
+  };
+
+  setTimeout(function(){
+    var inp = mask.querySelector('#ceNote');
+    if(inp) inp.focus();
+  }, 100);
 }
 
 /* ===== 收藏页 · 删除确认弹窗 ===== */
@@ -27471,10 +28592,7 @@ function renderCdList(){
   const g = currentGroupObj(); if(!g){ box.innerHTML=''; return; }
   const cat = getCat(g,curCatId);
   if(!cat){ box.innerHTML=`<div class="cl-empty">还没有分类<br>点上方「＋ 分类」新建</div>`; setTimeout(refreshScrollbar,30); return; }
-  /* ★ 「我的个签」分类：内容从全局读，所有角色看到同一份 */
-  if(cat.id === 'cs-me'){
-    cat.list = JSON.parse(JSON.stringify(getMySignList()));
-  }
+ 
   const kw = cardKeyword.trim();
   const sortMode = getSortMode();
   let items = cat.list.map((line,i)=>({line,i}));
@@ -27856,22 +28974,7 @@ on('#confirmDelOk','click',()=>{
   const g = currentGroupObj();
   if(!cat || !pendingDelete.length){ $('#mConfirmDel').classList.remove('show'); return; }
 
-  /* ★ 「我的个签」分类：删全局，所有角色同步生效 */
-  if(cat.id === 'cs-me'){
-    const globalList = getMySignList();
-    const sortedDel = pendingDelete.slice().sort((a,b)=>b-a);
-    sortedDel.forEach(i => {
-      if(i >= 0 && i < globalList.length) globalList.splice(i, 1);
-    });
-    saveMySignList(globalList);
-    pendingDelete = [];
-    $('#mConfirmDel').classList.remove('show');
-    exitSelMode();
-    renderCdTabs();
-    renderCdList();
-    toast('已删除');
-    return;
-  }
+ 
 
   /* ★ 先写入回收站 */
   const trashItems = pendingDelete.map(i => {
@@ -27931,20 +29034,7 @@ on('#cardEditOk','click',()=>{
   const text = $('#cardEditText').value.replace(/^\s+|\s+$/g,'');
   if(!text){ toast('内容不能为空'); return; }
 
-  /* ★ 「我的个签」分类：改全局，所有角色同步生效 */
-  if(srcCat.id === 'cs-me'){
-    const globalList = getMySignList();
-    if(cardEditIndex >= 0 && cardEditIndex < globalList.length){
-      const old = globalList[cardEditIndex];
-      if(typeof old === 'string') globalList[cardEditIndex] = { text, t: Date.now() };
-      else { old.text = text; old.t = Date.now(); }
-      saveMySignList(globalList);
-    }
-    $('#mCardEdit').classList.remove('show');
-    renderCdList();
-    toast('已保存');
-    return;
-  }
+ 
 
   const dstCat = getCat(g, cardEditTargetCatId) || srcCat;
   if(cardEditTargetCatId === curCatId){
@@ -28856,28 +29946,7 @@ on('#btnAddCardsOk','click',()=>{
   const g=currentGroupObj();
   const cat=getCat(g, addCardsTargetCatId || curCatId);
   if(!cat){ alert('请先选一个分类'); return; }
-  /* ★ 「我的个签」分类：写入全局，所有角色共享 */
-  if(cat.id === 'cs-me'){
-    const globalList = getMySignList();
-    const pool = new Set(globalList.map(cardText).map(s=>String(s).trim()));
-    let added = 0, dup = 0;
-    const now = Date.now();
-    list.forEach((line, idx)=>{
-      const t = String(line).trim();
-      if(!t) return;
-      if(pool.has(t)){ dup++; return; }
-      globalList.push({ text: t, t: now + idx });
-      pool.add(t);
-      added++;
-    });
-    saveMySignList(globalList);
-    $('#mAddCards').classList.remove('show');
-    renderCdList();
-    let msg = '已添加 ' + added + ' 条';
-    if(dup) msg += '，跳过 ' + dup + ' 条重复';
-    toast(msg);
-    return;
-  }
+ 
   // 收集整个分组里所有分类已有的字卡，做全分类去重
   const groupPool = new Set();
   (g.cats||[]).forEach(c=>{ (c.list||[]).forEach(item=>{
@@ -30106,8 +31175,8 @@ on('#meQuote','click',()=>{
     if(t === null) return;
     const v = String(t).trim();
     if(!v){ toast('签名不能为空'); return; }
-    /* 用户写的签名，自动加入「我的个签」字卡库（去重） */
-    try{ pushSignCardText('cs-me', v); }catch(e){}
+    /* 用户写的签名，加进"当前角色专属"的「我的个签」里（去重） */
+    try{ pushSignCardText('cs-me', v, getCurrentRoleId()); }catch(e){}
     userProfile.sign = v;
     saveUser();
     renderMePage();
@@ -30877,8 +31946,18 @@ on('#btnSaveEdit','click',()=>{
   saveSignSwitchStore(s);
 
   refreshChatRole();
-  /* ★ 修复：修改头像后，强制重绘聊天列表，让旧消息的头像立即刷新 */
-  if(typeof renderChat === 'function') renderChat();
+
+  /* ★ 修复：改头像后，把所有「已经存在的旧消息」的头像也一起刷成新头像
+     做法：清掉渲染签名缓存，强制走全量重建 */
+  try{
+    if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+    if(typeof renderChatFull === 'function'){
+      renderChatFull(true);
+    } else if(typeof renderChat === 'function'){
+      renderChat(true);
+    }
+  }catch(e){ console.error('头像刷新失败', e); }
+
   closeChatInfo();
   toast('已保存');
 });
@@ -32464,12 +33543,20 @@ function pickNextSignSwitchAt(){
                              角色专属为空时，回退到公用的「角色个签」
    修复：角色个签不再跟用户共用同一个分类，改为各角色独立 */
 function pickSignCardText(catId, roleId){
-  /* --- 我自己的个签：全局唯一一份，所有角色共享 --- */
+  /* --- 我自己的个签：从该角色专属读，各角色独立 --- */
   if(catId === 'cs-me'){
-    var list0 = getMySignList();
-    var pool0 = list0.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
-    if(!pool0.length) return '';
-    return pool0[Math.floor(Math.random() * pool0.length)];
+    var rid0 = roleId || (typeof getCurrentRoleId === 'function' ? getCurrentRoleId() : '');
+    if(!rid0) return '';
+    try{
+      var roleGroups0 = getGroupsByOwner(rid0);
+      var rg0 = roleGroups0.find(function(x){ return x.id === 'g-sign'; });
+      if(!rg0 || !rg0.cats) return '';
+      var rcat0 = rg0.cats.find(function(c){ return c.id === 'cs-me'; });
+      if(!rcat0 || !rcat0.list || !rcat0.list.length) return '';
+      var rpool0 = rcat0.list.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
+      if(!rpool0.length) return '';
+      return rpool0[Math.floor(Math.random() * rpool0.length)];
+    }catch(e){ console.error('读角色专属我的个签失败', e); return ''; }
   }
 
   /* --- 角色个签 / 拒绝理由：从该角色专属抽 --- */
@@ -32499,14 +33586,27 @@ function pushSignCardText(catId, text, roleId){
   var t = String(text || '').trim();
   if(!t) return false;
 
-  /* ★ 我的个签：走全局存储，所有角色共享 */
+  /* ★ 我的个签：写进该角色专属的 g-sign → cs-me */
   if(catId === 'cs-me'){
-    var list0 = getMySignList();
-    var exists0 = list0.some(function(item){ return String(cardText(item)).trim() === t; });
-    if(exists0) return false;
-    list0.push({ text: t, t: Date.now() });
-    saveMySignList(list0);
-    return true;
+    var rid0 = roleId || (typeof getCurrentRoleId === 'function' ? getCurrentRoleId() : '');
+    if(!rid0) return false;
+    try{
+      if(typeof syncRoleCardGroups === 'function') syncRoleCardGroups(rid0);
+      var targetGroups0 = getGroupsByOwner(rid0);
+      var g0 = targetGroups0.find(function(x){ return x.id === 'g-sign'; });
+      if(!g0 || !g0.cats) return false;
+      var cat0 = g0.cats.find(function(c){ return c.id === 'cs-me'; });
+      if(!cat0){ return false; }
+      if(!Array.isArray(cat0.list)) cat0.list = [];
+      var exists0 = cat0.list.some(function(item){ return String(cardText(item)).trim() === t; });
+      if(exists0) return false;
+      cat0.list.push({ text: t, t: Date.now() });
+      saveCardStore();
+      return true;
+    }catch(e){
+      console.error('写角色专属我的个签失败', e);
+      return false;
+    }
   }
 
   /* ★ 角色个签：写进该角色专属的 g-sign → cs-role */
@@ -32541,15 +33641,15 @@ function runSignSwitchTick(){
   var now = Date.now();
   var changed = false;
 
-  /* --- 我的个签 --- */
+  /* --- 我的个签（全局开关：从"当前角色"的 cs-me 里抽） --- */
   if(s.me.on){
     if(!s.me.nextAt) { s.me.nextAt = pickNextSignSwitchAt(); changed = true; }
     if(now >= s.me.nextAt){
-      var myText = pickSignCardText('cs-me');
+      var curRid = getCurrentRoleId();
+      var myText = pickSignCardText('cs-me', curRid);
       if(myText){
         userProfile.sign = myText;
         saveUser();
-        try{ pushSignCardText('cs-me', myText); }catch(e){}
         try{ renderMePage(); }catch(e){}
       }
       s.me.nextAt = pickNextSignSwitchAt();
@@ -32596,11 +33696,10 @@ function runSignSwitchTick(){
     }
     if(now < slot.nextAt) return;
 
-    var myText2 = pickSignCardText('cs-me');
+    var myText2 = pickSignCardText('cs-me', rid);
     if(myText2){
       userProfile.sign = myText2;
       saveUser();
-      try{ pushSignCardText('cs-me', myText2); }catch(e){}
       try{ renderMePage(); }catch(e){}
     }
     slot.nextAt = pickNextSignSwitchAt();
@@ -36804,6 +37903,8 @@ function forceSendVideo(){
     try{ localStorage.removeItem('mj_sticker_store_v1'); }catch(e){}
     try{ localStorage.removeItem('mj_sticker_cats'); }catch(e){}
   }
+  /* ★ 清掉旧的"全局我的个签"key，已改成每个角色专属各一份 */
+  try{ localStorage.removeItem('mj_my_sign_list_v1'); }catch(e){}
 })();
 window.__memoDebug = function(){
   const t = document.getElementById('memoTabTemplate');
