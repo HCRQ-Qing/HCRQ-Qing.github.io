@@ -10,6 +10,29 @@
 <style>
 @font-face{font-family:'LikeJian';src:url('https://cdn.jsdelivr.net/gh/maoken-fonts/MaokenYingBiKaiShuJ@main/MaokenYingBiKaiShuJ_0.20.ttf') format('truetype');font-display:swap}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:rgba(0,0,0,0) !important;-webkit-touch-callout:none;user-select:none}
+/* ★ 输入框放开选中和呼出键盘 */
+input,textarea,select,[contenteditable="true"]{
+  -webkit-user-select:text !important;
+  user-select:text !important;
+  -webkit-touch-callout:default !important;
+}
+/* ★ 修复：部分安卓内核（雨见/夸克等）会在输入框旁画一根黑线
+   根因是 caret-color 跟随主题时，细体字下的光标位置异常。
+   这里只针对聊天输入框处理，其余输入框不动。 */
+.d-bar textarea{
+  caret-color: #1a1a1a;
+}
+#page-chat.minimal-mode .d-bar textarea{
+  caret-color: #1a1a1a;
+}
+.gch-bar textarea{
+  caret-color: #1a1a1a;
+}
+/* 兜底：如果还是画黑线，让内核强制重绘输入框 */
+.d-bar, .gch-bar{
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
 /* ===== 全站统一遮罩变量 ===== */
 :root{
   --mask-bg:rgba(0,0,0,.35);
@@ -1438,6 +1461,19 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
 .msg-body{display:flex;flex-direction:column;max-width:70%}
 .msg.user .msg-body{align-items:flex-end}
 .msg.char .msg-body{align-items:flex-start}
+/* ★ 修复：WebView 在气泡旁画黑竖线
+   - 气泡本身不接收光标
+   - 强制重绘图层 */
+.bubble{
+  caret-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.msg-body, .bubble{
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
 /* 气泡基础：不再有默认细框 */
 .bubble{
   padding:var(--bubble-pad-v, 5.6px) var(--bubble-pad-h, 11.2px);
@@ -2858,7 +2894,9 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
   flex:1 1 auto;
   min-height:0;
   overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
+  /* ★ 去掉 -webkit-overflow-scrolling: touch
+     部分安卓内核（含雨见）在这个属性下，
+     滚动容器里超出初始可视区的输入框点击会失效 */
   scrollbar-width:none;
   padding:4px 22px calc(22px + env(safe-area-inset-bottom)) !important;
 }
@@ -3069,11 +3107,7 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
   border-radius:0 !important;
   box-shadow:none !important;
 }
-/* ★ 隐藏滑杆 */
-#mReply #replyBody .s-row input[type=range],
-#mReply #replyBody .s-row input[type=range]::-webkit-slider-thumb{
-  display:none !important;
-}
+
 /* ★ 数值行改成单行 + 深灰标签 */
 #mReply #replyBody .s-row,
 #mReply #replyBody .n-row{
@@ -14280,6 +14314,10 @@ function getMsgMeta(m, isUser){
    否则只做轻量更新（滚动、更新已读状态文字、更新跳到底部按钮）。
 */
 let __lastRenderSig = '';
+/* ★ 强制重绘开关：外部需要立即刷新时，先调这个清掉签名缓存 */
+window.__forceRenderChat = function(){
+  __lastRenderSig = '';
+};
 function renderChat(forceBottom, force){
   const box = $('#chatList');
   if(!box){ renderChatFull(forceBottom); return; }
@@ -15742,7 +15780,13 @@ function openEditChar(m){
     m.text = t;
     m.edited = true;
     saveMsgs();
-    renderChat();
+    /* ★ 关键修复：强制走全量重绘，跳过签名缓存
+       否则改完文本后，readState 变了但 UI 不重绘，看起来还是"未读" */
+    try{
+      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+      if(typeof renderChatFull === 'function'){ renderChatFull(true); }
+      else { renderChat(true); }
+    }catch(e){ console.error('重绘失败', e); renderChat(true); }
     /* 改完 250ms 后问：要不要加入字卡库 */
     setTimeout(function(){ askAddToCardStore(t); }, 250);
   });
@@ -17436,7 +17480,17 @@ setInterval(function(){
 
   var last = msgs[lastIdx];
   if(last.readState !== 'read') return;
+  /* ★ 关键修复：最后一条已经是 noReply，不去动它
+     之前这行是 dead code（上面已经 return 了），现在保留语义正确 */
   if(last.readState === 'noReply') return;
+  /* ★ 关键修复：只要这条 read 后面还有任何 user 消息（read/noReply/unread），
+     就不允许把它回滚成未读，避免"回复过了却突然变未读" */
+  for(var q = lastIdx + 1; q < msgs.length; q++){
+    var nx = msgs[q];
+    if(!nx || nx.role !== 'user') continue;
+    if(nx.recalled || nx.sys || nx.namecard) continue;
+    return;
+  }
   if(Math.random() >= 0.05) return;   /* 5% 概率 */
 
   /* 第二步：把最后一条 read 及其之后所有 user 消息一起变未读 */
@@ -17976,7 +18030,7 @@ $$('.func-item').forEach(item=>{ item.addEventListener('click',e=>{
     }, 200);
   } else if(fn === 'quiz'){
     closeAllDrawers();
-    setTimeout(openQuizDialog, 200);
+    setTimeout(openQuizPick, 200);
   } else if(fn === 'uploadimg'){
     closeAllDrawers();
     setTimeout(function(){
@@ -18001,26 +18055,42 @@ function _clearQuizTimers(){
   _quizTimers = [];
 }
 
-/* 打开问卷弹窗 */
+/* 打开问卷弹窗（真正的单问界面） */
 function openQuizDialog(){
   const mask = document.getElementById('mQuiz');
   if(!mask) return;
   const qEl = document.getElementById('quizQText');
   if(qEl) qEl.value = '';
-  const s1 = document.getElementById('quizThinkMin'); if(s1) s1.value = 2;
-  const s2 = document.getElementById('quizThinkMax'); if(s2) s2.value = 5;
-  const c1 = document.getElementById('quizCntMin');   if(c1) c1.value = 1;
-  const c2 = document.getElementById('quizCntMax');   if(c2) c2.value = 1;
-  /* 重置弹窗内的回答区 */
+
+  /* ★ 读取上次记忆：问题 + 思考时间 + 抽卡张数 */
+  let lastQ   = '';
+  let lastSMin = 2, lastSMax = 5;
+  let lastCMin = 1, lastCMax = 1;
+  try{
+    lastQ    = lsGet('mj_quiz_last_question_v1', '');
+    lastSMin = lsGet('mj_quiz_last_smin_v1', 2);
+    lastSMax = lsGet('mj_quiz_last_smax_v1', 5);
+    lastCMin = lsGet('mj_quiz_last_cmin_v1', 1);
+    lastCMax = lsGet('mj_quiz_last_cmax_v1', 1);
+  }catch(e){}
+
+  if(qEl && lastQ) qEl.value = lastQ;
+
+  const s1 = document.getElementById('quizThinkMin'); if(s1) s1.value = lastSMin;
+  const s2 = document.getElementById('quizThinkMax'); if(s2) s2.value = lastSMax;
+  const c1 = document.getElementById('quizCntMin');   if(c1) c1.value = lastCMin;
+  const c2 = document.getElementById('quizCntMax');   if(c2) c2.value = lastCMax;
+
+  /* 重置弹窗内的回答区：无虚线，白底 */
   const rw = document.getElementById('quizResultWrap');
   if(rw) rw.style.display = 'none';
   const rt = document.getElementById('quizResultText');
   if(rt) rt.textContent = '正在填写…';
   const rb = document.getElementById('quizResultBox');
   if(rb){
-    rb.style.background = '#fcfcfc';
-    rb.style.borderStyle = 'dashed';
-    rb.style.borderColor = 'rgba(0,0,0,.14)';
+    rb.style.background = '#fff';
+    rb.style.borderStyle = 'none';
+    rb.style.borderColor = 'transparent';
   }
   /* 恢复按钮显示（上次发完被隐藏过） */
   const btn0 = document.getElementById('btnQuizStart');
@@ -18030,8 +18100,19 @@ function openQuizDialog(){
     btn0.style.opacity = '';
     btn0.style.pointerEvents = '';
   }
+  /* 把「再发一次」按钮藏起来 */
+  const btnRe = document.getElementById('btnQuizResend');
+  if(btnRe) btnRe.style.display = 'none';
+
   mask.classList.add('show');
   setTimeout(function(){ if(qEl) qEl.focus(); }, 200);
+}
+
+/* 打开问卷类型选择（入口先弹这个） */
+function openQuizPick(){
+  const mask = document.getElementById('mQuizPick');
+  if(!mask) return;
+  mask.classList.add('show');
 }
 
 /* 关闭问卷弹窗 */
@@ -18114,6 +18195,15 @@ function startQuiz(){
   const cMin = Math.max(1, isNaN(cMinRaw) ? 1 : cMinRaw);
   const cMax = Math.max(cMin, isNaN(cMaxRaw) ? 1 : cMaxRaw);
 
+  /* ★ 记住这次的问题 + 思考时间 + 抽卡张数 */
+  try{
+    lsSet('mj_quiz_last_question_v1', q);
+    lsSet('mj_quiz_last_smin_v1', sMin);
+    lsSet('mj_quiz_last_smax_v1', sMax);
+    lsSet('mj_quiz_last_cmin_v1', cMin);
+    lsSet('mj_quiz_last_cmax_v1', cMax);
+  }catch(e){}
+
   /* 摇思考时间 + 抽卡张数 */
   const secs = sMin + Math.floor(Math.random() * (sMax - sMin + 1));
   const thinkMs  = secs * 1000;
@@ -18143,11 +18233,12 @@ function startQuiz(){
   const rb = document.getElementById('quizResultBox');
   const rt = document.getElementById('quizResultText');
   const btn = document.getElementById('btnQuizStart');
+  const btnRe = document.getElementById('btnQuizResend');
   if(rw) rw.style.display = 'block';
   if(rb){
-    rb.style.background = '#fcfcfc';
-    rb.style.borderStyle = 'dashed';
-    rb.style.borderColor = 'rgba(0,0,0,.14)';
+    rb.style.background = '#fff';
+    rb.style.borderStyle = 'none';
+    rb.style.borderColor = 'transparent';
   }
   if(rt) rt.textContent = '正在填写…';
   /* 顺手锁一下按钮，避免连点发两条 */
@@ -18156,6 +18247,8 @@ function startQuiz(){
     btn.style.opacity = '.45';
     btn.style.pointerEvents = 'none';
   }
+  /* ★ 新增：这次发出时，先把「再发一次」藏起来 */
+  if(btnRe) btnRe.style.display = 'none';
 
   /* 聊天里也拉起「对方正在输入」尾巴，跟弹窗同步 */
   _clearQuizTimers();
@@ -18164,16 +18257,20 @@ function startQuiz(){
 
   /* 倒计时结束：弹窗里换成答案，聊天里落定「已提交」 */
   _quizTimers.push(setTimeout(function(){
-    /* 弹窗回答区：换成答案，实线边框，白底 */
+    /* 弹窗回答区：换成答案，去掉边框，白底 */
     if(rt) rt.textContent = answerText;
     if(rb){
       rb.style.background = '#fff';
-      rb.style.borderStyle = 'solid';
-      rb.style.borderColor = 'rgba(0,0,0,.10)';
+      rb.style.borderStyle = 'none';
+      rb.style.borderColor = 'transparent';
     }
-    /* 答案出来了，直接把「发出问卷」按钮藏起来 */
+    /* 答案出来了，把「发出问卷」按钮藏起来 */
     if(btn){
       btn.style.display = 'none';
+    }
+    /* ★ 新增：答案出来后才显示「再发一次」按钮 */
+    if(btnRe){
+      btnRe.style.display = '';
     }
     /* 聊天里的输入尾巴收起，重绘让这张卷子变成已提交 */
     if(_tb) _tb.classList.remove('show');
@@ -18195,13 +18292,326 @@ function _nextQuizNo(roleId){
   return String(n).padStart(3, '0');
 }
 
-/* 绑定按钮 */
+/* ============================================================
+   问卷桌面 · 数据层
+   ============================================================ */
+
+/* 存所有问卷模板：{ id, name, type:'single'|'multi', questions:[...], fav:false, builtin:false, t } */
+const QUIZ_TPL_KEY = 'mj_quiz_tpl_v1';
+
+function getQuizTpls(){
+  let a = lsGet(QUIZ_TPL_KEY, null);
+  if(!Array.isArray(a)) a = [];
+  return a;
+}
+function saveQuizTpls(a){ lsSet(QUIZ_TPL_KEY, a); }
+
+/* 首次进入：如果一条都没有，塞一份系统默认问卷（单选 + 填空题） */
+function ensureDefaultQuizTpl(){
+  let arr = getQuizTpls();
+  if(arr.length) return arr;
+  arr = [{
+    id: 'qt-default-1',
+    name: '认识你',
+    type: 'multi',
+    builtin: true,
+    fav: false,
+    t: Date.now(),
+    questions: [
+      { id: uid(), kind: 'choice',   title: '今天心情怎么样？', options: ['很好','还不错','一般','有点低落','很差'] },
+      { id: uid(), kind: 'choice',   title: '现在最想做的是？', options: ['睡觉','出去玩','刷手机','和你聊天','学习'] },
+      { id: uid(), kind: 'choice',   title: '喜欢什么天气？',   options: ['晴天','多云','雨天','下雪','都行'] },
+      { id: uid(), kind: 'text',     title: '有什么想对我说的吗？',  placeholder: '在这里写下来…' },
+      { id: uid(), kind: 'text',     title: '最近有什么开心的或烦心的事？', placeholder: '随便写写…' }
+    ]
+  }];
+  saveQuizTpls(arr);
+  return arr;
+}
+
+/* 渲染问卷桌面 */
+function renderQuizDesk(){
+  const box = document.getElementById('qdList');
+  if(!box) return;
+  const arr = ensureDefaultQuizTpl();
+  if(!arr.length){
+    box.innerHTML = '<div class="qd-empty"><span class="big">✎</span>还没有问卷<br>点右上角 ＋ 添加一份</div>';
+    return;
+  }
+  box.innerHTML = arr.map(function(t){
+    const n = (t.questions || []).length;
+    const label = t.type === 'multi' ? '多问 · ' + n + ' 题' : '单问';
+    return '<div class="qd-item" data-tid="' + escapeHTML(t.id) + '">' +
+      '<div class="qd-name">' + escapeHTML(t.name || '未命名问卷') + '</div>' +
+      '<div class="qd-sub">' + label + (t.builtin ? ' · 系统默认' : '') + (t.fav ? ' · 已收藏' : '') + '</div>' +
+    '</div>';
+  }).join('');
+
+  box.querySelectorAll('.qd-item').forEach(function(el){
+    el.onclick = function(){
+      const tid = el.dataset.tid;
+      openQuizTplDetail(tid);
+    };
+  });
+}
+
+/* 打开问卷桌面 */
+function openQuizDesk(){
+  showScreen('quizDeskScreen');
+  renderQuizDesk();
+}
+
+/* 问卷桌面返回按钮：绑一次即可 */
+(function bindQuizDeskBack(){
+  if(window.__quizDeskBackBound) return;
+  window.__quizDeskBackBound = true;
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || !t.closest) return;
+    if(t.closest('#qdBack')){
+      e.preventDefault();
+      e.stopPropagation();
+      document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
+      return;
+    }
+  }, true);
+})();
+
+/* 打开加号菜单 */
+function openQuizMenu(){
+  const m = document.getElementById('mQuizMenu');
+  if(m) m.classList.add('show');
+}
+
+/* ============================================================
+   问卷桌面 · 加号菜单的 5 个功能
+   ============================================================ */
+
+/* 1. 添加问卷模板 */
+function quizMenuAddTpl(){
+  uniAsk({
+    title: '新建问卷模板',
+    sub: 'QUESTIONNAIRE · 给这份问卷起个名字',
+    value: '',
+    placeholder: '例如：认识你'
+  }).then(function(name){
+    if(name === null) return;
+    const n = String(name).trim();
+    if(!n){ toast('名字不能为空'); return; }
+    const arr = getQuizTpls();
+    arr.push({
+      id: 'qt' + Date.now().toString(36),
+      name: n,
+      type: 'multi',
+      builtin: false,
+      fav: false,
+      t: Date.now(),
+      questions: []
+    });
+    saveQuizTpls(arr);
+    renderQuizDesk();
+    toast('已创建');
+  });
+}
+
+/* 2. 我的问卷一览 */
+function quizMenuMyList(){
+  const arr = getQuizTpls();
+  if(!arr.length){ toast('还没有问卷'); return; }
+  showScreen('quizDeskScreen');
+  renderQuizDesk();
+}
+
+/* 3. 我收藏的问卷 */
+function quizMenuFavList(){
+  const arr = getQuizTpls().filter(function(t){ return t.fav; });
+  if(!arr.length){ toast('还没有收藏的问卷'); return; }
+  const box = document.getElementById('qdList');
+  if(!box) return;
+  showScreen('quizDeskScreen');
+  box.innerHTML = arr.map(function(t){
+    const n = (t.questions || []).length;
+    return '<div class="qd-item" data-tid="' + escapeHTML(t.id) + '">' +
+      '<div class="qd-name">' + escapeHTML(t.name || '未命名') + '</div>' +
+      '<div class="qd-sub">' + (t.type === 'multi' ? '多问 · ' + n + ' 题' : '单问') + ' · 已收藏</div>' +
+    '</div>';
+  }).join('');
+  box.querySelectorAll('.qd-item').forEach(function(el){
+    el.onclick = function(){ openQuizTplDetail(el.dataset.tid); };
+  });
+}
+
+/* 4. 导入问卷 */
+function quizMenuImport(){
+  const f = document.getElementById('quizImportFile');
+  if(!f) return;
+  f.value = '';
+  f.click();
+}
+
+/* 5. 导出问卷 */
+function quizMenuExport(){
+  const arr = getQuizTpls();
+  if(!arr.length){ toast('还没有可导出的问卷'); return; }
+  const data = {
+    __type: 'our-dreamland-quiz',
+    __version: 1,
+    exportedAt: Date.now(),
+    templates: arr
+  };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date();
+  const stamp = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+  a.href = url;
+  a.download = '问卷_' + stamp + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  toast('已导出 ' + arr.length + ' 份问卷');
+}
+
+/* 导入文件读取 */
+document.addEventListener('change', function(e){
+  const t = e.target;
+  if(!t || t.id !== 'quizImportFile') return;
+  const file = t.files && t.files[0];
+  t.value = '';
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      const data = JSON.parse(ev.target.result);
+      const tpls = (data && Array.isArray(data.templates)) ? data.templates : [];
+      if(!tpls.length){ toast('文件里没有问卷'); return; }
+      const cur = getQuizTpls();
+      let added = 0;
+      tpls.forEach(function(tp){
+        if(!tp || !tp.id) tp.id = 'qt' + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+        if(cur.some(function(x){ return x.id === tp.id; })){
+          tp.id = tp.id + '_' + Math.random().toString(36).slice(2,5);
+        }
+        cur.push(tp);
+        added++;
+      });
+      saveQuizTpls(cur);
+      renderQuizDesk();
+      toast('已导入 ' + added + ' 份问卷');
+    }catch(err){
+      console.error(err);
+      toast('文件格式不对');
+    }
+  };
+  reader.readAsText(file);
+}, true);
+
+/* 打开某份问卷模板的详情（占位：下一步做） */
+function openQuizTplDetail(tid){
+  const arr = getQuizTpls();
+  const t = arr.find(function(x){ return x.id === tid; });
+  if(!t){ toast('问卷不存在'); return; }
+  /* 先提示一句，后续再做详情页 */
+  toast('问卷：' + (t.name || '未命名') + ' · 详情页开发中');
+}
+
+/* 1. 添加问卷模板 */
+function quizMenuAddTpl(){
+  uniAsk({
+    title: '新建问卷模板',
+    sub: 'QUESTIONNAIRE · 给这份问卷起个名字',
+    value: '',
+    placeholder: '例如：认识你'
+  }).then(function(name){
+    if(name === null) return;
+    const n = String(name).trim();
+    if(!n){ toast('名字不能为空'); return; }
+    const arr = getQuizTpls();
+    arr.push({
+      id: 'qt' + Date.now().toString(36),
+      name: n,
+      type: 'multi',
+      builtin: false,
+      fav: false,
+      t: Date.now(),
+      questions: []
+    });
+    saveQuizTpls(arr);
+    renderQuizDesk();
+    toast('已创建');
+  });
+}
+
+
+/* 加号菜单按钮绑定 */
 document.addEventListener('click', function(e){
   const t = e.target;
   if(!t || !t.closest) return;
+  /* ★ 问卷选择弹窗 X 关闭 */
+  if(t.closest('#quizPickClose') || (t.closest('#mQuizPick') && t === t.closest('#mQuizPick'))){
+    e.preventDefault();
+    e.stopPropagation();
+    const mp = document.getElementById('mQuizPick');
+    if(mp) mp.classList.remove('show');
+    return;
+  }
+  if(t.closest('#qmAddTpl')){ e.preventDefault(); e.stopPropagation(); const m=document.getElementById('mQuizMenu'); if(m)m.classList.remove('show'); quizMenuAddTpl(); return; }
+  if(t.closest('#qmMyList')){ e.preventDefault(); e.stopPropagation(); const m=document.getElementById('mQuizMenu'); if(m)m.classList.remove('show'); quizMenuMyList(); return; }
+  if(t.closest('#qmFavList')){ e.preventDefault(); e.stopPropagation(); const m=document.getElementById('mQuizMenu'); if(m)m.classList.remove('show'); quizMenuFavList(); return; }
+  if(t.closest('#qmImport')){ e.preventDefault(); e.stopPropagation(); const m=document.getElementById('mQuizMenu'); if(m)m.classList.r
+    e.preventDefault();
+    e.stopPropagation();
+    const pickMask = document.getElementById('mQuizPick');
+    if(pickMask) pickMask.classList.remove('show');
+    openQuizDialog();
+    return;
+  }
+    /* ★ 选择弹窗：单问 → 关闭选择弹窗，打开原问卷弹窗 */
+  if(t.closest('#qpSingle')){
+    e.preventDefault();
+    e.stopPropagation();
+    const pickMask = document.getElementById('mQuizPick');
+    if(pickMask) pickMask.classList.remove('show');
+    setTimeout(openQuizDialog, 100);
+    return;
+  }
+
+  /* ★ 选择弹窗：多问 → 进问卷桌面 */
+  if(t.closest('#qpMulti')){
+    e.preventDefault();
+    e.stopPropagation();
+    const pickMask = document.getElementById('mQuizPick');
+    if(pickMask) pickMask.classList.remove('show');
+    document.querySelectorAll('.screen.on').forEach(function(s){ s.classList.remove('on'); });
+    setTimeout(openQuizDesk, 100);
+    return;
+  }
+
   if(t.closest('#btnQuizStart')){
     e.preventDefault();
     e.stopPropagation();
+    startQuiz();
+    return;
+  }
+  /* ★ 新增：再发一次 —— 直接用同一个问题重复发起 */
+  if(t.closest('#btnQuizResend')){
+    e.preventDefault();
+    e.stopPropagation();
+    const qEl = document.getElementById('quizQText');
+    if(!qEl || !(qEl.value || '').trim()){
+      toast('问题不能为空');
+      return;
+    }
+    /* 还原「发出问卷」按钮为可点状态，再走一遍 startQuiz */
+    const btn = document.getElementById('btnQuizStart');
+    if(btn){
+      btn.style.display = '';
+      btn.disabled = false;
+      btn.style.opacity = '';
+      btn.style.pointerEvents = '';
+    }
     startQuiz();
     return;
   }
@@ -22780,7 +23190,7 @@ document.addEventListener('click', function(e){
     }
     else if(f === 'divine')    toast('群聊占卜 · 待补');
     else if(f === 'choice')    toast('群聊选择 · 待补');
-    else if(f === 'quiz')      toast('群聊问卷 · 待补');
+    else if(f === 'quiz')      { if(typeof openQuizPick === 'function') openQuizPick(); else toast('群聊问卷 · 待补'); }
     else if(f === 'voicecall') toast('群聊语音通话 · 待补');
     else if(f === 'videocall') toast('群聊视频通话 · 待补');
     return;
@@ -28943,11 +29353,34 @@ function renderReplyPanel(tab){
   /* ★ 如果切到音效 tab，渲染一下每行状态 */
   if(tab === 'sound'){ try{ renderSoundRows(); }catch(e){} }
   $$('#replyBody .rs-tab').forEach(t=>t.addEventListener('click', ()=>renderReplyPanel(t.dataset.tab)));
-  const bindNum = (id,key,parser)=>{ const el=$('#'+id); if(!el) return; el.addEventListener('change', ()=>{ r[key] = parser?parser(el.value):el.value; saveReply(); }); };
+  /* ★ bindNum 改为从存储里取最新 r，避免闭包里的旧 r 覆盖最新设置 */
+  const bindNum = (id,key,parser)=>{
+    const el = $('#'+id);
+    if(!el) return;
+    el.addEventListener('change', ()=>{
+      const cur = getReply();
+      cur[key] = parser ? parser(el.value) : el.value;
+      saveReply();
+    });
+  };
+  /* ★ minDelay / maxDelay 也走新的 bindNum（内部已改为 getReply） */
   bindNum('rsMinDelay','minDelay',v=>Math.round(parseFloat(v||0)*1000));
   bindNum('rsMaxDelay','maxDelay',v=>Math.round(parseFloat(v||0)*1000));
-  bindNum('rsReadDelayMin','readDelayMin',v=>Math.max(0, parseInt(v,10)||0));
-  bindNum('rsReadDelayMax','readDelayMax',v=>Math.max(1, parseInt(v,10)||10));
+  /* ★ 已读延迟：改为每次直接从存储取最新 r */
+  const rdMinEl = $('#rsReadDelayMin');
+  if(rdMinEl) rdMinEl.addEventListener('change', function(){
+    const cur = getReply();
+    cur.readDelayMin = Math.max(0, parseInt(this.value, 10) || 0);
+    if(cur.readDelayMax < cur.readDelayMin) cur.readDelayMax = cur.readDelayMin;
+    saveReply();
+  });
+  const rdMaxEl = $('#rsReadDelayMax');
+  if(rdMaxEl) rdMaxEl.addEventListener('change', function(){
+    const cur = getReply();
+    cur.readDelayMax = Math.max(1, parseInt(this.value, 10) || 10);
+    if(cur.readDelayMax < cur.readDelayMin) cur.readDelayMin = cur.readDelayMax;
+    saveReply();
+  });
   const nrEl = $('#rsNoReplyRate');
   if(nrEl) nrEl.addEventListener('input', function(){
     /* ★ 每次从存储里重新拿一份最新 r，避免闭包里的旧引用 */
@@ -28979,13 +29412,34 @@ function renderReplyPanel(tab){
     const pf = $('#rsQuotePartRate');
     if(pf) pf.value = Math.round(cur.quotePartRate * 100);
   });
+  /* ★ 气泡 / 拼卡 / 拼音最多条数：也走新的 bindNum */
   bindNum('rsMaxBubbles','maxBubbles',v=>Math.max(1,Math.min(5,parseInt(v)||1)));
   bindNum('rsMaxBlocks','maxBlocks',v=>Math.max(1,Math.min(5,parseInt(v)||1)));
   bindNum('rsPinyinMax','pinyinMax',v=>Math.max(1,Math.min(5,parseInt(v)||1)));
-  const bindSw = (id,key)=>{ const el=$('#'+id); if(!el) return; el.addEventListener('change', ()=>{ r[key]=el.checked; saveReply(); }); };
+  /* ★ bindSw 改为从存储里取最新 r */
+  const bindSw = (id,key)=>{
+    const el = $('#'+id);
+    if(!el) return;
+    el.addEventListener('change', ()=>{
+      const cur = getReply();
+      cur[key] = el.checked;
+      saveReply();
+    });
+  };
   bindSw('rsIgnoreOn','ignoreOn'); bindSw('rsRecallOn','recallOn'); bindSw('rsPinyinOn','pinyinOn'); bindSw('rsPunctOn','punctOn');
   bindSw('rsEmojiOn','emojiOn'); bindSw('rsKaoOn','kaoOn');
-  const bindSl = (id,valId,key)=>{ const el=$('#'+id); if(!el) return; el.addEventListener('input', ()=>{ r[key]=parseInt(el.value)/100; saveReply(); $('#'+valId).textContent=el.value+'%'; }); };
+  /* ★ bindSl 改为从存储里取最新 r，避免闭包里的旧 r 覆盖 */
+  const bindSl = (id,valId,key)=>{
+    const el = $('#'+id);
+    if(!el) return;
+    el.addEventListener('input', ()=>{
+      const cur = getReply();
+      cur[key] = parseInt(el.value, 10) / 100;
+      saveReply();
+      const v = $('#'+valId);
+      if(v) v.textContent = el.value + '%';
+    });
+  };
   bindSl('rsIgnoreRate','rsIgnoreRateVal','ignoreRate');
   bindSl('rsRecallRate','rsRecallRateVal','recallRate');
   bindSl('rsPinyinRate','rsPinyinRateVal','pinyinRate');
@@ -29126,20 +29580,22 @@ function renderReplyPanel(tab){
 
   const aOn = $('#rsActiveOn');
   if(aOn) aOn.addEventListener('change', function(){
-    r.activeOn = this.checked;
+    const cur = getReply();
+    cur.activeOn = this.checked;
     saveReply();
   });
 
   const aRate = $('#rsActiveRate');
   if(aRate) aRate.addEventListener('input', function(){
-    r.activeRate = parseInt(this.value, 10) / 100;
+    const cur = getReply();
+    cur.activeRate = parseInt(this.value, 10) / 100;
     saveReply();
-    const v = Math.round(r.activeRate * 100);
+    const v = Math.round(cur.activeRate * 100);
     const valEl = $('#rsActiveRateVal');
     if(valEl) valEl.textContent = v + '%';
     const descEl2 = document.querySelectorAll('#replyBody .section .desc');
     if(descEl2[0]){
-      descEl2[0].innerHTML = '每分钟摇一次，摇中概率 <b>' + v + '%</b>，平均每 <b>' + (r.activeRate > 0 ? Math.round(1 / r.activeRate) : '∞') + '</b> 分钟发一条。';
+      descEl2[0].innerHTML = '每分钟摇一次，摇中概率 <b>' + v + '%</b>，平均每 <b>' + (cur.activeRate > 0 ? Math.round(1 / cur.activeRate) : '∞') + '</b> 分钟发一条。';
     }
   });
 
@@ -29238,15 +29694,17 @@ function renderReplyPanel(tab){
 
   const dOn = $('#rsDivineOn');
   if(dOn) dOn.addEventListener('change', function(){
-    r.divineOn = this.checked;
+    const cur = getReply();
+    cur.divineOn = this.checked;
     saveReply();
   });
 
   const dRate = $('#rsDivineRate');
   if(dRate) dRate.addEventListener('input', function(){
-    r.divineRate = parseInt(this.value, 10) / 100;
+    const cur = getReply();
+    cur.divineRate = parseInt(this.value, 10) / 100;
     saveReply();
-    const v = Math.round(r.divineRate * 100);
+    const v = Math.round(cur.divineRate * 100);
     const valEl = $('#rsDivineRateVal');
     if(valEl) valEl.textContent = v + '%';
     const descEls = document.querySelectorAll('#replyBody .section .desc');
@@ -29258,19 +29716,22 @@ function renderReplyPanel(tab){
   /* ★ 角色写理解 · 开关 / 概率 / 最多追加次数 */
   const drOn = $('#rsDivineReadOn');
   if(drOn) drOn.addEventListener('change', function(){
-    r.divineReadOn = this.checked;
+    const cur = getReply();
+    cur.divineReadOn = this.checked;
     saveReply();
   });
   const drRate = $('#rsDivineReadRate');
   if(drRate) drRate.addEventListener('input', function(){
-    r.divineReadRate = parseInt(this.value, 10) / 100;
+    const cur = getReply();
+    cur.divineReadRate = parseInt(this.value, 10) / 100;
     saveReply();
     const valEl = $('#rsDivineReadRateVal');
     if(valEl) valEl.textContent = this.value + '%';
   });
   const drMax = $('#rsDivineReadMaxTimes');
   if(drMax) drMax.addEventListener('change', function(){
-    r.divineReadMaxTimes = Math.max(1, Math.min(10, parseInt(this.value, 10) || 4));
+    const cur = getReply();
+    cur.divineReadMaxTimes = Math.max(1, Math.min(10, parseInt(this.value, 10) || 4));
     saveReply();
   });
 }
@@ -30872,10 +31333,14 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 			  appEl.classList.add('kb-open-real');
 			  appEl.style.height = vv.height + 'px';
 			  appEl.style.top = '0';
-			  /* 防安卓把整个页面往上推 */
-			  try{ window.scrollTo(0, 0); }catch(e){}
-			  try{ document.documentElement.scrollTop = 0; }catch(e){}
-			  try{ document.body.scrollTop = 0; }catch(e){}
+			  /* 防安卓把整个页面往上推：只在没有输入框聚焦时滚顶 */
+			  var _active = document.activeElement;
+			  var _isInput = _active && (_active.tagName === 'INPUT' || _active.tagName === 'TEXTAREA');
+			  if(!_isInput){
+			    try{ window.scrollTo(0, 0); }catch(e){}
+			    try{ document.documentElement.scrollTop = 0; }catch(e){}
+			    try{ document.body.scrollTop = 0; }catch(e){}
+			  }
 			}else{
 			  appEl.classList.remove('kb-open-real');
 			  appEl.style.height = '';
@@ -33150,7 +33615,111 @@ function goToPage(name){
  
 
 
+<!-- ============ 问卷桌面 ============ -->
+<div class="screen" id="quizDeskScreen">
+  <div class="qd-wrap">
+    <div class="qd-top">
+      <button class="qd-back" id="qdBack" type="button">‹</button>
+      <div class="qd-title">问 卷</div>
+      <button class="qd-add" id="qdAdd" type="button">＋</button>
+    </div>
+    <div class="qd-list" id="qdList"></div>
+  </div>
+</div>
+
 <!-- ============ 问卷弹窗 · 方案 A 极简线 ============ -->
+<style>
+/* ===== 问卷桌面 ===== */
+#quizDeskScreen{
+  background:#ffffff;
+  flex-direction:column;
+  font-family:"Songti SC","STSong","SimSun","宋体",serif;
+}
+#quizDeskScreen.on{display:flex}
+.qd-wrap{
+  max-width:520px;
+  margin:0 auto;
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.qd-top{
+  flex:none;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:20px 22px 12px;
+}
+.qd-back{
+  width:38px;height:38px;flex:none;
+  border:none;background:transparent;
+  color:#1a1a1a;font-size:22px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 0 4px;font-family:inherit;cursor:pointer;
+  opacity:.55;transition:opacity .18s ease;
+}
+.qd-back:active{opacity:1}
+.qd-title{
+  flex:1;
+  font-size:15px;font-weight:300;
+  letter-spacing:6px;text-align:center;
+  color:#1a1a1a;
+  -webkit-text-stroke:.15px #1a1a1a;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+.qd-add{
+  width:38px;height:38px;flex:none;
+  border:none;background:transparent;
+  color:#1a1a1a;font-size:22px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-family:inherit;
+  opacity:.55;transition:opacity .18s ease;
+}
+.qd-add:active{opacity:1}
+.qd-list{
+  flex:1;
+  overflow-y:auto;
+  padding:6px 22px 40px;
+  scrollbar-width:none;
+}
+.qd-list::-webkit-scrollbar{display:none}
+.qd-item{
+  padding:18px 2px;
+  border-bottom:.6px dashed rgba(0,0,0,.06);
+  cursor:pointer;
+  transition:background .18s ease;
+}
+.qd-item:last-child{border-bottom:none}
+.qd-item:active{background:rgba(0,0,0,.02)}
+.qd-item .qd-name{
+  font-size:15px;
+  font-weight:300;
+  letter-spacing:1.5px;
+  color:#1a1a1a;
+  -webkit-text-stroke:.1px #1a1a1a;
+  -webkit-font-smoothing:antialiased;
+  margin-bottom:6px;
+}
+.qd-item .qd-sub{
+  font-size:11px;
+  color:#bbb;
+  letter-spacing:.5px;
+  font-weight:300;
+}
+.qd-empty{
+  text-align:center;color:#bbb;
+  font-size:13px;padding:70px 30px;
+  line-height:2;letter-spacing:.5px;
+  font-weight:300;
+}
+.qd-empty .big{
+  display:block;font-size:26px;
+  color:#e0e0e0;margin-bottom:20px;
+}
+</style>
 <style>
 #mQuiz .sheet#quizSheet{
   max-width:340px;
@@ -33159,6 +33728,14 @@ function goToPage(name){
   box-shadow:0 20px 60px rgba(0,0,0,.14);
   padding:22px 20px 18px;
   box-sizing:border-box;
+  font-family:"Songti SC","STSong","SimSun","宋体",serif;
+}
+#mQuiz .sheet#quizSheet *{
+  font-family:"Songti SC","STSong","SimSun","宋体",serif;
+}
+#mQuizPick,
+#mQuizPick *{
+  font-family:"Songti SC","STSong","SimSun","宋体",serif !important;
 }
 #mQuiz .quiz-close{
   position:absolute;top:12px;right:12px;
@@ -33172,13 +33749,14 @@ function goToPage(name){
 #mQuiz .quiz-close:active{color:#1a1a1a}
 #mQuiz .quiz-title{
   text-align:center;
+  font-family:"Songti SC","STSong","SimSun","宋体",serif;
   font-size:15px;font-weight:300;
   letter-spacing:6px;color:#1a1a1a;
   margin-bottom:4px;
 }
 #mQuiz .quiz-sub{
   text-align:center;
-  font-family:Georgia,serif;
+  font-family:"Songti SC","STSong","SimSun","宋体",serif;
   font-size:8.5px;letter-spacing:5px;
   color:#d0d0d0;font-weight:400;
   margin-bottom:22px;
@@ -33186,6 +33764,7 @@ function goToPage(name){
 #mQuiz .quiz-field{margin-bottom:16px}
 #mQuiz .quiz-field label{
   display:block;
+  font-family:"Songti SC","STSong","SimSun","宋体",serif;
   font-size:10.5px;color:#bbb;
   letter-spacing:1.5px;
   margin-bottom:8px;font-weight:300;
@@ -33198,7 +33777,7 @@ function goToPage(name){
   border-radius:12px;
   padding:14px 16px;
   font-size:14px;
-  font-family:inherit;
+  font-family:"Songti SC","STSong","SimSun","宋体",serif;
   color:#1a1a1a;
   outline:none;
   resize:none;
@@ -33211,6 +33790,7 @@ function goToPage(name){
 #mQuiz .quiz-input:focus{background:#f5f5f5}
 #mQuiz .quiz-numrow{display:flex;align-items:center;gap:8px}
 #mQuiz .quiz-numrow .lbl{
+  font-family:"Songti SC","STSong","SimSun","宋体",serif;
   font-size:12px;color:#999;
   letter-spacing:.3px;flex:1;
 }
@@ -33221,14 +33801,14 @@ function goToPage(name){
   background:transparent;
   text-align:center;
   font-size:14px;
-  font-family:Georgia,serif;
+  font-family:"Songti SC","STSong","SimSun","宋体",serif;
   color:#1a1a1a;
   outline:none;
   padding:2px 0;
 }
 #mQuiz .quiz-numrow input[type=number]:focus{border-bottom-color:#1a1a1a}
-#mQuiz .quiz-numrow .unit{font-size:11px;color:#c8c8c8;flex:none}
-#mQuiz .quiz-numrow .to{font-size:11px;color:#c8c8c8;flex:none;margin:0 2px}
+#mQuiz .quiz-numrow .unit{font-family:"Songti SC","STSong","SimSun","宋体",serif;font-size:11px;color:#c8c8c8;flex:none}
+#mQuiz .quiz-numrow .to{font-family:"Songti SC","STSong","SimSun","宋体",serif;font-size:11px;color:#c8c8c8;flex:none;margin:0 2px}
 #mQuiz .quiz-btn{
   width:100%;
   padding:14px 0;
@@ -33239,7 +33819,7 @@ function goToPage(name){
   font-size:13.5px;
   letter-spacing:6px;
   text-indent:6px;
-  font-family:inherit;
+  font-family:"Songti SC","STSong","SimSun","宋体",serif;
   font-weight:300;
   cursor:pointer;
   margin-top:8px;
@@ -33398,15 +33978,74 @@ function goToPage(name){
 
     <!-- ★ 弹窗内的回答区：点发出后显示「正在填写 → 答案」 -->
     <div id="quizResultWrap" style="display:none;margin-top:6px;margin-bottom:4px;">
-      <div id="quizResultBox" style="border:0.7px dashed rgba(0,0,0,.14);border-radius:12px;padding:14px 16px;background:#fcfcfc;transition:background .25s ease, border-color .25s ease;">
-        <div style="font-size:8.5px;letter-spacing:2px;color:#c8c8c8;font-family:Georgia,serif;margin-bottom:8px;">ANSWER</div>
-        <div id="quizResultText" style="font-size:14.5px;line-height:1.9;color:#1a1a1a;letter-spacing:.4px;word-break:break-word;overflow-wrap:anywhere;">正在填写…</div>
+      <div id="quizResultBox" style="border:none;border-radius:12px;padding:14px 16px;background:#fff;transition:background .25s ease, border-color .25s ease;">
+        <div style="font-size:8.5px;letter-spacing:2px;color:#c8c8c8;font-family:'Songti SC','STSong','SimSun','宋体',serif;margin-bottom:8px;">ANSWER</div>
+        <div id="quizResultText" style="font-family:'Songti SC','STSong','SimSun','宋体',serif;font-size:14.5px;line-height:1.9;color:#1a1a1a;letter-spacing:.4px;word-break:break-word;overflow-wrap:anywhere;">正在填写…</div>
       </div>
     </div>
 
     <button class="quiz-btn" id="btnQuizStart" type="button">发 出 问 卷</button>
+    <button class="quiz-btn" id="btnQuizResend" type="button" style="display:none;background:#fff;color:#1a1a1a;border:0.7px solid rgba(0,0,0,.15);margin-top:10px;">再 发 一 次</button>
   </div>
 </div>
+
+<!-- ============ 问卷类型选择弹窗 ============ -->
+<div class="modal" id="mQuizPick">
+  <div class="overlay" data-close></div>
+  <div class="sheet" style="max-width:300px;border-radius:20px;padding:24px 20px 16px;box-shadow:0 20px 60px rgba(0,0,0,.14);border:0.7px solid rgba(0,0,0,.06);font-family:'Songti SC','STSong','SimSun','宋体',serif;">
+    <div class="sheet-head" style="display:block;padding:0;border-bottom:none;text-align:center;margin-bottom:22px;position:relative;">
+      <h3 style="font-family:'Songti SC','STSong','SimSun','宋体',serif;font-size:15px;font-weight:300;letter-spacing:6px;color:#1a1a1a;margin:0;">问 卷</h3>
+       <button class="x" id="quizPickCloseBtn2" type="button" onclick="document.getElementById('mQuizPick').classList.remove('show')" style="font-family:'Songti SC','STSong','SimSun','宋体',serif;position:absolute;top:-6px;right:-4px;width:28px;height:28px;border:none;background:transparent;color:#ccc;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;">✕</button>
+    </div>
+    <div class="sheet-body" style="padding:0;">
+      <div class="chk-row" id="qpSingle" style="border-radius:12px;margin-bottom:10px;font-family:'Songti SC','STSong','SimSun','宋体',serif;">
+        <div class="nm" style="font-family:'Songti SC','STSong','SimSun','宋体',serif;">单 问</div>
+        <span class="chev">›</span>
+      </div>
+       <div class="chk-row" id="qpMulti" style="border-radius:12px;font-family:'Songti SC','STSong','SimSun','宋体',serif;">
+        <div class="nm" style="font-family:'Songti SC','STSong','SimSun','宋体',serif;">多 问</div>
+        <span class="chev">›</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 问卷 · 加号菜单 -->
+<div class="modal" id="mQuizMenu">
+  <div class="overlay" data-close></div>
+  <div class="sheet" style="max-width:320px;border-radius:20px;padding:22px 20px 16px;box-shadow:0 20px 60px rgba(0,0,0,.14);border:.7px solid rgba(0,0,0,.06);font-family:'Songti SC','STSong','SimSun','宋体',serif;">
+    <div class="sheet-head" style="display:block;padding:0;border-bottom:none;text-align:center;margin-bottom:18px;position:relative;">
+      <h3 style="font-family:inherit;font-size:15px;font-weight:300;letter-spacing:6px;color:#1a1a1a;margin:0;">问 卷</h3>
+      <button class="x" data-close type="button" style="position:absolute;top:-6px;right:-4px;width:28px;height:28px;border:none;background:transparent;color:#ccc;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;">✕</button>
+    </div>
+    <div class="sheet-body" style="padding:0;">
+      <div class="chk-row" id="qmAddTpl" style="border-radius:12px;margin-bottom:8px;">
+        <div class="nm" style="font-family:inherit;">添加问卷模板</div>
+        <span class="chev">›</span>
+      </div>
+      <div class="chk-row" id="qmMyList" style="border-radius:12px;margin-bottom:8px;">
+        <div class="nm" style="font-family:inherit;">我的问卷一览</div>
+        <span class="chev">›</span>
+      </div>
+      <div class="chk-row" id="qmFavList" style="border-radius:12px;margin-bottom:8px;">
+        <div class="nm" style="font-family:inherit;">我收藏的问卷</div>
+        <span class="chev">›</span>
+      </div>
+      <div class="chk-row" id="qmImport" style="border-radius:12px;margin-bottom:8px;">
+        <div class="nm" style="font-family:inherit;">导入问卷</div>
+        <span class="chev">›</span>
+      </div>
+      <div class="chk-row" id="qmExport" style="border-radius:12px;">
+        <div class="nm" style="font-family:inherit;">导出问卷</div>
+        <span class="chev">›</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="quizImportFile" accept=".json,application/json" style="display:none">
+
+ 
 
 <!-- ============ 聊天信息面板（D 宫格方案） ============ -->
 <div class="chat-info-panel" id="chatInfoPanel">
