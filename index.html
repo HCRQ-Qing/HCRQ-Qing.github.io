@@ -14699,6 +14699,25 @@ function renderChat(forceBottom, force){
     box.scrollTop = box.scrollHeight;
   }
 
+  /* ★ 修复：轻量更新时，如果发现「上面未读、下面已读」的夹层，
+     说明已读状态机出错乱了，直接走全量重建，让 UI 跟数据一致。
+     这一步能兜住撤回 / 删除 / 快速连发等场景下的已读错乱。 */
+  let sawUnread = false;
+  let hasReadAfterUnread = false;
+  for(let i = 0; i < msgs.length; i++){
+    const x = msgs[i];
+    if(!x || x.role !== 'user') continue;
+    if(x.recalled || x.sys || x.namecard) continue;
+    if(x.readState === 'noReply') continue;
+    if(x.readState === 'unread') sawUnread = true;
+    else if(x.readState === 'read' && sawUnread){ hasReadAfterUnread = true; break; }
+  }
+  if(hasReadAfterUnread){
+    __lastRenderSig = '';
+    renderChatFull(forceBottom);
+    return;
+  }
+
   /* 3. 刷新跳到底部按钮 */
   updateScrollBottomBtn();
 }
@@ -17123,7 +17142,24 @@ function _applyReadStateUpTo(anchorMsg, state){
 
   let changed = false;
 
-  /* 1. 锚点那条：设置成 anchorState
+  /* ★ 修复：找锚点前面所有「需要一起推」的 user 消息（含未读、含夹在中间的已读）
+     根因：原逻辑只动 unread，已读/已读不回夹在中间时不处理，
+           导致「上面 unread、下面 read」的夹层，看起来就是已读了但上面还是未读。
+     新逻辑：从 0 到 idx-1，所有 user 消息统一推成 read（noReply 除外）。 */
+  for(let i = 0; i < idx; i++){
+    const x = msgs[i];
+    if(!x || x.role !== 'user') continue;
+    if(x.recalled || x.sys || x.namecard) continue;
+    /* noReply 是终态，跳过不碰 */
+    if(x.readState === 'noReply') continue;
+    if(x.readState !== 'read'){
+      x.readState = 'read';
+      x.readNoReply = false;
+      changed = true;
+    }
+  }
+
+  /* 锚点那条：设置成 anchorState
      ★ 如果它已经是 noReply（终态），就不动它 */
   const anchor = msgs[idx];
   if(anchor && anchor.role === 'user' && !anchor.recalled && !anchor.sys && !anchor.namecard){
@@ -17136,17 +17172,29 @@ function _applyReadStateUpTo(anchorMsg, state){
     }
   }
 
-  /* 2. 锚点上面的所有 unread：直接变 read
-     ★ noReply 是终态，跳过不碰 */
-  for(let i = 0; i < idx; i++){
-    const x = msgs[i];
-    if(!x || x.role !== 'user') continue;
-    if(x.recalled || x.sys || x.namecard) continue;
-    if(x.readState === 'noReply') continue;
-    if(x.readState === 'unread'){
-      x.readState = 'read';
-      x.readNoReply = false;
-      changed = true;
+  /* ★ 兜底：全量扫一遍，把「read 上面还有 unread」的错乱统一成 unread，
+     保证不会出现「上面未读、下面已读」的夹层 */
+  let sawUnread = false;
+  let hasReadAfterUnread = false;
+  for(let i = 0; i < msgs.length; i++){
+    const y = msgs[i];
+    if(!y || y.role !== 'user') continue;
+    if(y.recalled || y.sys || y.namecard) continue;
+    if(y.readState === 'noReply') continue;
+    if(y.readState === 'unread') sawUnread = true;
+    else if(y.readState === 'read' && sawUnread){ hasReadAfterUnread = true; break; }
+  }
+  if(hasReadAfterUnread){
+    for(let i = 0; i < msgs.length; i++){
+      const z = msgs[i];
+      if(!z || z.role !== 'user') continue;
+      if(z.recalled || z.sys || z.namecard) continue;
+      if(z.readState === 'noReply') continue;
+      if(z.readState !== 'unread'){
+        z.readState = 'unread';
+        z.readNoReply = false;
+        changed = true;
+      }
     }
   }
 
@@ -31161,7 +31209,35 @@ function uniCancel(){
 on('#meAvatar','click',()=>$('#meAvFile').click());
 on('#meAvFile','change',function(){
   const f = this.files[0]; this.value=''; if(!f) return;
-  openCrop(f, 'square', (data)=>{ userProfile.avatar = data; saveUser(); renderMePage(); renderChat(); toast('头像已更新'); });
+  openCrop(f, 'square', (data)=>{
+    userProfile.avatar = data;
+    saveUser();
+    renderMePage();
+    /* ★ 修复：改用户头像后，聊天界面旧消息头像也要跟着刷新
+       根因同角色头像：renderChat 的签名缓存没变，全量重绘被跳过。
+       做法：清签名 + 直调 renderChatFull + 两次延时重绘。 */
+    try{
+      try{ msgs = loadMsgs(); }catch(e){}
+      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+      if(typeof renderChatFull === 'function'){ renderChatFull(true); }
+      else if(typeof renderChat === 'function'){ renderChat(true); }
+    }catch(e){ console.error('用户头像刷新失败', e); }
+    setTimeout(function(){
+      try{
+        if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+        if(typeof renderChatFull === 'function'){ renderChatFull(true); }
+        else if(typeof renderChat === 'function'){ renderChat(true); }
+      }catch(e){}
+    }, 60);
+    setTimeout(function(){
+      try{
+        if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+        if(typeof renderChatFull === 'function'){ renderChatFull(true); }
+        else if(typeof renderChat === 'function'){ renderChat(true); }
+      }catch(e){}
+    }, 200);
+    toast('头像已更新');
+  });
 });
 on('#meQuote','click',()=>{
   const cur = userProfile.sign || '我想睡在梦里，醒在梦境';
@@ -31948,15 +32024,38 @@ on('#btnSaveEdit','click',()=>{
   refreshChatRole();
 
   /* ★ 修复：改头像后，把所有「已经存在的旧消息」的头像也一起刷成新头像
-     做法：清掉渲染签名缓存，强制走全量重建 */
+     根因：renderChat 有签名缓存（msg 数量 + 最后一条 id 没变就不重建），
+           改头像不改变这两个值，所以旧头像一直挂着。
+     做法：清掉渲染签名缓存 + 直接调 renderChatFull 全量重建 */
   try{
+    /* 1) 先把内存 msgs 从 LS 重新读一遍，保证最新 */
+    try{ msgs = loadMsgs(); }catch(e){}
+    /* 2) 清签名缓存 */
     if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+    /* 3) 直调原版全量重建，绕过所有包装层 */
     if(typeof renderChatFull === 'function'){
       renderChatFull(true);
     } else if(typeof renderChat === 'function'){
       renderChat(true);
     }
   }catch(e){ console.error('头像刷新失败', e); }
+
+  /* 再补两次延时重绘，双保险（防止某些内核把第一帧吃掉） */
+  setTimeout(function(){
+    try{
+      try{ msgs = loadMsgs(); }catch(e){}
+      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+      if(typeof renderChatFull === 'function'){ renderChatFull(true); }
+      else if(typeof renderChat === 'function'){ renderChat(true); }
+    }catch(e){}
+  }, 60);
+  setTimeout(function(){
+    try{
+      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+      if(typeof renderChatFull === 'function'){ renderChatFull(true); }
+      else if(typeof renderChat === 'function'){ renderChat(true); }
+    }catch(e){}
+  }, 200);
 
   closeChatInfo();
   toast('已保存');
