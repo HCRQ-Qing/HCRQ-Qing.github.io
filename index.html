@@ -9196,21 +9196,18 @@ body[data-bubble="custom"] .gch-bubble{
    每次你更新 index.html，把这个数字 +1（或改成日期）
    用户刷新页面时，如果发现版本号变了，就弹提醒让他再刷新一次。
 */
-window.__APP_VERSION__ = '1.0.8';
+window.__APP_VERSION__ = '1.0.9';
 
 /* ★ 更新日志：每次改完代码，把版本号和内容改一下。
    用户看到版本号变了，开屏就会弹一次，告诉他更新了什么。
    如果不想弹，把下面的数组清空即可。 */
 window.__APP_CHANGELOG__ = [
-  '重构已读逻辑：消息发出后按随机延迟自动变已读',
-  '已读延迟可在「回复设置 → 回复」自调，默认 1~10 秒',
-  '触发已读时，它上面的未读会一起推成已读，已读不回同样往上推',
-  '角色开始打字时，当前所有未读消息立刻变已读',
-  '已读不回改为独立概率，可在「回复设置 → 回复」自调',
-  '删除 30 秒回滚、2 分钟冷却重摇两处旧逻辑',
-  '新增引用概率可调，默认 8%，可在「回复设置 → 回复」调整',
-  '引用范围扩大到角色自己的话，你的话和 Ta 的话各占一半概率',
-  '引用方式可调：引整段 / 引部分，概率互补，默认 80% / 20%'
+  '后台通知升级：SW 通道 + 队列补发 + 四级降级 + 超时保护',
+  '解决通知"有时候弹两条"的问题：超时不再重发',
+  '解决通知"弹了但点不进聊天"的问题：点击能定位到具体角色',
+  'SW 没就绪时通知会挂队列，60 秒内就绪自动补发',
+  '通知代码结构对齐 bg-keep，稳定性和可维护性提升',
+  '关于页补充后台通知保活的借鉴来源'
 ];
 
 /* ★ 把版本号显示在网页标题上，你在雨见标签页就能看到 */
@@ -10022,7 +10019,7 @@ window.__APP_CHANGELOG__ = [
     <div class="sec-title">NOTICE</div>
     <div class="sec-title-cn">借 鉴 声 明</div>
     <div class="notice">
-      <p>本网站的部分功能（包含但不限于拼音字卡、时间段字卡、天气字卡等功能），均为本人构思的设计，虽然做出的时间较晚，但曾在自己的评论区透露出不少灵感。功能本身没有专利，灵感也可能撞车。但不管怎么样，如果借鉴使用我的功能或想法，请标注署名，感谢理解！</p>
+      <p>本网站的部分功能（包含但不限于单字字卡、时间段字卡、天气字卡等功能），均为本人构思的设计，虽然做出的时间较晚，但曾在自己的评论区透露出不少灵感。功能本身没有专利，灵感也可能撞车。但不管怎么样，如果借鉴使用我的功能或想法，请标注署名，感谢理解！</p>
       <p style="font-size:11.5px;color:#bbb;margin-top:18px">联系作者请找：@001（小红书号 27739216821）</p>
     </div>
 
@@ -10031,7 +10028,7 @@ window.__APP_CHANGELOG__ = [
     <div class="thanks">
       选择功能借鉴 <b>@FelixFelicis</b><br>
       <span class="id">小红书号：9416318007</span><br><br>
-      吐槽、收藏功能借鉴 <b>@言序</b><br>
+      吐槽、收藏、后台通知保活逻辑借鉴 <b>@言序</b><br>
       <span class="id">小红书号：1842523578</span><br><br>
       公用字卡和专享字卡、语音、拼好卡功能借鉴 <b>@默玉</b><br>
       <span class="id">小红书号：8012400317</span>
@@ -15928,22 +15925,27 @@ function _applyReadStateUpTo(anchorMsg, state){
 
   let changed = false;
 
-  /* 1. 锚点那条：设置成 anchorState */
+  /* 1. 锚点那条：设置成 anchorState
+     ★ 如果它已经是 noReply（终态），就不动它 */
   const anchor = msgs[idx];
   if(anchor && anchor.role === 'user' && !anchor.recalled && !anchor.sys && !anchor.namecard){
-    if(anchor.readState !== anchorState || !!anchor.readNoReply !== (anchorState === 'noReply')){
-      anchor.readState = anchorState;
-      anchor.readNoReply = (anchorState === 'noReply');
-      changed = true;
+    if(anchor.readState !== 'noReply'){
+      if(anchor.readState !== anchorState || !!anchor.readNoReply !== (anchorState === 'noReply')){
+        anchor.readState = anchorState;
+        anchor.readNoReply = (anchorState === 'noReply');
+        changed = true;
+      }
     }
   }
 
-  /* 2. 锚点上面的所有 unread：直接变 read */
+  /* 2. 锚点上面的所有 unread：直接变 read
+     ★ noReply 是终态，跳过不碰 */
   for(let i = 0; i < idx; i++){
     const x = msgs[i];
     if(!x || x.role !== 'user') continue;
     if(x.recalled || x.sys || x.namecard) continue;
-    if(x.readState === 'unread' || x.readState === 'noReply'){
+    if(x.readState === 'noReply') continue;
+    if(x.readState === 'unread'){
       x.readState = 'read';
       x.readNoReply = false;
       changed = true;
@@ -16013,6 +16015,8 @@ function appendMsgToRole(roleId, msg){
       else if(msg.videoCard) notifyText = '[视频] ' + (msg.videoCard.title || '');
       else if(msg.divine) notifyText = '[占卜] ' + (msg.divine.q || '');
       if(notifyText){
+        /* ★ 先把角色 id 挂上，再弹通知 —— 这样通知点击能定位到具体角色 */
+        window.__lastNotifyRoleId = roleId;
         showMsgNotify(role.name || '角色', notifyText, role.avatar, roleId);
       }
     }
@@ -16326,6 +16330,24 @@ function showMsgNotify(roleName, text, roleAvatar, targetRoleId){
   showSystemNotify(roleName, text);
 }
 
+/* ★ 带 roleId 的版本：通知点击时能定位到具体角色 */
+window.__showSystemNotifyWithRole = function(roleName, text, roleId){
+  try{
+    /* 把目标 roleId 挂到全局，showSystemNotify 内部会读它 */
+    if(roleId) window.__lastNotifyRoleId = roleId;
+    showSystemNotify(roleName, text);
+  }catch(e){ console.error('带 roleId 的系统通知失败', e); }
+};
+
+/* ============================================================
+   ★ 通知点击 · 主页面侧的完整闭环
+   流程：
+     1. 用户点了通知栏的某条通知
+     2. SW 的 notificationclick 触发 → 写 IndexedDB + 给所有页面 postMessage
+     3. 主页面收到 postMessage → 调 notifyRoute 跳转
+     4. 如果页面当时不在 / 已关闭 → 下次打开时读 IndexedDB 补跳
+   ============================================================ */
+
 /* ===== 系统级通知（后台也能弹） =====
    - 首次调用时向浏览器请求通知权限
    - 授权后，配合页面里的定时器（角色主动发消息、主动占卜、视频调度），
@@ -16482,6 +16504,13 @@ function requestSysNotifyPermission(){
    - 手机 Chromium 禁止 new Notification()，必须走 SW 的 showNotification
    - 页面加载时注册一次，之后 showSystemNotify 直接用它
    ============================================================ */
+/* ============================================================
+   ★ SW 注册 · bg-keep 同款
+   - 用相对路径 './sw.js'，部署到子路径也能跑
+   - 加 scope: './'
+   - 加超时：注册 5 秒内没回执就算失败，不卡死页面
+   - 对外暴露 window.__swReg / window.__swReady
+   ============================================================ */
 var __swRegistration = null;
 var __swReady = null;
 function ensureServiceWorker(){
@@ -16490,22 +16519,106 @@ function ensureServiceWorker(){
     __swReady = Promise.resolve(null);
     return __swReady;
   }
-  __swReady = navigator.serviceWorker.register('/sw.js', { scope: '/' })
-    .then(function(reg){
-      __swRegistration = reg;
-      return navigator.serviceWorker.ready;
-    })
-    .then(function(reg){
-      __swRegistration = reg;
-      return reg;
-    })
-    .catch(function(err){
-      console.warn('Service Worker 注册失败', err);
-      return null;
-    });
+  __swReady = kaWithTimeout(function(){
+    return navigator.serviceWorker.register('./sw.js', { scope: './' });
+  }, 5000).then(function(reg){
+    __swRegistration = reg;
+    /* register 成功后，等 ready（ready 才是"接管页面"的那一刻） */
+    return kaWithTimeout(navigator.serviceWorker.ready, 5000).then(function(r){
+      if(r) __swRegistration = r;
+      return r || reg;
+    }).catch(function(){ return reg; });
+  }).catch(function(err){
+    console.warn('Service Worker 注册失败', err);
+    return null;
+  });
+  window.__swReady = __swReady;
   return __swReady;
 }
 try{ ensureServiceWorker(); }catch(e){ console.error(e); }
+/* ============================================================
+   ★ 通知点击 · 主页面侧
+   - SW 点击通知时，会往 IndexedDB 写一条 'xy-home-v2:__notify-click'
+   - 主页面收到或启动时读它 → 知道用户点了哪条 → 跳到对应角色聊天页
+   - SW 也会 postMessage({ type:'MOCHI_NOTIFY_CLICK', tag })，主页面实时响应
+   ============================================================ */
+
+/* 从 tag 里解析出「kind / cid / tag」：
+   tag 格式约定：'nk|<kind>|<cid>|<随机>' */
+function notifyEntryFromTag(tag){
+  try{
+    var p = String(tag || '').split('|');
+    if(p[0] !== 'nk' || p.length < 4) return null;
+    return { kind: p[1], cid: p[2], tag: String(tag) };
+  }catch(e){ return null; }
+}
+
+/* 跳到某条消息的目标角色 / 目标页面 */
+function notifyRoute(entry){
+  try{
+    if(entry && entry.cid && window.setActiveContact && entry.cid !== (window.__activeCid || 'default')){
+      window.setActiveContact(entry.cid);
+    }
+  }catch(e){}
+  try{
+    if(entry && entry.kind === 'mail' && typeof window.openMailPage === 'function'){
+      window.openMailPage(); return true;
+    }
+    if(typeof window.enterChat === 'function'){ window.enterChat(); return true; }
+  }catch(x){}
+  return false;
+}
+
+/* 读 IndexedDB 里的点击回执（页面启动时 / 收到 postMessage 时调） */
+function notifyPendingClick(cb){
+  try{
+    if(!window.idbGet){ cb(null); return; }
+    Promise.resolve(window.idbGet('xy-home-v2:__notify-click')).then(function(raw){
+      if(!raw){ cb(null); return; }
+      try{ if(window.idbDelete) window.idbDelete('xy-home-v2:__notify-click'); }catch(e0){}
+      var o = raw;
+      try{ if(typeof raw === 'string') o = JSON.parse(raw); }catch(e1){ cb(null); return; }
+      if(!o || !o.tag || !o.ts || Date.now() - o.ts > 3 * 60000){ cb(null); return; }
+      cb(notifyEntryFromTag(String(o.tag)));
+    }, function(){ cb(null); });
+  }catch(e){ cb(null); }
+}
+
+/* 对外暴露，方便其它模块调 */
+window.xyPendingNotifyClick = function(){
+  return new Promise(function(res){
+    try{ notifyPendingClick(res); }catch(e){ res(null); }
+  });
+};
+
+/* ★ 收到 SW 的 MOCHI_NOTIFY_CLICK 消息时，实时跳转 */
+try{
+  if('serviceWorker' in navigator && navigator.serviceWorker){
+    navigator.serviceWorker.addEventListener('message', function(e){
+      if(!e || !e.data || e.data.type !== 'MOCHI_NOTIFY_CLICK') return;
+      var entry = null;
+      try{ entry = notifyEntryFromTag(String(e.data.tag || '')); }catch(x){}
+      notifyRoute(entry);
+    });
+  }
+}catch(e){}
+
+/* ★ 页面启动时，先看有没有待处理的点击回执 */
+try{
+  var _bootRoute = function(){
+    try{ notifyPendingClick(function(en){ if(en) notifyRoute(en); }); }catch(e0){}
+  };
+  if(window.mochiOnDataReady) window.mochiOnDataReady(_bootRoute);
+  else document.addEventListener('mochi-restore-done', _bootRoute);
+  /* 兜底：3 秒后没触发也跑一次 */
+  setTimeout(_bootRoute, 3000);
+}catch(e){}
+/* ★ SW 接管页面后打印一次，方便排查 */
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener('controllerchange', function(){
+    console.log('[SW] 已接管页面');
+  });
+}
 
 /* ★ SW 接管页面后打印一次，方便排查 */
 if('serviceWorker' in navigator){
@@ -16582,6 +16695,152 @@ function _showPersistentNotification(title, body){
   });
 })();
 
+/* ============================================================
+   ★ 系统通知 · bg-keep 同款
+   - 优先 SW 通道（reg.showNotification）
+   - SW 没就绪 → 挂队列，60 秒内就绪就补发
+   - 四级降级（剥 image / badge / icon），一路到 page 兜底
+   - 4 秒超时保护：只要内核回执没落地，按"已挂出"收手，绝不重发
+   - 通道诊断：lastNotifyChannel = 'sw' / 'page' / 'none'
+   ============================================================ */
+let lastNotifyChannel = '';
+window.bgNotifyLastChannel = function(){ return lastNotifyChannel; };
+let swLaterQueue = [];
+let swLaterTimer = null;
+
+function swNotifyNote(ch, chanOut){
+  lastNotifyChannel = ch;
+  if(typeof chanOut === 'function'){ try{ chanOut(ch); }catch(e){} }
+}
+
+/* SW 就绪等待：最多 60 秒。到点还没就绪 → 视为挂起 */
+function swNotifyLater(title, opts, chanOut){
+  if(!('serviceWorker' in navigator) || !navigator.serviceWorker){
+    swNotifyNote('none', chanOut);
+    return;
+  }
+  swLaterQueue.push({ title: title, opts: opts, chanOut: chanOut });
+  if(swLaterTimer) return;
+  swLaterTimer = setTimeout(function(){ swLaterFlush(null); }, 60000);
+  kaWithTimeout(navigator.serviceWorker.ready, 60000).then(swLaterFlush, function(){ swLaterFlush(null); });
+}
+
+function swLaterFlush(reg){
+  if(!swLaterTimer) return;
+  clearTimeout(swLaterTimer); swLaterTimer = null;
+  if(document.visibilityState !== 'hidden'){
+    for(let i = 0; i < swLaterQueue.length; i++) swNotifyNote('none', swLaterQueue[i].chanOut);
+    swLaterQueue = [];
+    return;
+  }
+  const q = swLaterQueue; swLaterQueue = [];
+  if(!reg){
+    for(let i = 0; i < q.length; i++) swNotifyNote('none', q[i].chanOut);
+    return;
+  }
+  for(let i = 0; i < q.length; i++){
+    const o = Object.assign({}, q[i].opts);
+    delete o.image; delete o.icon; delete o.badge;
+    if(!o.urgency) o.urgency = 'high';
+    try{
+      reg.showNotification(q[i].title, o);
+      swNotifyNote('sw', q[i].chanOut);
+    }catch(e){
+      swNotifyNote('none', q[i].chanOut);
+    }
+  }
+}
+
+/* 超时包装：p 是 Promise 或返回 Promise 的函数 */
+function kaWithTimeout(p, ms){
+  return new Promise(function(resolve, reject){
+    let done = false;
+    const t = setTimeout(function(){
+      if(!done){ done = true; const te = new Error('ka-timeout'); te.kaTimeout = true; reject(te); }
+    }, ms);
+    try{
+      const pr = (typeof p === 'function') ? p() : p;
+      Promise.resolve(pr).then(function(v){
+        if(!done){ done = true; clearTimeout(t); resolve(v); }
+      }, function(e){
+        if(!done){ done = true; clearTimeout(t); reject(e); }
+      });
+    }catch(e){
+      if(!done){ done = true; clearTimeout(t); reject(e); }
+    }
+  });
+}
+
+/* 等 SW 就绪：先看 getRegistration，不行再 register + ready，最多 5 秒 */
+function kaSWReady(){
+  if(!('serviceWorker' in navigator) || !navigator.serviceWorker) return Promise.resolve(null);
+  const start = function(){
+    return navigator.serviceWorker.getRegistration().then(function(reg){
+      return (reg && reg.active) ? reg : null;
+    }).catch(function(){ return null; }).then(function(reg){
+      if(reg) return reg;
+      try{ navigator.serviceWorker.register('./sw.js').catch(function(){}); }catch(e){}
+      return kaWithTimeout(navigator.serviceWorker.ready, 4000).then(function(r2){
+        return r2 || null;
+      }).catch(function(){ return null; });
+    });
+  };
+  return kaWithTimeout(start(), 5000).catch(function(){ return null; });
+}
+
+/* 媒体 Blob 预处理：dataURL → objectURL（部分内核不收 data: 图） */
+function dataUrlToBlob(dataUrl, cb){
+  try{
+    fetch(dataUrl).then(function(r){ return r.blob(); }).then(function(b){
+      cb(b && b.size ? b : null);
+    }, function(){ cb(null); });
+  }catch(e){ cb(null); }
+}
+function prepMediaBlobs(target, done){
+  const keys = ['icon', 'badge', 'image'];
+  let pending = 0;
+  const finish = function(){ if(!pending && done){ const d = done; done = null; d(); } };
+  keys.forEach(function(k){
+    const v = target[k];
+    if(typeof v === 'string' && v.indexOf('data:') === 0){
+      pending++;
+      dataUrlToBlob(v, function(b){
+        if(b){
+          try{ target[k] = URL.createObjectURL(b); }catch(e){ delete target[k]; }
+        } else {
+          delete target[k];
+        }
+        if(--pending === 0) finish();
+      });
+    }
+  });
+  finish();
+}
+
+function _fallbackNewNotification(title, opts){
+  try{
+    var n = new Notification(title || '角色', {
+      body: opts.body,
+      tag: opts.tag
+    });
+    n.onclick = function(){
+      try{ window.focus(); }catch(e){}
+      try{
+        if(window.__lastNotifyRoleId && typeof switchToRole === 'function'){
+          if(getCurrentRoleId() !== window.__lastNotifyRoleId){
+            switchToRole(window.__lastNotifyRoleId);
+          }
+          if(typeof goToPage === 'function') goToPage('chat');
+        }
+      }catch(e){}
+      n.close();
+    };
+    setTimeout(function(){ try{ n.close(); }catch(e){} }, 8000);
+  }catch(e){
+    console.warn('降级 new Notification 也失败', e);
+  }
+}
+
 function showSystemNotify(title, body){
   try{
     if(!('Notification' in window)) return;
@@ -16592,74 +16851,85 @@ function showSystemNotify(title, body){
       if(typeof getCurrentRoleId === 'function'){ window.__lastNotifyRoleId = getCurrentRoleId(); }
     }catch(e){}
 
-    /* 只要不是"明确在前台且页面可见"就允许弹。
-       雨见等国产内核切后台后 visibilityState 有时不更新，
-       原来只靠 visibilityState/hidden 判断会误判成"还在前台"，直接 return。 */
+    /* 只要不是"明确在前台且页面可见"就允许弹 */
     const onScreen = (document.visibilityState === 'visible')
                   && (!document.hidden)
                   && (!window.visualViewport || window.visualViewport.height > 0);
     const isBg = !onScreen;
     if(!isBg) return;
 
-    /* 每条通知独立 tag，避免互相覆盖 */
+    const finalTitle = String(title || '角色').trim() || '角色';
+    const finalBody  = String(body || '').trim();
+
+    /* 构造基础 options */
     var __notifyTag = 'mj-msg-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6);
+    var swOpts = {
+      body: finalBody.slice(0, 60),
+      tag: __notifyTag,
+      renotify: true,
+      silent: false,
+      requireInteraction: true,
+      urgency: 'high',
+      data: { roleId: window.__lastNotifyRoleId || '' }
+    };
 
-    var finalTitle = String(title || '角色').trim() || '角色';
-    var finalBody  = String(body || '').trim();
-
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.ready.then(function(reg){
-        if(reg && typeof reg.showNotification === 'function'){
-          /* ★ 先取消掉"保活"通知，避免它占着通知栏
-             —— 保活通知的 tag 前缀是 mj-keepalive-，这里把它们全关掉 */
-          try{
-            reg.getNotifications().then(function(list){
-              (list || []).forEach(function(n){
-                if(n && n.tag && n.tag.indexOf('mj-keepalive-') === 0){
-                  try{ n.close(); }catch(e){}
-                }
-              });
-            }).catch(function(){});
-          }catch(e){}
-
-          try{
-            var finalPayload = {
-              body: finalBody.slice(0, 60),
-              tag: __notifyTag,
-              renotify: true,
-              silent: false,
-              requireInteraction: true,
-              data: { roleId: window.__lastNotifyRoleId || '' }
-            };
-            console.log('[通知] 发出:', finalTitle, finalBody);
-            reg.showNotification(finalTitle, finalPayload).catch(function(e){
-              console.warn('showNotification 失败', e);
-              _fallbackNewNotification(finalTitle, finalPayload);
-            });
-          }catch(e){
-            console.warn('showNotification 抛错', e);
-            _fallbackNewNotification(finalTitle, finalPayload);
-          }
-        } else {
+    /* 走 SW 通道 */
+    if('serviceWorker' in navigator && navigator.serviceWorker){
+      kaSWReady().then(function(reg){
+        if(!reg){
+          /* SW 没就绪：挂队列，60 秒内就绪就补发；同时退回 page 弹 */
+          swNotifyLater(finalTitle, swOpts, null);
           _fallbackNewNotification(finalTitle, {
             body: finalBody.slice(0, 60),
             tag: __notifyTag
           });
+          swNotifyNote('page');
+          return;
         }
-      }).catch(function(e){
-        console.warn('SW ready 失败', e);
+        /* 四级降级：从完整 options 一路剥到只剩 title + body */
+        const STRIP_LADDER = [[], ['image'], ['image', 'badge'], ['image', 'badge', 'icon']];
+        let ladderIdx = 0;
+        const tryNext = function(){
+          if(ladderIdx >= STRIP_LADDER.length){
+            swNotifyNote('none');
+            _fallbackNewNotification(finalTitle, {
+              body: finalBody.slice(0, 60),
+              tag: __notifyTag
+            });
+            return;
+          }
+          const attempt = Object.assign({}, swOpts);
+          STRIP_LADDER[ladderIdx++].forEach(function(k){ delete attempt[k]; });
+          prepMediaBlobs(attempt, function(){
+            kaWithTimeout(function(){ return reg.showNotification(finalTitle, attempt); }, 4000)
+            .then(function(){
+              swNotifyNote('sw');
+            }, function(e){
+              if(e && e.kaTimeout){
+                /* 超时：内核回执没落地 → 按"已挂出"收手，绝不重发 */
+                swNotifyNote('sw');
+                return;
+              }
+              /* 其它错误 → 进下一级降级 */
+              tryNext();
+            });
+          });
+        };
+        tryNext();
+      }).catch(function(){
         _fallbackNewNotification(finalTitle, {
           body: finalBody.slice(0, 60),
           tag: __notifyTag
         });
+        swNotifyNote('page');
       });
     } else {
       _fallbackNewNotification(finalTitle, {
         body: finalBody.slice(0, 60),
         tag: __notifyTag
       });
+      swNotifyNote('page');
     }
-
   }catch(e){
     console.error('系统通知失败', e);
   }
