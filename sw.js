@@ -10,11 +10,59 @@ self.addEventListener('activate', function(e){
   e.waitUntil(self.clients.claim());
 });
 
-/* 处理通知点击：聚焦已有页面 */
+/* 处理通知点击：写回执到 IndexedDB + 通知主页面跳转 + 聚焦已有页面 */
 self.addEventListener('notificationclick', function(e){
   e.notification.close();
+
+  var tag = '';
+  try { tag = (e.notification && e.notification.tag) || ''; } catch(err) {}
+
+  /* 1. 先把点击回执写进 IndexedDB，主页面下次进来/收消息时能读到，用它跳转 */
+  var writeClick = (function(){
+    try{
+      return new Promise(function(resolve){
+        var req = indexedDB.open('mj_big_files', 1);
+        req.onupgradeneeded = function(ev){
+          var db = ev.target.result;
+          if(!db.objectStoreNames.contains('files')){
+            db.createObjectStore('files');
+          }
+        };
+        req.onsuccess = function(ev){
+          var db = ev.target.result;
+          try{
+            var tx = db.transaction('files', 'readwrite');
+            var store = tx.objectStore('files');
+            store.put({ tag: tag, ts: Date.now() }, 'xy-home-v2:__notify-click');
+            tx.oncomplete = function(){ try{ db.close(); }catch(err){} resolve(true); };
+            tx.onerror = function(){ try{ db.close(); }catch(err){} resolve(false); };
+            tx.onabort = function(){ try{ db.close(); }catch(err){} resolve(false); };
+          }catch(err){
+            try{ db.close(); }catch(err2){}
+            resolve(false);
+          }
+        };
+        req.onerror = function(){ resolve(false); };
+      });
+    }catch(err){
+      return Promise.resolve(false);
+    }
+  })();
+
+  /* 2. 通知主页面：我要跳了，你准备一下 */
+  var tellClients = self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(list){
+    list.forEach(function(c){
+      try{
+        c.postMessage({ type: 'MOCHI_NOTIFY_CLICK', tag: tag });
+      }catch(err){}
+    });
+    return list;
+  });
+
+  /* 3. 聚焦已有页面，没有就开一个新窗口 */
   e.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(list){
+    Promise.all([writeClick, tellClients]).then(function(results){
+      var list = results[1] || [];
       for(var i = 0; i < list.length; i++){
         var c = list[i];
         if(c.url.indexOf(self.location.origin) === 0 && 'focus' in c){
@@ -22,7 +70,11 @@ self.addEventListener('notificationclick', function(e){
         }
       }
       if(self.clients.openWindow){
-        return self.clients.openWindow('/');
+        return self.clients.openWindow('./');
+      }
+    }).catch(function(){
+      if(self.clients.openWindow){
+        return self.clients.openWindow('./');
       }
     })
   );
