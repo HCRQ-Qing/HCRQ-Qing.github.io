@@ -17020,6 +17020,7 @@ function runTimedReplyRounds(){
         if(bar) bar.classList.remove('show');
         if(res[0].kind==='bubbles'){
           /* 引用：跟 emitBubbles 同款逻辑 */
+          const r = getReply();
           const _qr = (typeof r.quoteRate === 'number') ? r.quoteRate : 0.08;
           let quote = null;
           if(Math.random() < _qr){
@@ -17354,6 +17355,7 @@ function runReplyChain(onDone){
         /* 引用：先掷 quoteRate 决定这次引不引；
            中了之后，50% 从"我"的话里挑，50% 从"角色"的话里挑；
            挑到之后，再按 quoteFullRate / quotePartRate 决定引整段还是引部分 */
+        const r = getReply();
         const _qr = (typeof r.quoteRate === 'number') ? r.quoteRate : 0.08;
         let quote = null;
         if(Math.random() < _qr){
