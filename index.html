@@ -9196,23 +9196,21 @@ body[data-bubble="custom"] .gch-bubble{
    每次你更新 index.html，把这个数字 +1（或改成日期）
    用户刷新页面时，如果发现版本号变了，就弹提醒让他再刷新一次。
 */
-window.__APP_VERSION__ = '1.0.7';
+window.__APP_VERSION__ = '1.0.8';
 
 /* ★ 更新日志：每次改完代码，把版本号和内容改一下。
    用户看到版本号变了，开屏就会弹一次，告诉他更新了什么。
    如果不想弹，把下面的数组清空即可。 */
 window.__APP_CHANGELOG__ = [
-  '新增个签切换：字卡页 → 任意分组 → ⋯ → 个签切换设置',
-  '个签切换支持：Ta 随机换自己的个签、Ta 随机换你的个签',
-  '个签切换支持：邀请 Ta 现在切换自己的 / 你的个签，Ta 有 30% 概率拒绝',
-  '个签切换走 1~21 天随机周期，每个角色独立计时',
-  '新增「拒绝」字卡分类：Ta 拒绝邀请时从这里抽一条理由',
-  '优化卡片样式：回复设置、动态设置、个签切换，全部统一为极简风',
-  '新增聊天图片上传：输入栏 ＋ → 图片，支持多选、点击放大',
-  '新增群聊图片上传：群聊输入栏 ＋ → 图片',
-  '优化后台保活：元素级绑定，避免开关不生效',
-  '修复聊天卡片不刷新：保存后立刻显示，不用重开页面',
-  '修复特别关心占位：从个人界面移除（功能未实现）'
+  '重构已读逻辑：消息发出后按随机延迟自动变已读',
+  '已读延迟可在「回复设置 → 回复」自调，默认 1~10 秒',
+  '触发已读时，它上面的未读会一起推成已读，已读不回同样往上推',
+  '角色开始打字时，当前所有未读消息立刻变已读',
+  '已读不回改为独立概率，可在「回复设置 → 回复」自调',
+  '删除 30 秒回滚、2 分钟冷却重摇两处旧逻辑',
+  '新增引用概率可调，默认 8%，可在「回复设置 → 回复」调整',
+  '引用范围扩大到角色自己的话，你的话和 Ta 的话各占一半概率',
+  '引用方式可调：引整段 / 引部分，概率互补，默认 80% / 20%'
 ];
 
 /* ★ 把版本号显示在网页标题上，你在雨见标签页就能看到 */
@@ -12699,7 +12697,14 @@ const DEFAULT_REPLY = {
   divineReadRate:0.50,        /* 占卜完那一刻的触发概率（默认 50%） */
   divineReadCardMax:3,        /* 用几张字卡拼理解（默认 3） */
   divineReadMaxTimes:4,       /* 每张占卜卡最多追加 4 次角色理解 */
-  divineReadLastFireAt:0
+  divineReadLastFireAt:0,
+  /* ★ 已读延迟 & 已读不回概率 */
+  readDelayMin:1,             /* 消息发出后多少秒起开始可能变已读 */
+  readDelayMax:10,            /* 最晚多少秒变已读 */
+  noReplyRate:0.6,            /* 触发已读时，判成"已读不回"的概率 */
+  quoteRate:0.08,             /* 回复时引用旧消息的概率 */
+  quoteFullRate:0.8,          /* 引用时，引整段的概率 */
+  quotePartRate:0.2           /* 引用时，引部分的概率（= 1 - quoteFullRate） */
 };
 let replyMap = lsGet(REPLY_KEY, {});
 function getReply(roleId){
@@ -12732,6 +12737,13 @@ function getReply(roleId){
   if(typeof r.divineOn !== 'boolean') r.divineOn = true;
   if(typeof r.divineRate !== 'number')  r.divineRate = 0.05;
   if(typeof r.divineLastFireAt !== 'number') r.divineLastFireAt = 0;
+  /* ★ 已读延迟 & 已读不回概率 兼容老数据 */
+  if(typeof r.readDelayMin !== 'number') r.readDelayMin = 1;
+  if(typeof r.readDelayMax !== 'number') r.readDelayMax = 10;
+  if(typeof r.noReplyRate !== 'number')  r.noReplyRate = 0.6;
+  if(typeof r.quoteRate !== 'number')    r.quoteRate = 0.08;
+  if(typeof r.quoteFullRate !== 'number') r.quoteFullRate = 0.8;
+  if(typeof r.quotePartRate !== 'number') r.quotePartRate = 0.2;
   /* ★ 角色写理解 · 兼容老数据 */
   if(typeof r.divineReadOn !== 'boolean')        r.divineReadOn = true;
   if(typeof r.divineReadRate !== 'number')       r.divineReadRate = 0.50;
@@ -15811,24 +15823,32 @@ function sendMessage(){
 	msgs.push(m);
 	inp.value = ''; inp.style.height = 'auto';
 	m.readState = 'unread';
-	/* ★ 修复：发新消息时，把「已读不回」标记全部清掉。
-	   原因：noReply 是终态，一旦触发，_applyReadStateUpTo 会跳过它，
-	   导致旧消息永远卡在「已读不回」，即使对方已经开始回复。
-	   这里在发消息瞬间就把所有 noReply 清成 unread，
-	   让新的已读状态机从干净状态开始跑。 */
-	msgs.forEach(function(x){
-	  if(x && x.role === 'user' && !x.recalled && !x.sys && !x.namecard){
-	    if(x.readState === 'noReply' || x.readNoReply){
-	      x.readState = 'unread';
-	      x.readNoReply = false;
-	    }
-	  }
-	});
+	m.readNoReply = false;
 	saveMsgs(); renderChat(true);
-	armReadCooldown();
+
+	/* ★ 每条消息独立启动一个 1~10 秒的定时器，到点把它推到已读 */
+	armReadTimer(m);
+
 	triggerReply();
-	/* 发完后不抢焦点：避免点发送时弹起键盘 */
   }catch(err){ console.error('sendMessage error:', err); toast('发送失败：'+err.message); }
+}
+
+/* ★ 给单条消息安排一个随机 1~10 秒的已读定时器 */
+function armReadTimer(msg){
+  if(!msg || !msg.id) return;
+  const r = getReply();
+  const min = (typeof r.readDelayMin === 'number') ? r.readDelayMin : 1;
+  const max = (typeof r.readDelayMax === 'number') ? r.readDelayMax : 10;
+  const wait = (min + Math.random() * Math.max(0, max - min)) * 1000;
+  if(msg._readTimer) clearTimeout(msg._readTimer);
+  msg._readTimer = setTimeout(function(){
+    /* 中途被删/撤回，就不推了 */
+    const cur = msgs.find(x => x.id === msg.id);
+    if(!cur || cur.recalled || cur.sys) return;
+    if(cur.readState === 'read' || cur.readState === 'noReply') return;
+    /* 用锚点推：这条以及它上面的未读，一起变已读（锚点掷骰子） */
+    _applyReadStateUpTo(cur, 'read');
+  }, wait);
 }
 /* ===== 已读状态机 ===== */
 // 给指定消息安排「未读 → 已读」的时间
@@ -15876,41 +15896,16 @@ function showTypingHint(){
   return ()=> hideTypingBar();
 }
 
-/* 把某条 user 消息及其之前所有同角色、未撤回、非系统的 user 消息，
-   统一改成同一个 readState。理由：消息是有先后的，
-   后面的消息都读了，前面的不可能还停在"未读"。 */
+/* 把某条 user 消息以及它上面的所有未读 user 消息，统一推成同一个状态。
+   规则：
+     1. 锚点那条消息：掷一次骰子决定是 read 还是 noReply
+     2. 它上面的所有 unread：直接改成 read（不掷骰子）
+     3. 它下面的所有消息：不动
+*/
 function _applyReadStateUpTo(anchorMsg, state){
   if(!Array.isArray(msgs) || !msgs.length) return;
 
-  /* ============================================================
-     规则（已按你的需求重写）：
-     1. 只要触发的是「已读」，就把全聊天里所有 user 消息
-        全部一次性改成「已读」，包括之前标成 noReply 的（已读不回）
-        —— 因为对方一旦回复了，就说明前面的都看了，不能还挂着"已读不回"
-     2. noReply（已读不回）是"对方还没回"时才允许存在的状态，
-        一旦对方回复、进入 read 状态，全部清成 read
-     3. 其他状态（noReply 本身）只影响从锚点往前，不动后面的
-     ============================================================ */
-  if(state === 'read'){
-    let changed = false;
-    for(let i = 0; i < msgs.length; i++){
-      const x = msgs[i];
-      if(!x || x.role !== 'user') continue;
-      if(x.recalled || x.sys || x.namecard) continue;
-      /* 关键修复：不再跳过 noReply，一律清成 read */
-      if(x.readState === 'read' && !x.readNoReply) continue;
-      x.readState = 'read';
-      x.readNoReply = false;
-      changed = true;
-    }
-    if(changed){
-      saveMsgs();
-      if(!window.__jumpingToMsg) renderChat();
-    }
-    return;
-  }
-
-  /* 非 read 的状态（noReply）：从锚点往前影响 */
+  /* 找到锚点下标 */
   let idx = -1;
   if(anchorMsg && anchorMsg.id){
     for(let i = 0; i < msgs.length; i++){
@@ -15925,20 +15920,48 @@ function _applyReadStateUpTo(anchorMsg, state){
   }
   if(idx < 0) return;
 
+  /* 锚点状态：如果传进来的是 'read'，就掷骰子决定 read 还是 noReply */
+  let anchorState = state;
+  if(state === 'read'){
+    anchorState = rollNoReply() ? 'noReply' : 'read';
+  }
+
   let changed = false;
-  for(let i = 0; i <= idx; i++){
+
+  /* 1. 锚点那条：设置成 anchorState */
+  const anchor = msgs[idx];
+  if(anchor && anchor.role === 'user' && !anchor.recalled && !anchor.sys && !anchor.namecard){
+    if(anchor.readState !== anchorState || !!anchor.readNoReply !== (anchorState === 'noReply')){
+      anchor.readState = anchorState;
+      anchor.readNoReply = (anchorState === 'noReply');
+      changed = true;
+    }
+  }
+
+  /* 2. 锚点上面的所有 unread：直接变 read */
+  for(let i = 0; i < idx; i++){
     const x = msgs[i];
     if(!x || x.role !== 'user') continue;
     if(x.recalled || x.sys || x.namecard) continue;
-    if(x.readState === state && !!x.readNoReply === (state === 'noReply')) continue;
-    x.readState = state;
-    x.readNoReply = (state === 'noReply');
-    changed = true;
+    if(x.readState === 'unread' || x.readState === 'noReply'){
+      x.readState = 'read';
+      x.readNoReply = false;
+      changed = true;
+    }
   }
+
   if(changed){
     saveMsgs();
     if(!window.__jumpingToMsg) renderChat();
   }
+}
+
+/* 掷骰子：返回 true = 已读不回，false = 已读 */
+function rollNoReply(){
+  const r = getReply();
+  let rate = 0.6;
+  if(typeof r.noReplyRate === 'number') rate = r.noReplyRate;
+  return Math.random() < rate;
 }
 
 function markLastUserRead(){
@@ -15946,9 +15969,11 @@ function markLastUserRead(){
   _applyReadStateUpTo(lastUser, 'read');
 }
 
+/* 已读不回：跟 markLastUserRead 一样往上推，
+   只是锚点那条会被骰子判成 noReply */
 function markLastUserNoReply(){
   const lastUser = [...msgs].reverse().find(x=>x.role==='user' && !x.recalled && !x.sys && !x.namecard);
-  _applyReadStateUpTo(lastUser, 'noReply');
+  _applyReadStateUpTo(lastUser, 'read');
 }
 
 /* scheduleRealRecall 已删除：撤回逻辑改为「发出去的这条 1~60 秒后撤回」，
@@ -16994,18 +17019,32 @@ function runTimedReplyRounds(){
         const bar = getTypingBar();
         if(bar) bar.classList.remove('show');
         if(res[0].kind==='bubbles'){
-          const lastUser = [...msgs].reverse().find(x=>x.role==='user'&&!x.recalled&&x.text);
-          let quote=null;
-          if(lastUser && lastUser.text){
-            if(Math.random()<0.08){
-              const useFull = Math.random()<0.8;
-              let txt = lastUser.text;
+          /* 引用：跟 emitBubbles 同款逻辑 */
+          const _qr = (typeof r.quoteRate === 'number') ? r.quoteRate : 0.08;
+          let quote = null;
+          if(Math.random() < _qr){
+            const myCands = msgs.filter(x => x.role === 'user' && !x.recalled && !x.sys && x.text);
+            const taCands = msgs.filter(x => x.role === 'char' && !x.recalled && !x.sys && x.text);
+            let useMine = Math.random() < 0.5;
+            let pick = null;
+            if(useMine){
+              pick = pickQuoteTarget(myCands, false, null);
+              if(!pick && taCands.length){ pick = pickQuoteTarget(taCands, false, null); useMine = false; }
+            } else {
+              pick = pickQuoteTarget(taCands, false, null);
+              if(!pick && myCands.length){ pick = pickQuoteTarget(myCands, false, null); useMine = true; }
+            }
+            if(pick && pick.text){
+              const _fullRate = (typeof r.quoteFullRate === 'number') ? r.quoteFullRate : 0.8;
+              const useFull = Math.random() < _fullRate;
+              let txt = pick.text;
               if(!useFull && txt.length > 4){
                 const len = 1 + Math.floor(Math.random()*txt.length);
                 const start = Math.floor(Math.random()*(txt.length-len+1));
                 txt = txt.slice(start, start+len);
               }
-              quote = {name:userName(), text:txt};
+              const who = useMine ? userName() : getRoleNameById(roleId);
+              quote = { name: who, text: txt, msgId: pick.id };
             }
           }
           res[0].bubbles.forEach((bubble, bi)=>{
@@ -17116,88 +17155,12 @@ var ReplyRunner = (function(){
 */
 var _readArmTimer = null;
 
-setInterval(function(){
-  if(!Array.isArray(msgs)) return;
-  var changed = false;
-  msgs.forEach(function(m){
-    if(!m || m.role !== 'user') return;
-    if(m.recalled || m.sys || m.namecard) return;
-    if(m.readState === 'noReply') return;
-    if(m.readState === 'read' && Math.random() < 0.05){
-      m.readState = 'unread';
-      changed = true;
-    }
-  });
-  if(changed){ saveMsgs(); if(!window.__jumpingToMsg) renderChat(); }
-}, 30 * 1000);
-
-/* ===== 已读状态机 =====
-   1. 刚上线：所有 user 消息重新掷骰 → 90% 未读 / 10% 已读
-   2. 冷却 2 分钟无互动：所有 user 消息重新掷骰 → 80% 未读 / 20% 已读
-   3. 角色回复：由 emitBubbles / _applyReadStateUpTo 处理 → 已读
-   4. 已读后每 30 秒摇一次 5% 概率 → 未读
-   5. 已读不回（noReply）独立，不参与
-*/
-var _readCooldownTimer = null;
-function armReadCooldown(){
-  if(_readCooldownTimer) clearTimeout(_readCooldownTimer);
-  _readCooldownTimer = setTimeout(function(){
-    if(!Array.isArray(msgs)) return;
-    var changed = false;
-    msgs.forEach(function(m){
-      if(!m || m.role !== 'user') return;
-      if(m.recalled || m.sys || m.namecard) return;
-      if(m.readState === 'noReply') return;
-      m.readState = (Math.random() < 0.80) ? 'unread' : 'read';
-      changed = true;
-    });
-    if(changed){ saveMsgs(); if(!window.__jumpingToMsg) renderChat(); }
-  }, 2 * 60 * 1000);
-}
-
-/* 刚上线：所有 user 消息 90% 未读 / 10% 已读 */
-function runOnlineReadCheck(){
-  if(!Array.isArray(msgs)) return;
-  var changed = false;
-  msgs.forEach(function(m){
-    if(!m || m.role !== 'user') return;
-    if(m.recalled || m.sys || m.namecard) return;
-    if(m.readState === 'noReply') return;
-    m.readState = (Math.random() < 0.90) ? 'unread' : 'read';
-    changed = true;
-  });
-  if(changed){ saveMsgs(); if(!window.__jumpingToMsg) renderChat(); }
-}
-
-/* 已读后每 30 秒摇一次：
-   - 只有「最后一条 user 消息」有资格被摇中回滚
-   - 摇中后，它和它下面所有 user 消息一起变未读（保证不会出现"上面未读、下面已读"）
-   - noReply 是终态，不参与回滚
-   这样"已读"永远是从下往上推进的，绝不会断在中间 */
+/* 已读回滚：只允许最后一条 read 及其之后的 user 消息一起变未读，
+   绝不允许"上面已读、下面未读"的夹层出现 */
 setInterval(function(){
   if(!Array.isArray(msgs)) return;
 
-  /* ============================================================
-     已读回滚规则（按你的需求收紧）：
-     1. noReply（已读不回）不允许被回滚，保持终态
-     2. 只要聊天里还有任意一条 user 消息处于 noReply 状态，
-        整个聊天都禁止回滚 —— 避免出现"上面已读不回、下面又变未读"的错乱
-     3. 回滚只能把「最后一条 read」及它之后的全部 user 消息一起变成未读，
-        绝不允许出现"某一条 read 上面还有 unread"的夹层
-     4. 若回滚后会导致"read 上面夹 unread"，则放弃本次回滚
-     ============================================================ */
-
-  /* 第一步：检查聊天里有没有 noReply，一旦存在，禁止任何回滚 */
-  var hasNoReply = false;
-  for(var i = 0; i < msgs.length; i++){
-    var m = msgs[i];
-    if(!m || m.role !== 'user') continue;
-    if(m.recalled || m.sys || m.namecard) continue;
-    if(m.readState === 'noReply'){ hasNoReply = true; break; }
-  }
-  if(hasNoReply) return;
-
-  /* 第二步：找最后一条可参与状态的 user 消息 */
+  /* 第一步：找最后一条可参与状态的 user 消息 */
   var lastIdx = -1;
   for(var i = msgs.length - 1; i >= 0; i--){
     var m = msgs[i];
@@ -17209,10 +17172,11 @@ setInterval(function(){
   if(lastIdx < 0) return;
 
   var last = msgs[lastIdx];
-  if(last.readState !== 'read') return;   /* 只有"已读"才有资格回滚 */
-  if(Math.random() >= 0.05) return;        /* 5% 概率 */
+  if(last.readState !== 'read') return;
+  if(last.readState === 'noReply') return;
+  if(Math.random() >= 0.05) return;   /* 5% 概率 */
 
-  /* 第三步：回滚 —— 把最后一条 read 及其之后所有 user 消息一起变未读 */
+  /* 第二步：把最后一条 read 及其之后所有 user 消息一起变未读 */
   var changed = false;
   for(var j = lastIdx; j < msgs.length; j++){
     var x = msgs[j];
@@ -17226,8 +17190,8 @@ setInterval(function(){
     }
   }
 
-  /* 第四步：兜底 —— 检查有没有"read 上面夹 unread"的错乱，
-     一旦出现，本聊天整体统一成 unread，避免半截已读半截未读 */
+  /* 第三步：兜底 —— 如果出现"read 上面夹 unread"的错乱，
+     把整条聊天里的 user 消息全部统一成 unread，避免半截状态 */
   var sawUnread = false;
   var sawReadAfterUnread = false;
   for(var k = 0; k < msgs.length; k++){
@@ -17250,6 +17214,35 @@ setInterval(function(){
 
   if(changed){ saveMsgs(); if(!window.__jumpingToMsg) renderChat(); }
 }, 30 * 1000);
+
+/* ===== 已读状态机 =====
+   1. 刚上线：所有 user 消息重新掷骰 → 90% 未读 / 10% 已读
+   2. 冷却 2 分钟无互动：所有 user 消息重新掷骰 → 80% 未读 / 20% 已读
+   3. 角色回复：由 emitBubbles / _applyReadStateUpTo 处理 → 已读
+   4. 已读后每 30 秒摇一次 5% 概率 → 未读
+   5. 已读不回（noReply）独立，不参与
+*/
+ var _readCooldownTimer = null;
+function armReadCooldown(){
+  /* 2 分钟冷却重摇已删除。
+     现在由每条消息自己的定时器负责推进状态。 */
+}
+
+/* 刚上线：所有 user 消息 90% 未读 / 10% 已读 */
+function runOnlineReadCheck(){
+  if(!Array.isArray(msgs)) return;
+  var changed = false;
+  msgs.forEach(function(m){
+    if(!m || m.role !== 'user') return;
+    if(m.recalled || m.sys || m.namecard) return;
+    if(m.readState === 'noReply') return;
+    m.readState = (Math.random() < 0.90) ? 'unread' : 'read';
+    changed = true;
+  });
+  if(changed){ saveMsgs(); if(!window.__jumpingToMsg) renderChat(); }
+}
+
+ 
 
 function triggerReply(){
   const role = getRole();
@@ -17305,21 +17298,16 @@ function runReplyChain(onDone){
     return;
   }
 
-  /* 角色在 delay 时间内"看到"消息 → 变已读
-     时间点：delay 的 30%~70% 处，保证在回复之前、且落在用户设定的延迟内 */
-  const readAt = Math.max(300, delay * (0.3 + Math.random() * 0.4));
-  setTimeout(()=>{
-    if(!stillSameRole()) return;
-    const srcMsgs2 = (getCurrentRoleId() === targetRoleId)
-      ? msgs
-      : (lsGet('mj_msgs_' + targetRoleId, null) || []);
-    const lastU = [...srcMsgs2].reverse().find(x => x.role==='user' && !x.recalled && !x.sys && !x.namecard);
-    if(lastU) _applyReadStateUpTo(lastU, 'read');
-  }, readAt);
+ 
 
   const typingDelay = Math.min(delay, 800 + Math.random()*1200);
   setTimeout(()=>{
     if(!stillSameRole()) return;
+    /* ★ 角色开始打字 → 立刻把当前所有未读 user 消息推成已读 */
+    try{
+      const lastU = [...msgs].reverse().find(x => x.role==='user' && !x.recalled && !x.sys && !x.namecard && (x.readState === 'unread'));
+      if(lastU) _applyReadStateUpTo(lastU, 'read');
+    }catch(e){ console.error('打字推已读失败', e); }
     const bar = getTypingBar();
     if(bar) bar.classList.add('show');
   }, Math.max(0, delay - typingDelay));
@@ -17363,18 +17351,39 @@ function runReplyChain(onDone){
         const srcMsgs = (getCurrentRoleId() === targetRoleId)
           ? msgs
           : (lsGet('mj_msgs_' + targetRoleId, null) || []);
-        const lastUser = [...srcMsgs].reverse().find(x=>x.role==='user'&&!x.recalled&&x.text);
-        let quote=null;
-        if(lastUser && lastUser.text){
-          if(Math.random()<0.08){
-            const useFull = Math.random()<0.8;
-            let txt = lastUser.text;
+        /* 引用：先掷 quoteRate 决定这次引不引；
+           中了之后，50% 从"我"的话里挑，50% 从"角色"的话里挑；
+           挑到之后，再按 quoteFullRate / quotePartRate 决定引整段还是引部分 */
+        const _qr = (typeof r.quoteRate === 'number') ? r.quoteRate : 0.08;
+        let quote = null;
+        if(Math.random() < _qr){
+          /* 分别收集"我"和"角色"的候选 */
+          const myCands = srcMsgs.filter(x => x.role === 'user' && !x.recalled && !x.sys && x.text);
+          const taCands = srcMsgs.filter(x => x.role === 'char' && !x.recalled && !x.sys && x.text);
+
+          /* 50% 挑我的，50% 挑角色的 */
+          let useMine = Math.random() < 0.5;
+          let pick = null;
+          if(useMine){
+            pick = pickQuoteTarget(myCands, false, null);
+            if(!pick && taCands.length){ pick = pickQuoteTarget(taCands, false, null); useMine = false; }
+          } else {
+            pick = pickQuoteTarget(taCands, false, null);
+            if(!pick && myCands.length){ pick = pickQuoteTarget(myCands, false, null); useMine = true; }
+          }
+
+          if(pick && pick.text){
+            /* 引用方式：整段 or 部分，按可调概率 */
+            const _fullRate = (typeof r.quoteFullRate === 'number') ? r.quoteFullRate : 0.8;
+            const useFull = Math.random() < _fullRate;
+            let txt = pick.text;
             if(!useFull && txt.length > 4){
               const len = 1 + Math.floor(Math.random()*txt.length);
               const start = Math.floor(Math.random()*(txt.length-len+1));
               txt = txt.slice(start, start+len);
             }
-            quote = {name:userName(), text:txt};
+            const who = useMine ? userName() : getRoleNameById(targetRoleId);
+            quote = { name: who, text: txt, msgId: pick.id };
           }
         }
         /* ★ 记录本次写入的消息 id，撤回时用（挂到 window 上，方便撤回分支读取） */
@@ -28413,6 +28422,23 @@ function renderReplyPanel(tab){
 	  <div class="section"><div class="title">回复延迟</div>
 		<div class="n-row"><span class="lbl">最快</span><input type="number" id="rsMinDelay" value="${((r.minDelay||0)/1000).toFixed(1)}" step="0.1"><span class="unit">秒</span><span class="to">到</span><span class="lbl">最慢</span><input type="number" id="rsMaxDelay" value="${((r.maxDelay||0)/1000).toFixed(1)}" step="0.1"><span class="unit">秒</span></div>
 	  </div>
+	  <div class="section"><div class="title">已读延迟</div>
+		<div class="desc">消息发出后多久自动变已读（若期间对方开始打字，立刻已读，不受此影响）</div>
+		<div class="n-row"><span class="lbl">最快</span><input type="number" id="rsReadDelayMin" value="${r.readDelayMin||1}" min="0" step="1"><span class="unit">秒</span><span class="to">到</span><span class="lbl">最慢</span><input type="number" id="rsReadDelayMax" value="${r.readDelayMax||10}" min="0" step="1"><span class="unit">秒</span></div>
+	  </div>
+	  <div class="section"><div class="title">已读不回概率</div>
+		<div class="desc">触发已读时，有 <b>${Math.round((r.noReplyRate||0.6)*100)}%</b> 概率标成「已读不回」，否则标成「已读」</div>
+		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsNoReplyRate" min="0" max="100" value="${Math.round((r.noReplyRate||0.6)*100)}"><span class="num" id="rsNoReplyRateVal">${Math.round((r.noReplyRate||0.6)*100)}%</span></div>
+	  </div>
+	  <div class="section"><div class="title">引用概率</div>
+		<div class="desc">角色回复时，有 <b>${Math.round((r.quoteRate||0.08)*100)}%</b> 概率引用之前的消息（一半概率引你的，一半引 Ta 自己的）</div>
+		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsQuoteRate" min="0" max="100" value="${Math.round((r.quoteRate||0.08)*100)}"><span class="num" id="rsQuoteRateVal">${Math.round((r.quoteRate||0.08)*100)}%</span></div>
+	  </div>
+	  <div class="section"><div class="title">引用方式</div>
+		<div class="desc">引整段 / 引部分的概率，两者互补</div>
+		<div class="s-row"><span class="tag">整段</span><input type="range" id="rsQuoteFullRate" min="0" max="100" value="${Math.round((r.quoteFullRate||0.8)*100)}"><span class="num" id="rsQuoteFullRateVal">${Math.round((r.quoteFullRate||0.8)*100)}%</span></div>
+		<div class="s-row"><span class="tag">部分</span><input type="range" id="rsQuotePartRate" min="0" max="100" value="${Math.round((r.quotePartRate||0.2)*100)}" disabled><span class="num" id="rsQuotePartRateVal">${Math.round((r.quotePartRate||0.2)*100)}%</span></div>
+	  </div>
 	  <div class="section"><div class="sw-row"><div class="sw-main"><div class="t1">已读不回</div></div><label class="switch"><input type="checkbox" id="rsIgnoreOn" ${r.ignoreOn?'checked':''}><span class="slider"></span></label></div>
 		<div class="s-row"><span class="tag">概率</span><input type="range" id="rsIgnoreRate" min="0" max="60" value="${Math.round((r.ignoreRate||0)*100)}"><span class="num" id="rsIgnoreRateVal">${Math.round((r.ignoreRate||0)*100)}%</span></div>
 	  </div>
@@ -28646,6 +28672,35 @@ function renderReplyPanel(tab){
   const bindNum = (id,key,parser)=>{ const el=$('#'+id); if(!el) return; el.addEventListener('change', ()=>{ r[key] = parser?parser(el.value):el.value; saveReply(); }); };
   bindNum('rsMinDelay','minDelay',v=>Math.round(parseFloat(v||0)*1000));
   bindNum('rsMaxDelay','maxDelay',v=>Math.round(parseFloat(v||0)*1000));
+  bindNum('rsReadDelayMin','readDelayMin',v=>Math.max(0, parseInt(v,10)||0));
+  bindNum('rsReadDelayMax','readDelayMax',v=>Math.max(1, parseInt(v,10)||10));
+  const nrEl = $('#rsNoReplyRate');
+  if(nrEl) nrEl.addEventListener('input', function(){
+    r.noReplyRate = parseInt(this.value, 10) / 100;
+    saveReply();
+    const v = $('#rsNoReplyRateVal');
+    if(v) v.textContent = Math.round(r.noReplyRate * 100) + '%';
+  });
+  const qrEl = $('#rsQuoteRate');
+  if(qrEl) qrEl.addEventListener('input', function(){
+    r.quoteRate = parseInt(this.value, 10) / 100;
+    saveReply();
+    const v = $('#rsQuoteRateVal');
+    if(v) v.textContent = Math.round(r.quoteRate * 100) + '%';
+  });
+  const qfEl = $('#rsQuoteFullRate');
+  if(qfEl) qfEl.addEventListener('input', function(){
+    const full = parseInt(this.value, 10) / 100;
+    r.quoteFullRate = full;
+    r.quotePartRate = Math.round((1 - full) * 100) / 100;
+    saveReply();
+    const vf = $('#rsQuoteFullRateVal');
+    if(vf) vf.textContent = Math.round(full * 100) + '%';
+    const vp = $('#rsQuotePartRateVal');
+    if(vp) vp.textContent = Math.round(r.quotePartRate * 100) + '%';
+    const pf = $('#rsQuotePartRate');
+    if(pf) pf.value = Math.round(r.quotePartRate * 100);
+  });
   bindNum('rsMaxBubbles','maxBubbles',v=>Math.max(1,Math.min(5,parseInt(v)||1)));
   bindNum('rsMaxBlocks','maxBlocks',v=>Math.max(1,Math.min(5,parseInt(v)||1)));
   bindNum('rsPinyinMax','pinyinMax',v=>Math.max(1,Math.min(5,parseInt(v)||1)));
@@ -32941,8 +32996,9 @@ function goToPage(name){
 #chatList .paper-asker .who{color:#1a1a1a;font-weight:400;font-size:11.5px;letter-spacing:.5px}
 #chatList .paper-asker .mini-av{width:22px;height:22px;border-radius:var(--avatar-radius,12%);
   background:#f0f0f0;overflow:hidden;flex:none;
-  display:flex;align-items:center;justify-content:center}
-#chatList .paper-asker .mini-av svg{width:100%;height:100%}
+  display:flex;align-items:center;justify-content:center;position:relative}
+#chatList .paper-asker .mini-av svg{position:absolute;inset:0;width:100%;height:100%}
+#chatList .paper-asker .mini-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 #chatList .paper-asker .mini-av .sil,
 #chatList .paper-asker .mini-av .silhouette{fill:#c8c8c8}
 #chatList .paper-q{font-size:13.5px;line-height:1.65;color:#1a1a1a;
