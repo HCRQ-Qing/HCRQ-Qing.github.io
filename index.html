@@ -10313,14 +10313,14 @@ window.__APP_CHANGELOG__ = [
 		<div class="chk"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
 		<div class="opt-main">
 		  <div class="opt-title">字母 A → Z</div>
-		  <div class="opt-sub">按首字拼音/字母升序排列</div>
+		  <div class="opt-sub">按首字单字字卡/字母升序排列</div>
 		</div>
 	  </div>
 	  <div class="sort-opt" id="sortZa" data-sort="za">
 		<div class="chk"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
 		<div class="opt-main">
 		  <div class="opt-title">字母 Z → A</div>
-		  <div class="opt-sub">按首字拼音/字母降序排列</div>
+		  <div class="opt-sub">按首字单字字卡/字母降序排列</div>
 		</div>
 	  </div>
 	  <div class="sort-opt" id="sortNewest" data-sort="newest">
@@ -13557,7 +13557,7 @@ function genReply(useTimed){
 	const addExpr = (item, type) => {
 	  if(!item) return;
 	  if(Math.random() < 0.4){
-		// 40%：插入当前气泡（跟卡片/拼音拼一起）
+		// 40%：插入当前气泡（跟卡片/单字字卡拼一起）
 		parts.push({type, text:item});
 	  } else {
 		// 60%：独立成条
@@ -13995,7 +13995,7 @@ function renderChatFull(forceBottom){
 	const quote = m.quote ? `<div class="quote-block" data-quote-id="${m.quote.msgId||''}"><b>${esc(m.quote.name)}：</b>${esc(m.quote.text)}</div>` : '';
 	let body = '';
 	if(m.kind === 'pinyin'){
-	  body = `<div class="bubble">${esc(m.pinyin||'')}</div><div class="py-tag"><span class="pfx">拼音：</span><b><span class="py-word">${esc(m.han||'')}</span></b></div>`;
+	  body = `<div class="bubble">${esc(m.pinyin||'')}</div><div class="py-tag"><span class="pfx">单字字卡：</span><b><span class="py-word">${esc(m.han||'')}</span></b></div>`;
 	}else if(m.voice){
 	  body = `<div class="voice-bubble" data-url="${m.voiceUrl||''}" data-dur="${m.voice}" data-idbkey="${m.voiceIdbKey||''}"><div class="vb-play"><svg class="icon-play" viewBox="0 0 12 12"><path d="M3 1.5 L10 6 L3 10.5 Z"/></svg><svg class="icon-pause" viewBox="0 0 12 12"><rect x="3" y="2" width="2.5" height="8" rx="1"/><rect x="6.5" y="2" width="2.5" height="8" rx="1"/></svg></div><div class="vb-wave"><span></span><span></span><span></span><span></span><span></span><span></span></div><span class="vb-dur">${m.voice}"</span></div>`;
 	}else if(m.sticker){
@@ -14589,7 +14589,7 @@ function extractCollectText(m){
     return 'Q：' + (m.divine.q||'') + (cards ? '\n牌面：' + cards : '');
   }
   if(m.choiceCard) return 'Q：' + m.choiceCard.q + '\nTa 的选择：' + m.choiceCard.answer;
-  if(m.kind === 'pinyin') return (m.pinyin || '') + (m.han ? '\n拼音：' + m.han : '');
+  if(m.kind === 'pinyin') return (m.pinyin || '') + (m.han ? '\n单字字卡：' + m.han : '');
   return '';
 }
 function collectKindOf(m){
@@ -16053,13 +16053,7 @@ function setNotifyChat(v){ lsSet(NOTIFY_CHAT_KEY, !!v); }
 function getNotifyMoment(){ return lsGet(NOTIFY_MOMENT_KEY, true); }
 function setNotifyMoment(v){ lsSet(NOTIFY_MOMENT_KEY, !!v); }
 
-/* ============================================================
-   后台音频保活
-   - 开关存 localStorage：mj_keepalive_on_v1
-   - 打开时：页面切到后台 → 循环播放一段静音 WAV（极小音量）
-   - 页面回到前台 → 暂停
-   - 这段音频用 Web Audio API 现场生成，不占任何网络或存储
-   ============================================================ */
+
 const KEEPALIVE_KEY = 'mj_keepalive_on_v1';
 function getKeepAliveOn(){ return lsGet(KEEPALIVE_KEY, false); }
 function setKeepAliveOn(v){ lsSet(KEEPALIVE_KEY, !!v); }
@@ -23310,7 +23304,7 @@ function renderGroupChat(){
 
     const isMe = m.role === 'user';
 
-    /* ★ 拼音卡分支：跟聊天页同款 */
+    /* ★ 单字字卡卡分支：跟聊天页同款 */
     if(m.kind === 'pinyin' || m.pinyin){
       const av = isMe ? userAvHTML(userProfile.avatar) : avatarHTML((getRoleById(m.roleId) || {}).avatar || '');
       const nm = isMe ? userName() : escapeHTML(displayName(getRoleById(m.roleId) || {}) || '?');
@@ -23322,7 +23316,7 @@ function renderGroupChat(){
         '<div class="gch-body"><div class="gch-name">' + nm + '</div>' +
         timeSep + quoteHTML +
         '<div class="gch-bubble ' + bubbleCls + '" data-side="' + side + '">' + escapeHTML(m.pinyin || m.text || '') + '</div>' +
-        '<div class="py-tag"><span class="pfx">拼音：</span><b><span class="py-word">' + escapeHTML(m.han || '') + '</span></b></div>' +
+        '<div class="py-tag"><span class="pfx">单字字卡：</span><b><span class="py-word">' + escapeHTML(m.han || '') + '</span></b></div>' +
         '</div>' +
       '</div>';
     }
@@ -23483,7 +23477,7 @@ function groupChatTriggerReply(){
   /* ============================================================
      群聊回复：每个角色走他自己的回复设置
      - 主动概率用他自己的 activeRate
-     - 延迟、气泡数、拼好卡、拼音、标点、emoji、颜文字、撤回
+     - 延迟、气泡数、拼好卡、单字字卡、标点、emoji、颜文字、撤回
        全部读 getReply(rid) 里那份
      - 内容从「群聊字卡」分组抽，优先专属，回退公用
      ============================================================ */
@@ -23502,7 +23496,7 @@ function groupChatTriggerReply(){
       try {
         /* ---- 用一个假的"当前角色"上下文，跑一遍 genReply(rid) 的逻辑 ---- */
         /* 但 genReply 内部写死了 getCurrentRoleId()，这里改成手动拼一个简化版：
-           从群聊字卡抽一条，再按他设置里的拼音 / 标点 / emoji / 颜文字概率加工 */
+           从群聊字卡抽一条，再按他设置里的单字字卡 / 标点 / emoji / 颜文字概率加工 */
 
         /* 1) 抽主卡：优先该角色的群聊字卡，回退公用群聊字卡 */
         let text = '';
@@ -23515,7 +23509,7 @@ function groupChatTriggerReply(){
           text = pickCard();
         }
 
-        /* 2) 拼音替换（按他的 pinyinRate / pinyinOn） */
+        /* 2) 单字字卡替换（按他的 pinyinRate / pinyinOn） */
         if(r.pinyinOn && Math.random() < (r.pinyinRate || 0)){
           const cnt = 1 + Math.floor(Math.random() * (r.pinyinMax || 1));
           const hans = [];
@@ -25412,6 +25406,16 @@ document.addEventListener('click', function(e){
       /* ★ 回填「后台音频保活」开关状态 */
       const ka = document.getElementById('notifyKeepAlive');
       if(ka) ka.checked = getKeepAliveOn();
+      /* ★ 绑定 change：只绑一次，反复开关都走这里 */
+      if(ka && !ka._kaBound){
+        ka._kaBound = true;
+        ka.addEventListener('change', function(){
+          applyKeepAliveSwitch(this.checked);
+          if(typeof toast === 'function'){
+            toast(this.checked ? '已开启后台保活' : '已关闭后台保活');
+          }
+        });
+      }
       /* ★ 不再在这里自动请求权限，交给用户点开关时触发 */
     }
     else if(key === 'fullscreen') toggleFullscreen();
@@ -26687,7 +26691,7 @@ function renderGroupList(){
     var hit = groups.find(function(g){ return g && g.id === oid; });
     if(hit){ orderedGroups.push(hit); usedIds[oid] = true; }
   });
-  /* 没在顺序表里出现的分组（比如用户自建、拼音 g-pinyin、修改字卡存放处等），按原顺序追加 */
+  /* 没在顺序表里出现的分组（比如用户自建、单字字卡 g-pinyin、修改字卡存放处等），按原顺序追加 */
   groups.forEach(function(g){
     if(!g) return;
     if(!usedIds[g.id]) orderedGroups.push(g);
@@ -26978,7 +26982,7 @@ function renderCdList(){
 	items.sort((a,b)=>{
 	  const ta = cardText(a.line);
 	  const tb = cardText(b.line);
-	  // localeCompare 会自动按中文拼音排序，英文按字母
+	  // localeCompare 会自动按中文单字字卡排序，英文按字母
 	  return dir * ta.localeCompare(tb, 'zh-Hans-CN', {sensitivity:'base'});
 	});
   }
@@ -28771,7 +28775,7 @@ function renderReplyPanel(tab){
 	  </div>
 	  <div class="section">
 		<div class="rs-row">
-		  <div class="rs-row-title">拼音</div>
+		  <div class="rs-row-title">单字字卡</div>
 		  <div class="rs-row-main">
 			<span class="lbl">最多</span><input type="number" id="rsPinyinMax" min="1" max="5" value="${r.pinyinMax||3}" class="rs-num"><span class="unit">条</span>
 			<span class="lbl" style="margin-left:14px">概率</span><input type="range" id="rsPinyinRate" min="0" max="100" value="${Math.round((r.pinyinRate||0)*100)}" class="rs-slider"><span class="num" id="rsPinyinRateVal">${Math.round((r.pinyinRate||0)*100)}%</span>
@@ -28946,30 +28950,34 @@ function renderReplyPanel(tab){
   bindNum('rsReadDelayMax','readDelayMax',v=>Math.max(1, parseInt(v,10)||10));
   const nrEl = $('#rsNoReplyRate');
   if(nrEl) nrEl.addEventListener('input', function(){
-    r.noReplyRate = parseInt(this.value, 10) / 100;
+    /* ★ 每次从存储里重新拿一份最新 r，避免闭包里的旧引用 */
+    const cur = getReply();
+    cur.noReplyRate = parseInt(this.value, 10) / 100;
     saveReply();
     const v = $('#rsNoReplyRateVal');
-    if(v) v.textContent = Math.round(r.noReplyRate * 100) + '%';
+    if(v) v.textContent = Math.round(cur.noReplyRate * 100) + '%';
   });
   const qrEl = $('#rsQuoteRate');
   if(qrEl) qrEl.addEventListener('input', function(){
-    r.quoteRate = parseInt(this.value, 10) / 100;
+    const cur = getReply();
+    cur.quoteRate = parseInt(this.value, 10) / 100;
     saveReply();
     const v = $('#rsQuoteRateVal');
-    if(v) v.textContent = Math.round(r.quoteRate * 100) + '%';
+    if(v) v.textContent = Math.round(cur.quoteRate * 100) + '%';
   });
   const qfEl = $('#rsQuoteFullRate');
   if(qfEl) qfEl.addEventListener('input', function(){
+    const cur = getReply();
     const full = parseInt(this.value, 10) / 100;
-    r.quoteFullRate = full;
-    r.quotePartRate = Math.round((1 - full) * 100) / 100;
+    cur.quoteFullRate = full;
+    cur.quotePartRate = Math.round((1 - full) * 100) / 100;
     saveReply();
     const vf = $('#rsQuoteFullRateVal');
     if(vf) vf.textContent = Math.round(full * 100) + '%';
     const vp = $('#rsQuotePartRateVal');
-    if(vp) vp.textContent = Math.round(r.quotePartRate * 100) + '%';
+    if(vp) vp.textContent = Math.round(cur.quotePartRate * 100) + '%';
     const pf = $('#rsQuotePartRate');
-    if(pf) pf.value = Math.round(r.quotePartRate * 100);
+    if(pf) pf.value = Math.round(cur.quotePartRate * 100);
   });
   bindNum('rsMaxBubbles','maxBubbles',v=>Math.max(1,Math.min(5,parseInt(v)||1)));
   bindNum('rsMaxBlocks','maxBlocks',v=>Math.max(1,Math.min(5,parseInt(v)||1)));
@@ -31229,7 +31237,7 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	  } else if(mTab === 'content'){
 		html = '<div class="rs-card" ' + roStyle + '><div class="rs-line"><div class="rs-main"><div class="rs-title">启用普通字卡</div><div class="rs-sub">发动态时从普通字卡池抽</div></div><label class="switch"><input type="checkbox" id="mNormalCardOn" ' + (s.normalCardOn?'checked':'') + '><span class="slider"></span></label></div><div class="rs-slider-row"><span class="rs-tag">概率</span><input type="range" id="mNormalCardRate" min="0" max="100" value="' + s.normalCardRate + '"><span class="rs-num" id="mNormalCardRateVal">' + s.normalCardRate + '%</span></div></div>' +
 		'<div class="rs-card" ' + roStyle + '><div class="rs-title">动态字卡张数</div><div class="rs-sub">一条动态由几张字卡拼成</div><div class="rs-fill-row"><span class="f-lbl">最少</span><input type="number" id="mMomentCardMin" min="1" max="10" value="' + s.momentCardMin + '"><span class="f-unit">张</span><span class="f-to">到</span><span class="f-lbl">最多</span><input type="number" id="mMomentCardMax" min="1" max="10" value="' + s.momentCardMax + '"><span class="f-unit">张</span></div></div>' +
-		'<div class="rs-card" style="opacity:.6;pointer-events:none"><div class="rs-title">拼音</div><div class="rs-sub">跟随「回复设置 → 特殊」里的拼音开关与概率</div></div>';
+		'<div class="rs-card" style="opacity:.6;pointer-events:none"><div class="rs-title">单字字卡</div><div class="rs-sub">跟随「回复设置 → 特殊」里的单字字卡开关与概率</div></div>';
 	  } else {
 		html = '<div class="rs-card" ' + roStyle + '><div class="rs-line"><div class="rs-main"><div class="rs-title">动态功能总开关</div><div class="rs-sub">关闭后不再自动发动态</div></div><label class="switch"><input type="checkbox" id="mMomentOn" ' + (s.momentOn?'checked':'') + '><span class="slider"></span></label></div></div>';
 	  }
@@ -31393,7 +31401,7 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
   let autoMomentTimer = null;
   function pickMomentText(){
 	const s = getMomentSettings('public');
-	/* ★ 拼音不再用动态设置里的，改成跟随「回复设置」里当前角色的拼音配置 */
+	/* ★ 单字字卡不再用动态设置里的，改成跟随「回复设置」里当前角色的单字字卡配置 */
 	let replyCfg = { pinyinOn:false, pinyinRate:0 };
 	try{ replyCfg = getReply(getCurrentRoleId()); }catch(e){}
 	const parts = [];
@@ -35294,7 +35302,7 @@ function sendVideoMessage(roleId, video){
 
   // 决定这次走哪种模式
   // 90% → 从「分享卡片」分组抽一句
-  // 5%  → 完整走普通字卡逻辑（genReply），可能多气泡/拼好卡/混拼音
+  // 5%  → 完整走普通字卡逻辑（genReply），可能多气泡/拼好卡/混单字字卡
   // 5%  → 只有卡片，不说话
   const roll = Math.random();
 
