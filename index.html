@@ -1640,25 +1640,7 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
 .sys-notice span{display:inline-block;padding:5px 16px;border-radius:20px;background:var(--th-accent-soft-2);border:1px solid var(--th-accent-line);color:var(--th-text);font-size:11.5px;letter-spacing:1px;line-height:1.55;max-width:88%}
 .sys-notice b{color:var(--th-accent)}
 
-/* ===== 选择结果卡片 ===== */
-.choice-card-msg{
-  padding:8px 13px;
-  background:rgba(0,0,0,.04);
-  border-radius:16px 16px 16px 4px;
-  display:flex;flex-direction:column;gap:6px;
-  max-width:100%;
-  align-self:flex-start;
-}
-.choice-card-msg .ccm-q{
-  font-size:11px;color:#999;
-  line-height:1.5;font-weight:400;
-  letter-spacing:.2px;
-}
-.choice-card-msg .ccm-ans{
-  font-size:13.5px;color:#1a1a1a;
-  line-height:1.5;font-weight:400;
-  letter-spacing:.3px;
-}
+ 
 /* ===== 单条转发卡片（收藏转发） ===== */
 .fwd-card{
   background:#fff;
@@ -5089,6 +5071,7 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
   width:38px;
   flex:none;
 }
+ 
 .bp-body{flex:1;overflow-y:auto;padding:16px 18px 24px;scrollbar-width:none}
 .bp-body::-webkit-scrollbar{width:0}
 .bp-hint{font-size:11.5px;color:var(--th-text-mute);margin-bottom:10px;font-weight:300;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
@@ -5100,7 +5083,8 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .bp-row .r-val{font-size:11px;color:#bbb;flex:none;font-weight:300;letter-spacing:.5px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .bp-row .r-arr{color:#e0e0e0;opacity:1;font-size:12px;transition:transform .18s ease}
 .bp-row:active .r-arr{transform:translateX(2px)}
-.sub-panel{position:fixed;inset:0;z-index:90;max-width:520px;margin:0 auto;background:#ffffff;display:flex;flex-direction:column;transform:translateX(100%);visibility:hidden;transition:transform .35s cubic-bezier(.22,1,.36,1), visibility .35s}
+.sub-panel{position:fixed;inset:0;z-index:110;max-width:520px;margin:0 auto;background:#ffffff;display:flex;flex-direction:column;transform:translateX(100%);visibility:hidden;transition:none}
+.sub-panel.show{transform:translateX(0);visibility:visible}
 .sub-panel.show{transform:translateX(0);visibility:visible}
 
 /* ===== #spAvatar · 头像方圆弹窗（方案A · 楷体标题 · 英文副标题） =====
@@ -10807,8 +10791,12 @@ window.__APP_CHANGELOG__ = [];
 	</div>
   </div>
 
-<div class="sub-panel" id="spTheme">
-  <div class="sp-head"><div class="bp-back" data-close>‹</div><div class="bp-title" style="font-size:15px">主题</div></div>
+ <div class="sub-panel" id="spTheme">
+  <div class="bp-head">
+    <button class="bp-back" data-close type="button">‹</button>
+    <div class="bp-title">主题</div>
+    <div class="bp-head-right"></div>
+  </div>
   <div class="sp-body">
 	<div class="preset-grid" id="presetGrid">
 	  <div class="preset bw on" data-theme="bw"><div class="p-name">黑白</div></div>
@@ -10817,7 +10805,11 @@ window.__APP_CHANGELOG__ = [];
 </div>
 
 <div class="sub-panel" id="spBubble">
-  <div class="sp-head"><div class="bp-back" data-close>‹</div><div class="bp-title" style="font-size:15px">聊天气泡</div></div>
+  <div class="bp-head">
+    <button class="bp-back" data-close type="button">‹</button>
+    <div class="bp-title">聊天气泡</div>
+    <div class="bp-head-right"></div>
+  </div>
   <div class="sp-body">
 	<div class="bubble-soft-grid" id="bubbleStyleGrid" style="margin-bottom:18px">
   <div class="bubble-soft on" data-bubble="gray">
@@ -13852,53 +13844,53 @@ function renderChatFull(forceBottom){
 	  }
 	  return `<div class="sys-notice"><span>${m.sys}</span></div>`;
 	}
-	/* ★ 个签邀请卡 */
+	/* ★ 个签邀请卡 · 直接走气泡样式，跟随 data-bubble */
 	if(m.inviteCard){
 	  const ic = m.inviteCard;
 	  const dirCls = isUser ? 'user' : 'char';
-	  const av = isUser ? userAvHTML(userProfile.avatar) : avatarHTML(role.avatar);
+	  const avInner = `<div class="msg-av-inner">${isUser?userAvHTML(userProfile.avatar):avatarHTML(role.avatar)}</div>`;
+	  const mb2 = isUser ? '' : `<div class="mb"></div>`;
+	  const av = `<div class="msg-av ${isUser?'usr-av':''}" data-id="${m.id}">${avInner}${mb2}</div>`;
 	  let tagText = '';
 	  let mainText = '';
-	  let stateCls = '';
 	  if(ic.kind === 'pending'){
-	    stateCls = 'is-pending';
 	    tagText = '个签邀请';
 	    mainText = '邀请换' + (ic.type === 'user' ? '你的' : '自己的') + '个签';
 	  } else if(ic.kind === 'accept'){
-	    stateCls = 'is-accept';
 	    tagText = '已切换';
 	    mainText = ic.newSign || '';
 	  } else {
-	    stateCls = 'is-reject';
 	    tagText = '已拒绝';
 	    mainText = ic.reason || '';
 	  }
-	  return `<div class="msg ${dirCls}" data-id="${m.id}">
-		<div class="msg-av ${isUser?'usr-av':''}">${av}</div>
-		<div class="msg-body">
-		  <div class="time-sep">${formatMsgTime(m.time)}</div>
-		  <div class="invite-card ${stateCls}">
-			<div class="invite-card-tag">${escapeHTML(tagText)}</div>
-			<div class="invite-card-main">${escapeHTML(mainText)}</div>
-		  </div>
-		</div>
-	  </div>`;
+	  /* tag 用内联 style + br 换行，不进任何 class，不会被自定义 CSS 污染 */
+	  const innerHTML =
+	    '<span style="font-size:10.5px;letter-spacing:2px;opacity:.6;font-weight:300">' +
+	      escapeHTML(tagText) +
+	    '</span><br>' +
+	    escapeHTML(mainText);
+	  const bubbleCls = isUser
+	    ? 'bubble message-sent message-bubble-user'
+	    : 'bubble message-received message-bubble-char';
+	  const sideAttr = isUser ? 'user' : 'char';
+	  return `<div class="msg ${dirCls}" data-id="${m.id}">${av}<div class="msg-body"><div class="time-sep">${formatMsgTime(m.time)}</div><div class="${bubbleCls}" data-side="${sideAttr}">${innerHTML}</div></div></div>`;
 	}
 
-	/* ★ 选择结果卡片 */
+ 	/* ★ 选择结果卡片 · 直接走气泡样式，跟随 data-bubble */
 	if(m.choiceCard){
 	  const cc = m.choiceCard;
 	  const dirCls = isUser ? 'user' : 'char';
-	  return `<div class="msg ${dirCls}" data-id="${m.id}">
-		${av}
-		<div class="msg-body">
-		  ${timeSep}
-		  <div class="choice-card-msg">
-			<div class="ccm-q">${escapeHTML(cc.q)}</div>
-			<div class="ccm-ans">${escapeHTML(cc.answer)}</div>
-		  </div>
-		</div>
-	  </div>`;
+	  /* tag 用内联 style + br 换行，不进任何 class，不会被自定义 CSS 污染 */
+	  const innerHTML =
+	    '<span style="font-size:10.5px;letter-spacing:2px;opacity:.6;font-weight:300">' +
+	      escapeHTML(cc.q) +
+	    '</span><br>' +
+	    escapeHTML(cc.answer);
+	  const bubbleCls = isUser
+	    ? 'bubble message-sent message-bubble-user'
+	    : 'bubble message-received message-bubble-char';
+	  const sideAttr = isUser ? 'user' : 'char';
+	  return `<div class="msg ${dirCls}" data-id="${m.id}">${av}<div class="msg-body">${timeSep}<div class="${bubbleCls}" data-side="${sideAttr}">${innerHTML}</div></div></div>`;
 	}
 	/* ★ 试卷卡 */
 	if(m.quizCard){
@@ -18008,23 +18000,41 @@ $$('.func-item').forEach(item=>{ item.addEventListener('click',e=>{
     closeAllDrawers();
     setTimeout(openReplySettings, 200);
   } else if(fn === 'beauty'){
-    closeAllDrawers();
-    setTimeout(function(){
-      if(typeof openBeauty === 'function'){
-        openBeauty('bubble');
-      } else {
-        toast('美化模块还没加载好');
+    /* ★ 抽屉里点「美化」要进气泡设置页，之前第一次点没反应是因为：
+       - 抽屉 .drawer.open 还挂着，正在收起
+       - #beautyPanel 是 fixed 全屏，但在抽屉的过渡期间打开会被内核吃掉一次 .show
+       修法：先把抽屉立刻关掉、并临时禁用它的 transition，
+       双 rAF 之后再 openBeauty，确保面板拿到的是干净的起始状态。 */
+    (function(){
+      var dc = document.getElementById('drawerContent');
+      var df = document.getElementById('drawerFunc');
+      if(dc){
+        dc.style.transition = 'none';
+        dc.classList.remove('open');
+        requestAnimationFrame(function(){
+          requestAnimationFrame(function(){ dc.style.transition = ''; });
+        });
       }
-      /* ★ 兜底：如果 200ms 后 .beauty-panel 还没 .show，再强制打开一次 */
-      setTimeout(function(){
-        var bp = document.getElementById('beautyPanel');
-        if(bp && !bp.classList.contains('show')){
-          bp.classList.remove('show');
-          void bp.offsetWidth;
-          bp.classList.add('show');
+      if(df){
+        df.style.transition = 'none';
+        df.classList.remove('open');
+        requestAnimationFrame(function(){
+          requestAnimationFrame(function(){ df.style.transition = ''; });
+        });
+      }
+      contentOpen = false;
+      funcOpen = false;
+    })();
+
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        if(typeof openBeauty === 'function'){
+          openBeauty('bubble');
+        } else {
+          toast('美化模块还没加载好');
         }
-      }, 220);
-    }, 60);
+      });
+    });
   } else if(fn === 'divine'){
     closeAllDrawers();
     setTimeout(openDivine, 200);
@@ -21999,6 +22009,22 @@ function openBeauty(mode){
         }
       });
     });
+
+    /* ★ 关键兜底：打开后的 1.5 秒内，每 100ms 检查一次。
+       如果 .show 被别的监听（全局 closeAllDrawers / hideMsgMenu / touch→click 双发等）摘掉，
+       立刻补回来。这样"第一次点没反应"的问题就不会再出现。 */
+    if(bp._showGuardTimer) clearInterval(bp._showGuardTimer);
+    var _guardStart = Date.now();
+    bp._showGuardTimer = setInterval(function(){
+      if(Date.now() - _guardStart > 1500){
+        clearInterval(bp._showGuardTimer);
+        bp._showGuardTimer = null;
+        return;
+      }
+      if(!bp.classList.contains('show')){
+        bp.classList.add('show');
+      }
+    }, 100);
   } else {
     /* 万一 DOM 还没就绪，直接加类 */
     var old = $('#beautyPanel');
@@ -22006,7 +22032,13 @@ function openBeauty(mode){
   }
 }
 function closeBeauty(){
-  $('#beautyPanel').classList.remove('show');
+  var bp = document.getElementById('beautyPanel');
+  /* ★ 用户主动关闭：先清掉"自动补 .show"的守卫，否则会被它补回来 */
+  if(bp && bp._showGuardTimer){
+    clearInterval(bp._showGuardTimer);
+    bp._showGuardTimer = null;
+  }
+  if(bp) bp.classList.remove('show');
   const spAv = document.getElementById('spAvatar');
   if(spAv) spAv.classList.remove('show');
   // 关闭美化面板时清掉临时预览，回到真正生效的样式
@@ -32270,6 +32302,13 @@ function syncRoleNameEverywhere(){
   // 好友列表 / 聊天列表
   try { renderFriends(); } catch(err){ console.error(err); }
   try { renderChat(); } catch(err){ console.error(err); }
+
+  // ★ 修改备注后，强制重绘聊天列表，让所有旧消息的头像 / 名字都用新数据
+  try{
+    if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+    if(typeof renderChatFull === 'function'){ renderChatFull(true); }
+    else if(typeof renderChat === 'function'){ renderChat(true); }
+  }catch(err){ console.error('备注同步重绘失败', err); }
 }
 
 /* ===== 个签自动切换 · 数据层 =====
@@ -33990,51 +34029,7 @@ function goToPage(name){
 #chatList .paper-foot .status{color:#bbb}
 #chatList .paper-foot .status.ok{color:#1a1a1a}
 
-/* ★ 个签邀请卡 · 无边框投影版 */
-#chatList .invite-card{
-  width:190px;
-  background:#fff;
-  border:none;
-  border-radius:14px;
-  padding:13px 15px 12px;
-  box-shadow:0 1px 4px rgba(0,0,0,.06);
-  box-sizing:border-box;
-}
-#chatList .invite-card.is-reject,
-#chatList .invite-card.is-pending{
-  background:#fff;
-  box-shadow:0 1px 3px rgba(0,0,0,.04);
-}
-
-#chatList .invite-card .invite-card-tag{
-  font-size:10px;
-  color:#999;
-  letter-spacing:2px;
-  font-weight:300;
-  margin-bottom:6px;
-}
-#chatList .invite-card.is-reject .invite-card-tag,
-#chatList .invite-card.is-pending .invite-card-tag{
-  color:#bbb;
-}
-
-#chatList .invite-card .invite-card-main{
-  font-size:13.5px;
-  color:#1a1a1a;
-  line-height:1.55;
-  font-weight:300;
-  letter-spacing:.3px;
-  word-break:break-word;
-  white-space:pre-wrap;
-}
-#chatList .invite-card.is-reject .invite-card-main{
-  color:#1a1a1a;
-  font-size:12.5px;
-}
-#chatList .invite-card.is-pending .invite-card-main{
-  color:#1a1a1a;
-  font-size:12.5px;
-}
+ 
 </style>
 
 <div class="modal" id="mQuiz">
