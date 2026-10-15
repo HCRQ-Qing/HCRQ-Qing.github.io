@@ -9235,14 +9235,7 @@ window.__APP_VERSION__ = '1.0.9';
 /* ★ 更新日志：每次改完代码，把版本号和内容改一下。
    用户看到版本号变了，开屏就会弹一次，告诉他更新了什么。
    如果不想弹，把下面的数组清空即可。 */
-window.__APP_CHANGELOG__ = [
-  '后台通知升级：SW 通道 + 队列补发 + 四级降级 + 超时保护',
-  '解决通知"有时候弹两条"的问题：超时不再重发',
-  '解决通知"弹了但点不进聊天"的问题：点击能定位到具体角色',
-  'SW 没就绪时通知会挂队列，60 秒内就绪自动补发',
-  '通知代码结构对齐 bg-keep，稳定性和可维护性提升',
-  '关于页补充后台通知保活的借鉴来源'
-];
+window.__APP_CHANGELOG__ = [];
 
 /* ★ 把版本号显示在网页标题上，你在雨见标签页就能看到 */
 (function showVersionInTitle(){
@@ -9268,11 +9261,15 @@ window.__APP_CHANGELOG__ = [
     var cur = window.__APP_VERSION__ || '';
     var list = Array.isArray(window.__APP_CHANGELOG__) ? window.__APP_CHANGELOG__ : [];
 
+    /* ★ 一进入就先把当前版本记下来。
+       即使后面用户没点「知道啦」、或者页面直接刷新/被杀，
+       下次进来 lastSeen 就等于 cur，不会再弹第二次。
+       只有「版本号变了」才会再次弹。 */
+    try { localStorage.setItem(KEY, cur); } catch(e){}
+
     /* 没更新，或没写日志，就不弹 */
     if(lastSeen === cur) return;
     if(!list.length) {
-      /* 没写日志也记一下版本号，避免每次都尝试 */
-      try { localStorage.setItem(KEY, cur); } catch(e){}
       return;
     }
 
@@ -17600,6 +17597,27 @@ function runReplyChain(onDone){
   }
 
   const res = genReply();
+
+  /* ★ 如果最近一条 user 消息已经是「已读不回」，直接终结这条链，不再回复。
+     修复：角色在已读不回后仍然继续回复的问题。
+     注意：只拦「已读不回」，不拦「已读」和「未读」。 */
+  (function(){
+    const _key = 'mj_msgs_' + targetRoleId;
+    const _arr = (getCurrentRoleId() === targetRoleId) ? msgs : (lsGet(_key, null) || []);
+    if(Array.isArray(_arr) && _arr.length){
+      for(let _i = _arr.length - 1; _i >= 0; _i--){
+        const _m = _arr[_i];
+        if(!_m || _m.role !== 'user') continue;
+        if(_m.recalled || _m.sys || _m.namecard) continue;
+        if(_m.readState === 'noReply'){
+          if(typeof pendingReply !== 'undefined') pendingReply[targetRoleId] = false;
+          onDone();
+          return;
+        }
+        break;
+      }
+    }
+  })();
 
   /* 空回复：直接走"已读不回"，并终结这条链 */
   if(!res.length){
@@ -27958,16 +27976,16 @@ function openSignSwitchSetting(){
 
   body.innerHTML =
     rowHTML('随机切换「' + roleName + '」的个签',
-      slotRole.on ? '已开启 · Ta 会在某个时刻悄悄换掉自己的个签' : '开启后 Ta 会不定时换掉自己的个签',
+      '',
       'signSwRoleCb', slotRole.on) +
     rowHTML('随机切换「' + myName + '」的个签',
-      slotUser.on ? '已开启 · Ta 会在某个时刻悄悄换掉你的个签' : '开启后 Ta 会不定时换掉你的个签',
+      '',
       'signSwUserCb', slotUser.on) +
     btnHTML('邀请 ' + roleName + ' 现在换自己的个签',
-      '1~10 分钟内 Ta 会切换一次，Ta 有 30% 概率拒绝',
+      '',
       'signInviteRoleBtn') +
     btnHTML('邀请 ' + roleName + ' 现在换你的个签',
-      '1~10 分钟内 Ta 会切换一次，Ta 有 30% 概率拒绝',
+      '',
       'signInviteUserBtn') +
     '<div class="section" style="padding-top:14px;text-align:center">' +
       '<button type="button" id="signSwCloseBtn" style="padding:10px 30px;border-radius:20px;border:0.7px solid rgba(0,0,0,.14);background:transparent;color:#999;font-size:13px;font-family:inherit;letter-spacing:2px;cursor:pointer">关 闭</button>' +
@@ -28024,36 +28042,60 @@ function inviteSignSwitch(type){
   var role = getRoleById(rid) || { name: '角色' };
   var roleName = (role.remark && String(role.remark).trim()) || role.name || '角色';
   var what = (type === 'role') ? '自己的' : '你的';
-  if(!confirm('邀请 ' + roleName + ' 现在切换' + what + '个签？')) return;
 
-  /* ★ 用户发邀请：立刻在聊天里发一张"等待中"卡 */
-  appendMsgToRole(rid, {
-    id: uid(),
-    role: 'user',
-    time: Date.now(),
-    inviteCard: {
-      kind: 'pending',
-      type: type
-    }
+  /* ★ 用站内统一确认弹窗，替掉系统原生 confirm */
+  var layer = document.createElement('div');
+  layer.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px';
+  layer.innerHTML =
+    '<div style="width:100%;max-width:300px;background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.05);padding:24px 22px 20px;text-align:center">' +
+      '<div style="width:44px;height:44px;border-radius:12px;background:#f7f7f7;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">' +
+        '<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:#1a1a1a;fill:none;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>' +
+      '</div>' +
+      '<div style="font-size:15px;font-weight:400;letter-spacing:3px;color:#1a1a1a;text-indent:3px">个签邀请</div>' +
+      '<div style="font-size:12px;color:#999;line-height:1.75;letter-spacing:.5px;margin-top:12px;font-weight:300">邀请 <b style="color:#1a1a1a;font-weight:400">' + escapeHTML(roleName) + '</b> 现在切换' + what + '个签？</div>' +
+      '<div style="display:flex;gap:10px;margin-top:26px">' +
+        '<button data-cancel type="button" style="flex:1;padding:12px 0;border-radius:10px;font-size:13px;font-family:inherit;letter-spacing:2px;text-indent:2px;cursor:pointer;background:transparent;border:0.7px solid rgba(0,0,0,.12);color:#999;font-weight:300">取 消</button>' +
+        '<button data-ok type="button" style="flex:1;padding:12px 0;border-radius:10px;font-size:13px;font-family:inherit;letter-spacing:2px;text-indent:2px;cursor:pointer;background:#1a1a1a;color:#fff;border:none;font-weight:400">确 定</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(layer);
+
+  layer.addEventListener('click', function(e){
+    if(e.target === layer){ layer.remove(); }
   });
+  layer.querySelector('[data-cancel]').addEventListener('click', function(){ layer.remove(); });
+  layer.querySelector('[data-ok]').addEventListener('click', function(){
+    layer.remove();
 
-  var s = getSignSwitchStore();
-  /* 已有待处理的邀请 → 先清掉 */
-  if(s.invitePending[rid]) delete s.invitePending[rid];
+    /* ★ 用户发邀请：立刻在聊天里发一张"等待中"卡 */
+    appendMsgToRole(rid, {
+      id: uid(),
+      role: 'user',
+      time: Date.now(),
+      inviteCard: {
+        kind: 'pending',
+        type: type
+      }
+    });
 
-  /* ★ 无条件进队列，1~10 分钟后由 runSignSwitchTick 掷骰子决定同意/拒绝 */
-  var delay = (1 + Math.floor(Math.random() * 10)) * 60 * 1000;
-  s.invitePending[rid] = {
-    type: type,
-    dueAt: Date.now() + delay
-  };
-  saveSignSwitchStore(s);
-  if(typeof toast === 'function'){
-    toast('邀请已发出，等 Ta 回应');
-  }
-  /* 关弹窗 */
-  var m = document.getElementById('mSignSwitch');
-  if(m) m.classList.remove('show');
+    var s = getSignSwitchStore();
+    /* 已有待处理的邀请 → 先清掉 */
+    if(s.invitePending[rid]) delete s.invitePending[rid];
+
+    /* ★ 无条件进队列，1~10 分钟后由 runSignSwitchTick 掷骰子决定同意/拒绝 */
+    var delay = (1 + Math.floor(Math.random() * 10)) * 60 * 1000;
+    s.invitePending[rid] = {
+      type: type,
+      dueAt: Date.now() + delay
+    };
+    saveSignSwitchStore(s);
+    if(typeof toast === 'function'){
+      toast('邀请已发出，等 Ta 回应');
+    }
+    /* 关弹窗 */
+    var m = document.getElementById('mSignSwitch');
+    if(m) m.classList.remove('show');
+  });
 }
 
 document.addEventListener('click',e=>{
@@ -30674,8 +30716,8 @@ on('#btnSaveEdit','click',()=>{
   const friends=getFriends(); const f=friends.find(x=>x.id===getCurrentRoleId()); if(!f) return;
   const signText = $('#inSign').value.trim();
 
-  /* ★ 用户写的角色签名，自动加入「角色个签」字卡库（去重） */
-  if(signText){ try{ pushSignCardText('cs-role', signText); }catch(e){} }
+  /* ★ 用户写的角色签名，自动加入「这个角色自己的」签字卡库（去重） */
+  if(signText){ try{ pushSignCardText('cs-role', signText, getCurrentRoleId()); }catch(e){} }
 
   f.name=n;
   f.sub=signText;
@@ -32273,24 +32315,77 @@ function pickNextSignSwitchAt(){
   return Date.now() + days * 86400000;
 }
 
-/* 从「签字卡」分组里的某个分类抽一条
-   catId: 'cs-role' 或 'cs-me' */
-function pickSignCardText(catId){
-  var g = getGroupsByOwner('public').find(function(x){ return x.id === 'g-sign'; });
-  if(!g || !g.cats) return '';
-  var cat = g.cats.find(function(c){ return c.id === catId; });
-  if(!cat || !cat.list || !cat.list.length) return '';
-  var pool = cat.list.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
-  if(!pool.length) return '';
-  return pool[Math.floor(Math.random() * pool.length)];
+/* 从「签字卡」分组里抽一条
+   - catId === 'cs-me'      → 从「公用 → 签字卡 → 我的个签」里抽
+   - catId === 'cs-role'    → 从「角色专属 → 签字卡 → 角色个签」里抽
+                             角色专属为空时，回退到公用的「角色个签」
+   修复：角色个签不再跟用户共用同一个分类，改为各角色独立 */
+function pickSignCardText(catId, roleId){
+  /* --- 我自己的个签：走公用 --- */
+  if(catId === 'cs-me'){
+    var g0 = getGroupsByOwner('public').find(function(x){ return x.id === 'g-sign'; });
+    if(!g0 || !g0.cats) return '';
+    var c0 = g0.cats.find(function(c){ return c.id === 'cs-me'; });
+    if(!c0 || !c0.list || !c0.list.length) return '';
+    var pool0 = c0.list.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
+    if(!pool0.length) return '';
+    return pool0[Math.floor(Math.random() * pool0.length)];
+  }
+
+  /* --- 角色个签：优先角色专属 --- */
+  if(catId === 'cs-role'){
+    var rid = roleId || (typeof getCurrentRoleId === 'function' ? getCurrentRoleId() : '');
+    if(rid){
+      try{
+        var roleGroups = getGroupsByOwner(rid);
+        var rg = roleGroups.find(function(x){ return x.id === 'g-sign'; });
+        if(rg && rg.cats){
+          var rcat = rg.cats.find(function(c){ return c.id === 'cs-role'; });
+          if(rcat && rcat.list && rcat.list.length){
+            var rpool = rcat.list.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
+            if(rpool.length) return rpool[Math.floor(Math.random() * rpool.length)];
+          }
+        }
+      }catch(e){ console.error('读角色专属个签失败', e); }
+    }
+    /* 回退：公用 → 角色个签 */
+    var g1 = getGroupsByOwner('public').find(function(x){ return x.id === 'g-sign'; });
+    if(!g1 || !g1.cats) return '';
+    var c1 = g1.cats.find(function(c){ return c.id === 'cs-role'; });
+    if(!c1 || !c1.list || !c1.list.length) return '';
+    var pool1 = c1.list.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
+    if(!pool1.length) return '';
+    return pool1[Math.floor(Math.random() * pool1.length)];
+  }
+
+  return '';
 }
 
 /* 往「签字卡」某个分类里加一条（去重，去空）
-   catId: 'cs-role' 或 'cs-me' */
-function pushSignCardText(catId, text){
+   - cs-me   → 加到公用 → 签字卡 → 我的个签
+   - cs-role → 加到当前角色专属 → 签字卡 → 角色个签
+   修复：角色个签不再往公用写，改成每个角色独立 */
+function pushSignCardText(catId, text, roleId){
   var t = String(text || '').trim();
   if(!t) return false;
-  var g = getGroupsByOwner('public').find(function(x){ return x.id === 'g-sign'; });
+
+  var targetGroups;
+  if(catId === 'cs-role'){
+    var rid = roleId || (typeof getCurrentRoleId === 'function' ? getCurrentRoleId() : '');
+    if(!rid) return false;
+    try{
+      /* 确保这个角色的专属字卡分组结构齐全（含 g-sign） */
+      if(typeof syncRoleCardGroups === 'function') syncRoleCardGroups(rid);
+      targetGroups = getGroupsByOwner(rid);
+    }catch(e){
+      console.error('取角色专属分组失败', e);
+      return false;
+    }
+  } else {
+    targetGroups = getGroupsByOwner('public');
+  }
+
+  var g = targetGroups.find(function(x){ return x.id === 'g-sign'; });
   if(!g || !g.cats) return false;
   var cat = g.cats.find(function(c){ return c.id === catId; });
   if(!cat){ return false; }
@@ -32338,7 +32433,8 @@ function runSignSwitchTick(){
     }
     if(now < slot.nextAt) return;
 
-    var roleText = pickSignCardText('cs-role');
+    /* ★ 每个角色各自抽自己的专属个签，互不影响 */
+    var roleText = pickSignCardText('cs-role', rid);
     if(roleText){
       try{ saveRoleField(rid, 'sub', roleText); }catch(e){}
       if(typeof getCurrentRoleId === 'function' && getCurrentRoleId() === rid){
@@ -32384,7 +32480,8 @@ function runSignSwitchTick(){
     if(agree){
       /* 同意：切个签 */
       if(inv.type === 'role'){
-        var newSub = pickSignCardText('cs-role');
+        /* ★ 邀请切换角色个签：抽该角色自己的专属池 */
+        var newSub = pickSignCardText('cs-role', rid);
         if(newSub){
           try{ saveRoleField(rid, 'sub', newSub); }catch(e){}
           if(typeof getCurrentRoleId === 'function' && getCurrentRoleId() === rid){
