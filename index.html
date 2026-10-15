@@ -11932,34 +11932,7 @@ const DEFAULT_CARD_GROUPS = [
 	{ id:'cnc2', name:'拒绝', list:['不加','有点尴尬','算了吧'] },
 	{ id:'cnc3', name:'待定', list:['怎么了？','干嘛','让我考虑考虑'] }
   ]},
-  { id:'g-sign', name:'个签字卡', icon:'note', sub:'随机切换个签', cats:[
-	{ id:'cs-role', name:'角色个签', list:[
-	  '云和阳光不过一公尺',
-	  '我想睡在梦里，醒在梦境',
-	  { text:'如果我住在你梦里\n愿与你共眠 不想再苏醒', t:Date.now() },
-	  { text:'自顾自己已经有了定义\n何时该靠近什么应该摒弃', t:Date.now() },
-	  '眷恋唯一的星光就是你'
-	] },
-	{ id:'cs-me', name:'我的个签', list:[
-	  '云和阳光不过一公尺',
-	  '我想睡在梦里，醒在梦境',
-	  { text:'如果我住在你梦里\n愿与你共眠 不想再苏醒', t:Date.now() },
-	  { text:'自顾自己已经有了定义\n何时该靠近什么应该摒弃', t:Date.now() },
-	  '眷恋唯一的星光就是你'
-	] },
-	{ id:'cs-refuse', name:'拒绝', list:[
-	  '没有我想要的',
-	  '不需要',
-	  '现在挺好',
-	  '我喜欢现在这个',
-	  '懒得换',
-	  '不知道换哪个',
-	  '更希望你给我换',
-	  '没空',
-	  '自己想',
-	  '不想'
-	] }
-  ]},
+ 
   { id:'g-edited', name:'修改字卡存放处', icon:'note', sub:'长按角色消息编辑后自动存到这里', cats:[
 	{ id:'ce-all', name:'修改', list:[] }
   ]},
@@ -12031,18 +12004,8 @@ cardStore.public = cardStore.public.filter(g=>g && g.id !== 'g-open');
   if(!cardStore.public.some(g=>g.id==='g-divine'))   cardStore.public.push(JSON.parse(JSON.stringify(DEFAULT_CARD_GROUPS.find(g=>g.id==='g-divine'))));
   if(!cardStore.public.some(g=>g.id==='g-timed'))    cardStore.public.push(JSON.parse(JSON.stringify(DEFAULT_CARD_GROUPS.find(g=>g.id==='g-timed'))));
   if(!cardStore.public.some(g=>g.id==='g-groupchat')) cardStore.public.push(JSON.parse(JSON.stringify(DEFAULT_CARD_GROUPS.find(g=>g.id==='g-groupchat'))));
-  if(!cardStore.public.some(g=>g.id==='g-sign'))     cardStore.public.push(JSON.parse(JSON.stringify(DEFAULT_CARD_GROUPS.find(g=>g.id==='g-sign'))));
-  /* ★ 给已存在的 g-sign 补上 cs-refuse 分类 */
-  (function ensureRefuseCat(){
-    const g = cardStore.public.find(x => x.id === 'g-sign');
-    if(!g || !Array.isArray(g.cats)) return;
-    if(g.cats.some(c => c.id === 'cs-refuse')) return;
-    const dft = DEFAULT_CARD_GROUPS.find(x => x.id === 'g-sign');
-    const dftRefuse = dft && dft.cats && dft.cats.find(c => c.id === 'cs-refuse');
-    if(dftRefuse){
-      g.cats.push(JSON.parse(JSON.stringify(dftRefuse)));
-    }
-  })();
+ 
+  
   /* ★ 只补一次 Yes or No 字卡分组；用户之后删了不补 */
   if(!lsGet('mj_yesno_group_added_v1', false)){
     if(!cardStore.public.some(g=>g.id==='g-yesno')){
@@ -12050,11 +12013,36 @@ cardStore.public = cardStore.public.filter(g=>g && g.id !== 'g-open');
     }
     lsSet('mj_yesno_group_added_v1', true);
   }
-  /* 角色专属：把公用新增的分组补过去 */
+  /* 角色专属：把公用新增的分组补过去；同时保证每个角色都有 g-sign */
   Object.keys(cardStore.roles||{}).forEach(function(rid){
     if(typeof syncRoleCardGroups === 'function') syncRoleCardGroups(rid);
+    /* ★ 确保 g-sign 已就位（getGroupsByOwner 会自动补，这里主动调一次） */
+    try{ getGroupsByOwner(rid); }catch(e){}
   });
 })();
+/* ★ 一次性迁移：公用 g-sign 整个删掉，每个角色专属各补一份 */
+(function migrateSignToRoles(){
+  var FLAG = 'mj_sign_to_roles_v1';
+  if(lsGet(FLAG, false)) return;
+  try{
+    if(cardStore && Array.isArray(cardStore.public)){
+      cardStore.public = cardStore.public.filter(function(g){
+        return !(g && g.id === 'g-sign');
+      });
+    }
+    if(cardStore && cardStore.roles){
+      Object.keys(cardStore.roles).forEach(function(rid){
+        try{ getGroupsByOwner(rid); }catch(e){}
+      });
+    }
+    saveCardStore();
+    lsSet(FLAG, true);
+  }catch(e){
+    console.error('[个签迁移] 出错', e);
+    lsSet(FLAG, true);
+  }
+})();
+
 (function fixMoodData(){
   const mg = cardStore.public.find(g=>g.id==='g-mood');
   if(mg && mg.cats && mg.cats[0] && Array.isArray(mg.cats[0].list)){
@@ -12549,6 +12537,23 @@ function userName(){ return (userProfile.name || '我').trim() || '我'; }
 
 /* ★ 个签自动切换的存储 key，提前到此处声明，避免 TDZ 报错 */
 const SIGN_SWITCH_KEY = 'mj_sign_switch_v1';
+/* ★ 我的个签：全局唯一一份，所有角色共享 */
+const MY_SIGN_LIST_KEY = 'mj_my_sign_list_v1';
+function getMySignList(){
+  let a = lsGet(MY_SIGN_LIST_KEY, null);
+  if(!Array.isArray(a) || !a.length){
+    a = [
+      '云和阳光不过一公尺',
+      '我想睡在梦里，醒在梦境',
+      { text:'如果我住在你梦里\n愿与你共眠 不想再苏醒', t:Date.now() },
+      { text:'自顾自己已经有了定义\n何时该靠近什么应该摒弃', t:Date.now() },
+      '眷恋唯一的星光就是你'
+    ];
+    lsSet(MY_SIGN_LIST_KEY, a);
+  }
+  return a;
+}
+function saveMySignList(a){ lsSet(MY_SIGN_LIST_KEY, a); }
 
 const ROLE_FRIENDS_KEY = 'mj_role_friends_v1';
 function getRoleFriendsMap(){ let m = lsGet(ROLE_FRIENDS_KEY, null); if(!m || typeof m !== 'object') m = {}; return m; }
@@ -12809,6 +12814,45 @@ function getGroupsByOwner(owner){
     cardStore.roles[owner] = cloned;
     saveCardStore();
   }
+  /* ★ 每个角色专属字卡里，保证有「个签字卡」分组（cs-me + cs-role） */
+  (function ensureRoleSignGroup(){
+    const arr = cardStore.roles[owner];
+    let g = arr.find(function(x){ return x && x.id === 'g-sign'; });
+    if(!g){
+      g = { id:'g-sign', name:'个签字卡', icon:'note', sub:'随机切换个签', cats:[] };
+      arr.push(g);
+    }
+    if(!Array.isArray(g.cats)) g.cats = [];
+    if(!g.cats.some(function(c){ return c.id === 'cs-me'; })){
+      g.cats.push({ id:'cs-me', name:'我的个签', list: [] });
+    }
+    if(!g.cats.some(function(c){ return c.id === 'cs-role'; })){
+      g.cats.push({ id:'cs-role', name:'角色个签', list: [
+        '云和阳光不过一公尺',
+        '我想睡在梦里，醒在梦境',
+        { text:'如果我住在你梦里\n愿与你共眠 不想再苏醒', t:Date.now() },
+        { text:'自顾自己已经有了定义\n何时该靠近什么应该摒弃', t:Date.now() },
+        '眷恋唯一的星光就是你'
+      ]});
+    }
+    /* ★ 拒绝理由：角色独立 */
+    if(!g.cats.some(function(c){ return c.id === 'cs-refuse'; })){
+      g.cats.push({ id:'cs-refuse', name:'拒绝', list:[
+        '没有我想要的',
+        '不需要',
+        '现在挺好',
+        '我喜欢现在这个',
+        '懒得换',
+        '不知道换哪个',
+        '更希望你给我换',
+        '没空',
+        '自己想',
+        '不想'
+      ]});
+    }
+    saveCardStore();
+  })();
+
   /* ★ 每个角色专属字卡的「普通字卡」下，保证「修改后的字卡」分类存在，并在第一个 */
   (function ensureEditedCat(){
     const arr = cardStore.roles[owner];
@@ -27223,8 +27267,8 @@ function renderCdTabs(){
   const isYesNoGroup = (g.id === 'g-yesno');
   const cats = g.cats || [];
   box.innerHTML = cats.map(c=>{
-    /* ★ 「修改后的字卡」和「拒绝」分类不可删 */
-    const noDel = (c.id === 'ce-edited' || c.id === 'cs-refuse');
+    /* ★ 「修改后的字卡」分类不可删 */
+    const noDel = (c.id === 'ce-edited');
     const delHTML = noDel ? '' : `<span class="cd-tab-del" data-del-cid="${c.id}">✕</span>`;
     return `<div class="cd-tab ${c.id===curCatId?'on':''}" data-cid="${c.id}"><span class="cd-tab-name">${escapeHTML(c.name)}</span><span style="opacity:.6;font-size:11px">${(c.list||[]).length}</span>${delHTML}</div>`;
   }).join('')+`<div class="cd-tab" id="addCatBtn">＋ 分类</div>`;
@@ -27246,7 +27290,7 @@ function renderCdTabs(){
       if(!g2 || !g2.cats) return;
       const cat = g2.cats.find(c=>c.id===cid);
       if(!cat) return;
-      if(cid === 'cs-refuse'){ toast('「拒绝」分类不可删除'); return; }
+      /* 拒绝分类已废弃 */
       if(!confirm(`确定删除分类「${cat.name}」？\n里面 ${(cat.list||[]).length} 条字卡会一起删除。`)) return;
       g2.cats = g2.cats.filter(c=>c.id!==cid);
       if(curCatId === cid) curCatId = g2.cats[0] ? g2.cats[0].id : '';
@@ -27427,6 +27471,10 @@ function renderCdList(){
   const g = currentGroupObj(); if(!g){ box.innerHTML=''; return; }
   const cat = getCat(g,curCatId);
   if(!cat){ box.innerHTML=`<div class="cl-empty">还没有分类<br>点上方「＋ 分类」新建</div>`; setTimeout(refreshScrollbar,30); return; }
+  /* ★ 「我的个签」分类：内容从全局读，所有角色看到同一份 */
+  if(cat.id === 'cs-me'){
+    cat.list = JSON.parse(JSON.stringify(getMySignList()));
+  }
   const kw = cardKeyword.trim();
   const sortMode = getSortMode();
   let items = cat.list.map((line,i)=>({line,i}));
@@ -27808,6 +27856,23 @@ on('#confirmDelOk','click',()=>{
   const g = currentGroupObj();
   if(!cat || !pendingDelete.length){ $('#mConfirmDel').classList.remove('show'); return; }
 
+  /* ★ 「我的个签」分类：删全局，所有角色同步生效 */
+  if(cat.id === 'cs-me'){
+    const globalList = getMySignList();
+    const sortedDel = pendingDelete.slice().sort((a,b)=>b-a);
+    sortedDel.forEach(i => {
+      if(i >= 0 && i < globalList.length) globalList.splice(i, 1);
+    });
+    saveMySignList(globalList);
+    pendingDelete = [];
+    $('#mConfirmDel').classList.remove('show');
+    exitSelMode();
+    renderCdTabs();
+    renderCdList();
+    toast('已删除');
+    return;
+  }
+
   /* ★ 先写入回收站 */
   const trashItems = pendingDelete.map(i => {
     const item = cat.list[i];
@@ -27865,6 +27930,22 @@ on('#cardEditOk','click',()=>{
   if(!srcCat){ toast('原分类不存在'); return; }
   const text = $('#cardEditText').value.replace(/^\s+|\s+$/g,'');
   if(!text){ toast('内容不能为空'); return; }
+
+  /* ★ 「我的个签」分类：改全局，所有角色同步生效 */
+  if(srcCat.id === 'cs-me'){
+    const globalList = getMySignList();
+    if(cardEditIndex >= 0 && cardEditIndex < globalList.length){
+      const old = globalList[cardEditIndex];
+      if(typeof old === 'string') globalList[cardEditIndex] = { text, t: Date.now() };
+      else { old.text = text; old.t = Date.now(); }
+      saveMySignList(globalList);
+    }
+    $('#mCardEdit').classList.remove('show');
+    renderCdList();
+    toast('已保存');
+    return;
+  }
+
   const dstCat = getCat(g, cardEditTargetCatId) || srcCat;
   if(cardEditTargetCatId === curCatId){
 	const old = srcCat.list[cardEditIndex];
@@ -28775,6 +28856,28 @@ on('#btnAddCardsOk','click',()=>{
   const g=currentGroupObj();
   const cat=getCat(g, addCardsTargetCatId || curCatId);
   if(!cat){ alert('请先选一个分类'); return; }
+  /* ★ 「我的个签」分类：写入全局，所有角色共享 */
+  if(cat.id === 'cs-me'){
+    const globalList = getMySignList();
+    const pool = new Set(globalList.map(cardText).map(s=>String(s).trim()));
+    let added = 0, dup = 0;
+    const now = Date.now();
+    list.forEach((line, idx)=>{
+      const t = String(line).trim();
+      if(!t) return;
+      if(pool.has(t)){ dup++; return; }
+      globalList.push({ text: t, t: now + idx });
+      pool.add(t);
+      added++;
+    });
+    saveMySignList(globalList);
+    $('#mAddCards').classList.remove('show');
+    renderCdList();
+    let msg = '已添加 ' + added + ' 条';
+    if(dup) msg += '，跳过 ' + dup + ' 条重复';
+    toast(msg);
+    return;
+  }
   // 收集整个分组里所有分类已有的字卡，做全分类去重
   const groupPool = new Set();
   (g.cats||[]).forEach(c=>{ (c.list||[]).forEach(item=>{
@@ -31085,7 +31188,8 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 (function init(){
   try{
 	const role = getRole();
-	$('#chatName').textContent = role.name;
+	/* ★ 用 displayName 而不是 role.name，否则重进页面顶部栏会丢掉备注 */
+	$('#chatName').textContent = displayName(role);
 	$('#chatAvatar').innerHTML = avatarHTML(role.avatar);
 	renderMePage();
 	(function rebindMeName(){
@@ -32360,41 +32464,28 @@ function pickNextSignSwitchAt(){
                              角色专属为空时，回退到公用的「角色个签」
    修复：角色个签不再跟用户共用同一个分类，改为各角色独立 */
 function pickSignCardText(catId, roleId){
-  /* --- 我自己的个签：走公用 --- */
+  /* --- 我自己的个签：全局唯一一份，所有角色共享 --- */
   if(catId === 'cs-me'){
-    var g0 = getGroupsByOwner('public').find(function(x){ return x.id === 'g-sign'; });
-    if(!g0 || !g0.cats) return '';
-    var c0 = g0.cats.find(function(c){ return c.id === 'cs-me'; });
-    if(!c0 || !c0.list || !c0.list.length) return '';
-    var pool0 = c0.list.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
+    var list0 = getMySignList();
+    var pool0 = list0.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
     if(!pool0.length) return '';
     return pool0[Math.floor(Math.random() * pool0.length)];
   }
 
-  /* --- 角色个签：优先角色专属 --- */
-  if(catId === 'cs-role'){
+  /* --- 角色个签 / 拒绝理由：从该角色专属抽 --- */
+  if(catId === 'cs-role' || catId === 'cs-refuse'){
     var rid = roleId || (typeof getCurrentRoleId === 'function' ? getCurrentRoleId() : '');
-    if(rid){
-      try{
-        var roleGroups = getGroupsByOwner(rid);
-        var rg = roleGroups.find(function(x){ return x.id === 'g-sign'; });
-        if(rg && rg.cats){
-          var rcat = rg.cats.find(function(c){ return c.id === 'cs-role'; });
-          if(rcat && rcat.list && rcat.list.length){
-            var rpool = rcat.list.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
-            if(rpool.length) return rpool[Math.floor(Math.random() * rpool.length)];
-          }
-        }
-      }catch(e){ console.error('读角色专属个签失败', e); }
-    }
-    /* 回退：公用 → 角色个签 */
-    var g1 = getGroupsByOwner('public').find(function(x){ return x.id === 'g-sign'; });
-    if(!g1 || !g1.cats) return '';
-    var c1 = g1.cats.find(function(c){ return c.id === 'cs-role'; });
-    if(!c1 || !c1.list || !c1.list.length) return '';
-    var pool1 = c1.list.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
-    if(!pool1.length) return '';
-    return pool1[Math.floor(Math.random() * pool1.length)];
+    if(!rid) return '';
+    try{
+      var roleGroups = getGroupsByOwner(rid);
+      var rg = roleGroups.find(function(x){ return x.id === 'g-sign'; });
+      if(!rg || !rg.cats) return '';
+      var rcat = rg.cats.find(function(c){ return c.id === catId; });
+      if(!rcat || !rcat.list || !rcat.list.length) return '';
+      var rpool = rcat.list.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
+      if(!rpool.length) return '';
+      return rpool[Math.floor(Math.random() * rpool.length)];
+    }catch(e){ console.error('读角色专属个签失败', e); return ''; }
   }
 
   return '';
@@ -32408,32 +32499,39 @@ function pushSignCardText(catId, text, roleId){
   var t = String(text || '').trim();
   if(!t) return false;
 
-  var targetGroups;
+  /* ★ 我的个签：走全局存储，所有角色共享 */
+  if(catId === 'cs-me'){
+    var list0 = getMySignList();
+    var exists0 = list0.some(function(item){ return String(cardText(item)).trim() === t; });
+    if(exists0) return false;
+    list0.push({ text: t, t: Date.now() });
+    saveMySignList(list0);
+    return true;
+  }
+
+  /* ★ 角色个签：写进该角色专属的 g-sign → cs-role */
   if(catId === 'cs-role'){
     var rid = roleId || (typeof getCurrentRoleId === 'function' ? getCurrentRoleId() : '');
     if(!rid) return false;
     try{
-      /* 确保这个角色的专属字卡分组结构齐全（含 g-sign） */
       if(typeof syncRoleCardGroups === 'function') syncRoleCardGroups(rid);
-      targetGroups = getGroupsByOwner(rid);
+      var targetGroups = getGroupsByOwner(rid);
+      var g = targetGroups.find(function(x){ return x.id === 'g-sign'; });
+      if(!g || !g.cats) return false;
+      var cat = g.cats.find(function(c){ return c.id === 'cs-role'; });
+      if(!cat){ return false; }
+      if(!Array.isArray(cat.list)) cat.list = [];
+      var exists = cat.list.some(function(item){ return String(cardText(item)).trim() === t; });
+      if(exists) return false;
+      cat.list.push({ text: t, t: Date.now() });
+      saveCardStore();
+      return true;
     }catch(e){
-      console.error('取角色专属分组失败', e);
+      console.error('写角色个签失败', e);
       return false;
     }
-  } else {
-    targetGroups = getGroupsByOwner('public');
   }
-
-  var g = targetGroups.find(function(x){ return x.id === 'g-sign'; });
-  if(!g || !g.cats) return false;
-  var cat = g.cats.find(function(c){ return c.id === catId; });
-  if(!cat){ return false; }
-  if(!Array.isArray(cat.list)) cat.list = [];
-  var exists = cat.list.some(function(item){ return String(cardText(item)).trim() === t; });
-  if(exists) return false;
-  cat.list.push({ text: t, t: Date.now() });
-  saveCardStore();
-  return true;
+  return false;
 }
 
 /* 每分钟 tick：检查我的 / 角色的个签是否到点，到点就换 */
@@ -32451,6 +32549,7 @@ function runSignSwitchTick(){
       if(myText){
         userProfile.sign = myText;
         saveUser();
+        try{ pushSignCardText('cs-me', myText); }catch(e){}
         try{ renderMePage(); }catch(e){}
       }
       s.me.nextAt = pickNextSignSwitchAt();
@@ -32501,6 +32600,7 @@ function runSignSwitchTick(){
     if(myText2){
       userProfile.sign = myText2;
       saveUser();
+      try{ pushSignCardText('cs-me', myText2); }catch(e){}
       try{ renderMePage(); }catch(e){}
     }
     slot.nextAt = pickNextSignSwitchAt();
@@ -32543,6 +32643,7 @@ function runSignSwitchTick(){
         if(newMySign){
           userProfile.sign = newMySign;
           saveUser();
+          try{ pushSignCardText('cs-me', newMySign); }catch(e){}
           try{ renderMePage(); }catch(e){}
           appendMsgToRole(rid, {
             id: uid(),
@@ -32560,12 +32661,7 @@ function runSignSwitchTick(){
       /* 拒绝：抽一条拒绝原因，发拒绝卡 */
       var reason = '';
       try{
-        var g = getGroupsByOwner('public').find(function(x){ return x.id === 'g-sign'; });
-        var cat = g && g.cats && g.cats.find(function(c){ return c.id === 'cs-refuse'; });
-        if(cat && Array.isArray(cat.list) && cat.list.length){
-          var pool = cat.list.map(cardText).map(function(x){ return String(x).trim(); }).filter(Boolean);
-          if(pool.length) reason = pool[Math.floor(Math.random() * pool.length)];
-        }
+        reason = pickSignCardText('cs-refuse', rid);
       }catch(e){}
       appendMsgToRole(rid, {
         id: uid(),
@@ -36491,6 +36587,14 @@ document.addEventListener('click', (e) => {
   saveCardStore();
   lsSet(FLAG, true);
 })();
+
+/* ============================================================
+   ★ 一次性迁移：把「公用 → 个签字卡 → 角色个签」搬到每个角色专属
+   - 每个角色专属里建 g-sign 分组，把公用 cs-role 的内容复制过去
+   - 迁移完成后，删掉公用 g-sign 里的 cs-role 分类
+   - 用 flag 保证只跑一次
+   ============================================================ */
+ 
 
 (function patchChatRender(){
   const origRender = window.renderChat;
