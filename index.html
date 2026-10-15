@@ -16362,14 +16362,12 @@ try{
   localStorage.removeItem('mj_sys_notify_on_v2');
 }catch(e){}
 function getSysNotifyOn(){
-  /* ★ 修复：默认应该是"开"，不是"关"。
-     只有用户主动关过（本地存了 false），才返回 false。
-     如果本地没存过（v === null），就默认 true。
-     这样用户第一次进来、系统权限也给了的话，
-     通知开关应该显示为"开"，切后台也能收到通知。 */
+  /* ★ 默认关：用户第一次进来看到的是"未开启"
+     想让用户主动点开关去触发权限请求
+     本地存 '1' → 开；存 '0' → 关；没存过 → 关 */
   var v = lsGet(SYS_NOTIFY_KEY, null);
-  if(v === null) return true;   /* 从没设过 → 默认开 */
-  return !!v;
+  if(v === null) return false;
+  return v === '1' || v === true;
 }
 
 /* ============================================================
@@ -32989,6 +32987,8 @@ function switchToRole(id){
       if(typeof toast === 'function') toast('已开启后台通知');
       return;
     }
+    /* ★ 注：这里只在用户主动点开关时才进来
+       回填逻辑不经过这里，所以不会被系统权限覆盖用户选择 */
 
     /* permission === 'default'：向系统请求权限。
        浏览器会弹出「允许 / 取消」对话框，
@@ -33038,20 +33038,19 @@ function switchToRole(id){
     }
   }, true);
 
-  /* ★ 每次打开通知页时，把开关的 checked 状态跟真实权限同步一次 */
+  /* ★ 每次打开通知页时，回填开关状态
+     - 本地存的是"用户最后一次手动选的状态"
+     - 系统权限是"浏览器是否允许发通知"
+     - 两者分开存，互不覆盖 */
   document.addEventListener('click', function(e){
     var t = e.target;
     if(!t || !t.closest) return;
     if(!t.closest('.set-row[data-set="notify"]')) return;
-    /* 延迟一点，等 notifyScreen 显示出来再同步 */
     setTimeout(function(){
       var cb = document.getElementById('notifySys');
       if(!cb) return;
-      /* ★ 默认关：只有当本地开关是开的、且浏览器权限确实为 granted，
-         才打勾。否则一律不打勾，让用户自己点开去触发权限请求。 */
-      var granted = (typeof Notification !== 'undefined' && Notification.permission === 'granted');
-      var localOn = getSysNotifyOn();
-      cb.checked = granted && localOn;
+      /* ★ 只读本地存的用户选择，不被系统权限覆盖 */
+      cb.checked = getSysNotifyOn();
     }, 60);
   }, true);
 
