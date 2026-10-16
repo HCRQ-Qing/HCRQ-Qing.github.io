@@ -14689,16 +14689,19 @@ function genReply(useTimed){
   for(let b=0;b<bubbleCount;b++){
 	let blockCount = 1;
 	if((r.multiBlockOn !== false) && Math.random() < (r.multiBlockProb||0)){
+	  /* ★全局硬上限：所有角色拼好卡最大块数强制上限6张 */
+	  const GLOBAL_MULTI_BLOCK_MAX = 6;
 	  blockCount = 1 + Math.floor(Math.random() * Math.max(1, (r.maxBlocks||1)-1));
 	  blockCount = Math.min(blockCount, r.maxBlocks||1);
+	  blockCount = Math.min(blockCount, GLOBAL_MULTI_BLOCK_MAX);
 	}
 	const parts = [];
-	/* ★ 单字字卡总数：一个气泡里封顶 pinyinMax 条（受拼好卡块数约束，每块占一格），
-	   不会不受拼好卡影响、每块各自拼满 pinyinMax */
-	let pyRemain = Math.max(1, (r.pinyinMax||1));
+	/* ★【新增】单字字卡条数不能超过拼好卡块数上限，取两者最小值 */
+	const pyUpper = Math.min(r.pinyinMax||1, blockCount);
+	let pyRemain = Math.max(1, pyUpper);
 	for(let k=0;k<blockCount;k++){
 	  if(r.pinyinOn && pyRemain > 0 && Math.random() < r.pinyinRate){
-  const cnt = 1 + Math.floor(Math.random() * Math.min(pyRemain, (r.pinyinMax||1)));
+  const cnt = 1 + Math.floor(Math.random() * Math.min(pyRemain, pyUpper));
   pyRemain -= cnt;
   const hans=[];
   for(let i=0;i<cnt;i++){ const p=randPinyin(); hans.push(p.han); }
