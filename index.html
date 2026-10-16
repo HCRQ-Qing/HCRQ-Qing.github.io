@@ -8304,25 +8304,25 @@ body[data-bubble="custom"] .preview-bubble{
 
 /* ===== 评论区（方案 C · 全宽铺满） ===== */
 .cmt-a{
-  margin-top:14px;
+  margin-top:6px;
   margin-left:-50px;
-  padding-top:12px;
-  border-top:0.6px solid rgba(0,0,0,.06);
+  padding-top:6px;
+  border-top:0.6px solid rgba(0,0,0,.05);
 }
 .col-item{overflow:visible !important}
 
 .cmt-a .cmt-empty{
-  font-size:12px;
-  color:#ccc;
-  padding:6px 0 10px;
+  font-size:11px;
+  color:#c8c8c8;
+  padding:0;
   letter-spacing:.5px;
   font-weight:300;
 }
 .cmt-a .cmt-row{
-  font-size:12.5px;
-  line-height:1.9;
+  font-size:12px;
+  line-height:1.75;
   color:#1a1a1a;
-  padding:3px 0;
+  padding:2px 0;
   word-break:break-word;
   font-weight:300;
 }
@@ -8332,26 +8332,36 @@ body[data-bubble="custom"] .preview-bubble{
   margin-right:2px;
 }
 .cmt-a .cmt-row.me .cn{color:#1a1a1a}
-.cmt-a .cmt-row .reply-a{
-  margin-top:5px;
-  padding:6px 10px;
-  border-left:2px solid #d0d0d0;
-  background:transparent;
-  font-size:11.5px;
+/* ★ 回复@格式 */
+.cmt-a .cmt-row .reply-to{
   color:#999;
-  line-height:1.6;
-  border-radius:0;
+  font-weight:300;
+  margin:0 1px;
 }
-.cmt-a .cmt-row .reply-a .q b{
+.cmt-a .cmt-row .reply-to b{
   color:#1a1a1a;
   font-weight:400;
-  margin-right:4px;
 }
+/* ★ 写评论入口（输入框默认收起） */
+.cmt-a .cmt-open{
+  display:inline-block;
+  margin-top:4px;
+  font-size:11px;
+  color:#999;
+  letter-spacing:.5px;
+  font-weight:300;
+  cursor:pointer;
+  padding:2px 0;
+}
+.cmt-a .cmt-open:active{color:#1a1a1a}
+/* ★ 输入框默认隐藏，点「写评论」才展开 */
 .cmt-a .inp-c{
+  display:none;
   position:relative;
-  padding-bottom:6px;
-  margin-top:10px;
+  padding-bottom:4px;
+  margin-top:6px;
 }
+.cmt-a .inp-c.open{display:block}
 .cmt-a .inp-c textarea{
   width:100%;
   box-sizing:border-box;
@@ -8359,14 +8369,14 @@ body[data-bubble="custom"] .preview-bubble{
   outline:none;
   resize:none;
   background:transparent;
-  border-bottom:0.7px solid rgba(0,0,0,.14);
-  padding:8px 0 10px;
-  font-size:14px;
+  border-bottom:0.7px solid rgba(0,0,0,.10);
+  padding:6px 0 8px;
+  font-size:13px;
   font-family:inherit;
   color:#1a1a1a;
   line-height:1.5;
-  min-height:38px;
-  max-height:120px;
+  min-height:26px;
+  max-height:80px;
   font-weight:300;
   transition:border-color .18s ease;
   -webkit-font-smoothing:antialiased;
@@ -8377,10 +8387,10 @@ body[data-bubble="custom"] .preview-bubble{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding-top:8px;
+  padding-top:4px;
 }
 .cmt-a .inp-c .inp-foot .cnt{
-  font-size:10.5px;
+  font-size:10px;
   color:#ccc;
   font-family:Georgia,serif;
   letter-spacing:.5px;
@@ -8392,11 +8402,11 @@ body[data-bubble="custom"] .preview-bubble{
   background:transparent;
   color:#1a1a1a;
   font-family:inherit;
-  font-size:12.5px;
+  font-size:11.5px;
   letter-spacing:3px;
   cursor:pointer;
   font-weight:300;
-  padding:4px 0;
+  padding:2px 0;
   -webkit-font-smoothing:antialiased;
   transition:opacity .15s ease;
 }
@@ -12518,17 +12528,16 @@ window.__APP_CHANGELOG__ = [];
             imageIdbKey: key,
             time: Date.now()
           };
-          msgs.push(msg);
-          saveMsgs();
-          /* 每次都重绘，让图片按顺序出现 */
-          window.__lastRenderSig = '';
-          if(typeof renderChatFull === 'function') renderChatFull(true);
-          else renderChat(true);
-
-          /* 最后一张发完，触发一次回复 */
+          /* ★ 统一走状态机入口；最后一张发完才触发回复 */
           if(idx === files.length - 1){
-            try{ armReadCooldown(); }catch(e){}
-            try{ triggerReply(); }catch(e){}
+            dispatchUserMsg(msg);
+          } else {
+            /* 中间张只 push，不触发状态机，避免多条互相抢已读 */
+            msgs.push(msg);
+            saveMsgs();
+            window.__lastRenderSig = '';
+            if(typeof renderChatFull === 'function') renderChatFull(true);
+            else renderChat(true);
           }
         }).catch(function(err){
           console.error('图片存 IndexedDB 失败', err);
@@ -14663,6 +14672,60 @@ function genReply(useTimed){
   return [{kind:'bubbles', bubbles, willRecall: willRecall}];
 }
 
+/* ============================================================
+   ★ 统一：所有「我方消息」都走这个入口
+   用途：
+     - 文字 / 语音 / 表情图 / 图片 / 名片 / 试卷卡 / 占卜卡 / 转发卡
+     - 全部在这里统一判定 readState、排 armReadTimer、触发 triggerReply
+   msg 必填：role:'user' + 内容字段
+   opts 可选：
+     noReply（=true 表示这条消息直接不发，只落 unread 等 armReadTimer），默认按概率
+   ============================================================ */
+function dispatchUserMsg(msg){
+  if(!msg || msg.role !== 'user') return;
+  const role = getRole();
+  if(role && (role.blocked || role.hidden)){
+    msg.sendFailed = true;
+    msgs.push(msg);
+    saveMsgs(); renderChat(true);
+    toast(role.blocked ? '对方拒收你的消息' : '你还不是对方好友，消息发送失败');
+    return;
+  }
+
+  const r = getReply();
+  const noReplyAllowed = (r.noReplyOn !== false);
+  const noReplyProb = (typeof r.noReplyRate === 'number') ? r.noReplyRate : 0.25;
+  const nowTs = Date.now();
+  const inReadWindow = (typeof window.__lastReadAt === 'number')
+    && (nowTs - window.__lastReadAt < 10000);
+  const goReadNow = inReadWindow || (Math.random() < 0.5);
+
+  if(goReadNow){
+    const isNoReply = noReplyAllowed && (Math.random() < noReplyProb);
+    msg.readState = isNoReply ? 'noReply' : 'read';
+    msg.readNoReply = isNoReply;
+    msg.readAt = nowTs;
+    if(!isNoReply){ window.__lastReadAt = nowTs; }
+
+    msgs.push(msg);
+    saveMsgs(); renderChat(true);
+
+    if(!isNoReply){
+      try{ triggerReply(); }catch(e){}
+    }
+  } else {
+    msg.readState = 'unread';
+    msg.readNoReply = false;
+    msg.readWillNoReply = noReplyAllowed && (Math.random() < noReplyProb);
+
+    msgs.push(msg);
+    saveMsgs(); renderChat(true);
+
+    try{ armReadTimer(msg); }catch(e){}
+    try{ triggerReply(); }catch(e){}
+  }
+}
+
 let msgs = [];
 function msgsKey(){ return 'mj_msgs_'+getCurrentRoleId(); }
 function loadMsgs(){
@@ -16269,66 +16332,63 @@ function toggleCollectComments(itemId){
   renderCollectScreen(activeTab ? activeTab.dataset.colTab : 'mine');
 }
 
-/* ===== 渲染某条收藏的评论区 HTML ===== */
+/* ===== 渲染某条收藏的评论区 HTML =====
+   - 评论内容默认展示
+   - 输入框默认收起，点「写条评论…」才展开
+   - 回复某条评论时，行内渲染「我 回复 @某人：内容」 */
 function renderCollectCommentsHTML(item, ownerKind){
   var comments = getCollectComments(item.id);
-  var isOpen = (colOpenCommentId === item.id);
+  var myName = userName();
+  var inpOpen = !!window.__colCmtOpenSet && window.__colCmtOpenSet.has(item.id);
 
-  if(!isOpen){
-    var tip = comments.length
-      ? ('展开评论 · ' + comments.length + ' 条')
-      : '写条评论…';
-    return '<div class="cmt-collapsed" data-cmt-toggle="' + item.id + '">' +
-      '<svg viewBox="0 0 24 24"><polyline points="6,9 12,15 18,9"/></svg>' +
-      '<span>' + escapeHTML(tip) + '</span>' +
-    '</div>';
+  /* 评论列表 */
+  var listHTML;
+  if(comments.length){
+    listHTML = comments.map(function(c){
+      var whoName;
+      if(c.who === 'me') whoName = myName;
+      else {
+        var r = getRoleById(c.who);
+        whoName = r ? displayName(r) : '?';
+      }
+      var isMe = (c.who === 'me');
+      var replyHTML = '';
+      /* ★ 兼容两种字段：新字段 replyTo / 老字段 quote */
+      var rt = c.replyTo || (c.quote ? { who: c.quote.who, text: c.quote.text } : null);
+      if(rt){
+        var rtWho = (rt.who === 'me') ? myName : (function(){
+          var rr = getRoleById(rt.who);
+          return rr ? displayName(rr) : '?';
+        })();
+        replyHTML = '<span class="reply-to">回复 <b>@' + escapeHTML(rtWho) + '</b>：</span>';
+      }
+      return '<div class="cmt-row' + (isMe ? ' me' : '') + '" data-cmtid="' + c.id + '">' +
+        '<span class="cn">' + escapeHTML(whoName) + '：</span>' +
+        (isMe ? replyHTML : '') +
+        escapeHTML(c.text) +
+      '</div>';
+    }).join('');
+  } else {
+    listHTML = '<div class="cmt-empty">还没有评论</div>';
   }
 
-  var myName = userName();
-  var listHTML = comments.length
-    ? comments.map(function(c){
-        var whoName;
-        if(c.who === 'me') whoName = myName;
-        else {
-          var r = getRoleById(c.who);
-          whoName = r ? displayName(r) : '?';
-        }
-        var isMe = (c.who === 'me');
-        var quoteHTML = '';
-        if(c.quote){
-          var qWho = (c.quote.who === 'me') ? myName : (function(){
-            var rr = getRoleById(c.quote.who);
-            return rr ? displayName(rr) : '?';
-          })();
-          quoteHTML =
-            '<div class="reply-a">' +
-              '<div class="q"><b>' + escapeHTML(qWho) + '：</b>' + escapeHTML(c.quote.text) + '</div>' +
-            '</div>';
-        }
-        return '<div class="cmt-row' + (isMe ? ' me' : '') + '" data-cmtid="' + c.id + '">' +
-          '<span class="cn">' + escapeHTML(whoName) + '：</span>' + escapeHTML(c.text) +
-          quoteHTML +
-        '</div>';
-      }).join('')
-    : '<div style="font-size:12px;color:#ccc;padding:6px 0">还没有评论</div>';
-
-  return '<div class="cmt-a">' +
-    listHTML +
-    '<div class="inp-c">' +
+  /* 输入框：默认收起，带 open 才显示 */
+  var inpHTML =
+    '<div class="cmt-open" data-cmt-open="' + item.id + '">写条评论…</div>' +
+    '<div class="inp-c' + (inpOpen ? ' open' : '') + '" data-cmt-box="' + item.id + '">' +
       '<textarea placeholder="说点什么…" data-cmt-input="' + item.id + '" maxlength="200"></textarea>' +
       '<div class="inp-foot">' +
         '<span class="cnt">0/200</span>' +
         '<button data-cmt-send="' + item.id + '" data-owner-kind="' + ownerKind + '" type="button">发 送</button>' +
       '</div>' +
-    '</div>' +
-    '<div class="cmt-collapsed" data-cmt-toggle="' + item.id + '" style="margin-top:8px">' +
-      '<svg viewBox="0 0 24 24" style="transform:rotate(180deg)"><polyline points="6,9 12,15 18,9"/></svg>' +
-      '<span>收起评论</span>' +
-    '</div>' +
-  '</div>';
+    '</div>';
+
+  return '<div class="cmt-a">' + listHTML + inpHTML + '</div>';
 }
 
-/* ===== 发送一条评论（我方） ===== */
+/* ===== 发送一条评论（我方） =====
+   - 如果用户刚才选了「回复」，就把 replyTo 字段挂上
+   - 发送后自动收起这条收藏的输入框 */
 function submitCollectComment(itemId, ownerKind){
   if(!itemId) return;
   var ta = document.querySelector('[data-cmt-input="' + itemId + '"]');
@@ -16336,12 +16396,13 @@ function submitCollectComment(itemId, ownerKind){
   var text = String(ta.value || '').trim();
   if(!text){ toast('内容不能为空'); return; }
 
-  var quote = null;
+  /* ★ 如果刚才选了「回复某条评论」，带上 replyTo 字段 */
+  var replyTo = null;
   var replied = window.__collectReplyMap && window.__collectReplyMap[itemId];
   if(replied){
     var src = getCollectComments(itemId).find(function(c){ return c.id === replied; });
     if(src){
-      quote = { commentId: src.id, who: src.who, text: src.text };
+      replyTo = { commentId: src.id, who: src.who, text: src.text };
     }
     window.__collectReplyMap[itemId] = null;
   }
@@ -16351,34 +16412,55 @@ function submitCollectComment(itemId, ownerKind){
     who: 'me',
     text: text,
     time: Date.now(),
-    quote: quote
+    replyTo: replyTo
   };
   addCollectComment(itemId, c);
+
+  /* ★ 发送后收起输入框 */
+  if(window.__colCmtOpenSet) window.__colCmtOpenSet.delete(itemId);
 
   var activeTab = document.querySelector('#colTabs .memo-tab.on');
   renderCollectScreen(activeTab ? activeTab.dataset.colTab : 'mine');
   toast('已发送');
 }
 
-/* ===== 评论区事件绑定 ===== */
+/* ===== 评论区事件绑定 =====
+   - 点「写条评论…」展开输入框
+   - 点发送 → 提交
+   - 长按某条评论 → 弹「回复 / 取消」
+     · 选「回复」→ 记下要回复的评论 id，展开输入框，聚焦
+   - 发送后自动收起输入框 */
 function bindColCommentsEvents(body, tab){
   if(!body) return;
 
-  body.querySelectorAll('[data-cmt-toggle]').forEach(function(el){
+  /* 1. 点「写条评论…」展开输入框 */
+  body.querySelectorAll('[data-cmt-open]').forEach(function(el){
     el.onclick = function(e){
       e.stopPropagation();
-      toggleCollectComments(el.dataset.cmtToggle);
+      var itemId = el.dataset.cmtOpen;
+      if(!window.__colCmtOpenSet) window.__colCmtOpenSet = new Set();
+      window.__colCmtOpenSet.add(itemId);
+      el.style.display = 'none';
+      var box = body.querySelector('[data-cmt-box="' + itemId + '"]');
+      if(box){
+        box.classList.add('open');
+        var ta = box.querySelector('textarea');
+        if(ta) setTimeout(function(){ ta.focus(); }, 50);
+      }
     };
   });
 
+  /* 2. 输入框：字数统计 + 阻止冒泡 */
   body.querySelectorAll('[data-cmt-input]').forEach(function(ta){
     ta.oninput = function(){
-      var cntEl = ta.parentNode.querySelector('.cnt');
+      var box = ta.closest('.inp-c');
+      var cntEl = box ? box.querySelector('.cnt') : null;
       if(cntEl) cntEl.textContent = ta.value.length + '/200';
     };
     ta.onclick = function(e){ e.stopPropagation(); };
   });
 
+  /* 3. 点发送 */
   body.querySelectorAll('[data-cmt-send]').forEach(function(btn){
     btn.onclick = function(e){
       e.stopPropagation();
@@ -16386,6 +16468,7 @@ function bindColCommentsEvents(body, tab){
     };
   });
 
+  /* 4. 长按评论 → 弹「回复 / 取消」 */
   body.querySelectorAll('.cmt-row').forEach(function(row){
     var pressTimer = null;
     var cid = row.dataset.cmtid;
@@ -16403,24 +16486,28 @@ function bindColCommentsEvents(body, tab){
       menu.addEventListener('click', function(ev){
         var act = ev.target.dataset.act;
         if(act === 'reply'){
+          /* 记下要回复的评论 id */
           if(!window.__collectReplyMap) window.__collectReplyMap = {};
           window.__collectReplyMap[itemId] = cid;
           menu.remove();
-          if(colOpenCommentId !== itemId) colOpenCommentId = itemId;
-          var activeTab = document.querySelector('#colTabs .memo-tab.on');
-          renderCollectScreen(activeTab ? activeTab.dataset.colTab : 'mine');
-          setTimeout(function(){
-            var ta2 = document.querySelector('[data-cmt-input="' + itemId + '"]');
-            if(ta2) ta2.focus();
-          }, 80);
-          toast('已引用，去输入框写点什么吧');
+          /* 展开输入框并聚焦 */
+          if(!window.__colCmtOpenSet) window.__colCmtOpenSet = new Set();
+          window.__colCmtOpenSet.add(itemId);
+          var openTip = body.querySelector('[data-cmt-open="' + itemId + '"]');
+          if(openTip) openTip.style.display = 'none';
+          var box = body.querySelector('[data-cmt-box="' + itemId + '"]');
+          if(box){
+            box.classList.add('open');
+            var ta2 = box.querySelector('textarea');
+            if(ta2) setTimeout(function(){ ta2.focus(); }, 80);
+          }
+          toast('已选择回复，写点什么吧');
         } else if(act === 'cancel' || ev.target === menu){
           menu.remove();
         }
       });
     }
     function onStart(e){
-      if(e.target.closest('.reply-a')) return;
       pressTimer = setTimeout(function(){
         if(navigator.vibrate) navigator.vibrate(15);
         showMenu();
@@ -17550,19 +17637,29 @@ function execForward(msgIds, targetRoleIds, mode, withNote){
 	if(mode === 'single' || mode === 'multi-batch'){
 	  srcMsgs.forEach((src, idx) => {
 		const copyMsg = buildForwardCopyMsg(src, targetId, idx, withNote);
-		appendMsgToRole(targetId, copyMsg);
+		/* ★ 转给当前正在看的角色时，走状态机；转给别的角色时只落库 */
+		if(targetId === getCurrentRoleId()){
+		  dispatchUserMsg(copyMsg);
+		} else {
+		  appendMsgToRole(targetId, copyMsg);
+		}
 	  });
 	}
 	/* 合并转发 */
 	else if(mode === 'multi-merge'){
 	  const items = srcMsgs.map(src => buildForwardItem(src));
 	  const now = Date.now();
-	  appendMsgToRole(targetId, {
+	  const mergeMsg = {
 		id: 'm' + now.toString(36) + Math.random().toString(36).slice(2,6),
 		role: 'user',
 		time: now,
 		mergeCard: { items: items }
-	  });
+	  };
+	  if(targetId === getCurrentRoleId()){
+		dispatchUserMsg(mergeMsg);
+	  } else {
+		appendMsgToRole(targetId, mergeMsg);
+	  }
 	}
   });
 
@@ -17759,55 +17856,8 @@ function sendMessage(){
 	/* ★ 发出消息 → 播发消息音效 */
 	try{ playSoundOnce('outMsg'); }catch(e){}
 
-	/* ============================================================
-	   ★ 已读 / 未读 / 已读不回 · 统一状态机
-	   概念模型：
-	     - 未读（unread）   = 对方还没看到
-	     - 已读（read）     = 对方看到了，会触发回复
-	     - 已读不回（noReply）= 对方看到了，但这次不回复
-	   已读不回是"已读"的一种终态，只是额外标记"不触发回复"。
-	   所有终态推进，统一走 _settleUserMsgState()，一处收口，不再各自为政。
-	   ============================================================ */
-	const r = getReply();
-	const noReplyAllowed = (r.noReplyOn !== false);
-	const noReplyProb = (typeof r.noReplyRate === 'number') ? r.noReplyRate : 0.25;
-
-	/* 已读 10 秒窗口：上一条刚落"已读"时，新消息直接走已读支 */
-	const nowTs = Date.now();
-	const inReadWindow = (typeof window.__lastReadAt === 'number')
-	  && (nowTs - window.__lastReadAt < 10000);
-	const goReadNow = inReadWindow || (Math.random() < 0.5);
-
-	if(goReadNow){
-	  /* 走已读支：立刻落终态（已读 / 已读不回） */
-	  const isNoReply = noReplyAllowed && (Math.random() < noReplyProb);
-	  m.readState = isNoReply ? 'noReply' : 'read';
-	  m.readNoReply = isNoReply;
-	  m.readAt = nowTs;
-	  if(!isNoReply){ window.__lastReadAt = nowTs; }
-
-	  msgs.push(m);
-	  inp.value = ''; inp.style.height = 'auto';
-	  saveMsgs(); renderChat(true);
-
-	  /* 已读 → 触发回复；已读不回 → 不触发 */
-	  if(!isNoReply){
-	    triggerReply();
-	  }
-	} else {
-	  /* 走未读支：先落"未读"，到点由 armReadTimer 统一推终态 */
-	  m.readState = 'unread';
-	  m.readNoReply = false;
-	  /* 到点时的终态在发消息这一刻就摇好，避免 armReadTimer 里再摇一次导致状态错乱 */
-	  m.readWillNoReply = noReplyAllowed && (Math.random() < noReplyProb);
-
-	  msgs.push(m);
-	  inp.value = ''; inp.style.height = 'auto';
-	  saveMsgs(); renderChat(true);
-
-	  armReadTimer(m);
-	  triggerReply();
-	}
+	/* ★ 统一走状态机入口 */
+	dispatchUserMsg(m);
   }catch(err){ console.error('sendMessage error:', err); toast('发送失败：'+err.message); }
 }
 
@@ -19445,6 +19495,19 @@ function triggerReply(){
 
   ReplyRunner.start(roleId, function(done){
     runReplyChain(function(){
+      /* ★ 修复：角色主动发消息不触发已读和已读不回
+         原来只处理 pendingReply 标记，没有把 user 消息推成"已读"。
+         这里在回复链结束时，把当前所有未读 user 消息统一推成"已读"，
+         保证主动发消息也会正确更新已读状态。 */
+      try{
+        const lastU = [...msgs].reverse().find(x =>
+          x.role === 'user' && !x.recalled && !x.sys && !x.namecard && x.readState === 'unread'
+        );
+        if(lastU){
+          _applyReadStateUpTo(lastU, 'read');
+        }
+      }catch(e){ console.error('主动消息已读推平失败', e); }
+
       if(pendingReply[roleId]){
         pendingReply[roleId] = false;
         done();
@@ -20134,9 +20197,7 @@ function startQuiz(){
       no: quizNo
     }
   };
-  msgs.push(quizMsg);
-  saveMsgs();
-  renderChat(true);
+  dispatchUserMsg(quizMsg);
 
   /* 弹窗里：显示回答区，写「正在填写…」 */
   const rw = document.getElementById('quizResultWrap');
@@ -21334,9 +21395,7 @@ function renderBody(){
         return;
       }
       if(stickerMode === 'send'){
-        msgs.push({role:'user', sticker:c.list[i], time:Date.now()});
-        saveMsgs();
-        renderChat(true);
+        dispatchUserMsg({ id:uid(), role:'user', sticker:c.list[i], time:Date.now() });
         closeAllDrawers();
       } else {
         insertText(`[sticker:${c.list[i]}]`);
@@ -22192,7 +22251,7 @@ function startDivine(){
 }
 function showDrawAnimation(q,picked){
   $('#divineBody').innerHTML=`<div class="divine-title">抽 牌 中</div><div class="divine-sub">✦ 保持专注 ✦</div><div class="result-cards" id="drawCards">${picked.map(()=>tarotBackHTML()).join('')}</div>`;
-  picked.forEach((p,i)=>{ setTimeout(()=>{ const slots=$('#drawCards').querySelectorAll('.tarot'); if(slots[i]) slots[i].outerHTML=tarotHTML(p.card,p.reversed); if(i===picked.length-1){ setTimeout(()=>{ $('#divineBody').insertAdjacentHTML('beforeend',`<button class="primary-btn" id="btnSendDivine">发 送 到 聊 天</button>`); $('#btnSendDivine').addEventListener('click',()=>{ const recordId=uid(); $('#mDivine').classList.remove('show'); setTimeout(()=>{ const roleName=getCurrentRoleName(); const headText=divineWho==='self'?'占卜':`${roleName}抽牌结果`; msgs.push({id:uid(),role:divineWho==='self'?'user':'char',divine:{head:headText,q,cards:picked,recordId,reads:[],roleReads:[],saved:false,time:Date.now(),who:divineWho},time:Date.now()}); saveMsgs(); renderChat(); toast('已发送，长按可保存到占卜记录'); },300); }); },400); } },400+i*500); });
+  picked.forEach((p,i)=>{ setTimeout(()=>{ const slots=$('#drawCards').querySelectorAll('.tarot'); if(slots[i]) slots[i].outerHTML=tarotHTML(p.card,p.reversed); if(i===picked.length-1){ setTimeout(()=>{ $('#divineBody').insertAdjacentHTML('beforeend',`<button class="primary-btn" id="btnSendDivine">发 送 到 聊 天</button>`); $('#btnSendDivine').addEventListener('click',()=>{ const recordId=uid(); $('#mDivine').classList.remove('show'); setTimeout(()=>{ const roleName=getCurrentRoleName(); const headText=divineWho==='self'?'占卜':`${roleName}抽牌结果`; const divineMsg={id:uid(),role:divineWho==='self'?'user':'char',divine:{head:headText,q,cards:picked,recordId,reads:[],roleReads:[],saved:false,time:Date.now(),who:divineWho},time:Date.now()}; if(divineMsg.role==='user'){ dispatchUserMsg(divineMsg); } else { msgs.push(divineMsg); saveMsgs(); renderChat(); } toast('已发送，长按可保存到占卜记录'); },300); }); },400); } },400+i*500); });
 }
 /* ============================================================
    占卜记录 · 筛选状态
@@ -23026,7 +23085,7 @@ function openCardPicker(){
 function userSendNameCard(cardId, targetId){
   const card = getRoleById(cardId); const target = getRoleById(targetId);
   if(!card || !target) return;
-  msgs.push({ id:uid(), role:'user', time:Date.now(), namecard:{ id:card.id, name:card.name, avatar:card.avatar } }); saveMsgs(); renderChat(true);
+  dispatchUserMsg({ id:uid(), role:'user', time:Date.now(), namecard:{ id:card.id, name:card.name, avatar:card.avatar } });
   pushBehavior({ type:'card', toName:target.name, cardName:card.name, cardId:card.id, targetId:target.id });
   const delay = 1000 + Math.random()*9000;
   setTimeout(()=>{
@@ -26020,6 +26079,7 @@ document.addEventListener('click', function(e){
       outMsg.quote = window.__gchQuote;
       window.__gchQuote = null;
     }
+    /* ★ 群聊我方消息：只落群聊库，不参与私聊的已读/已读不回 */
     arr.push(outMsg);
     saveGroupMsgs(g.id, arr);
     g.lastMsgAt = Date.now();
@@ -34387,68 +34447,18 @@ function sendRecVoice(){
   const roleId = getCurrentRoleId();
   const idbKey = 'rec_' + roleId + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6);
 
-  /* ★ 修复：语音消息以前只是 push + 重绘，
-     不排已读定时器、不触发回复，所以永远卡在「未读」。
-     现在把它和文字消息走同一套流程：
-     1. 按 50/50 分「已读支」/「未读支」
-     2. 未读支走 armReadTimer，到点推平
-     3. 两种情况都触发一次 triggerReply */
-  const r = getReply();
-  const noReplyAllowed = (r.noReplyOn !== false);
-  const nowTs = Date.now();
-  const inReadWindow = (typeof window.__lastReadAt === 'number')
-    && (nowTs - window.__lastReadAt < 10000);
-  const goReadNow = inReadWindow || (Math.random() < 0.5);
-
   const msg = {id:uid(), role:'user', voice:dur, voiceUrl:tempUrl, voiceIdbKey:idbKey, time:Date.now()};
 
-  if(goReadNow){
-    /* 已读支：再摇一次，决定是「已读」还是「已读不回」 */
-    const noReplyProb = (typeof r.noReplyRate === 'number') ? r.noReplyRate : 0.25;
-    const isNoReply = noReplyAllowed && (Math.random() < noReplyProb);
-    msg.readState = isNoReply ? 'noReply' : 'read';
-    msg.readNoReply = isNoReply;
-    msg.readAt = nowTs;
-    if(!isNoReply){ window.__lastReadAt = nowTs; }
-
-    msgs.push(msg);
-    saveMsgs(); renderChat(true);
-
-    __idb.set(idbKey, blob).catch(function(e){
-      console.error('语音存 IndexedDB 失败', e);
-    });
-
-    if(confirmAudio){ confirmAudio.pause(); confirmAudio=null; }
-    pendingBlob=null; pendingDur=0; pendingUrl=null;
-    resetRecUI();
-    toast('已发送');
-
-    /* 已读 → 触发回复；已读不回 → 不触发 */
-    if(!isNoReply){
-      triggerReply();
-    }
-    return;
-  }
-
-  /* 未读支：走 armReadTimer，跟文字消息完全一样 */
-  msg.readState = 'unread';
-  msg.readNoReply = false;
-  msg.readWillNoReply = noReplyAllowed && (Math.random() < ((typeof r.noReplyRate === 'number') ? r.noReplyRate : 0.25));
-
-  msgs.push(msg);
-  saveMsgs(); renderChat(true);
-
-  __idb.set(idbKey, blob).catch(function(e){
-    console.error('语音存 IndexedDB 失败', e);
-  });
+  /* ★ 统一走状态机：跟文字消息完全一致 */
+  try{ __idb.set(idbKey, blob).catch(function(e){ console.error('语音存 IndexedDB 失败', e); }); }catch(e){}
 
   if(confirmAudio){ confirmAudio.pause(); confirmAudio=null; }
   pendingBlob=null; pendingDur=0; pendingUrl=null;
   resetRecUI();
-  toast('已发送');
 
-  armReadTimer(msg);
-  triggerReply();
+  /* ★ 调统一入口：内部会决定 readState / armReadTimer / triggerReply */
+  dispatchUserMsg(msg);
+  toast('已发送');
 }
 
 on('#micBtn','click',e=>{ e.stopPropagation(); startRecording(); });
