@@ -1825,6 +1825,14 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
   background:#fff;border-radius:14px;
   box-shadow:0 4px 16px rgba(0,0,0,.10);
   width:max-content;
+  max-width:min(86vw,420px);
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.msg .msg-body .react-bar::-webkit-scrollbar{ display:none; }
+.msg .msg-body .react-bar .rb-text{
+  width:auto;min-width:36px;padding:0 6px;
+  font-size:18px;line-height:1;
 }
 .msg.char .msg-body .react-bar{
   margin-left:0 !important;margin-right:auto !important;
@@ -13741,7 +13749,10 @@ function pickRoleReactionValue(roleId){
     (c.list || []).forEach(k => { if(k) kaoPool.push(String(k)); });
   });
 
-  const pool = emojiPool.concat(kaoPool);
+  /* ★ 把用户自定义的回应列表也加进池子，角色也能用这种 */
+  const rp = getReply(roleId);
+  const reactList = (Array.isArray(rp.reactList) ? rp.reactList : []).map(String);
+  const pool = emojiPool.concat(kaoPool, reactList);
   if(!pool.length) return null;
   return pool[Math.floor(Math.random() * pool.length)];
 }
@@ -13749,6 +13760,9 @@ function pickRoleReactionValue(roleId){
 const ROLE_REACT_PROB = 0.01;
 function tryRoleReaction(roleId, msgId){
   if(!roleId || !msgId) return;
+  /* ★ 开关：角色不许自动贴回应（关掉就完全不贴） */
+  const rr = getReply(roleId);
+  if(rr.reactOn === false) return;
   if(Math.random() >= ROLE_REACT_PROB) return;
   const value = pickRoleReactionValue(roleId);
   if(!value) return;
@@ -13795,7 +13809,10 @@ const DEFAULT_REPLY = {
   quoteOn:true,               /* ★ 新增：引用总开关，关闭后不会引用旧消息 */
   quoteRate:0.08,             /* 回复时引用旧消息的概率 */
   quoteFullRate:0.8,          /* 引用时，引整段的概率 */
-  quotePartRate:0.2           /* 引用时，引部分的概率（= 1 - quoteFullRate） */
+  quotePartRate:0.2,          /* 引用时，引部分的概率（= 1 - quoteFullRate） */
+  /* ★ 双击回应：角色自动贴回应（默认关，可开启）+ 自定义回应列表 */
+  reactOn:false,              /* 开关：允许角色自动贴回应 */
+  reactList:[]                /* 自定义回应：emoji / 颜文字，一行一个 */
 };
 let replyMap = lsGet(REPLY_KEY, {});
 function getReply(roleId){
@@ -13845,6 +13862,9 @@ function getReply(roleId){
   }
   if(typeof r.quoteFullRate !== 'number') r.quoteFullRate = 0.8;
   if(typeof r.quotePartRate !== 'number') r.quotePartRate = 0.2;
+  /* ★ 双击回应：默认关；自定义列表兜底为空数组 */
+  if(typeof r.reactOn !== 'boolean') r.reactOn = false;
+  if(!Array.isArray(r.reactList)) r.reactList = [];
   /* ★ 角色写占卜理解 · 兼容老数据 */
   if(typeof r.divineReadOn !== 'boolean')        r.divineReadOn = true;
   if(typeof r.divineReadRate !== 'number')       r.divineReadRate = 0.50;
@@ -14673,9 +14693,13 @@ function genReply(useTimed){
 	  blockCount = Math.min(blockCount, r.maxBlocks||1);
 	}
 	const parts = [];
+	/* ★ 单字字卡总数：一个气泡里封顶 pinyinMax 条（受拼好卡块数约束，每块占一格），
+	   不会不受拼好卡影响、每块各自拼满 pinyinMax */
+	let pyRemain = Math.max(1, (r.pinyinMax||1));
 	for(let k=0;k<blockCount;k++){
-	  if(r.pinyinOn && Math.random() < r.pinyinRate){
-  const cnt = 1 + Math.floor(Math.random() * (r.pinyinMax||1));
+	  if(r.pinyinOn && pyRemain > 0 && Math.random() < r.pinyinRate){
+  const cnt = 1 + Math.floor(Math.random() * Math.min(pyRemain, (r.pinyinMax||1)));
+  pyRemain -= cnt;
   const hans=[];
   for(let i=0;i<cnt;i++){ const p=randPinyin(); hans.push(p.han); }
   // 主体（text）走标点；小字（han）永远空格拼，不带标点
@@ -15580,24 +15604,38 @@ function showReactionBar(msgEl){
   const bar = document.createElement('div');
   bar.className = 'react-bar';
   bar.dataset.msgId = msgId;
+  const rcfg = getReply();
+  const reactList = Array.isArray(rcfg.reactList) ? rcfg.reactList : [];
   bar.innerHTML =
     '<button class="rb" data-line="check" type="button">' + REACT_ICONS.check + '</button>' +
     '<button class="rb" data-line="no"    type="button">' + REACT_ICONS.no    + '</button>' +
     '<button class="rb" data-line="q"     type="button">' + REACT_ICONS.q     + '</button>' +
     '<button class="rb" data-line="heart" type="button">' + REACT_ICONS.heart + '</button>' +
-    '<button class="rb" data-line="broken" type="button">' + REACT_ICONS.broken + '</button>';
+    '<button class="rb" data-line="broken" type="button">' + REACT_ICONS.broken + '</button>' +
+    /* ★ 你自定义的 emoji / 颜文字：追加到内置图标后面，不替换 */
+    reactList.map(function(v){ return '<button class="rb rb-text" data-text="' + escapeHTML(v) + '" type="button">' + escapeHTML(v) + '</button>'; }).join('');
 
   bar.querySelectorAll('.rb').forEach(function(btn){
     btn.addEventListener('click', function(e){
       e.stopPropagation();
-      const name = btn.dataset.line;
       const arr = getReactions(msgId);
       const mine = arr.find(r => r.who === 'me');
-      /* 已经贴了同一个 → 取消 */
-      if(mine && mine.type === 'line' && mine.value === name){
-        setOneReaction(msgId, 'me', '', '');
+      const text = btn.dataset.text;
+      if(text !== undefined){
+        /* 自定义回应：贴文本，再点同一个取消 */
+        if(mine && mine.type === 'text' && mine.value === text){
+          setOneReaction(msgId, 'me', '', '');
+        } else {
+          setOneReaction(msgId, 'me', 'text', text);
+        }
       } else {
-        setOneReaction(msgId, 'me', 'line', name);
+        const name = btn.dataset.line;
+        /* 已经贴了同一个 → 取消 */
+        if(mine && mine.type === 'line' && mine.value === name){
+          setOneReaction(msgId, 'me', '', '');
+        } else {
+          setOneReaction(msgId, 'me', 'line', name);
+        }
       }
       bar.remove();
       /* ★ 不调 renderChat（它有签名缓存，回应变了不会重建），
@@ -32549,10 +32587,26 @@ function renderReplyPanel(tab){
 			  }).join('');
 			})()}
 		  </div>
-		  <div class="add-punc"><input type="text" id="punctInput" placeholder="添加标点 / emoji"><button id="punctAddBtn">添加</button></div>
-		` : ''}
-	  </div>
-	  `;
+		  			  <div class="add-punc"><input type="text" id="punctInput" placeholder="添加标点 / emoji"><button id="punctAddBtn">添加</button></div>
+			` : ''}
+		  </div>
+		  <div class="section">
+			<div class="title title-sw">
+			  <span>双击回应 · 角色自动贴</span>
+			  <label class="switch"><input type="checkbox" id="rsReactOn" ${r.reactOn?'checked':''}><span class="slider"></span></label>
+			</div>
+			<div class="desc">关：角色不许自己贴回应；开：角色可以贴。你自己双击不受影响</div>
+			${r.reactOn ? `
+			  <div class="rs-line">
+				<div class="rs-item"><span class="lbl">我的自定义回应（emoji / 颜文字，一行一个）</span></div>
+			  </div>
+			  <div class="rs-line">
+				<textarea id="rsReactList" rows="4" placeholder="例如：😎&#10;(◍＞◡＜◍)" style="width:100%;box-sizing:border-box;background:#f7f7f7;border:none;border-radius:10px;padding:8px 10px;font-size:13px;color:#1a1a1a;font-family:inherit;resize:vertical;min-height:80px;line-height:1.6">${escapeHTML((Array.isArray(r.reactList)?r.reactList:[]).join('\n'))}</textarea>
+			  </div>
+			` : ''}
+		  </div>
+		  `;
+
   }else if(tab === 'call'){
 	const callCfg = getCallCfg();
 	content = `
@@ -32758,7 +32812,7 @@ function renderReplyPanel(tab){
       if(id === 'rsRecallOn' || id === 'rsActiveOn' || id === 'rsNoReplyOn' || id === 'rsQuoteOn'){
         renderReplyPanel('reply');
       }
-      if(id === 'rsDivineOn' || id === 'rsDivineReadOn' || id === 'rsMultiBlockOn' || id === 'rsPinyinOn' || id === 'rsEmojiOn' || id === 'rsKaoOn' || id === 'rsPunctOn'){
+      if(id === 'rsDivineOn' || id === 'rsDivineReadOn' || id === 'rsMultiBlockOn' || id === 'rsPinyinOn' || id === 'rsEmojiOn' || id === 'rsKaoOn' || id === 'rsPunctOn' || id === 'rsReactOn'){
         renderReplyPanel('special');
       }
     });
@@ -32771,6 +32825,13 @@ function renderReplyPanel(tab){
   bindSw('rsActiveOn','activeOn');
   bindSw('rsDivineOn','divineOn');
   bindSw('rsDivineReadOn','divineReadOn');
+  bindSw('rsReactOn','reactOn');
+  const rlEl = $('#rsReactList');
+  if(rlEl) rlEl.addEventListener('input', ()=>{
+    const cur = getReply();
+    cur.reactList = rlEl.value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+    saveReply();
+  });
   /* ★ bindSl 改为从存储里取最新 r，避免闭包里的旧 r 覆盖 */
   const bindSl = (id,valId,key)=>{
     const el = $('#'+id);
