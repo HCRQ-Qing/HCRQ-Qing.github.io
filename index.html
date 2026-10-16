@@ -1265,9 +1265,11 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
   display:flex;flex-direction:column;gap:3px;
 }
 .msg-notify .mn-name{
-  font-size:13px;font-weight:600;color:#1a1a1a;
+  font-size:13px;font-weight:300;color:#1a1a1a;
   letter-spacing:.3px;line-height:1.2;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
 .msg-notify .mn-text{
   font-size:12.5px;color:rgba(0,0,0,.6);
@@ -22815,44 +22817,78 @@ on('#drSearchInput','input',()=>renderDivineRecords());
 let choiceMode='multi';   /* 'yn' | 'multi' */
 let choiceOpts=[''];
 
+/* ★ 选择弹窗的记忆存储
+   结构：{
+     mode:'yn'|'multi',
+     q:'上次的问题',
+     ynMin:2, ynMax:5,
+     mMin:2, mMax:5,
+     mCntMin:1, mCntMax:2,
+     mOpts:'上次的多选选项文本'
+   }
+   打开弹窗时读取并回填，点「让 Ta 选」时写回。 */
+const CHOICE_MEM_KEY = 'mj_choice_mem_v1';
+function getChoiceMem(){
+  let m = lsGet(CHOICE_MEM_KEY, null);
+  if(!m || typeof m !== 'object') m = {};
+  return m;
+}
+function saveChoiceMem(m){ lsSet(CHOICE_MEM_KEY, m); }
+
 function openChoice(){
-  choiceMode = 'multi';
+  /* ★ 从上次记忆里读，没有就用默认值 */
+  const mem = getChoiceMem();
+  choiceMode = (mem.mode === 'yn') ? 'yn' : 'multi';
   choiceOpts = [''];
+
+  const _q       = (typeof mem.q === 'string') ? mem.q : '';
+  const _ynMin   = (typeof mem.ynMin === 'number') ? mem.ynMin : 2;
+  const _ynMax   = (typeof mem.ynMax === 'number') ? mem.ynMax : 5;
+  const _mMin    = (typeof mem.mMin === 'number') ? mem.mMin : 2;
+  const _mMax    = (typeof mem.mMax === 'number') ? mem.mMax : 5;
+  const _mCntMin = (typeof mem.mCntMin === 'number') ? mem.mCntMin : 1;
+  const _mCntMax = (typeof mem.mCntMax === 'number') ? mem.mCntMax : 2;
+  const _mOpts   = (typeof mem.mOpts === 'string') ? mem.mOpts : '';
+
+  const ynOn    = (choiceMode === 'yn')    ? 'on' : '';
+  const multiOn = (choiceMode === 'multi') ? 'on' : '';
+  const paneYnShow    = (choiceMode === 'yn')    ? 'block' : 'none';
+  const paneMultiShow = (choiceMode === 'multi') ? 'block' : 'none';
 
   $('#choiceBody').innerHTML = `
 	<div class="choice-head">
-	  <button class="mode-btn" data-mode="yn" type="button">Yes / No</button>
-	  <button class="mode-btn on" data-mode="multi" type="button">多 选</button>
+	  <button class="mode-btn ${ynOn}" data-mode="yn" type="button">Yes / No</button>
+	  <button class="mode-btn ${multiOn}" data-mode="multi" type="button">多 选</button>
 	</div>
 
-	<textarea class="choice-q" id="cq" rows="2" placeholder="比如：今晚想干嘛？" style="height:64px;min-height:64px;max-height:64px;overflow-y:auto;line-height:1.6;"></textarea>
+	<textarea class="choice-q" id="cq" rows="2" placeholder="比如：今晚想干嘛？" style="height:64px;min-height:64px;max-height:64px;overflow-y:auto;line-height:1.6;">${escapeHTML(_q)}</textarea>
 
-	<div id="paneYn" style="display:none">
+	<div id="paneYn" style="display:${paneYnShow}">
 	  <div class="choice-opts-row" style="padding:8px 2px;border-bottom:none;margin-top:6px;">
 		<span style="font-size:11.5px;color:#bbb;flex:none;">思考</span>
-		<input class="choice-opt-input" type="number" id="ynMin" value="2" min="1" max="60" style="text-align:center;max-width:52px;">
+		<input class="choice-opt-input" type="number" id="ynMin" value="${_ynMin}" min="1" max="60" style="text-align:center;max-width:52px;">
 		<span style="font-size:11.5px;color:#bbb;flex:none;">秒 到</span>
-		<input class="choice-opt-input" type="number" id="ynMax" value="5" min="1" max="60" style="text-align:center;max-width:52px;">
+		<input class="choice-opt-input" type="number" id="ynMax" value="${_ynMax}" min="1" max="60" style="text-align:center;max-width:52px;">
 		<span style="font-size:11.5px;color:#bbb;flex:none;">秒</span>
 	  </div>
 	</div>
 
-	<div id="paneMulti">
-	  <textarea class="choice-q" id="mOpts" rows="5" placeholder="一行一个选项&#10;吃饭&#10;睡觉&#10;打游戏&#10;看电影" style="height:120px;min-height:120px;max-height:120px;margin-top:6px;"></textarea>
+	<div id="paneMulti" style="display:${paneMultiShow}">
+	  <textarea class="choice-q" id="mOpts" rows="5" placeholder="一行一个选项&#10;吃饭&#10;睡觉&#10;打游戏&#10;看电影" style="height:120px;min-height:120px;max-height:120px;margin-top:6px;">${escapeHTML(_mOpts)}</textarea>
 
 	  <div class="choice-opts-row" style="padding:8px 2px;border-bottom:none;">
 		<span style="font-size:11.5px;color:#bbb;flex:none;">选</span>
-		<input class="choice-opt-input" type="number" id="mCntMin" value="1" min="1" max="5" style="text-align:center;max-width:52px;">
+		<input class="choice-opt-input" type="number" id="mCntMin" value="${_mCntMin}" min="1" max="5" style="text-align:center;max-width:52px;">
 		<span style="font-size:11.5px;color:#bbb;flex:none;">个 到</span>
-		<input class="choice-opt-input" type="number" id="mCntMax" value="2" min="1" max="5" style="text-align:center;max-width:52px;">
+		<input class="choice-opt-input" type="number" id="mCntMax" value="${_mCntMax}" min="1" max="5" style="text-align:center;max-width:52px;">
 		<span style="font-size:11.5px;color:#bbb;flex:none;">个</span>
 	  </div>
 
 	  <div class="choice-opts-row" style="padding:8px 2px;border-bottom:none;">
 		<span style="font-size:11.5px;color:#bbb;flex:none;">思考</span>
-		<input class="choice-opt-input" type="number" id="mMin" value="2" min="1" max="60" style="text-align:center;max-width:52px;">
+		<input class="choice-opt-input" type="number" id="mMin" value="${_mMin}" min="1" max="60" style="text-align:center;max-width:52px;">
 		<span style="font-size:11.5px;color:#bbb;flex:none;">秒 到</span>
-		<input class="choice-opt-input" type="number" id="mMax" value="5" min="1" max="60" style="text-align:center;max-width:52px;">
+		<input class="choice-opt-input" type="number" id="mMax" value="${_mMax}" min="1" max="60" style="text-align:center;max-width:52px;">
 		<span style="font-size:11.5px;color:#bbb;flex:none;">秒</span>
 	  </div>
 	</div>
@@ -22860,9 +22896,6 @@ function openChoice(){
 	<div class="choice-result" id="result"><div class="r-head">TA'S CHOICE</div><div class="r-answer" id="rAns">—</div></div>
 	<button class="choice-go" id="go" type="button">让 Ta 选</button>
   `;
-
-  $('#paneYn').style.display = 'none';
-  $('#paneMulti').style.display = 'block';
 
   $$('#choiceBody .mode-btn').forEach(b => {
 	b.onclick = () => {
@@ -22883,6 +22916,19 @@ function openChoice(){
 	const q = $('#cq').value.trim() || '（未填写问题）';
 	let answer = '';
 	let thinkMs = 3000;
+
+	/* ★ 点这一刻，先把当前所有值写回记忆 */
+	const memNow = getChoiceMem();
+	memNow.mode = choiceMode;
+	memNow.q    = $('#cq').value;
+	memNow.ynMin   = Math.max(1, parseInt(($('#ynMin')||{}).value) || 2);
+	memNow.ynMax   = Math.max(1, parseInt(($('#ynMax')||{}).value) || 5);
+	memNow.mMin    = Math.max(1, parseInt(($('#mMin')||{}).value) || 2);
+	memNow.mMax    = Math.max(1, parseInt(($('#mMax')||{}).value) || 5);
+	memNow.mCntMin = Math.max(1, parseInt(($('#mCntMin')||{}).value) || 1);
+	memNow.mCntMax = Math.max(1, parseInt(($('#mCntMax')||{}).value) || 2);
+	memNow.mOpts   = ($('#mOpts') ? $('#mOpts').value : '');
+	saveChoiceMem(memNow);
 
 	if(choiceMode === 'yn'){
 	  const sMin = Math.max(1, parseInt(($('#ynMin')||{}).value) || 2);
@@ -27696,7 +27742,10 @@ const ROLE_SELFSET_ITEMS = [
   { key:'active',      label:'主动发消息概率' },
   { key:'divine',      label:'主动占卜概率' },
   { key:'divineRead',  label:'写理解概率' },
-  { key:'call',        label:'通话概率' },
+  { key:'callVoice',   label:'语音通话概率' },
+  { key:'callVideo',   label:'视频通话概率' },
+  { key:'callWin',     label:'通话发语音时间段' },
+  { key:'callVoiceCnt',label:'通话里发几条语音' },
   { key:'maxBubbles',  label:'气泡最多' },
   { key:'maxBlocks',   label:'拼好卡最多 / 概率' },
   { key:'pinyin',      label:'单字字卡最多 / 概率' },
@@ -27743,6 +27792,29 @@ function getRoleSelfSet(roleId){
   ROLE_SELFSET_ITEMS.forEach(function(it){
     if(typeof s.allowed[it.key] !== 'boolean') s.allowed[it.key] = true;
   });
+  /* ★ 新增：每项的"锁"状态。locked = true 表示锁住（角色不改这一项）；
+     locked = false 表示没锁（角色正常改）。
+     老数据没有 locked 字段 → 默认全部不锁（跟之前行为一致） */
+  if(!s.locked || typeof s.locked !== 'object'){
+    s.locked = {};
+  }
+  ROLE_SELFSET_ITEMS.forEach(function(it){
+    if(typeof s.locked[it.key] !== 'boolean') s.locked[it.key] = false;
+  });
+  /* ★ 老数据迁移：旧的 key 叫 'call'，现在拆成 4 个新 key。
+     把旧的 'call' 的锁/允许状态，搬到 4 个新 key 上，然后删掉旧的 'call'。 */
+  if(s.allowed && typeof s.allowed['call'] === 'boolean'){
+    ['callVoice','callVideo','callWin','callVoiceCnt'].forEach(function(k){
+      s.allowed[k] = s.allowed['call'];
+    });
+    delete s.allowed['call'];
+  }
+  if(s.locked && typeof s.locked['call'] === 'boolean'){
+    ['callVoice','callVideo','callWin','callVoiceCnt'].forEach(function(k){
+      s.locked[k] = s.locked['call'];
+    });
+    delete s.locked['call'];
+  }
   if(typeof s.nextRollAt !== 'number') s.nextRollAt = 0;
   /* ★ 总开关默认开 */
   if(typeof s.selfOn !== 'boolean') s.selfOn = true;
@@ -27845,29 +27917,17 @@ function renderRoleSelfSetDialog(){
   /* ==== 模式 2：邀请面板 ==== */
   const allowedHTML = ROLE_SELFSET_ITEMS.map(function(it){
     const on = s.allowed[it.key] ? 'checked' : '';
-    return '<label class="rss-check-item">' +
-      '<input type="checkbox" data-rss-key="' + it.key + '" ' + on + '>' +
-      '<span class="rss-box"></span>' +
-      '<span class="rss-label">' + escapeHTML(it.label) + '</span>' +
-    '</label>';
+    const lockOn = (s.locked && s.locked[it.key]) ? ' locked' : '';
+    const lockIcon = (s.locked && s.locked[it.key]) ? '🔒' : '🔓';
+    return '<div class="rss-check-item' + lockOn + '">' +
+      '<label class="rss-check-label">' +
+        '<input type="checkbox" data-rss-key="' + it.key + '" ' + on + '>' +
+        '<span class="rss-box"></span>' +
+        '<span class="rss-label">' + escapeHTML(it.label) + '</span>' +
+      '</label>' +
+      '<button class="rss-lock-btn" type="button" data-lock-key="' + it.key + '" title="点一下切换锁">' + lockIcon + '</button>' +
+    '</div>';
   }).join('');
-
-  body.innerHTML =
-    '<div class="rss-section">' +
-      '<div class="rss-title">允许角色调节的项</div>' +
-      '<div class="rss-checks">' + allowedHTML + '</div>' +
-      '<div class="rss-desc">只勾选你想让角色调的项；不勾的项角色不会碰</div>' +
-    '</div>' +
-    '<div class="rss-section">' +
-      '<div class="rss-title">思考时间</div>' +
-      '<div class="rss-line">' +
-        '<div class="rss-item"><span class="rss-lbl">最短</span><input class="rss-num" type="number" id="rssThinkMin" min="1" max="60" value="' + s.thinkMin + '"><span class="rss-unit">分</span></div>' +
-        '<div class="rss-item"><span class="rss-lbl">最长</span><input class="rss-num" type="number" id="rssThinkMax" min="1" max="60" value="' + s.thinkMax + '"><span class="rss-unit">分</span></div>' +
-      '</div>' +
-      '<div class="rss-desc">角色收到邀请后，等这个时间再决定同意还是拒绝</div>' +
-    '</div>' +
-    '<button class="rss-invite-btn" id="rssInviteBtn" type="button">确认邀请</button>' +
-    '<button class="rss-back-btn" id="rssBackBtn" type="button">返回</button>';
 
   /* 允许项 checkbox */
   body.querySelectorAll('[data-rss-key]').forEach(function(cb){
@@ -27876,6 +27936,19 @@ function renderRoleSelfSetDialog(){
       const k = cb.dataset.rssKey;
       cur.allowed[k] = cb.checked;
       saveRoleSelfSet(rid, cur);
+    });
+  });
+
+  /* ★ 新增：锁按钮点击 → 切换锁状态，重绘 */
+  body.querySelectorAll('[data-lock-key]').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      const cur = getRoleSelfSet(rid);
+      const k = btn.dataset.lockKey;
+      if(!cur.locked) cur.locked = {};
+      cur.locked[k] = !cur.locked[k];
+      saveRoleSelfSet(rid, cur);
+      renderRoleSelfSetDialog();
     });
   });
 
@@ -27948,7 +28021,7 @@ const ROLE_SELFSET_HIT_RATE = 0.30;
 const ROLE_SELFSET_SEC_MIN = 1;
 const ROLE_SELFSET_SEC_MAX = 1000;
 const ROLE_SELFSET_NUM_MIN = 1;
-const ROLE_SELFSET_NUM_MAX = 20;
+const ROLE_SELFSET_NUM_MAX = 10;
 const ROLE_SELFSET_PCT_MIN = 0;
 const ROLE_SELFSET_PCT_MAX = 100;
 
@@ -27971,34 +28044,45 @@ function pickAllowedItemKeys(roleId){
   const s = getRoleSelfSet(roleId);
   let allowed;
 
-  /* ★ 修复：之前只要用户进过一次邀请面板，_inviteMode 就变成 true，
-     之后永远只挑「勾选的项」。很多人进去没勾任何项就退出了，
-     结果就只剩少数几项能抽到，看起来像"只切换了这几个"。
-     现在的规则：
-       - 用户从没进过邀请面板 → 全部项都允许
-       - 用户进过，但一个都没勾 → 也算全部项都允许（等于没设置）
-       - 用户进过，且有勾选 → 只挑勾选的 */
+  /* 先按原来的规则挑出"允许"的项 */
   if(!s._inviteMode){
     allowed = ROLE_SELFSET_ITEMS.map(function(it){ return it.key; });
   } else {
     allowed = ROLE_SELFSET_ITEMS
       .filter(function(it){ return s.allowed[it.key]; })
       .map(function(it){ return it.key; });
-    /* 一个都没勾 → 退回全部项，避免"什么都不切" */
     if(!allowed.length){
       allowed = ROLE_SELFSET_ITEMS.map(function(it){ return it.key; });
     }
   }
 
-    if(!allowed.length) return [];
-  /* ★ 改：一次全切。allowed 里有几项就切几项，不再随机挑。 */
-  const n = allowed.length;
-  const copy = allowed.slice();
+  /* ★ 新增：从"允许"的项里，再去掉被锁住的。
+     锁住的项角色不改值，但这里要顺便掷一次 5% 解锁 */
+  const unlocked = [];
+  allowed.forEach(function(k){
+    if(s.locked && s.locked[k]){
+      /* 锁住了：5% 概率解锁 */
+      if(Math.random() < 0.05){
+        s.locked[k] = false;
+        /* 解锁后这一项立刻加入可改名单 */
+        unlocked.push(k);
+      }
+      /* 没摇中解锁 → 跳过，这一轮不改它 */
+    } else {
+      unlocked.push(k);
+    }
+  });
+  /* 把解锁结果写回 */
+  saveRoleSelfSet(roleId, s);
+
+  if(!unlocked.length) return [];
+  /* 一次全切 */
+  const copy = unlocked.slice();
   for(let i = copy.length - 1; i > 0; i--){
     const j = Math.floor(Math.random() * (i + 1));
     const t = copy[i]; copy[i] = copy[j]; copy[j] = t;
   }
-  return copy.slice(0, n);
+  return copy;
 }
 
 function rollNewValueForKey(key){
@@ -28011,34 +28095,44 @@ function rollNewValueForKey(key){
 
   switch(key){
     case 'replyDelay': {
-      const v = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
-      let oldSec = 0;
+      /* 最快和最慢各摇一个，且强制 min ≤ max，保留随机区间 */
+      const _a = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
+      const _b = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
+      const vMin = Math.min(_a, _b);
+      const vMax = Math.max(_a, _b);
+      let oldMin = 0, oldMax = 0;
       return {
         apply: function(){
           const cur = getReply();
-          oldSec = Math.round(((cur.minDelay||0) / 1000) * 10) / 10;
-          cur.minDelay = v * 1000;
-          cur.maxDelay = v * 1000;
+          oldMin = Math.round(((cur.minDelay||0) / 1000) * 10) / 10;
+          oldMax = Math.round(((cur.maxDelay||0) / 1000) * 10) / 10;
+          cur.minDelay = vMin * 1000;
+          cur.maxDelay = vMax * 1000;
           saveReply();
         },
         text: function(){
-          return '【回复延迟】从 ' + oldSec + ' 秒变成 ' + (v/1000).toFixed(1) + ' 秒';
+          return '【回复延迟】从 ' + oldMin + '~' + oldMax + ' 秒变成 ' + vMin + '~' + vMax + ' 秒';
         }
       };
     }
     case 'readDelay': {
-      const v = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
-      let oldVal = 0;
+      /* 最快和最慢各摇一个，且强制 min ≤ max，保留随机区间 */
+      const _a = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
+      const _b = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
+      const vMin = Math.min(_a, _b);
+      const vMax = Math.max(_a, _b);
+      let oldMin = 0, oldMax = 0;
       return {
         apply: function(){
           const cur = getReply();
-          oldVal = cur.readDelayMax || 0;
-          cur.readDelayMin = v;
-          cur.readDelayMax = v;
+          oldMin = cur.readDelayMin || 0;
+          oldMax = cur.readDelayMax || 0;
+          cur.readDelayMin = vMin;
+          cur.readDelayMax = vMax;
           saveReply();
         },
         text: function(){
-          return '【已读延迟】从 ' + oldVal + ' 秒变成 ' + v + ' 秒';
+          return '【已读延迟】从 ' + oldMin + '~' + oldMax + ' 秒变成 ' + vMin + '~' + vMax + ' 秒';
         }
       };
     }
@@ -28132,19 +28226,79 @@ function rollNewValueForKey(key){
         }
       };
     }
-    case 'call': {
+    case 'callVoice': {
       const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
       let oldVal = 0;
+      const rid = getCurrentRoleId();
       return {
         apply: function(){
-          const cur = getCallCfg();
+          const cur = getCallCfg(rid);
           oldVal = pct(cur.voiceRate || 0);
           cur.voiceRate = v / 100;
-          cur.videoRate = v / 100;
-          saveCallCfg(cur);
+          saveCallCfg(cur, rid);
         },
         text: function(){
-          return '【通话】语音概率从 ' + oldVal + '% 变成 ' + v + '%，视频概率同样变成 ' + v + '%';
+          return '【语音通话】概率从 ' + oldVal + '% 变成 ' + v + '%';
+        }
+      };
+    }
+    case 'callVideo': {
+      const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let oldVal = 0;
+      const rid = getCurrentRoleId();
+      return {
+        apply: function(){
+          const cur = getCallCfg(rid);
+          oldVal = pct(cur.videoRate || 0);
+          cur.videoRate = v / 100;
+          saveCallCfg(cur, rid);
+        },
+        text: function(){
+          return '【视频通话】概率从 ' + oldVal + '% 变成 ' + v + '%';
+        }
+      };
+    }
+    case 'callWin': {
+      /* 通话时间段：最短 1~1000 秒，最长 1~1000 秒，各摇一个，min ≤ max */
+      const _a = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
+      const _b = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
+      const vMin = Math.min(_a, _b);
+      const vMax = Math.max(_a, _b);
+      let oldMin = 0, oldMax = 0;
+      const rid = getCurrentRoleId();
+      return {
+        apply: function(){
+          const cur = getCallCfg(rid);
+          oldMin = cur.winMin || 0;
+          oldMax = cur.winMax || 0;
+          cur.winMin = vMin;
+          cur.winMax = vMax;
+          saveCallCfg(cur, rid);
+        },
+        text: function(){
+          return '【通话时间段】从 ' + oldMin + '~' + oldMax + ' 秒变成 ' + vMin + '~' + vMax + ' 秒';
+        }
+      };
+    }
+    case 'callVoiceCnt': {
+      /* 通话里发几条语音：最少 1~10，最多 1~10，各摇一个，min ≤ max */
+      const _a = ROLE_SELFSET_NUM_MIN + Math.floor(Math.random() * (ROLE_SELFSET_NUM_MAX - ROLE_SELFSET_NUM_MIN + 1));
+      const _b = ROLE_SELFSET_NUM_MIN + Math.floor(Math.random() * (ROLE_SELFSET_NUM_MAX - ROLE_SELFSET_NUM_MIN + 1));
+      const vMin = Math.min(_a, _b);
+      const vMax = Math.max(_a, _b);
+      let oldMin = 0, oldMax = 0;
+      const rid = getCurrentRoleId();
+      return {
+        apply: function(){
+          const cur = getCallCfg(rid);
+          oldMin = cur.voiceMin || 0;
+          oldMax = cur.voiceMax || 0;
+          cur.voiceMin = vMin;
+          cur.voiceMax = vMax;
+          saveCallCfg(cur, rid);
+        },
+        text: function(){
+          return '【通话语音条数】从 ' + oldMin + '~' + oldMax + ' 条变成 ' + vMin + '~' + vMax + ' 条';
         }
       };
     }
@@ -28395,8 +28549,10 @@ function settleRoleSelfSetInvite(roleId){
   const results = [];
   const keys = pickAllowedItemKeys(roleId);
   if(!keys.length){
-    /* 一项都没勾，回退为全部改 */
+    /* 一项都没勾，回退为全部改（但要跳过被锁的） */
+    const s2 = getRoleSelfSet(roleId);
     ROLE_SELFSET_ITEMS.forEach(function(it){
+      if(s2.locked && s2.locked[it.key]) return;
       try{
         const rr = rollNewValueForKey(it.key);
         if(rr){ rr.apply(); results.push(rr.text()); }
@@ -34251,22 +34407,68 @@ function sendRecVoice(){
   const roleId = getCurrentRoleId();
   const idbKey = 'rec_' + roleId + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6);
 
-  /* 先把临时 URL 用起来，保证当次能立刻播；同时把 Blob 存进 IndexedDB */
+  /* ★ 修复：语音消息以前只是 push + 重绘，
+     不排已读定时器、不触发回复，所以永远卡在「未读」。
+     现在把它和文字消息走同一套流程：
+     1. 按 50/50 分「已读支」/「未读支」
+     2. 未读支走 armReadTimer，到点推平
+     3. 两种情况都触发一次 triggerReply */
+  const r = getReply();
+  const noReplyAllowed = (r.noReplyOn !== false);
+  const nowTs = Date.now();
+  const inReadWindow = (typeof window.__lastReadAt === 'number')
+    && (nowTs - window.__lastReadAt < 10000);
+  const goReadNow = inReadWindow || (Math.random() < 0.5);
+
   const msg = {id:uid(), role:'user', voice:dur, voiceUrl:tempUrl, voiceIdbKey:idbKey, time:Date.now()};
+
+  if(goReadNow){
+    /* 已读支：再摇一次，决定是「已读」还是「已读不回」 */
+    const noReplyProb = (typeof r.noReplyRate === 'number') ? r.noReplyRate : 0.25;
+    const isNoReply = noReplyAllowed && (Math.random() < noReplyProb);
+    msg.readState = isNoReply ? 'noReply' : 'read';
+    msg.readNoReply = isNoReply;
+    msg.readAt = nowTs;
+    if(!isNoReply){ window.__lastReadAt = nowTs; }
+
+    msgs.push(msg);
+    saveMsgs(); renderChat(true);
+
+    __idb.set(idbKey, blob).catch(function(e){
+      console.error('语音存 IndexedDB 失败', e);
+    });
+
+    if(confirmAudio){ confirmAudio.pause(); confirmAudio=null; }
+    pendingBlob=null; pendingDur=0; pendingUrl=null;
+    resetRecUI();
+    toast('已发送');
+
+    /* 已读 → 触发回复；已读不回 → 不触发 */
+    if(!isNoReply){
+      triggerReply();
+    }
+    return;
+  }
+
+  /* 未读支：走 armReadTimer，跟文字消息完全一样 */
   msg.readState = 'unread';
+  msg.readNoReply = false;
+  msg.readWillNoReply = noReplyAllowed && (Math.random() < ((typeof r.noReplyRate === 'number') ? r.noReplyRate : 0.25));
+
   msgs.push(msg);
   saveMsgs(); renderChat(true);
-  armReadCooldown();
 
   __idb.set(idbKey, blob).catch(function(e){
     console.error('语音存 IndexedDB 失败', e);
-    /* 存失败也不影响当次播放，只是刷新后失效 */
   });
 
   if(confirmAudio){ confirmAudio.pause(); confirmAudio=null; }
   pendingBlob=null; pendingDur=0; pendingUrl=null;
   resetRecUI();
   toast('已发送');
+
+  armReadTimer(msg);
+  triggerReply();
 }
 
 on('#micBtn','click',e=>{ e.stopPropagation(); startRecording(); });
@@ -37061,7 +37263,14 @@ function goToPage(name){
   </div>
 </div>
 
-<!-- ============ 问卷弹窗 · 方案 A 极简线 ============ -->
+/* ============ 问卷弹窗 · 方案 A 极简线 ============ */
+/* ★ 问卷弹窗里的「单问 / 多问」去掉加粗 */
+#mQuizPick .chk-row .nm,
+#mQuizPick .chk-row .nm *{
+  font-weight: 300 !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 <style>
 /* ===== 问卷桌面 ===== */
 #quizDeskScreen{
@@ -37202,6 +37411,8 @@ function goToPage(name){
   font-size:10.5px;color:#bbb;
   letter-spacing:1.5px;
   margin-bottom:8px;font-weight:300;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
 #mQuiz .quiz-input,
 #mQuiz .quiz-numrow{
@@ -37385,16 +37596,16 @@ function goToPage(name){
   <div class="sheet" style="max-width:300px;border-radius:20px;padding:24px 20px 16px;box-shadow:0 20px 60px rgba(0,0,0,.14);border:0.7px solid rgba(0,0,0,.06);font-family:'Songti SC','STSong','SimSun','宋体',serif;">
     <div class="sheet-head" style="display:block;padding:0;border-bottom:none;text-align:center;margin-bottom:22px;position:relative;">
       <h3 style="font-family:'Songti SC','STSong','SimSun','宋体',serif;font-size:15px;font-weight:300;letter-spacing:6px;color:#1a1a1a;margin:0;">问 卷</h3>
-       <button class="x" id="quizPickCloseBtn2" type="button" onclick="document.getElementById('mQuizPick').classList.remove('show')" style="font-family:'Songti SC','STSong','SimSun','宋体',serif;position:absolute;top:-6px;right:-4px;width:28px;height:28px;border:none;background:transparent;color:#ccc;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;">✕</button>
+      <button class="x" id="quizPickCloseBtn2" type="button" onclick="document.getElementById('mQuizPick').classList.remove('show')" style="font-family:'Songti SC','STSong','SimSun','宋体',serif;position:absolute;top:-6px;right:-4px;width:28px;height:28px;border:none;background:transparent;color:#ccc;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;">✕</button>
     </div>
     <div class="sheet-body" style="padding:0;">
-      <div class="chk-row" id="qpSingle" style="border-radius:12px;margin-bottom:10px;font-family:'Songti SC','STSong','SimSun','宋体',serif;">
-        <div class="nm" style="font-family:'Songti SC','STSong','SimSun','宋体',serif;">单 问</div>
-        <span class="chev">›</span>
+      <div class="chk-row" id="qpSingle" style="border-radius:12px;margin-bottom:10px;font-family:'Songti SC','STSong','SimSun','宋体',serif;border:0.7px solid #e8e8e8;background:#fff;">
+        <div class="nm" style="font-family:'Songti SC','STSong','SimSun','宋体',serif;font-size:14px;font-weight:300;letter-spacing:2px;color:#1a1a1a;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">单 问</div>
+        <span class="chev" style="color:#ccc;font-weight:300;">›</span>
       </div>
-       <div class="chk-row" id="qpMulti" style="border-radius:12px;font-family:'Songti SC','STSong','SimSun','宋体',serif;">
-        <div class="nm" style="font-family:'Songti SC','STSong','SimSun','宋体',serif;">多 问</div>
-        <span class="chev">›</span>
+      <div class="chk-row" id="qpMulti" style="border-radius:12px;font-family:'Songti SC','STSong','SimSun','宋体',serif;border:0.7px solid #e8e8e8;background:#fff;">
+        <div class="nm" style="font-family:'Songti SC','STSong','SimSun','宋体',serif;font-size:14px;font-weight:300;letter-spacing:2px;color:#1a1a1a;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;">多 问</div>
+        <span class="chev" style="color:#ccc;font-weight:300;">›</span>
       </div>
     </div>
   </div>
@@ -38980,6 +39191,48 @@ function goToPage(name){
 .screen#mReply .rp-title,
 .screen#mReply .rp-x{
   display:none !important;
+}
+
+/* ===== 角色自己设定回复设置 · 锁按钮 ===== */
+#mRoleSelfSet .rss-check-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+#mRoleSelfSet .rss-check-label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex:1;
+  min-width:0;
+  cursor:pointer;
+}
+#mRoleSelfSet .rss-lock-btn{
+  flex:none;
+  width:28px;
+  height:28px;
+  border:none;
+  background:transparent;
+  font-size:14px;
+  cursor:pointer;
+  border-radius:6px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  opacity:.55;
+  transition:opacity .18s ease, background .18s ease;
+}
+#mRoleSelfSet .rss-lock-btn:active{
+  background:#f5f5f5;
+  opacity:1;
+}
+#mRoleSelfSet .rss-check-item.locked .rss-label{
+  color:#bbb;
+}
+#mRoleSelfSet .rss-check-item.locked .rss-box{
+  opacity:.35;
 }
 
 /* ===== 时间字卡开关弹窗 · 方案 B 紧凑单行 ===== */
