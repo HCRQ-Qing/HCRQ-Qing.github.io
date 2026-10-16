@@ -7869,6 +7869,292 @@ body[data-bubble="custom"] .preview-bubble{
 }
 .col-note-txt{display:inline}
 
+/* ===== 收藏页 · 评论区折叠条（修复：svg 撑成大黑三角） ===== */
+.cmt-collapsed{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:10px 0 2px;
+  font-size:12px;
+  color:#999;
+  letter-spacing:.5px;
+  font-weight:300;
+  cursor:pointer;
+  user-select:none;
+  -webkit-font-smoothing:antialiased;
+  transition:color .15s ease;
+}
+.cmt-collapsed:active{color:#1a1a1a}
+.cmt-collapsed svg{
+  width:12px;
+  height:12px;
+  flex:none;
+  display:block;
+  stroke:#bbb;
+  fill:none;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  transition:transform .2s ease;
+}
+.cmt-collapsed:active svg{stroke:#1a1a1a}
+
+/* ===== 评论区（方案 C · 全宽铺满） ===== */
+.cmt-a{
+  margin-top:14px;
+  margin-left:-50px;
+  padding-top:12px;
+  border-top:0.6px solid rgba(0,0,0,.06);
+}
+.col-item{overflow:visible !important}
+
+.cmt-a .cmt-empty{
+  font-size:12px;
+  color:#ccc;
+  padding:6px 0 10px;
+  letter-spacing:.5px;
+  font-weight:300;
+}
+.cmt-a .cmt-row{
+  font-size:12.5px;
+  line-height:1.9;
+  color:#1a1a1a;
+  padding:3px 0;
+  word-break:break-word;
+  font-weight:300;
+}
+.cmt-a .cmt-row .cn{
+  color:#1a1a1a;
+  font-weight:400;
+  margin-right:2px;
+}
+.cmt-a .cmt-row.me .cn{color:#1a1a1a}
+.cmt-a .cmt-row .reply-a{
+  margin-top:5px;
+  padding:6px 10px;
+  border-left:2px solid #d0d0d0;
+  background:transparent;
+  font-size:11.5px;
+  color:#999;
+  line-height:1.6;
+  border-radius:0;
+}
+.cmt-a .cmt-row .reply-a .q b{
+  color:#1a1a1a;
+  font-weight:400;
+  margin-right:4px;
+}
+.cmt-a .inp-c{
+  position:relative;
+  padding-bottom:6px;
+  margin-top:10px;
+}
+.cmt-a .inp-c textarea{
+  width:100%;
+  box-sizing:border-box;
+  border:none;
+  outline:none;
+  resize:none;
+  background:transparent;
+  border-bottom:0.7px solid rgba(0,0,0,.14);
+  padding:8px 0 10px;
+  font-size:14px;
+  font-family:inherit;
+  color:#1a1a1a;
+  line-height:1.5;
+  min-height:38px;
+  max-height:120px;
+  font-weight:300;
+  transition:border-color .18s ease;
+  -webkit-font-smoothing:antialiased;
+}
+.cmt-a .inp-c textarea:focus{border-bottom-color:#1a1a1a}
+.cmt-a .inp-c textarea::placeholder{color:#d0d0d0;letter-spacing:1px}
+.cmt-a .inp-c .inp-foot{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding-top:8px;
+}
+.cmt-a .inp-c .inp-foot .cnt{
+  font-size:10.5px;
+  color:#ccc;
+  font-family:Georgia,serif;
+  letter-spacing:.5px;
+  flex:1;
+  text-align:left;
+}
+.cmt-a .inp-c .inp-foot button{
+  border:none;
+  background:transparent;
+  color:#1a1a1a;
+  font-family:inherit;
+  font-size:12.5px;
+  letter-spacing:3px;
+  cursor:pointer;
+  font-weight:300;
+  padding:4px 0;
+  -webkit-font-smoothing:antialiased;
+  transition:opacity .15s ease;
+}
+.cmt-a .inp-c .inp-foot button:active{opacity:.55}
+
+/* ===== 收藏页 · 语音气泡固定宽度（不影响聊天页） ===== */
+.col-item .voice-bubble{
+  width:180px;
+  max-width:180px;
+  flex:none;
+  box-sizing:border-box;
+}
+.col-item .voice-bubble .vb-wave{
+  flex:1;
+  min-width:0;
+  overflow:hidden;
+}
+.col-item .voice-bubble .vb-dur{
+  flex:none;
+}
+
+/* ===== 收藏页 · 评论区折叠条（修复：svg 撑成大黑三角） ===== */
+.cmt-collapsed{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:10px 0 2px;
+  font-size:12px;
+  color:#999;
+  letter-spacing:.5px;
+  font-weight:300;
+  cursor:pointer;
+  user-select:none;
+  -webkit-font-smoothing:antialiased;
+  transition:color .15s ease;
+}
+.cmt-collapsed:active{color:#1a1a1a}
+.cmt-collapsed svg{
+  width:12px;
+  height:12px;
+  flex:none;
+  display:block;
+  stroke:#bbb;
+  fill:none;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  transition:transform .2s ease;
+}
+.cmt-collapsed:active svg{stroke:#1a1a1a}
+
+/* ===== 评论区（方案 C · 全宽铺满） ===== */
+.cmt-a{
+  margin-top:14px;
+  /* 关键：负边距让整块评论相对头像左侧铺开，形成"全宽"效果 */
+  margin-left:-50px;
+  padding-top:12px;
+  border-top:0.6px solid rgba(0,0,0,.06);
+}
+/* 卡片不能 overflow:hidden，否则负边距会被裁掉。
+   这里加一条兜底规则，确保收藏卡片允许溢出 */
+.col-item{overflow:visible !important}
+
+/* 空状态 */
+.cmt-a .cmt-empty{
+  font-size:12px;
+  color:#ccc;
+  padding:6px 0 10px;
+  letter-spacing:.5px;
+  font-weight:300;
+}
+
+/* 评论行 */
+.cmt-a .cmt-row{
+  font-size:12.5px;
+  line-height:1.9;
+  color:#1a1a1a;
+  padding:3px 0;
+  word-break:break-word;
+  font-weight:300;
+}
+.cmt-a .cmt-row .cn{
+  color:#1a1a1a;
+  font-weight:400;
+  margin-right:2px;
+}
+.cmt-a .cmt-row.me .cn{color:#1a1a1a}
+.cmt-a .cmt-row .reply-a{
+  margin-top:5px;
+  padding:6px 10px;
+  border-left:2px solid #d0d0d0;
+  background:transparent;
+  font-size:11.5px;
+  color:#999;
+  line-height:1.6;
+  border-radius:0;
+}
+.cmt-a .cmt-row .reply-a .q b{
+  color:#1a1a1a;
+  font-weight:400;
+  margin-right:4px;
+}
+
+/* 评论输入区：下划线风格，全宽铺开 */
+.cmt-a .inp-c{
+  position:relative;
+  padding-bottom:6px;
+  margin-top:10px;
+}
+.cmt-a .inp-c textarea{
+  width:100%;
+  box-sizing:border-box;
+  border:none;
+  outline:none;
+  resize:none;
+  background:transparent;
+  border-bottom:0.7px solid rgba(0,0,0,.14);
+  padding:8px 0 10px;
+  font-size:14px;
+  font-family:inherit;
+  color:#1a1a1a;
+  line-height:1.5;
+  min-height:38px;
+  max-height:120px;
+  font-weight:300;
+  transition:border-color .18s ease;
+  -webkit-font-smoothing:antialiased;
+}
+.cmt-a .inp-c textarea:focus{border-bottom-color:#1a1a1a}
+.cmt-a .inp-c textarea::placeholder{color:#d0d0d0;letter-spacing:1px}
+
+/* 输入区底部：字数 + 发送，同一行 */
+.cmt-a .inp-c .inp-foot{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding-top:8px;
+}
+.cmt-a .inp-c .inp-foot .cnt{
+  font-size:10.5px;
+  color:#ccc;
+  font-family:Georgia,serif;
+  letter-spacing:.5px;
+  flex:1;
+  text-align:left;
+}
+.cmt-a .inp-c .inp-foot button{
+  border:none;
+  background:transparent;
+  color:#1a1a1a;
+  font-family:inherit;
+  font-size:12.5px;
+  letter-spacing:3px;
+  cursor:pointer;
+  font-weight:300;
+  padding:4px 0;
+  -webkit-font-smoothing:antialiased;
+  transition:opacity .15s ease;
+}
+.cmt-a .inp-c .inp-foot button:active{opacity:.55}
+
 
 
 /* ===== 收藏页 · 当前分组提示条 ===== */
@@ -9958,6 +10244,9 @@ window.__APP_CHANGELOG__ = [];
 		  </div>
 		  <div class="me-row" data-func="about">
 			<span class="num">06</span><span class="name">关于</span><span class="en">ABOUT</span><span class="arr">→</span>
+		  </div>
+		  <div class="me-row" data-func="update">
+			<span class="num">07</span><span class="name">更新</span><span class="en">UPDATE</span><span class="arr">→</span>
 		  </div>
 
 		</div>
@@ -17034,13 +17323,26 @@ function sendMessage(){
 
 	/* ★ 发出消息 → 播发消息音效 */
 	try{ playSoundOnce('outMsg'); }catch(e){}
-	msgs.push(m);
-	inp.value = ''; inp.style.height = 'auto';
+
+	/* ★ 发消息那一刻就摇好终态：
+	   - readWillNoReply = true  → 到点直接判「已读不回」
+	   - readWillNoReply = false → 到点直接判「已读」
+	   中间不再走「未读 → 已读 → 已读不回」的跳变 */
+	const r = getReply();
+	const noReplyProb = (typeof r.noReplyRate === 'number') ? r.noReplyRate : 0.6;
+	m.readWillNoReply = (Math.random() < noReplyProb);
+
+	/* ★ 立刻定终态：
+	   - 未到点之前，仍然显示「未读」，避免消息一发出就变已读
+	   - 但状态机已经知道它最终会落到哪个终态 */
 	m.readState = 'unread';
 	m.readNoReply = false;
+
+	msgs.push(m);
+	inp.value = ''; inp.style.height = 'auto';
 	saveMsgs(); renderChat(true);
 
-	/* ★ 每条消息独立启动一个 1~10 秒的定时器，到点把它推到已读 */
+	/* ★ 启动定时器：到点直接把这条落成摇好的终态 */
 	armReadTimer(m);
 
 	triggerReply();
@@ -17060,8 +17362,9 @@ function armReadTimer(msg){
     const cur = msgs.find(x => x.id === msg.id);
     if(!cur || cur.recalled || cur.sys) return;
     if(cur.readState === 'read' || cur.readState === 'noReply') return;
-    /* 用锚点推：这条以及它上面的未读，一起变已读（锚点掷骰子） */
-    _applyReadStateUpTo(cur, 'read');
+    /* ★ 直接读发消息时摇好的终态，不再重摇 */
+    const willNoReply = !!cur.readWillNoReply;
+    _applyReadStateUpTo(cur, willNoReply ? 'noReply' : 'read');
   }, wait);
 }
 /* ===== 已读状态机 ===== */
@@ -17134,11 +17437,12 @@ function _applyReadStateUpTo(anchorMsg, state){
   }
   if(idx < 0) return;
 
-  /* 锚点状态：如果传进来的是 'read'，就掷骰子决定 read 还是 noReply */
+  /* ★ 锚点状态：不再重摇。
+     外部（armReadTimer）已经按发消息时摇好的终态，直接把 state 传进来：
+       - 'read'    → 落成已读
+       - 'noReply' → 落成已读不回
+     'unread' 只是中间态，不从这里走。 */
   let anchorState = state;
-  if(state === 'read'){
-    anchorState = rollNoReply() ? 'noReply' : 'read';
-  }
 
   let changed = false;
 
@@ -18666,73 +18970,7 @@ var _readArmTimer = null;
 
 /* 已读回滚：只允许最后一条 read 及其之后的 user 消息一起变未读，
    绝不允许"上面已读、下面未读"的夹层出现 */
-setInterval(function(){
-  if(!Array.isArray(msgs)) return;
-
-  /* 第一步：找最后一条可参与状态的 user 消息 */
-  var lastIdx = -1;
-  for(var i = msgs.length - 1; i >= 0; i--){
-    var m = msgs[i];
-    if(!m || m.role !== 'user') continue;
-    if(m.recalled || m.sys || m.namecard) continue;
-    lastIdx = i;
-    break;
-  }
-  if(lastIdx < 0) return;
-
-  var last = msgs[lastIdx];
-  if(last.readState !== 'read') return;
-  /* ★ 关键修复：最后一条已经是 noReply，不去动它
-     之前这行是 dead code（上面已经 return 了），现在保留语义正确 */
-  if(last.readState === 'noReply') return;
-  /* ★ 关键修复：只要这条 read 后面还有任何 user 消息（read/noReply/unread），
-     就不允许把它回滚成未读，避免"回复过了却突然变未读" */
-  for(var q = lastIdx + 1; q < msgs.length; q++){
-    var nx = msgs[q];
-    if(!nx || nx.role !== 'user') continue;
-    if(nx.recalled || nx.sys || nx.namecard) continue;
-    return;
-  }
-  if(Math.random() >= 0.05) return;   /* 5% 概率 */
-
-  /* 第二步：把最后一条 read 及其之后所有 user 消息一起变未读 */
-  var changed = false;
-  for(var j = lastIdx; j < msgs.length; j++){
-    var x = msgs[j];
-    if(!x || x.role !== 'user') continue;
-    if(x.recalled || x.sys || x.namecard) continue;
-    if(x.readState === 'noReply') continue;
-    if(x.readState !== 'unread'){
-      x.readState = 'unread';
-      x.readNoReply = false;
-      changed = true;
-    }
-  }
-
-  /* 第三步：兜底 —— 如果出现"read 上面夹 unread"的错乱，
-     把整条聊天里的 user 消息全部统一成 unread，避免半截状态 */
-  var sawUnread = false;
-  var sawReadAfterUnread = false;
-  for(var k = 0; k < msgs.length; k++){
-    var y = msgs[k];
-    if(!y || y.role !== 'user') continue;
-    if(y.recalled || y.sys || y.namecard) continue;
-    if(y.readState === 'noReply') continue;
-    if(y.readState === 'unread') sawUnread = true;
-    else if(y.readState === 'read' && sawUnread){ sawReadAfterUnread = true; break; }
-  }
-  if(sawReadAfterUnread){
-    for(var p = 0; p < msgs.length; p++){
-      var z = msgs[p];
-      if(!z || z.role !== 'user') continue;
-      if(z.recalled || z.sys || z.namecard) continue;
-      if(z.readState === 'noReply') continue;
-      if(z.readState !== 'unread'){ z.readState = 'unread'; z.readNoReply = false; changed = true; }
-    }
-  }
-
-  if(changed){ saveMsgs(); if(!window.__jumpingToMsg) renderChat(); }
-}, 30 * 1000);
+ 
 
 /* ===== 已读状态机 =====
    1. 刚上线：所有 user 消息重新掷骰 → 90% 未读 / 10% 已读
@@ -18840,7 +19078,7 @@ function runReplyChain(onDone){
 
  
 
-  const typingDelay = Math.min(delay, 800 + Math.random()*1200);
+   const typingDelay = Math.min(delay, 800 + Math.random()*1200);
   setTimeout(()=>{
     if(!stillSameRole()) return;
     /* ★ 角色开始打字 → 立刻把当前所有未读 user 消息推成已读 */
@@ -18848,8 +19086,8 @@ function runReplyChain(onDone){
       const lastU = [...msgs].reverse().find(x => x.role==='user' && !x.recalled && !x.sys && !x.namecard && (x.readState === 'unread'));
       if(lastU) _applyReadStateUpTo(lastU, 'read');
     }catch(e){ console.error('打字推已读失败', e); }
-    const bar = getTypingBar();
-    if(bar) bar.classList.add('show');
+    /* ★ 输入中只显示一次，之后整条链都不再隐藏，直到消息落地 */
+    showTypingBar();
   }, Math.max(0, delay - typingDelay));
 
   const gapRoll = Math.random();
@@ -18862,12 +19100,14 @@ function runReplyChain(onDone){
 
   function runGaps(cb){
     if(gapCount <= 0){ cb(); return; }
-    const bar = getTypingBar();
-    if(bar) bar.classList.remove('show');
+    /* ★ 输入中不再中途隐藏 / 重显。
+       gap 停顿只做时间延迟，界面上「对方正在输入」从头挂到尾。
+       中途停手（willStopMidway）时，才把输入中收掉。 */
     setTimeout(()=>{
       if(willStopMidway){
+        /* 停手：这时才隐藏输入中，落「已读不回」 */
+        hideTypingBar();
         markLastUserNoReply();
-        /* ★ 关键：清掉 pending，防止 onDone 里再触发一次回复链 */
         if(typeof pendingReply !== 'undefined') pendingReply[targetRoleId] = false;
         saveMsgs();
         renderChat();
@@ -18875,8 +19115,6 @@ function runReplyChain(onDone){
         return;
       }
       if(!stillSameRole()){ onDone(); return; }
-      const bar2 = getTypingBar();
-      if(bar2) bar2.classList.add('show');
       gapCount--;
       setTimeout(()=>runGaps(cb), 600 + Math.random()*1500);
     }, 800 + Math.random()*1500);
@@ -18885,8 +19123,8 @@ function runReplyChain(onDone){
   function emitBubbles(){
     if(!stillSameRole()){ onDone(); return; }
     try{
-      const bar = getTypingBar();
-      if(bar) bar.classList.remove('show');
+      /* ★ 消息真正落地这一刻，才把「对方正在输入」收掉 */
+      hideTypingBar();
       if(res[0].kind==='bubbles'){
         const srcMsgs = (getCurrentRoleId() === targetRoleId)
           ? msgs
@@ -26852,6 +27090,72 @@ document.addEventListener('touchend', function(e){
 
 
 
+/* ============================================================
+   ★ 临时更新面板（内测用，正式上线前删掉这一段即可）
+   - 点「我的 → 07 更新」打开
+   - 手动维护 UPDATE_LIST，写你想看的更新内容
+   - 只在这个面板里显示，不弹开屏、不影响别的地方
+   ============================================================ */
+const UPDATE_LIST = [
+  {
+    ver: '1.0.9',
+    date: '2026-10-16',
+    items: [
+      '已读不回：发消息时就摇好终态，不再先闪已读再变已读不回',
+      '已读回滚机制删除：已读就是已读，不会自己变回未读',
+      '输入中：整条回复链只显示一次，不再断断续续闪烁',
+      '收藏页：评论区输入框改成全宽下划线风格',
+      '收藏页：修复评论折叠条 svg 撑成大黑三角的问题'
+    ]
+  }
+];
+
+function openUpdatePanel(){
+  /* 每次都重新渲染，方便你边改边看 */
+  let mask = document.getElementById('updatePanelMask');
+  if(!mask){
+    mask = document.createElement('div');
+    mask.id = 'updatePanelMask';
+    mask.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#fff;max-width:520px;margin:0 auto;display:flex;flex-direction:column;overflow:hidden';
+    document.body.appendChild(mask);
+  }
+
+  const listHTML = UPDATE_LIST.map(function(u){
+    const itemsHTML = (u.items || []).map(function(t){
+      return '<div style="position:relative;padding:4px 0 4px 14px;font-size:13px;color:#1a1a1a;line-height:1.75;letter-spacing:.3px;font-weight:300">' +
+        '<span style="position:absolute;left:0;top:4px;color:#1a1a1a;font-size:14px">·</span>' +
+        escapeHTML(t) +
+      '</div>';
+    }).join('');
+    return '<div style="padding:18px 0;border-bottom:0.6px dashed rgba(0,0,0,.06)">' +
+      '<div style="display:flex;align-items:baseline;justify-content:space-between;padding-bottom:10px">' +
+        '<span style="font-size:15px;font-weight:300;letter-spacing:3px;color:#1a1a1a;text-indent:3px">v' + escapeHTML(u.ver) + '</span>' +
+        '<span style="font-size:10.5px;color:#bbb;font-family:Georgia,serif;letter-spacing:.5px">' + escapeHTML(u.date) + '</span>' +
+      '</div>' +
+      itemsHTML +
+    '</div>';
+  }).join('');
+
+  mask.innerHTML =
+    '<div style="flex:none;display:flex;align-items:center;gap:12px;padding:20px 22px 12px">' +
+      '<button id="updatePanelBack" type="button" style="width:38px;height:38px;flex:none;border:none;background:transparent;color:#1a1a1a;font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0 0 4px;font-family:inherit;cursor:pointer;opacity:.55">‹</button>' +
+      '<div style="flex:1;font-size:15px;font-weight:300;letter-spacing:6px;text-align:center;color:#1a1a1a;-webkit-text-stroke:0.15px #1a1a1a">更 新</div>' +
+      '<div style="width:38px;flex:none"></div>' +
+    '</div>' +
+    '<div style="flex:1;overflow-y:auto;padding:6px 22px 40px;scrollbar-width:none;-webkit-overflow-scrolling:touch">' +
+      (listHTML || '<div style="text-align:center;color:#bbb;font-size:13px;padding:80px 30px;letter-spacing:1px;font-weight:300">还没有更新记录</div>') +
+    '</div>';
+
+  mask.querySelector('#updatePanelBack').onclick = function(){
+    mask.remove();
+  };
+}
+/* ============================================================
+   ★ 临时更新面板结束（内测删掉时，把上面这段整块删掉，
+     再把替换点 2 里 else if(fn==='update') openUpdatePanel(); 那一行删掉，
+     再把替换点 1 的 07 那一行删掉，就干净了）
+   ============================================================ */
+
 /* ===== 设置桌面页入口 ===== */
 function openSettingsPanel(){
   showScreen('settingsScreen');
@@ -28301,6 +28605,7 @@ $$('#page-me .me-row').forEach(el=>{ el.addEventListener('click',()=>{
   else if(fn==='beauty') openBeauty();
   else if(fn==='settings') openSettingsPanel();
   else if(fn==='about') showScreen('aboutScreen');
+  else if(fn==='update') openUpdatePanel();
   else toast(fn + ' · 下一步补');
 }); });
 
@@ -33591,6 +33896,42 @@ function syncRoleNameEverywhere(){
     if(typeof renderChatFull === 'function'){ renderChatFull(true); }
     else if(typeof renderChat === 'function'){ renderChat(true); }
   }catch(err){ console.error('备注同步重绘失败', err); }
+
+  /* ★ 修复：改头像后，聊天界面里所有旧消息的气泡头像也要立刻刷新
+     根因：renderChat 有渲染签名缓存（条数 + 最后一条 id 没变就不重建），
+           只改头像不改变这两个值，所以旧头像一直挂着，必须手动刷新页面才变。
+     做法：清签名缓存 + 直调原版 renderChatFull 全量重建 + 两次延时重绘兜底。 */
+  try{
+    try{ msgs = loadMsgs(); }catch(e){}
+    if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+    if(typeof renderChatFull === 'function'){
+      renderChatFull(true);
+    } else if(typeof renderChat === 'function'){
+      renderChat(true);
+    }
+  }catch(err){ console.error('头像同步重绘失败', err); }
+
+  setTimeout(function(){
+    try{
+      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+      if(typeof renderChatFull === 'function'){
+        renderChatFull(true);
+      } else if(typeof renderChat === 'function'){
+        renderChat(true);
+      }
+    }catch(err){}
+  }, 60);
+
+  setTimeout(function(){
+    try{
+      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+      if(typeof renderChatFull === 'function'){
+        renderChatFull(true);
+      } else if(typeof renderChat === 'function'){
+        renderChat(true);
+      }
+    }catch(err){}
+  }, 200);
 }
 
 /* ===== 个签自动切换 · 数据层 =====
