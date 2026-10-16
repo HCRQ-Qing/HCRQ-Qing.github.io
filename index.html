@@ -6297,7 +6297,7 @@ html[data-theme="bw"] .tarot .t-suit-en{
 }
 .edit-d .line-row input[type=text]::placeholder{color:#ccc;font-weight:300}
 
-/* 头像预览：跟我的页同款，浅灰底 + 无描边 + 微微倾斜 */
+/* 头像预览：浅灰底 + 无描边，摆正不倾斜 */
 .edit-d .line-row .av-prev{
   width:48px;height:48px;border-radius:10px;
   overflow:hidden;position:relative;
@@ -6306,7 +6306,8 @@ html[data-theme="bw"] .tarot .t-suit-en{
   flex:none;
   border:none;
   box-shadow:none;
-  transform:rotate(-3deg);
+  /* ★ 修复：去掉旋转，弹窗里摆正 */
+  transform:none;
 }
 .edit-d .line-row .av-prev svg{position:absolute;inset:0;width:100%;height:100%}
 .edit-d .line-row .av-prev .silhouette{fill:#d4d4d4}
@@ -17855,7 +17856,22 @@ function armReadTimer(msg){
         window.__lastReadAt = Date.now();
       }
       saveMsgs();
-      if(!window.__jumpingToMsg) renderChat();
+
+      /* ★ 修复：这里以前是 renderChat()，会被渲染签名缓存挡住
+         （条数没变、最后一条 id 没变，跳过重建），
+         导致「未读 → 已读」的数据变了但界面不变，
+         看起来像"上面两条永远卡在未读"。
+         现在强制清签名 + 全量重建，让状态立刻反映到界面上。 */
+      if(!window.__jumpingToMsg){
+        try{
+          if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+          if(typeof renderChatFull === 'function'){
+            renderChatFull(false);   /* 不要每次都跳到底，避免打断用户看历史 */
+          } else if(typeof renderChat === 'function'){
+            renderChat(false);
+          }
+        }catch(e){ console.error('已读推平重绘失败', e); }
+      }
     }
   }, wait);
 }
@@ -27534,17 +27550,20 @@ document.addEventListener('touchend', function(e){
    ============================================================ */
 const UPDATE_LIST = [
   {
-    ver: '1.1.1',
+    ver: '1.1.2',
     date: '2026-10-16',
     items: [
-      '修复：聊天信息面板里点头像换头像，之前要点好几下才有反应，现在点一下就行',
-      '新增：增加角色 / 建立内置角色弹窗里，直接点头像框就能上传头像，不用再找下面那个小按钮',
-      '修复：换头像后聊天界面里旧消息的头像不刷新，现在换完立刻全部跟着变，不用手动刷页面',
-      '修复：角色自己切换回复设置时，默认应该是全部项都能切，之前进过邀请面板就只剩几项能切，现已修正',
-      '调整：角色自己切换回复设置的气泡文案，改成「从 旧值 变成 新值」的对比格式，看得更清楚',
-      '优化：emoji 和颜文字一次只抽 1 个，不再专门凑 2~3 个连在一起；如果一条气泡里出现多个，那是拼好卡抽到的，属于正常',
+      '修复：聊天信息面板 / 个人主页 / 增加角色弹窗里，点头像就能直接换头像，不用再点旁边小按钮',
+      '修复：换头像后聊天列表里所有旧消息的头像会立即刷新，不用手动刷页面',
+      '新增：个人主页（DREAM PROFILE）里点左上角大头像，直接上传换头像',
+      '修复：编辑资料弹窗里的头像预览不再歪着，摆正了',
+      '修复：角色自己切换回复设置，之前默认只能切 1~3 项，现在一次全切',
+      '调整：角色自己切换回复设置的气泡文案，统一成「【项名】从 旧值 变成 新值」的格式',
+      '优化：角色自己切换回复设置的气泡，每一项之间空一行，不再挤成一坨',
       '修复：点「邀请角色自己切换回复设置」按钮，之前要点两次才能发出邀请，现在点一次就发出',
-      '优化：角色自己切换回复设置改到后台也能续切，切回前台时会弹一条系统通知说明「接下来继续切换」'
+      '优化：emoji 和颜文字一次只抽 1 个，不再专门凑 2~3 个连在一起',
+      '优化：角色自己切换回复设置改到后台也能续切，切回前台时会弹一条系统通知说明「接下来继续切换」',
+      '修复：上面两条已读状态和下面的已读不一致的问题，已读推平后界面会立刻刷新'
     ]
   }
 ];
@@ -27806,7 +27825,7 @@ function renderRoleSelfSetDialog(){
       renderRoleSelfSetDialog();
     });
 
-    /* 邀请按钮：切到邀请面板
+       /* 邀请按钮：切到邀请面板
        ★ 修复：renderRoleSelfSetDialog 会被反复调用，
        每次都 addEventListener 会叠多次监听，
        点一次触发多次 → 逻辑打架 → 看起来"要点两次才生效"。
@@ -27887,14 +27906,15 @@ function renderRoleSelfSetDialog(){
     sendRoleSelfSetInvite(rid);
   };
 
-  /* 返回：回到主页 */
+  /* 返回：回到主页
+     ★ 同款修复：改 .onclick，避免重复绑定 */
   const back = document.getElementById('rssBackBtn');
-  if(back) back.addEventListener('click', function(){
+  if(back) back.onclick = function(){
     const cur = getRoleSelfSet(rid);
     cur._inviteMode = false;
     saveRoleSelfSet(rid, cur);
     renderRoleSelfSetDialog();
-  });
+  };
 }
 
 /* 数字输入统一绑定：数字变化时写回存储，最小 1，最大按 max 属性走 */
@@ -27970,9 +27990,9 @@ function pickAllowedItemKeys(roleId){
     }
   }
 
-  if(!allowed.length) return [];
-  const maxPick = Math.min(allowed.length, 3);
-  const n = 1 + Math.floor(Math.random() * maxPick);
+    if(!allowed.length) return [];
+  /* ★ 改：一次全切。allowed 里有几项就切几项，不再随机挑。 */
+  const n = allowed.length;
   const copy = allowed.slice();
   for(let i = copy.length - 1; i > 0; i--){
     const j = Math.floor(Math.random() * (i + 1));
@@ -27982,10 +28002,11 @@ function pickAllowedItemKeys(roleId){
 }
 
 function rollNewValueForKey(key){
-  /* ★ 修复：气泡文案改成「从 n 变成 X」的对比格式。
+  /* ★ 统一格式：
+     - 每一项都带【】
+     - 每一项都是「从 旧值 变成 新值」
      注意 apply() 会写回配置，text() 是 apply() 之后才被调用，
-     所以必须在 apply() 里先把旧值读出来存到闭包变量里，
-     text() 才能拿到"旧值"用来做对比。 */
+     所以必须在 apply() 里先把旧值读出来存到闭包变量里。 */
   function pct(n){ return Math.round(n * 100); }
 
   switch(key){
@@ -28001,7 +28022,7 @@ function rollNewValueForKey(key){
           saveReply();
         },
         text: function(){
-          return '回复延迟从 ' + oldSec + ' 秒变成 ' + (v/1000).toFixed(1) + ' 秒';
+          return '【回复延迟】从 ' + oldSec + ' 秒变成 ' + (v/1000).toFixed(1) + ' 秒';
         }
       };
     }
@@ -28017,7 +28038,7 @@ function rollNewValueForKey(key){
           saveReply();
         },
         text: function(){
-          return '已读延迟从 ' + oldVal + ' 秒变成 ' + v + ' 秒';
+          return '【已读延迟】从 ' + oldVal + ' 秒变成 ' + v + ' 秒';
         }
       };
     }
@@ -28032,7 +28053,7 @@ function rollNewValueForKey(key){
           saveReply();
         },
         text: function(){
-          return '已读不回概率从 ' + oldVal + '% 变成 ' + v + '%';
+          return '【已读不回】概率从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
@@ -28047,7 +28068,7 @@ function rollNewValueForKey(key){
           saveReply();
         },
         text: function(){
-          return '引用概率从 ' + oldVal + '% 变成 ' + v + '%';
+          return '【引用】概率从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
@@ -28062,7 +28083,7 @@ function rollNewValueForKey(key){
           saveReply();
         },
         text: function(){
-          return '撤回概率从 ' + oldVal + '% 变成 ' + v + '%';
+          return '【撤回】概率从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
@@ -28077,11 +28098,11 @@ function rollNewValueForKey(key){
           saveReply();
         },
         text: function(){
-          return '主动发消息概率从 ' + oldVal + '% 变成 ' + v + '%';
+          return '【主动发消息】概率从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
-    case 'divine': {
+        case 'divine': {
       const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
       let oldVal = 0;
       return {
@@ -28092,7 +28113,7 @@ function rollNewValueForKey(key){
           saveReply();
         },
         text: function(){
-          return '主动占卜概率从 ' + oldVal + '% 变成 ' + v + '%';
+          return '【主动占卜】概率从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
@@ -28107,7 +28128,7 @@ function rollNewValueForKey(key){
           saveReply();
         },
         text: function(){
-          return '写理解概率从 ' + oldVal + '% 变成 ' + v + '%';
+          return '【写理解】概率从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
@@ -28123,7 +28144,7 @@ function rollNewValueForKey(key){
           saveCallCfg(cur);
         },
         text: function(){
-          return '通话概率从 ' + oldVal + '% 变成 ' + v + '%';
+          return '【通话】语音概率从 ' + oldVal + '% 变成 ' + v + '%，视频概率同样变成 ' + v + '%';
         }
       };
     }
@@ -28231,8 +28252,8 @@ function runRoleSelfSetChange(roleId){
 
   if(!results.length) return;
 
-  /* ★ 全部合成一条气泡，用换行分隔 */
-  const fullText = results.join('\n');
+  /* ★ 全部合成一条气泡，用空行分隔，避免太挤 */
+  const fullText = results.join('\n\n');
   try{
     appendMsgToRole(roleId, {
       id: uid(),
@@ -28392,8 +28413,8 @@ function settleRoleSelfSetInvite(roleId){
 
   if(!results.length) return;
 
-  /* ★ 全部合成一条气泡，用换行分隔 */
-  const fullText = results.join('\n');
+  /* ★ 全部合成一条气泡，用空行分隔，避免太挤 */
+  const fullText = results.join('\n\n');
   try{
     appendMsgToRole(roleId, {
       id: uid(),
@@ -33008,7 +33029,44 @@ let editAvatarTmp = '';
 function renderEditAvPrev(){ const el = $('#editAvPrev'); if(el) el.innerHTML = avatarHTML(editAvatarTmp); }
 on('#editAvFile','change',function(){
   const f = this.files[0]; this.value=''; if(!f) return;
+
+  /* ★ 先取出三个"这次要给谁用"的标记，避免裁切回调里 this 上下文变了 */
+  const _forProfile = !!this._forProfileAvatar;
+  const _forBuiltin = !!this._forBuiltinEdit;
+  this._forProfileAvatar = false;
+  this._forBuiltinEdit = false;
+
   openCrop(f, 'square', (data)=>{
+
+    /* 场景 1：个人主页头像（DREAM PROFILE） */
+    if(_forProfile){
+      var pid = window.__profileViewId || getCurrentRoleId();
+      saveRoleField(pid, 'avatar', data);
+      /* 立刻刷这一页的头像 */
+      var pAv = document.getElementById('profileAvatar');
+      if(pAv) pAv.innerHTML = avatarHTML(data);
+      /* 如果改的就是当前聊天角色，同步刷新聊天列表里所有旧头像 */
+      if(pid === getCurrentRoleId()){
+        try{ refreshChatRole(); }catch(err){ console.error(err); }
+        try{
+          try{ msgs = loadMsgs(); }catch(e){}
+          if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+          if(typeof renderChatFull === 'function'){ renderChatFull(true); }
+          else if(typeof renderChat === 'function'){ renderChat(true); }
+        }catch(err){ console.error('个人主页头像刷新失败', err); }
+      }
+      toast('头像已更新');
+      return;
+    }
+
+    /* 场景 2：内置角色编辑弹窗里的头像 */
+    if(_forBuiltin){
+      blEditAvatarTmp = data;
+      renderBlEditAvatar();
+      return;
+    }
+
+    /* 场景 3：原来的两个场景 */
     if(nfUploadingAv){
       nfAvatarTmp = data;
       renderNfAvatar();
@@ -33979,6 +34037,29 @@ on('#profileVideo','click',()=>{
 on('#profileMoments','click',()=>{ if(typeof window.openRoleMomentsPage === 'function') window.openRoleMomentsPage(); });
  
 on('#profilePin','change',function(){ saveRoleField(window.__profileViewId || getCurrentRoleId(),'pinned',this.checked); renderFriends(); toast(this.checked?'已置顶':'已取消置顶'); });
+
+/* ★ 新增：点个人主页（DREAM PROFILE）里的大头像 → 直接上传换头像
+   - 目标角色是 window.__profileViewId（当前正在看的这个角色）
+   - 裁切完成后写回该角色的 avatar 字段
+   - 同时刷新这一页的头像 + 聊天列表里所有旧头像 */
+(function bindProfileAvatarUpload(){
+  if(window.__profileAvBound) return;
+  window.__profileAvBound = true;
+
+  document.addEventListener('click', function(e){
+    var av = e.target.closest && e.target.closest('#profileAvatar');
+    if(!av) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var f = document.getElementById('editAvFile');
+    if(f){
+      /* 打一个标记，告诉 editAvFile 的 change 处理函数：这次是"个人主页头像" */
+      f._forProfileAvatar = true;
+      f.value = '';
+      f.click();
+    }
+  }, true);
+})();
 
 on('#chatAvatar','click',openProfile);
 on('#splitAvatar','click',openProfile);
