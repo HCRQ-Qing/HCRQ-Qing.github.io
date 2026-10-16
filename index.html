@@ -14762,8 +14762,7 @@ function dispatchUserMsg(msg){
     if(!isNoReply){
       try{ triggerReply(); }catch(e){}
     }
-  }
-
+  } else {
     msg.readState = 'unread';
     msg.readNoReply = false;
 
