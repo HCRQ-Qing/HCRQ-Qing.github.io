@@ -17759,31 +17759,31 @@ function sendMessage(){
 	/* ★ 发出消息 → 播发消息音效 */
 	try{ playSoundOnce('outMsg'); }catch(e){}
 
-	/* ★ 发消息那一刻摇一次：
-	   - 50% → 已读支：立刻落已读 / 已读不回
-	   - 50% → 未读支：走 1~10 秒等待，到点再摇已读 / 已读不回
-	   另外：如果上一条已读落在 10 秒内，本条直接走已读支（跳过 50/50） */
+	/* ============================================================
+	   ★ 已读 / 未读 / 已读不回 · 统一状态机
+	   概念模型：
+	     - 未读（unread）   = 对方还没看到
+	     - 已读（read）     = 对方看到了，会触发回复
+	     - 已读不回（noReply）= 对方看到了，但这次不回复
+	   已读不回是"已读"的一种终态，只是额外标记"不触发回复"。
+	   所有终态推进，统一走 _settleUserMsgState()，一处收口，不再各自为政。
+	   ============================================================ */
 	const r = getReply();
-	/* ★ 已读不回总开关关掉时，一律不判已读不回 */
 	const noReplyAllowed = (r.noReplyOn !== false);
+	const noReplyProb = (typeof r.noReplyRate === 'number') ? r.noReplyRate : 0.25;
 
-	/* ★ 判断是否在上一条已读的 10 秒窗口内 */
+	/* 已读 10 秒窗口：上一条刚落"已读"时，新消息直接走已读支 */
 	const nowTs = Date.now();
 	const inReadWindow = (typeof window.__lastReadAt === 'number')
 	  && (nowTs - window.__lastReadAt < 10000);
-
-	/* ★ 走已读支 / 未读支 */
 	const goReadNow = inReadWindow || (Math.random() < 0.5);
 
 	if(goReadNow){
-	  /* 已读支：再摇一次，决定是「已读」还是「已读不回」 */
-	  const noReplyProb = (typeof r.noReplyRate === 'number') ? r.noReplyRate : 0.25;
+	  /* 走已读支：立刻落终态（已读 / 已读不回） */
 	  const isNoReply = noReplyAllowed && (Math.random() < noReplyProb);
-
 	  m.readState = isNoReply ? 'noReply' : 'read';
 	  m.readNoReply = isNoReply;
 	  m.readAt = nowTs;
-	  /* ★ 已读也开 10 秒窗口（已读不回不开，因为对方没在看） */
 	  if(!isNoReply){ window.__lastReadAt = nowTs; }
 
 	  msgs.push(m);
@@ -17795,11 +17795,11 @@ function sendMessage(){
 	    triggerReply();
 	  }
 	} else {
-	  /* 未读支：走原来 1~10 秒等待 */
+	  /* 走未读支：先落"未读"，到点由 armReadTimer 统一推终态 */
 	  m.readState = 'unread';
 	  m.readNoReply = false;
-	  /* 到点时再摇已读/已读不回，这里先记一个占位 */
-	  m.readWillNoReply = noReplyAllowed && (Math.random() < ((typeof r.noReplyRate === 'number') ? r.noReplyRate : 0.25));
+	  /* 到点时的终态在发消息这一刻就摇好，避免 armReadTimer 里再摇一次导致状态错乱 */
+	  m.readWillNoReply = noReplyAllowed && (Math.random() < noReplyProb);
 
 	  msgs.push(m);
 	  inp.value = ''; inp.style.height = 'auto';
@@ -17811,88 +17811,38 @@ function sendMessage(){
   }catch(err){ console.error('sendMessage error:', err); toast('发送失败：'+err.message); }
 }
 
-/* ★ 给单条消息安排一个随机 1~10 秒的已读定时器 */
+/* ★ 给单条消息安排一个随机 1~10 秒的已读定时器
+   - 到点后统一交给 _applyReadStateUpTo() 推平
+   - 锚点自己的终态：在发消息那一刻摇好的 readWillNoReply
+   - 已经是终态（read / noReply）的消息一律跳过，不回头改
+   ============================================================ */
 function armReadTimer(msg){
   if(!msg || !msg.id) return;
   const r = getReply();
   const min = (typeof r.readDelayMin === 'number') ? r.readDelayMin : 1;
   const max = (typeof r.readDelayMax === 'number') ? r.readDelayMax : 10;
   const wait = (min + Math.random() * Math.max(0, max - min)) * 1000;
+
   if(msg._readTimer) clearTimeout(msg._readTimer);
+
   msg._readTimer = setTimeout(function(){
-    /* 中途被删/撤回，就不推了 */
+    /* 中途被删 / 撤回 / 换角色，就不推了 */
     const cur = msgs.find(x => x.id === msg.id);
     if(!cur || cur.recalled || cur.sys) return;
+    /* 已经是终态：被更早到点的兄弟消息推平过，直接退出 */
     if(cur.readState === 'read' || cur.readState === 'noReply') return;
 
-    /* ★ 关键改动：
-       本条的终态，由本条发消息时摇好的 readWillNoReply 决定。
-       然后「本条 + 它上面的所有未读」一起推平，跟已读一样的推平逻辑，
-       区别只在于：如果本条是 noReply，那这次推平出来的终态就是 noReply；
-                    否则是 read。 */
-    const willNoReply = !!cur.readWillNoReply;
+    /* 锚点自己的终态，发消息那一刻就摇好了 */
+    const finalState = cur.readWillNoReply ? 'noReply' : 'read';
 
-    /* 找本条在 msgs 里的下标 */
-    const idx = msgs.indexOf(cur);
-    if(idx < 0) return;
-
-    /* 从上往下扫一遍：把本条以及它上面的所有「未读」user 消息，
-       全部改成同一个终态。中间遇到 read / noReply 的跳过，不动。
-       这样一口气发的一串，会在谁先到点的那一刻，一起落地。 */
-    const finalState = willNoReply ? 'noReply' : 'read';
-    let changed = false;
-    for(let i = idx; i >= 0; i--){
-      const m = msgs[i];
-      if(!m || m.role !== 'user') continue;
-      if(m.recalled || m.sys || m.namecard) continue;
-      if(m.readState === 'read' || m.readState === 'noReply') continue;
-      m.readState = finalState;
-      m.readNoReply = (finalState === 'noReply');
-      m.readAt = Date.now();
-      changed = true;
-    }
-    if(changed){
-      /* ★ 若最终落的是「已读」，开一个 10 秒窗口，
-         之后 10 秒内发的新消息直接走「已读支」 */
-      if(finalState === 'read'){
-        window.__lastReadAt = Date.now();
-      }
-      saveMsgs();
-
-      /* ★ 修复：这里以前是 renderChat()，会被渲染签名缓存挡住
-         （条数没变、最后一条 id 没变，跳过重建），
-         导致「未读 → 已读」的数据变了但界面不变，
-         看起来像"上面两条永远卡在未读"。
-         现在强制清签名 + 全量重建，让状态立刻反映到界面上。 */
-      if(!window.__jumpingToMsg){
-        try{
-          if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
-          if(typeof renderChatFull === 'function'){
-            renderChatFull(false);   /* 不要每次都跳到底，避免打断用户看历史 */
-          } else if(typeof renderChat === 'function'){
-            renderChat(false);
-          }
-        }catch(e){ console.error('已读推平重绘失败', e); }
-      }
-    }
+    /* 统一推平入口：锚点 + 它上面所有未读，一起落同一终态 */
+    _applyReadStateUpTo(cur, finalState);
   }, wait);
 }
-/* ===== 已读状态机 ===== */
-// 给指定消息安排「未读 → 已读」的时间
-function scheduleReadReceipt(msgId){
-  const roll = Math.random();
-  // 90% 走 3~25 秒，10% 走 60~120 秒
-  const minMs = 3*1000;
-  const maxMs = roll < 0.90 ? 25*1000 : 120*1000;
-  const wait = minMs + Math.random()*(maxMs - minMs);
-  setTimeout(()=>{
-    const m = msgs.find(x=>x.id===msgId);
-    if(!m) return;
-    if(m.readState === 'read' || m.readState === 'noReply') return;
-    // 用「向前传播」的写法：这条变已读，它之前的所有 user 消息也一起变已读
-    _applyReadStateUpTo(m, 'read');
-  }, wait);
-}
+/* ===== 已读状态机 =====
+   scheduleReadReceipt 已删除：全站无调用。
+   现在所有「未读 → 终态」的推进，统一走 armReadTimer → _applyReadStateUpTo。
+*/
 
  /* ===== 撤回：辅助函数 ===== */
 function pickRandomCardText(){
@@ -17929,6 +17879,15 @@ function showTypingHint(){
      2. 它上面的所有 unread：直接改成 read（不掷骰子）
      3. 它下面的所有消息：不动
 */
+/* ============================================================
+   ★ 已读推平 · 唯一入口
+   规则：
+     - 传入锚点 + 终态（'read' / 'noReply'）
+     - 从锚点往上扫，把锚点和它上面所有「未读」一起落成同一终态
+     - 已经是终态（read / noReply）的消息一律跳过，不动
+     - 落「已读」时，开 10 秒窗口，方便后续连发走已读支
+     - 落盘 + 强制全量重绘，绕过渲染签名缓存
+   ============================================================ */
 function _applyReadStateUpTo(anchorMsg, state){
   if(!Array.isArray(msgs) || !msgs.length) return;
 
@@ -17939,6 +17898,7 @@ function _applyReadStateUpTo(anchorMsg, state){
       if(msgs[i].id === anchorMsg.id){ idx = i; break; }
     }
   }
+  /* 兜底：没找到锚点，就把最后一条 user 消息当锚点 */
   if(idx < 0){
     for(let i = msgs.length - 1; i >= 0; i--){
       const x = msgs[i];
@@ -17947,28 +17907,41 @@ function _applyReadStateUpTo(anchorMsg, state){
   }
   if(idx < 0) return;
 
-  /* ★ 终态由外部传入：
-     - 'read'    → 已读
-     - 'noReply' → 已读不回
-     本函数不再自己摇骰子，只负责「把锚点 + 它上面所有未读 一起推成同一个终态」。
-     这样一口气发的多条消息，谁先到点谁推平，一次全落地。 */
+  /* 只认 'noReply'，其余一律当 'read' */
   const finalState = (state === 'noReply') ? 'noReply' : 'read';
 
+  /* 从锚点往上扫，一起落地 */
   let changed = false;
   for(let i = idx; i >= 0; i--){
     const m = msgs[i];
     if(!m || m.role !== 'user') continue;
     if(m.recalled || m.sys || m.namecard) continue;
-    /* 已经是终态的跳过，不动 */
+    /* 已经是终态：跳过，绝不回头改 */
     if(m.readState === 'read' || m.readState === 'noReply') continue;
     m.readState = finalState;
-    m.readNoReply = (finalState === 'noReply');
+    m.readAt = Date.now();
     changed = true;
   }
 
-  if(changed){
-    saveMsgs();
-    if(!window.__jumpingToMsg) renderChat();
+  if(!changed) return;
+
+  /* 落「已读」→ 开 10 秒窗口 */
+  if(finalState === 'read'){
+    window.__lastReadAt = Date.now();
+  }
+
+  saveMsgs();
+
+  /* 强制清签名 + 全量重建，让 UI 立刻反映终态 */
+  if(!window.__jumpingToMsg){
+    try{
+      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+      if(typeof renderChatFull === 'function'){
+        renderChatFull(false);
+      } else if(typeof renderChat === 'function'){
+        renderChat(false);
+      }
+    }catch(e){ console.error('已读推平重绘失败', e); }
   }
 }
 
@@ -19432,24 +19405,28 @@ var _readArmTimer = null;
    4. 已读后每 30 秒摇一次 5% 概率 → 未读
    5. 已读不回（noReply）独立，不参与
 */
- var _readCooldownTimer = null;
-function armReadCooldown(){
-  /* 2 分钟冷却重摇已删除。
-     现在由每条消息自己的定时器负责推进状态。 */
-}
+/* armReadCooldown 已删除：全站无调用。
+   原来那次「2 分钟冷却重摇」已经被 armReadTimer 取代。 */
 
-/* 刚上线：所有 user 消息 90% 未读 / 10% 已读 */
+/* 刚上线：只给「从来没有 readState」的旧消息补一个初始状态。
+   - 已经有过 readState 的（unread / read / noReply）一律跳过，不重摇
+   - 这样已读不回的终态不会被冲掉，也不会出现"上面已读下面又变未读"
+   - 补初始状态：90% 未读 / 10% 已读
+   - 补完不立即 renderChat：交给别的地方决定何时重绘，避免加载时就闪一下
+*/
 function runOnlineReadCheck(){
   if(!Array.isArray(msgs)) return;
   var changed = false;
   msgs.forEach(function(m){
     if(!m || m.role !== 'user') return;
     if(m.recalled || m.sys || m.namecard) return;
-    if(m.readState === 'noReply') return;
+    /* 只补旧数据：有 readState 的一律跳过 */
+    if(m.readState === 'unread' || m.readState === 'read' || m.readState === 'noReply') return;
     m.readState = (Math.random() < 0.90) ? 'unread' : 'read';
+    m.readAt = Date.now();
     changed = true;
   });
-  if(changed){ saveMsgs(); if(!window.__jumpingToMsg) renderChat(); }
+  if(changed) saveMsgs();
 }
 
  
@@ -27832,10 +27809,7 @@ function openRoleSelfSetDialog(){
   const mask = document.getElementById('mRoleSelfSet');
   if(!mask) return;
   /* ★ 每次打开都回到主页（不进入邀请面板） */
-  const rid = getCurrentRoleId();
-  const s = getRoleSelfSet(rid);
-  s._inviteMode = false;
-  saveRoleSelfSet(rid, s);
+  window.__rssInviteMode = false;
   renderRoleSelfSetDialog();
   mask.classList.add('show');
 }
@@ -27851,9 +27825,19 @@ function renderRoleSelfSetDialog(){
   if(!body) return;
   const rid = getCurrentRoleId();
   const s = getRoleSelfSet(rid);
+  console.log('★ renderRoleSelfSetDialog 被调用，__rssInviteMode =', window.__rssInviteMode, 'typeof =', typeof window.__rssInviteMode);
+
+  /* ★ 修复：_inviteMode 不再从 s 读，改用 window 上的临时变量。
+     原因：s 每次都是 getRoleSelfSet 重新读的，而 _inviteMode 这个字段
+     会被别处兜底逻辑清掉，导致渲染时读到的是 false。
+     改用 window.__rssInviteMode，只活在本次弹窗打开期间，不写存储。 */
+  if(typeof window.__rssInviteMode !== 'boolean'){
+    window.__rssInviteMode = false;
+  }
+  const _invite = window.__rssInviteMode;
 
   /* ==== 模式 1：主页 ==== */
-  if(!s._inviteMode){
+  if(window.__rssInviteMode !== true){
     const on = (s.selfOn !== false);
     body.innerHTML =
       '<div class="rss-section">' +
@@ -27905,9 +27889,7 @@ function renderRoleSelfSetDialog(){
     const btn = document.getElementById('rssInviteBtn');
     if(btn){
       btn.onclick = function(){
-        const cur = getRoleSelfSet(rid);
-        cur._inviteMode = true;
-        saveRoleSelfSet(rid, cur);
+        window.__rssInviteMode = true;
         renderRoleSelfSetDialog();
       };
     }
@@ -27983,9 +27965,7 @@ function renderRoleSelfSetDialog(){
      ★ 同款修复：改 .onclick，避免重复绑定 */
   const back = document.getElementById('rssBackBtn');
   if(back) back.onclick = function(){
-    const cur = getRoleSelfSet(rid);
-    cur._inviteMode = false;
-    saveRoleSelfSet(rid, cur);
+    window.__rssInviteMode = false;
     renderRoleSelfSetDialog();
   };
 }
