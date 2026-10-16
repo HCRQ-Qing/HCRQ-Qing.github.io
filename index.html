@@ -5982,7 +5982,7 @@ html[data-theme="bw"] .tarot .t-suit-en{
 .divine-card{background:transparent!important;border:none!important;padding:0!important;box-shadow:none!important}
 .divine-card .dc-head{font-size:10px;color:var(--th-text-mute);letter-spacing:5px;font-family:Georgia,serif;margin-bottom:14px;text-align:center}
 .divine-card .dc-head::before{content:none}
-.divine-card .dc-q{display:flex;gap:12px;align-items:flex-start;margin-bottom:6px;font-size:12.5px;color:var(--th-text);line-height:1.7;font-style:italic;letter-spacing:.5px;word-break:break-word}
+.divine-card .dc-q{display:flex;gap:12px;align-items:flex-start;margin-bottom:6px;font-size:12.5px;color:var(--th-text);line-height:1.7;font-style:normal;letter-spacing:.5px;word-break:break-word}
 .divine-card .dc-q::before{content:"Q";font-family:Georgia,serif;font-size:11px;color:var(--th-text);font-style:normal;font-weight:400;flex:none;padding-top:2px}
 .divine-card .dc-cards{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0 4px}
 .divine-card .dc-read-btn{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;width:100%;padding:12px 0;background:transparent;border:none;color:var(--th-text);font-size:11px;letter-spacing:4px;font-family:inherit;font-weight:300;cursor:pointer;text-indent:4px}
@@ -6398,7 +6398,7 @@ html[data-theme="bw"] .tarot .t-suit-en{
 .rd-modal textarea{width:100%;min-height:150px;border:0.7px solid rgba(0,0,0,.12);border-radius:14px;padding:14px 16px;font-size:14px;font-family:inherit;color:#1a1a1a;outline:none;background:#fdfdfd;resize:vertical;line-height:1.7;font-weight:300}
 .rd-modal textarea:focus{border-color:#1a1a1a;background:#fff}
 .rd-modal textarea::placeholder{color:#c8c8c8;font-weight:300}
-.rd-modal .q-preview{font-size:12px;color:#999;line-height:1.7;padding:10px 14px;background:#fafafa;border-radius:12px;margin-bottom:14px;font-style:italic;font-weight:300}
+.rd-modal .q-preview{font-size:12px;color:#999;line-height:1.7;padding:10px 14px;background:#fafafa;border-radius:12px;margin-bottom:14px;font-style:normal;font-weight:300}
 
 .dr-wrap{max-width:520px;margin:0 auto;padding:0 18px 60px;width:100%}
 .dr-top{display:flex;align-items:center;padding:16px 0 4px}
@@ -6460,7 +6460,7 @@ html[data-theme="bw"] .tarot .t-suit-en{
 .dr-card .dr-head::before{display:none}
 .dr-card .dr-time{margin-left:0;font-size:10.5px;color:#ccc}
 .dr-card .dr-q-label{margin-top:16px;font-size:10px;color:#bbb;font-family:Georgia,serif;letter-spacing:4px}
-.dr-card .dr-q{font-size:15px;color:#1a1a1a;font-weight:300;letter-spacing:1px;line-height:1.7;margin:6px 0 0;font-style:italic;word-break:break-word}
+.dr-card .dr-q{font-size:15px;color:#1a1a1a;font-weight:300;letter-spacing:1px;line-height:1.7;margin:6px 0 0;font-style:normal;word-break:break-word}
 .dr-card .dr-q::before{display:none}
 .dr-card .dr-cards{display:flex;gap:8px;flex-wrap:wrap;padding:4px 0 10px}
 .dr-card .dr-del{width:22px;height:22px;border-radius:0;border:none;background:transparent;color:#bbb;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;padding:0;flex:none}
@@ -14756,13 +14756,16 @@ function dispatchUserMsg(msg){
     msgs.push(msg);
     saveMsgs(); renderChat(true);
 
+    /* ★ 推平上面所有未读，避免"上面未读、下面已读"夹层 */
+    _applyReadStateUpTo(msg, msg.readState);
+
     if(!isNoReply){
       try{ triggerReply(); }catch(e){}
     }
-  } else {
+  }
+
     msg.readState = 'unread';
     msg.readNoReply = false;
-    msg.readWillNoReply = noReplyAllowed && (Math.random() < noReplyProb);
 
     msgs.push(msg);
     saveMsgs(); renderChat(true);
@@ -17928,14 +17931,17 @@ function armReadTimer(msg){
     /* 中途被删 / 撤回 / 换角色，就不推了 */
     const cur = msgs.find(x => x.id === msg.id);
     if(!cur || cur.recalled || cur.sys) return;
-    /* 已经是终态：被更早到点的兄弟消息推平过，直接退出 */
+    /* 已经是终态：跳过 */
     if(cur.readState === 'read' || cur.readState === 'noReply') return;
 
-    /* 锚点自己的终态，发消息那一刻就摇好了 */
-    const finalState = cur.readWillNoReply ? 'noReply' : 'read';
+    /* ★ 到已读时间：先独立摇这一条 → 已读 或 已读不回 */
+    const r = getReply();
+    const noReplyAllowed = (r.noReplyOn !== false);
+    const noReplyProb = (typeof r.noReplyRate === 'number') ? r.noReplyRate : 0.25;
+    const isNoReply = noReplyAllowed && (Math.random() < noReplyProb);
 
-    /* 统一推平入口：锚点 + 它上面所有未读，一起落同一终态 */
-    _applyReadStateUpTo(cur, finalState);
+    /* ★ 这条 + 它上面所有未读，一起落成同一终态，绝不出现"上面未读、下面已读"夹层 */
+    _applyReadStateUpTo(cur, isNoReply ? 'noReply' : 'read');
   }, wait);
 }
 /* ===== 已读状态机 =====
