@@ -10210,13 +10210,7 @@ window.__APP_VERSION__ = '1.1.0';
 /* ★ 更新日志：每次改完代码，把版本号和内容改一下。
    用户看到版本号变了，开屏就会弹一次，告诉他更新了什么。
    如果不想弹，把下面的数组清空即可。 */
-window.__APP_CHANGELOG__ = [
-  '已读逻辑完善：发消息时 50% 概率立刻已读，一旦已读，10 秒内再发的消息直接已读',
-  '角色自己切换回复设置：全部合并到一条气泡，显示「旧值 切换成 新值」',
-  '系统提示改为细线灰字，不再是灰底胶囊',
-  '添加字卡 / emoji / 颜文字：切到 [] 括号包模式时自动预填示例，方便复制英文半角括号',
-  '头像上传后，聊天列表里旧消息的头像会立即刷新，不用再手动刷页面'
-];
+window.__APP_CHANGELOG__ = [];
 
 /* ★ 把版本号显示在网页标题上，你在雨见标签页就能看到 */
 (function showVersionInTitle(){
@@ -14249,15 +14243,16 @@ function pickRoleEmoji(){
     const pool = [];
     enabled.forEach(c=>{ (c.list||[]).forEach(ch=>{ if(ch && String(ch).trim()) pool.push(String(ch).trim()); }); });
     if(!pool.length) return '';
-    // 随机组合：从池里抽 1~3 次拼起来（不去重）
-    const n = 1 + Math.floor(Math.random() * 3);   // 1, 2, 3
-    const picked = [];
-    for(let i=0; i<n; i++){
-      const one = pool[Math.floor(Math.random()*pool.length)];
-      picked.push(one);
-      try{ usageBump(USAGE_EMOJI_KEY, rid, one); }catch(e){}
-    }
-    return picked.join('');
+    /* ★ 修复：一次只抽 1 个。
+       之前是"随机抽 1~3 次拼起来"，
+       会专门凑出 2~3 个 emoji 连在一起。
+       现在跟普通字卡一样，一次只出 1 个；
+       如果同一气泡里出现多个 emoji，
+       那是拼好卡（multiBlock）抽到多个 emoji 卡的结果，
+       不是专门的"3 个 emoji"逻辑。 */
+    const one = pool[Math.floor(Math.random()*pool.length)];
+    try{ usageBump(USAGE_EMOJI_KEY, rid, one); }catch(e){}
+    return one;
   }catch(e){ return ''; }
 }
 function pickRoleKao(){
@@ -14271,15 +14266,10 @@ function pickRoleKao(){
     const pool = [];
     enabled.forEach(c=>{ (c.list||[]).forEach(k=>{ if(k && String(k).trim()) pool.push(String(k).trim()); }); });
     if(!pool.length) return '';
-    // 随机组合：从池里抽 1~3 次拼起来（不去重）
-    const n = 1 + Math.floor(Math.random() * 3);   // 1, 2, 3
-    const picked = [];
-    for(let i=0; i<n; i++){
-      const one = pool[Math.floor(Math.random()*pool.length)];
-      picked.push(one);
-      try{ usageBump(USAGE_KAO_KEY, rid, one); }catch(e){}
-    }
-    return picked.join('');
+    /* ★ 修复：同 emoji，一次只抽 1 个 */
+    const one = pool[Math.floor(Math.random()*pool.length)];
+    try{ usageBump(USAGE_KAO_KEY, rid, one); }catch(e){}
+    return one;
   }catch(e){ return ''; }
 }
 /* ============================================================
@@ -27544,14 +27534,17 @@ document.addEventListener('touchend', function(e){
    ============================================================ */
 const UPDATE_LIST = [
   {
-    ver: '1.0.9',
+    ver: '1.1.1',
     date: '2026-10-16',
     items: [
-      '已读不回：发消息时就摇好终态，不再先闪已读再变已读不回',
-      '已读回滚机制删除：已读就是已读，不会自己变回未读',
-      '输入中：整条回复链只显示一次，不再断断续续闪烁',
-      '收藏页：评论区输入框改成全宽下划线风格',
-      '收藏页：修复评论折叠条 svg 撑成大黑三角的问题'
+      '修复：聊天信息面板里点头像换头像，之前要点好几下才有反应，现在点一下就行',
+      '新增：增加角色 / 建立内置角色弹窗里，直接点头像框就能上传头像，不用再找下面那个小按钮',
+      '修复：换头像后聊天界面里旧消息的头像不刷新，现在换完立刻全部跟着变，不用手动刷页面',
+      '修复：角色自己切换回复设置时，默认应该是全部项都能切，之前进过邀请面板就只剩几项能切，现已修正',
+      '调整：角色自己切换回复设置的气泡文案，改成「从 旧值 变成 新值」的对比格式，看得更清楚',
+      '优化：emoji 和颜文字一次只抽 1 个，不再专门凑 2~3 个连在一起；如果一条气泡里出现多个，那是拼好卡抽到的，属于正常',
+      '修复：点「邀请角色自己切换回复设置」按钮，之前要点两次才能发出邀请，现在点一次就发出',
+      '优化：角色自己切换回复设置改到后台也能续切，切回前台时会弹一条系统通知说明「接下来继续切换」'
     ]
   }
 ];
@@ -27813,15 +27806,19 @@ function renderRoleSelfSetDialog(){
       renderRoleSelfSetDialog();
     });
 
-    /* 邀请按钮：切到邀请面板 */
+    /* 邀请按钮：切到邀请面板
+       ★ 修复：renderRoleSelfSetDialog 会被反复调用，
+       每次都 addEventListener 会叠多次监听，
+       点一次触发多次 → 逻辑打架 → 看起来"要点两次才生效"。
+       改用 .onclick 覆盖赋值，天然不会重复。 */
     const btn = document.getElementById('rssInviteBtn');
     if(btn){
-      btn.addEventListener('click', function(){
+      btn.onclick = function(){
         const cur = getRoleSelfSet(rid);
         cur._inviteMode = true;
         saveRoleSelfSet(rid, cur);
         renderRoleSelfSetDialog();
-      });
+      };
     }
     return;
   }
@@ -27880,14 +27877,15 @@ function renderRoleSelfSetDialog(){
 
   /* 确认邀请：发邀请卡 + 5~10 分钟后角色掷骰
      ★ 这里不检查 selfOn：总开关只停"角色每 N 天自己摇骰"，
-        用户点邀请这条路照旧走 */
+        用户点邀请这条路照旧走
+     ★ 修复：改用 .onclick，避免重复绑定导致要点两次 */
   const btn = document.getElementById('rssInviteBtn');
-  if(btn) btn.addEventListener('click', function(){
+  if(btn) btn.onclick = function(){
     /* 立刻关弹窗 + 发邀请卡到聊天 */
     const mask = document.getElementById('mRoleSelfSet');
     if(mask) mask.classList.remove('show');
     sendRoleSelfSetInvite(rid);
-  });
+  };
 
   /* 返回：回到主页 */
   const back = document.getElementById('rssBackBtn');
@@ -27952,15 +27950,26 @@ function scheduleNextRoleSelfSetRoll(roleId){
 function pickAllowedItemKeys(roleId){
   const s = getRoleSelfSet(roleId);
   let allowed;
-  /* ★ 用户没进过邀请面板（_inviteMode 从没为 true）→ 默认全允许
-     用户进过邀请面板 → 只挑勾选的 */
+
+  /* ★ 修复：之前只要用户进过一次邀请面板，_inviteMode 就变成 true，
+     之后永远只挑「勾选的项」。很多人进去没勾任何项就退出了，
+     结果就只剩少数几项能抽到，看起来像"只切换了这几个"。
+     现在的规则：
+       - 用户从没进过邀请面板 → 全部项都允许
+       - 用户进过，但一个都没勾 → 也算全部项都允许（等于没设置）
+       - 用户进过，且有勾选 → 只挑勾选的 */
   if(!s._inviteMode){
     allowed = ROLE_SELFSET_ITEMS.map(function(it){ return it.key; });
   } else {
     allowed = ROLE_SELFSET_ITEMS
       .filter(function(it){ return s.allowed[it.key]; })
       .map(function(it){ return it.key; });
+    /* 一个都没勾 → 退回全部项，避免"什么都不切" */
+    if(!allowed.length){
+      allowed = ROLE_SELFSET_ITEMS.map(function(it){ return it.key; });
+    }
   }
+
   if(!allowed.length) return [];
   const maxPick = Math.min(allowed.length, 3);
   const n = 1 + Math.floor(Math.random() * maxPick);
@@ -27972,202 +27981,230 @@ function pickAllowedItemKeys(roleId){
   return copy.slice(0, n);
 }
 
-/* 给某个 key 摇一个新值，返回 {label, value, unit, newText, oldText} 或 null */
 function rollNewValueForKey(key){
-  const r = getReply();
-  /* 秒数类：数值是以秒为单位的，但代码里 minDelay/maxDelay 存的是毫秒，
-     readDelayMin/Max 存的是秒，所以要分情况。这里简化处理：
-     - replyDelay：随机 1~1000 秒，改成 minDelay 和 maxDelay 两个值
-     - readDelay：随机 1~1000 秒，改成 readDelayMin 和 readDelayMax
-     为了简单，下面所有值都按"一个数字"处理，范围见 ROLE_SELFSET_*_MAX */
+  /* ★ 修复：气泡文案改成「从 n 变成 X」的对比格式。
+     注意 apply() 会写回配置，text() 是 apply() 之后才被调用，
+     所以必须在 apply() 里先把旧值读出来存到闭包变量里，
+     text() 才能拿到"旧值"用来做对比。 */
+  function pct(n){ return Math.round(n * 100); }
+
   switch(key){
     case 'replyDelay': {
       const v = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
+      let oldSec = 0;
       return {
         apply: function(){
           const cur = getReply();
-          /* 回复延迟有 min 和 max 两个值，这里让 min=max=v */
+          oldSec = Math.round(((cur.minDelay||0) / 1000) * 10) / 10;
           cur.minDelay = v * 1000;
           cur.maxDelay = v * 1000;
           saveReply();
         },
         text: function(){
-          return '回复延迟变成 ' + (v/1000).toFixed(1) + ' 秒';
+          return '回复延迟从 ' + oldSec + ' 秒变成 ' + (v/1000).toFixed(1) + ' 秒';
         }
       };
     }
     case 'readDelay': {
       const v = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
+      let oldVal = 0;
       return {
         apply: function(){
           const cur = getReply();
+          oldVal = cur.readDelayMax || 0;
           cur.readDelayMin = v;
           cur.readDelayMax = v;
           saveReply();
         },
         text: function(){
-          return '已读延迟变成 ' + v + ' 秒';
+          return '已读延迟从 ' + oldVal + ' 秒变成 ' + v + ' 秒';
         }
       };
     }
     case 'noReply': {
       const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let oldVal = 0;
       return {
         apply: function(){
           const cur = getReply();
+          oldVal = pct(cur.noReplyRate || 0);
           cur.noReplyRate = v / 100;
           saveReply();
         },
         text: function(){
-          return '已读不回概率变成 ' + v + '%';
+          return '已读不回概率从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
     case 'quote': {
       const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let oldVal = 0;
       return {
         apply: function(){
           const cur = getReply();
+          oldVal = pct(cur.quoteRate || 0);
           cur.quoteRate = v / 100;
           saveReply();
         },
         text: function(){
-          return '引用概率变成 ' + v + '%';
+          return '引用概率从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
     case 'recall': {
       const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let oldVal = 0;
       return {
         apply: function(){
           const cur = getReply();
+          oldVal = pct(cur.recallRate || 0);
           cur.recallRate = v / 100;
           saveReply();
         },
         text: function(){
-          return '撤回概率变成 ' + v + '%';
+          return '撤回概率从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
     case 'active': {
       const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let oldVal = 0;
       return {
         apply: function(){
           const cur = getReply();
+          oldVal = pct(cur.activeRate || 0);
           cur.activeRate = v / 100;
           saveReply();
         },
         text: function(){
-          return '主动发消息概率变成 ' + v + '%';
+          return '主动发消息概率从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
     case 'divine': {
       const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let oldVal = 0;
       return {
         apply: function(){
           const cur = getReply();
+          oldVal = pct(cur.divineRate || 0);
           cur.divineRate = v / 100;
           saveReply();
         },
         text: function(){
-          return '主动占卜概率变成 ' + v + '%';
+          return '主动占卜概率从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
     case 'divineRead': {
       const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let oldVal = 0;
       return {
         apply: function(){
           const cur = getReply();
+          oldVal = pct(cur.divineReadRate || 0);
           cur.divineReadRate = v / 100;
           saveReply();
         },
         text: function(){
-          return '写理解概率变成 ' + v + '%';
+          return '写理解概率从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
     case 'call': {
       const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let oldVal = 0;
       return {
         apply: function(){
           const cur = getCallCfg();
+          oldVal = pct(cur.voiceRate || 0);
           cur.voiceRate = v / 100;
           cur.videoRate = v / 100;
           saveCallCfg(cur);
         },
         text: function(){
-          return '通话概率变成 ' + v + '%';
+          return '通话概率从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
     case 'maxBubbles': {
       const v = ROLE_SELFSET_NUM_MIN + Math.floor(Math.random() * (ROLE_SELFSET_NUM_MAX - ROLE_SELFSET_NUM_MIN + 1));
+      let oldVal = 0;
       return {
         apply: function(){
           const cur = getReply();
+          oldVal = cur.maxBubbles || 0;
           cur.maxBubbles = v;
           saveReply();
         },
         text: function(){
-          return '气泡最多变成 ' + v + ' 个';
+          return '【气泡】最多从 ' + oldVal + ' 个变成 ' + v + ' 个';
         }
       };
     }
     case 'maxBlocks': {
       const v = ROLE_SELFSET_NUM_MIN + Math.floor(Math.random() * (ROLE_SELFSET_NUM_MAX - ROLE_SELFSET_NUM_MIN + 1));
       const p = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let oldVal = 0, oldP = 0;
       return {
         apply: function(){
           const cur = getReply();
+          oldVal = cur.maxBlocks || 0;
+          oldP   = pct(cur.multiBlockProb || 0);
           cur.maxBlocks = v;
           cur.multiBlockProb = p / 100;
           saveReply();
         },
         text: function(){
-          return '拼好卡最多变成 ' + v + ' 张，概率变成 ' + p + '%';
+          return '【拼好卡】最多从 ' + oldVal + ' 张变成 ' + v + ' 张，概率从 ' + oldP + '% 变成 ' + p + '%';
         }
       };
     }
     case 'pinyin': {
       const v = ROLE_SELFSET_NUM_MIN + Math.floor(Math.random() * (ROLE_SELFSET_NUM_MAX - ROLE_SELFSET_NUM_MIN + 1));
       const p = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let oldVal = 0, oldP = 0;
       return {
         apply: function(){
           const cur = getReply();
+          oldVal = cur.pinyinMax || 0;
+          oldP   = pct(cur.pinyinRate || 0);
           cur.pinyinMax = v;
           cur.pinyinRate = p / 100;
           saveReply();
         },
         text: function(){
-          return '单字字卡最多变成 ' + v + ' 条，概率变成 ' + p + '%';
+          return '【单字字卡】最多从 ' + oldVal + ' 条变成 ' + v + ' 条，概率从 ' + oldP + '% 变成 ' + p + '%';
         }
       };
     }
     case 'emoji': {
       const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let oldVal = 0;
       return {
         apply: function(){
           const cur = getReply();
+          oldVal = pct(cur.emojiRate || 0);
           cur.emojiRate = v / 100;
           saveReply();
         },
         text: function(){
-          return 'emoji 概率变成 ' + v + '%';
+          return '【emoji】概率从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
     case 'kao': {
       const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let oldVal = 0;
       return {
         apply: function(){
           const cur = getReply();
+          oldVal = pct(cur.kaoRate || 0);
           cur.kaoRate = v / 100;
           saveReply();
         },
         text: function(){
-          return '颜文字概率变成 ' + v + '%';
+          return '【颜文字】概率从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
@@ -28220,6 +28257,16 @@ const ROLE_SELFSET_REFUSE_LINES = [
 ];
 
 /* 发一条邀请卡到聊天，并启动 5~10 分钟后的思考判定 */
+/* ★ 待结算的邀请队列：存在 localStorage，切后台回来也能补
+   结构：{ [roleId]: dueAt(ms) } */
+const ROLE_SELFSET_PENDING_KEY = 'mj_role_selfset_pending_v1';
+function getRoleSelfSetPending(){
+  let m = lsGet(ROLE_SELFSET_PENDING_KEY, null);
+  if(!m || typeof m !== 'object') m = {};
+  return m;
+}
+function saveRoleSelfSetPending(m){ lsSet(ROLE_SELFSET_PENDING_KEY, m); }
+
 function sendRoleSelfSetInvite(roleId){
   if(!roleId) return;
   const s = getRoleSelfSet(roleId);
@@ -28236,20 +28283,68 @@ function sendRoleSelfSetInvite(roleId){
     });
   }catch(e){ console.error('发邀请卡失败', e); }
 
-  /* 2. 计算思考时间：thinkMin ~ thinkMax 分钟 */
+  /* 2. 计算思考时间：thinkMin ~ thinkMax 分钟
+     ★ 改：不再用 setTimeout（切后台会被冻，回来可能丢），
+        改成"把到期时间写进 localStorage"，
+        由每分钟的 tick + 回前台补跑一起来结算。 */
   const tMin = Math.max(1, s.thinkMin);
   const tMax = Math.max(tMin, s.thinkMax);
   const mins = tMin + Math.floor(Math.random() * (tMax - tMin + 1));
   const waitMs = mins * 60 * 1000;
 
-  /* 3. 到点掷骰 */
-  setTimeout(function(){
-    try{
-      settleRoleSelfSetInvite(roleId);
-    }catch(e){ console.error('邀请结算失败', e); }
-  }, waitMs);
+  const pending = getRoleSelfSetPending();
+  pending[roleId] = Date.now() + waitMs;
+  saveRoleSelfSetPending(pending);
 
-  toast('邀请已发出，等 ' + mins + ' 分钟看 Ta 回应');
+  /* 3. 立刻先跑一次 tick，如果 mins 很小（比如 1 分钟）后面也能准点 */
+  try{ runRoleSelfSetPendingTick(); }catch(e){}
+
+  toast('邀请已发出');
+}
+
+/* ★ 每分钟 tick：检查每个角色有没有到期的邀请，到点就立刻结算 */
+function runRoleSelfSetPendingTick(){
+  const pending = getRoleSelfSetPending();
+  const now = Date.now();
+  let changed = false;
+  Object.keys(pending).forEach(function(rid){
+    const due = pending[rid];
+    if(typeof due !== 'number' || due <= 0){ delete pending[rid]; changed = true; return; }
+    if(now < due) return;
+    /* 到点：结算 */
+    delete pending[rid];
+    changed = true;
+    try{ settleRoleSelfSetInvite(rid); }catch(e){ console.error('邀请结算失败', e); }
+  });
+  if(changed) saveRoleSelfSetPending(pending);
+  return changed;
+}
+
+/* ★ 回前台时：如果有到期的邀请，立刻结算，并弹一条系统通知告诉用户 */
+function resumeRoleSelfSetOnForeground(){
+  const pending = getRoleSelfSetPending();
+  const now = Date.now();
+  const dueIds = Object.keys(pending).filter(function(rid){
+    return typeof pending[rid] === 'number' && pending[rid] > 0 && now >= pending[rid];
+  });
+  if(!dueIds.length) return;
+  /* 先清掉，避免重复结算 */
+  dueIds.forEach(function(rid){ delete pending[rid]; });
+  saveRoleSelfSetPending(pending);
+
+  /* 弹系统通知（只弹一条，说明接下来继续切换） */
+  try{
+    if(typeof showSystemNotify === 'function'){
+      showSystemNotify('回复设置', 'Ta 在后台想好了，接下来继续切换');
+    }
+  }catch(e){}
+
+  /* 逐个结算 */
+  dueIds.forEach(function(rid, i){
+    setTimeout(function(){
+      try{ settleRoleSelfSetInvite(rid); }catch(e){ console.error('回前台补结算失败', e); }
+    }, i * 400);
+  });
 }
 
 /* 结算一次邀请：90% 同意 / 10% 拒绝 */
@@ -28314,6 +28409,9 @@ let _roleSelfSetTimer = null;
 function scheduleRoleSelfSetTick(){
   if(_roleSelfSetTimer) clearInterval(_roleSelfSetTimer);
   _roleSelfSetTimer = setInterval(function(){
+    /* ★ 先检查有没有到期的"自己切换"邀请，到点就结算 */
+    try{ runRoleSelfSetPendingTick(); }catch(e){ console.error('自调邀请 tick 出错', e); }
+
     const ids = getAllRoleIds();
     const now = Date.now();
     ids.forEach(function(rid){
@@ -32976,7 +33074,44 @@ function refreshChatRole(){
   $('#chatAvatar').innerHTML=avatarHTML(role.avatar);
   const mpAv=$('#mpAv'); if(mpAv) mpAv.innerHTML=avatarHTML(role.avatar);
   const ssAv=$('#splitAvatar'); if(ssAv) ssAv.innerHTML=avatarHTML(role.avatar);
-  renderChat();
+
+  /* ★ 修复：换头像后聊天列表里的旧头像不刷新
+     根因：renderChat() 里有渲染签名缓存（msg 数量 + 最后一条 id），
+           换头像不改这两个值，就被跳过重建，旧头像一直挂着。
+     做法：清签名缓存 + 直调 renderChatFull 全量重建 + 两次延时重绘兜底。 */
+  try{
+    try{ msgs = loadMsgs(); }catch(e){}
+    if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+    if(typeof renderChatFull === 'function'){
+      renderChatFull(true);
+    } else if(typeof renderChat === 'function'){
+      renderChat(true);
+    }
+  }catch(e){ console.error('头像刷新失败', e); }
+
+  setTimeout(function(){
+    try{
+      try{ msgs = loadMsgs(); }catch(e){}
+      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+      if(typeof renderChatFull === 'function'){
+        renderChatFull(true);
+      } else if(typeof renderChat === 'function'){
+        renderChat(true);
+      }
+    }catch(e){}
+  }, 60);
+
+  setTimeout(function(){
+    try{
+      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+      if(typeof renderChatFull === 'function'){
+        renderChatFull(true);
+      } else if(typeof renderChat === 'function'){
+        renderChat(true);
+      }
+    }catch(e){}
+  }, 200);
+
   renderFriends();
   // 切角色时重置心情/状态定时器，避免上一个角色的定时器跑到新角色头上
   if(typeof rescheduleMoodStatus === 'function') rescheduleMoodStatus();
@@ -33548,6 +33683,78 @@ on('#nfGroupMask','click',function(e){
 });
 on('#btnNfClearAv','click',()=>{ nfAvatarTmp=''; renderNfAvatar(); });
 on('#btnNfUploadAv','click',()=>{ nfUploadingAv = true; $('#editAvFile').click(); });
+
+/* ★ 新增：点「增加角色」弹窗里的头像预览框，直接触发上传 */
+(function bindNfAvatarPreviewClick(){
+  function bindOnce(){
+    var el = document.getElementById('nfAvatarPreview');
+    if(!el){ setTimeout(bindOnce, 300); return; }
+    if(el._nfAvBound) return;
+    el._nfAvBound = true;
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      nfUploadingAv = true;
+      $('#editAvFile').click();
+    }, false);
+  }
+  bindOnce();
+})();
+
+/* ★ 新增：点「建立内置角色」弹窗里的头像预览框，直接触发上传 */
+(function bindBiAvatarPreviewClick(){
+  function bindOnce(){
+    var el = document.getElementById('biAvatarPreview');
+    if(!el){ setTimeout(bindOnce, 300); return; }
+    if(el._biAvBound) return;
+    el._biAvBound = true;
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      biUploadingAv = true;
+      $('#editAvFile').click();
+    }, false);
+  }
+  bindOnce();
+})();
+
+/* ★ 新增：点「增加角色」弹窗里的头像预览框，直接触发上传 */
+(function bindNfAvatarPreviewClick(){
+  function bindOnce(){
+    var el = document.getElementById('nfAvatarPreview');
+    if(!el){ setTimeout(bindOnce, 300); return; }
+    if(el._nfAvBound) return;
+    el._nfAvBound = true;
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      nfUploadingAv = true;
+      $('#editAvFile').click();
+    }, false);
+  }
+  bindOnce();
+})();
+
+/* ★ 新增：点「建立内置角色」弹窗里的头像预览框，直接触发上传 */
+(function bindBiAvatarPreviewClick(){
+  function bindOnce(){
+    var el = document.getElementById('biAvatarPreview');
+    if(!el){ setTimeout(bindOnce, 300); return; }
+    if(el._biAvBound) return;
+    el._biAvBound = true;
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      biUploadingAv = true;
+      $('#editAvFile').click();
+    }, false);
+  }
+  bindOnce();
+})();
 
 on('#closeNewFriend','click',()=>$('#mNewFriend').classList.remove('show'));
 /* 内置角色勾选状态 */
@@ -34211,20 +34418,28 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	on('#cipMute','change',function(){ setRoleMute(getCurrentRoleId(), this.checked); toast(this.checked?'已开启免打扰':'已关闭免打扰'); });
 	on('#cipAutoAddSw','change',function(){ setRoleAutoAdd(getCurrentRoleId(), this.checked); toast(this.checked?'已开启自主加好友':'已关闭自主加好友'); });
 
-/* 点聊天信息面板大头像 → 直接上传 */
+/* 点聊天信息面板大头像 → 直接上传
+   ★ 修复：之前这段用的是 document 捕获阶段监听，
+   而 openChatInfo 里/其它地方可能还有一层对 #cipAvatar 的点击绑定，
+   两次叠加 → 点一下触发两次 → 文件选择器开了又被关，要多点几下才有反应。
+   现在改成：直接绑到 #cipAvatar 元素本身，并加 _bound 锁，只绑一次。 */
 (function bindCipAvatarUpload(){
   if(window.__cipAvBound) return;
   window.__cipAvBound = true;
 
-  /* 点头像：用事件委托，面板每次打开都能点 */
-  document.addEventListener('click', function(e){
-    var av = e.target.closest && e.target.closest('#cipAvatar');
-    if(!av) return;
-    e.preventDefault();
-    e.stopPropagation();
-    var f = document.getElementById('cipAvFile');
-    if(f){ f.value = ''; f.click(); }
-  }, true);
+  function bindAvatarClick(){
+    var av = document.getElementById('cipAvatar');
+    if(!av){ setTimeout(bindAvatarClick, 300); return; }
+    if(av._cipAvClickBound) return;
+    av._cipAvClickBound = true;
+    av.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      var f = document.getElementById('cipAvFile');
+      if(f){ f.value = ''; f.click(); }
+    }, false);
+  }
+  bindAvatarClick();
 
   /* 选完文件：裁切 → 写回当前聊天角色头像 */
   document.addEventListener('change', function(e){
@@ -40971,6 +41186,16 @@ document.addEventListener('visibilitychange', function(){
     /* ★ 回到前台：保活不自动停，只在开关关闭时由开关处理 */
     renderBigCardDate();
     renderBigCardEvents();
+
+    /* ★ 回到前台：先处理"角色自己切换回复设置"的邀请
+       - 如果有到期的邀请，立刻结算 + 弹一条系统通知
+       - 通知文案："Ta 在后台想好了，接下来继续切换" */
+    try{
+      if(typeof resumeRoleSelfSetOnForeground === 'function'){
+        resumeRoleSelfSetOnForeground();
+      }
+    }catch(e){ console.error('回前台补跑邀请失败', e); }
+
     /* ★ 回到前台先结算试卷卡，再重绘聊天 */
     try{
       if(typeof settleQuizCards === 'function' && settleQuizCards()){
