@@ -11616,6 +11616,7 @@ window.__APP_CHANGELOG__ = [
 <div class="reply-menu-mask" id="replyMenuMask"></div>
 <div class="reply-menu" id="replyMenu">
   <div class="rm-item" id="rmRoleSelfSet">角色自己设定回复设置</div>
+  <div class="rm-item" id="rmRoleFloor">角色可调参数</div>
 </div>
 
 <!-- ★ 角色自己设定回复设置 弹窗（第 1 步先做空壳，内容第 2 步填） -->
@@ -11627,6 +11628,19 @@ window.__APP_CHANGELOG__ = [
       <button class="x" data-close type="button">✕</button>
     </div>
     <div class="sheet-body" id="roleSelfSetBody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ★ 角色可调参数弹窗（下限） -->
+<div class="modal" id="mRoleFloor">
+  <div class="overlay" data-close></div>
+  <div class="sheet">
+    <div class="sheet-head">
+      <h3>角色可调参数</h3>
+      <button class="x" data-close type="button">✕</button>
+    </div>
+    <div class="sheet-body" id="roleFloorBody"></div>
   </div>
 </div>
 
@@ -15446,7 +15460,12 @@ function renderChatFull(forceBottom){
     });
   })();
 
-  /* ★ 图片消息：异步补 IndexedDB 里的图片 URL */
+  /* ★ 图片消息：异步补 IndexedDB 里的图片 URL
+     修复「一直显示加载中」：
+       1. 防止重复绑定 hydrate（data-hydrated 标记已有，但重建 DOM 后标记会丢，所以必须每次重建都重新执行）
+       2. 用「先把图加载完成，再替换」的方式：new Image() 预加载 → onload 才写入 DOM，避免出现 src 已经指过去、但图还没解码的空窗
+       3. 加载失败时把占位换成「加载失败」，不再一直显示「加载中…」
+       4. 如果 IndexedDB 里没这个 key / 返回 null，也给出失败提示，不让占位卡死 */
   (function hydrateImageUrls(){
     const list = document.getElementById('chatList');
     if(!list) return;
@@ -15455,11 +15474,31 @@ function renderChatFull(forceBottom){
       if(!key) return;
       if(bubble.dataset.hydrated === '1') return;
       bubble.dataset.hydrated = '1';
+
+      function showFail(msg){
+        bubble.innerHTML = '<div class="img-loading" style="width:100px;height:100px;background:#f0f0f0;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px">' + (msg || '加载失败') + '</div>';
+        bubble.dataset.hydrated = '0';
+      }
+
       __idb.toURL(key).then(function(url){
-        if(!url) return;
-        bubble.innerHTML = '<img src="' + url + '" style="max-width:180px;max-height:240px;border-radius:12px;display:block;cursor:zoom-in">';
+        if(!url){ showFail('图片不存在'); return; }
+        const img = new Image();
+        img.onload = function(){
+          bubble.innerHTML = '';
+          img.style.maxWidth = '180px';
+          img.style.maxHeight = '240px';
+          img.style.borderRadius = '12px';
+          img.style.display = 'block';
+          img.style.cursor = 'zoom-in';
+          bubble.appendChild(img);
+        };
+        img.onerror = function(){
+          showFail('加载失败');
+        };
+        img.src = url;
       }).catch(function(e){
         console.error('图片加载失败', e);
+        showFail('加载失败');
       });
     });
   })();
@@ -28339,6 +28378,61 @@ function saveRoleSelfSet(roleId, s){
   saveRoleSelfSetMap(m);
 }
 
+/* ============================================================
+   ★ 角色可调参数 · 下限
+   - 每个角色独立一份
+   - key = 内部参数标识（和 ROLE_SELFSET_ITEMS 的 key 对齐）
+   - value = 数字
+     · 概率类：0~100（表示百分比）
+     · 数值类：整数
+     · 区间类：秒（回复延迟 / 已读延迟）
+   - 0 或留空 = 不设下限
+   - 只限制「角色自己摇」，不拦用户手动改
+   - 区间类：两个端点都 ≥ 下限，且强制 max ≥ min
+   ============================================================ */
+const ROLE_SELFSET_FLOOR_KEY = 'mj_role_selfset_floor_v2';
+
+function getRoleSelfSetFloorMap(){
+  let m = lsGet(ROLE_SELFSET_FLOOR_KEY, null);
+  if(!m || typeof m !== 'object') m = {};
+  return m;
+}
+function saveRoleSelfSetFloorMap(m){ lsSet(ROLE_SELFSET_FLOOR_KEY, m); }
+
+function getRoleSelfSetFloor(roleId){
+  if(!roleId) roleId = getCurrentRoleId();
+  const m = getRoleSelfSetFloorMap();
+  const f = m[roleId];
+  if(!f || typeof f !== 'object') return {};
+  return f;
+}
+function getRoleSelfSetFloorOne(roleId, key){
+  const f = getRoleSelfSetFloor(roleId);
+  const v = f[key];
+  if(!v || typeof v !== 'object') return { min: 0, max: 0 };
+  return {
+    min: (typeof v.min === 'number' && v.min > 0) ? v.min : 0,
+    max: (typeof v.max === 'number' && v.max > 0) ? v.max : 0
+  };
+}
+function setRoleSelfSetFloorOne(roleId, key, minVal, maxVal){
+  if(!roleId) roleId = getCurrentRoleId();
+  const m = getRoleSelfSetFloorMap();
+  if(!m[roleId] || typeof m[roleId] !== 'object') m[roleId] = {};
+  
+  let mn = Number(minVal);
+  let mx = Number(maxVal);
+  if(!isFinite(mn) || mn < 0) mn = 0;
+  if(!isFinite(mx) || mx < 0) mx = 0;
+
+  if(mn === 0 && mx === 0){
+    delete m[roleId][key];
+  } else {
+    m[roleId][key] = { min: mn, max: mx };
+  }
+  saveRoleSelfSetFloorMap(m);
+}
+
 /* 打开「角色自己设定回复设置」弹窗 */
 function openRoleSelfSetDialog(){
   const mask = document.getElementById('mRoleSelfSet');
@@ -28347,6 +28441,10 @@ function openRoleSelfSetDialog(){
   window.__rssInviteMode = false;
   renderRoleSelfSetDialog();
   mask.classList.add('show');
+  /* ★ 兜底：确保 .show 真的挂上了（某些机型第一次会吞） */
+  requestAnimationFrame(function(){
+    if(mask && !mask.classList.contains('show')) mask.classList.add('show');
+  });
 }
 
 /* 渲染弹窗内容
@@ -28360,19 +28458,17 @@ function renderRoleSelfSetDialog(){
   if(!body) return;
   const rid = getCurrentRoleId();
   const s = getRoleSelfSet(rid);
-  console.log('★ renderRoleSelfSetDialog 被调用，__rssInviteMode =', window.__rssInviteMode, 'typeof =', typeof window.__rssInviteMode);
 
-  /* ★ 修复：_inviteMode 不再从 s 读，改用 window 上的临时变量。
-     原因：s 每次都是 getRoleSelfSet 重新读的，而 _inviteMode 这个字段
-     会被别处兜底逻辑清掉，导致渲染时读到的是 false。
-     改用 window.__rssInviteMode，只活在本次弹窗打开期间，不写存储。 */
-  if(typeof window.__rssInviteMode !== 'boolean'){
-    window.__rssInviteMode = false;
-  }
-  const _invite = window.__rssInviteMode;
+  /* ★ 二次修复（参数分组不出现 / 要点两次才进）：
+     旧代码在渲染开头把 window.__rssInviteMode 兜底成 false，
+     而这行兜底会在"弹窗主流程"里也被执行，
+     等于每次重绘都把用户刚点出来的 true 冲成 false。
+     正确做法：只读不写，缺省值用局部变量兜住，绝不回写 window。
+     统一只认 `=== true` 才算邀请面板，其它一律当主页。 */
+  const _invite = (window.__rssInviteMode === true);
 
   /* ==== 模式 1：主页 ==== */
-  if(window.__rssInviteMode !== true){
+  if(!_invite){
     const on = (s.selfOn !== false);
     body.innerHTML =
       '<div class="rss-section">' +
@@ -28416,16 +28512,27 @@ function renderRoleSelfSetDialog(){
       renderRoleSelfSetDialog();
     });
 
-       /* 邀请按钮：切到邀请面板
-       ★ 修复：renderRoleSelfSetDialog 会被反复调用，
-       每次都 addEventListener 会叠多次监听，
-       点一次触发多次 → 逻辑打架 → 看起来"要点两次才生效"。
-       改用 .onclick 覆盖赋值，天然不会重复。 */
+      /* 邀请按钮：切到邀请面板
+       ★ 终极修复：
+         1. 用 .onclick 覆盖赋值，绝不叠加监听
+         2. 先把 __rssInviteMode 置 true，再重绘
+         3. 重绘后下一帧检查邀请面板是否真的渲染出来，没出来就再强制一次
+         4. preventDefault + stopPropagation 拦住外层冒泡 */
     const btn = document.getElementById('rssInviteBtn');
     if(btn){
-      btn.onclick = function(){
+      btn.onclick = function(ev){
+        if(ev){ ev.preventDefault(); ev.stopPropagation(); }
         window.__rssInviteMode = true;
         renderRoleSelfSetDialog();
+        requestAnimationFrame(function(){
+          var bodyEl = document.getElementById('roleSelfSetBody');
+          if(!bodyEl) return;
+          var hasInvitePanel = bodyEl.querySelector('#rssThinkMin') || bodyEl.querySelector('#rssBackBtn');
+          if(!hasInvitePanel){
+            window.__rssInviteMode = true;
+            renderRoleSelfSetDialog();
+          }
+        });
       };
     }
     return;
@@ -28445,6 +28552,30 @@ function renderRoleSelfSetDialog(){
       '<button class="rss-lock-btn" type="button" data-lock-key="' + it.key + '" title="点一下切换锁">' + lockIcon + '</button>' +
     '</div>';
   }).join('');
+
+  /* ★ 关键修复：把邀请面板的 HTML 真正写进 DOM。
+     原代码拼完 allowedHTML 之后没有任何 body.innerHTML 赋值，
+     所以邀请面板"渲染"了但没进 DOM，导致：
+       · 面板看起来没出来
+       · rssThinkMin / rssBackBtn / 勾选框都不存在
+       · 用户要关掉再重开才偶尔刷到
+     现在一次性把 允许项 + 思考时间 + 确认邀请 + 返回 全部写入。 */
+  body.innerHTML =
+    '<div class="rss-section">' +
+      '<div class="rss-title">允许角色改动的项</div>' +
+      '<div class="rss-checks">' + allowedHTML + '</div>' +
+      '<div class="rss-desc">点勾选允许角色改；点右侧锁图标锁定，角色就不会碰这一项</div>' +
+    '</div>' +
+    '<div class="rss-section">' +
+      '<div class="rss-title">思考时间</div>' +
+      '<div class="rss-line">' +
+        '<div class="rss-item"><span class="rss-lbl">最短</span><input class="rss-num" type="number" id="rssThinkMin" min="1" max="60" value="' + s.thinkMin + '"><span class="rss-unit">分钟</span></div>' +
+        '<div class="rss-item"><span class="rss-lbl">最长</span><input class="rss-num" type="number" id="rssThinkMax" min="1" max="60" value="' + s.thinkMax + '"><span class="rss-unit">分钟</span></div>' +
+      '</div>' +
+      '<div class="rss-desc">点「确认邀请」后，角色会在这段时间内随机一个时刻回应</div>' +
+    '</div>' +
+    '<button class="rss-invite-btn" id="rssInviteBtn" type="button">确 认 邀 请</button>' +
+    '<button class="rss-back-btn" id="rssBackBtn" type="button">返 回</button>';
 
   /* 允许项 checkbox */
   body.querySelectorAll('[data-rss-key]').forEach(function(cb){
@@ -28488,21 +28619,162 @@ function renderRoleSelfSetDialog(){
      ★ 这里不检查 selfOn：总开关只停"角色每 N 天自己摇骰"，
         用户点邀请这条路照旧走
      ★ 修复：改用 .onclick，避免重复绑定导致要点两次 */
-  const btn = document.getElementById('rssInviteBtn');
-  if(btn) btn.onclick = function(){
-    /* 立刻关弹窗 + 发邀请卡到聊天 */
-    const mask = document.getElementById('mRoleSelfSet');
-    if(mask) mask.classList.remove('show');
-    sendRoleSelfSetInvite(rid);
-  };
+  /* ★ 终极修复 2（双击才邀请 / 面板不出来）：
+     上面主页段已经给 #rssInviteBtn 挂了「进面板」的 onclick。
+     尾部这段如果也给同一个 id 挂「确认邀请」，谁后执行谁赢，
+     就会把主页按钮的行为覆盖掉 → 第一次点击走错分支 → 看起来要点两次。
+     所以：邀请面板里「确认邀请」按钮，改成用一个不同的 id：
+       · 邀请面板里那个按钮 id 用 rssInviteGoBtn（后面 HTML 不动的做法：运行时改 id）
+       · 返回按钮仍用 rssBackBtn，它只存在于邀请面板，不会跟主页冲突
+     这样做的好处：主页 / 邀请两个模式各用各的按钮 id，
+     永远互不覆盖，一次点击必然走对分支。 */
+  if(_invite){
+    /* 进入邀请面板后，把面板里那个"确认邀请"按钮改成独立 id，
+       避免和主页的"进面板"按钮共用 #rssInviteBtn 打架。
+       ★ 注意：这里只对"邀请面板"内部的那个按钮改 id，
+         DOM 结构不动，不影响其它地方 */
+    const btn2 = document.getElementById('rssInviteBtn');
+    if(btn2){
+      btn2.id = 'rssInviteGoBtn';
+      btn2.onclick = function(ev){
+        if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+        const mask = document.getElementById('mRoleSelfSet');
+        if(mask) mask.classList.remove('show');
+        sendRoleSelfSetInvite(rid);
+      };
+    }
+    const back = document.getElementById('rssBackBtn');
+    if(back) back.onclick = function(ev){
+      if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+      window.__rssInviteMode = false;
+      renderRoleSelfSetDialog();
+    };
+  }
+}
 
-  /* 返回：回到主页
-     ★ 同款修复：改 .onclick，避免重复绑定 */
-  const back = document.getElementById('rssBackBtn');
-  if(back) back.onclick = function(){
-    window.__rssInviteMode = false;
-    renderRoleSelfSetDialog();
-  };
+/* ============================================================
+   ★ 角色可调参数弹窗
+   - 入口：「回复设置 → ⋯ → 角色可调参数」
+   - 列出：概率类全部 + 数值类全部 + 回复延迟、已读延迟
+   - 一行一项：左参数名，右数字输入框，右单位
+   - 填 0 = 不设下限
+   - 概率类填百分比数字（填 20 = 20%）
+   - 区间类填秒
+   - 只限制「角色自己摇」，不拦用户手动改
+   ============================================================ */
+
+/* 这个弹窗要展示的参数清单
+   key 与 ROLE_SELFSET_ITEMS 里的 key 对齐，但做了两处调整：
+   - 去掉「拼好卡 / 单字字卡」的概率子项（概率和最大值绑在一起，界面上按"最多个数"处理）
+   - 去掉「通话发语音时间段 / 通话发几条语音」
+   保留：回复延迟、已读延迟、已读不回、引用、撤回、主动发消息、主动占卜、写理解、
+        语音通话、视频通话、气泡最多、拼好卡最多、单字字卡最多、emoji、颜文字 */
+const ROLE_FLOOR_ITEMS = [
+  { key: 'replyDelay',    label: '回复延迟',     unit: '秒',  kind: 'range' },
+  { key: 'readDelay',     label: '已读延迟',     unit: '秒',  kind: 'range' },
+  { key: 'noReply',       label: '已读不回',     unit: '%',   kind: 'pct'   },
+  { key: 'quote',         label: '引用',         unit: '%',   kind: 'pct'   },
+  { key: 'recall',        label: '撤回',         unit: '%',   kind: 'pct'   },
+  { key: 'active',        label: '主动发消息',   unit: '%',   kind: 'pct'   },
+  { key: 'divine',        label: '主动占卜',     unit: '%',   kind: 'pct'   },
+  { key: 'divineRead',    label: '写理解',       unit: '%',   kind: 'pct'   },
+  { key: 'callVoice',     label: '语音通话',     unit: '%',   kind: 'pct'   },
+  { key: 'callVideo',     label: '视频通话',     unit: '%',   kind: 'pct'   },
+  { key: 'maxBubbles',    label: '气泡最多',     unit: '个',  kind: 'num'   },
+  { key: 'maxBlocks',     label: '拼好卡最多',   unit: '张',  kind: 'num'   },
+  { key: 'pinyin',        label: '单字字卡最多', unit: '条',  kind: 'num'   },
+  { key: 'emoji',         label: 'emoji',        unit: '%',   kind: 'pct'   },
+  { key: 'kao',           label: '颜文字',       unit: '%',   kind: 'pct'   }
+];
+
+/* 每种 kind 的合法范围（百分比 0~100，数值 0~10，区间 0~1000） */
+const ROLE_FLOOR_RANGE = {
+  pct:   { min: 0, max: 100 },
+  num:   { min: 0, max: 10 },
+  range: { min: 0, max: 1000 }
+};
+
+function openRoleFloorDialog(){
+  const mask = document.getElementById('mRoleFloor');
+  if(!mask){
+    toast('角色可调参数面板缺失，请检查 HTML');
+    return;
+  }
+  renderRoleFloorDialog();
+  mask.classList.add('show');
+}
+
+function renderRoleFloorDialog(){
+  const box = document.getElementById('roleFloorBody');
+  if(!box) return;
+  const rid = getCurrentRoleId();
+  const f = getRoleSelfSetFloor(rid);
+
+  box.innerHTML =
+    '<div class="rss-section">' +
+      '<div class="rss-title">范围限制</div>' +
+      '<div class="rss-desc">这里设的范围，只限制「角色自己摇骰子改设置」时摇出的数。</div>' +
+      '<div class="rss-desc" style="margin-top:4px">填 0 = 不限制；填两个一样的数 = 固定这个值。你自己手动改是不受限制的。</div>' +
+    '</div>' +
+    '<div class="rss-section" style="padding-bottom:4px">' +
+      ROLE_FLOOR_ITEMS.map(function(it){
+        const r = ROLE_FLOOR_RANGE[it.kind] || { min:0, max:999 };
+        const slot = f[it.key] || {};
+        const vMin = (typeof slot.min === 'number' && slot.min > 0) ? slot.min : '';
+        const vMax = (typeof slot.max === 'number' && slot.max > 0) ? slot.max : '';
+        return '<div class="rss-line" style="justify-content:space-between;padding:9px 0;border-bottom:0.6px dashed rgba(0,0,0,.06)">' +
+          '<span class="rss-lbl" style="font-size:13px;color:#1a1a1a;flex:1">' + escapeHTML(it.label) + '</span>' +
+          '<input class="rss-num" type="number" data-floor-key="' + it.key + '" data-floor-kind="' + it.kind + '" data-bound="min" min="' + r.min + '" max="' + r.max + '" value="' + vMin + '" placeholder="0" style="width:55px;text-align:center">' +
+          '<span class="rss-unit" style="flex:none;margin:0 4px;color:#999">到</span>' +
+          '<input class="rss-num" type="number" data-floor-key="' + it.key + '" data-floor-kind="' + it.kind + '" data-bound="max" min="' + r.min + '" max="' + r.max + '" value="' + vMax + '" placeholder="0" style="width:55px;text-align:center">' +
+          '<span class="rss-unit" style="flex:none;margin-left:8px;min-width:24px;text-align:right">' + escapeHTML(it.unit) + '</span>' +
+        '</div>';
+      }).join('') +
+    '</div>' +
+    '<button class="rss-invite-btn" id="roleFloorSave" type="button">保 存</button>' +
+    '<button class="rss-back-btn" id="roleFloorBack" type="button">返 回</button>';
+
+  /* 保存 */
+  const saveBtn = document.getElementById('roleFloorSave');
+  if(saveBtn){
+    saveBtn.onclick = function(){
+      const rid2 = getCurrentRoleId();
+      const map = {};
+      box.querySelectorAll('[data-floor-key]').forEach(function(inp){
+        const key = inp.dataset.floorKey;
+        if(!map[key]) map[key] = { min: 0, max: 0 };
+        const kind = inp.dataset.floorKind;
+        const r = ROLE_FLOOR_RANGE[kind] || { min:0, max:999 };
+        
+        let v = parseFloat(inp.value);
+        if(!isFinite(v) || v < r.min) v = 0;
+        if(v > r.max) v = r.max;
+        
+        if(inp.dataset.bound === 'min') map[key].min = v;
+        else map[key].max = v;
+      });
+
+      for(let key in map){
+        let { min, max } = map[key];
+        if(min > 0 && max > 0 && min > max){
+          const tmp = min;
+          min = max;
+          max = tmp;
+        }
+        setRoleSelfSetFloorOne(rid2, key, min, max);
+      }
+
+      toast('已保存');
+      renderRoleFloorDialog();
+    };
+  }
+  const backBtn = document.getElementById('roleFloorBack');
+  if(backBtn){
+    backBtn.onclick = function(){
+      const m = document.getElementById('mRoleFloor');
+      if(m) m.classList.remove('show');
+    };
+  }
 }
 
 /* 数字输入统一绑定：数字变化时写回存储，最小 1，最大按 max 属性走 */
@@ -28601,20 +28873,66 @@ function pickAllowedItemKeys(roleId){
 }
 
 function rollNewValueForKey(key){
-  /* ★ 统一格式：
-     - 每一项都带【】
-     - 每一项都是「从 旧值 变成 新值」
-     注意 apply() 会写回配置，text() 是 apply() 之后才被调用，
-     所以必须在 apply() 里先把旧值读出来存到闭包变量里。 */
+  const _rid = getCurrentRoleId();
+
+  /* 读取某一项的「用户设定范围」：
+     - 返回 { has:false, min:0, max:0 } → 用户没设，角色随便摇
+     - 返回 { has:true,  min, max }   → 角色摇出来必须落在这区间内
+     判断依据：getRoleSelfSetFloorOne 返回 { min, max }，两个都 0 视为未设 */
+  const _range = function(k){
+    let l = { min: 0, max: 0 };
+    try{ l = getRoleSelfSetFloorOne(_rid, k); }catch(e){}
+    const mn = (typeof l.min === 'number' && l.min > 0) ? l.min : 0;
+    const mx = (typeof l.max === 'number' && l.max > 0) ? l.max : 0;
+    if(mn === 0 && mx === 0) return { has:false, min: 0, max: 0 };
+    /* 只填了一个数：另一端补同一个数 → 变成固定 */
+    if(mn > 0 && mx === 0) return { has:true, min: mn, max: mn };
+    if(mn === 0 && mx > 0) return { has:true, min: mx, max: mx };
+    return { has:true, min: Math.min(mn, mx), max: Math.max(mn, mx) };
+  };
+
+  /* 把一个值夹进用户设定范围（概率类，单位是整数百分比 0~100） */
+  const _clampPct = function(v, k){
+    const r = _range(k);
+    let x = v;
+    if(r.has){ x = Math.max(r.min, Math.min(r.max, x)); }
+    if(x < 0) x = 0;
+    if(x > 100) x = 100;
+    return x;
+  };
+
+  /* 把一个值夹进用户设定范围（数值类，单位是整数个数） */
+  const _clampNum = function(v, k, hardMin, hardMax){
+    const r = _range(k);
+    let x = v;
+    if(r.has){ x = Math.max(r.min, Math.min(r.max, x)); }
+    if(typeof hardMin === 'number' && x < hardMin) x = hardMin;
+    if(typeof hardMax === 'number' && x > hardMax) x = hardMax;
+    return x;
+  };
+
+  /* 把一个值夹进用户设定范围（区间端点类，单位是整数秒） */
+  const _clampSec = function(v, k){
+    const r = _range(k);
+    let x = v;
+    if(r.has){ x = Math.max(r.min, Math.min(r.max, x)); }
+    if(x < 1) x = 1;
+    if(x > 1000) x = 1000;
+    return x;
+  };
+
   function pct(n){ return Math.round(n * 100); }
 
   switch(key){
     case 'replyDelay': {
-      /* 最快和最慢各摇一个，且强制 min ≤ max，保留随机区间 */
+      /* 区间：秒。用户填秒，roll 出来的也是秒。 */
       const _a = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
       const _b = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
-      const vMin = Math.min(_a, _b);
-      const vMax = Math.max(_a, _b);
+      let vMin = Math.min(_a, _b);
+      let vMax = Math.max(_a, _b);
+      /* ★ 应用下限（两个端点都保底） */
+      const _r = _applyFloorRange(vMin, vMax, 'replyDelay');
+      vMin = _r[0]; vMax = _r[1];
       let oldMin = 0, oldMax = 0;
       return {
         apply: function(){
@@ -28631,11 +28949,12 @@ function rollNewValueForKey(key){
       };
     }
     case 'readDelay': {
-      /* 最快和最慢各摇一个，且强制 min ≤ max，保留随机区间 */
       const _a = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
       const _b = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
-      const vMin = Math.min(_a, _b);
-      const vMax = Math.max(_a, _b);
+      let vMin = Math.min(_a, _b);
+      let vMax = Math.max(_a, _b);
+      const _r = _applyFloorRange(vMin, vMax, 'readDelay');
+      vMin = _r[0]; vMax = _r[1];
       let oldMin = 0, oldMax = 0;
       return {
         apply: function(){
@@ -28652,7 +28971,8 @@ function rollNewValueForKey(key){
       };
     }
     case 'noReply': {
-      const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      v = _clampPct(v, 'noReply');
       let oldVal = 0;
       return {
         apply: function(){
@@ -28667,7 +28987,8 @@ function rollNewValueForKey(key){
       };
     }
     case 'quote': {
-      const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      v = _clampPct(v, 'quote');
       let oldVal = 0;
       return {
         apply: function(){
@@ -28682,7 +29003,8 @@ function rollNewValueForKey(key){
       };
     }
     case 'recall': {
-      const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      v = _clampPct(v, 'recall');
       let oldVal = 0;
       return {
         apply: function(){
@@ -28697,7 +29019,8 @@ function rollNewValueForKey(key){
       };
     }
     case 'active': {
-      const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      v = _clampPct(v, 'active');
       let oldVal = 0;
       return {
         apply: function(){
@@ -28711,8 +29034,9 @@ function rollNewValueForKey(key){
         }
       };
     }
-        case 'divine': {
-      const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+    case 'divine': {
+      let v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      v = _clampPct(v, 'divine');
       let oldVal = 0;
       return {
         apply: function(){
@@ -28727,7 +29051,8 @@ function rollNewValueForKey(key){
       };
     }
     case 'divineRead': {
-      const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      v = _clampPct(v, 'divineRead');
       let oldVal = 0;
       return {
         apply: function(){
@@ -28742,7 +29067,8 @@ function rollNewValueForKey(key){
       };
     }
     case 'callVoice': {
-      const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      v = _clampPct(v, 'callVoice');
       let oldVal = 0;
       const rid = getCurrentRoleId();
       return {
@@ -28758,7 +29084,8 @@ function rollNewValueForKey(key){
       };
     }
     case 'callVideo': {
-      const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      v = _clampPct(v, 'callVideo');
       let oldVal = 0;
       const rid = getCurrentRoleId();
       return {
@@ -28774,11 +29101,13 @@ function rollNewValueForKey(key){
       };
     }
     case 'callWin': {
-      /* 通话时间段：最短 1~1000 秒，最长 1~1000 秒，各摇一个，min ≤ max */
       const _a = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
       const _b = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
-      const vMin = Math.min(_a, _b);
-      const vMax = Math.max(_a, _b);
+      let vMin = Math.min(_a, _b);
+      let vMax = Math.max(_a, _b);
+      vMin = _clampSec(vMin, 'callWin');
+      vMax = _clampSec(vMax, 'callWin');
+      if(vMax < vMin) vMax = vMin;
       let oldMin = 0, oldMax = 0;
       const rid = getCurrentRoleId();
       return {
@@ -28796,11 +29125,13 @@ function rollNewValueForKey(key){
       };
     }
     case 'callVoiceCnt': {
-      /* 通话里发几条语音：最少 1~10，最多 1~10，各摇一个，min ≤ max */
       const _a = ROLE_SELFSET_NUM_MIN + Math.floor(Math.random() * (ROLE_SELFSET_NUM_MAX - ROLE_SELFSET_NUM_MIN + 1));
       const _b = ROLE_SELFSET_NUM_MIN + Math.floor(Math.random() * (ROLE_SELFSET_NUM_MAX - ROLE_SELFSET_NUM_MIN + 1));
-      const vMin = Math.min(_a, _b);
-      const vMax = Math.max(_a, _b);
+      let vMin = Math.min(_a, _b);
+      let vMax = Math.max(_a, _b);
+      vMin = _clampNum(vMin, 'callVoiceCnt', 1, 20);
+      vMax = _clampNum(vMax, 'callVoiceCnt', 1, 20);
+      if(vMax < vMin) vMax = vMin;
       let oldMin = 0, oldMax = 0;
       const rid = getCurrentRoleId();
       return {
@@ -28818,7 +29149,8 @@ function rollNewValueForKey(key){
       };
     }
     case 'maxBubbles': {
-      const v = ROLE_SELFSET_NUM_MIN + Math.floor(Math.random() * (ROLE_SELFSET_NUM_MAX - ROLE_SELFSET_NUM_MIN + 1));
+      let v = ROLE_SELFSET_NUM_MIN + Math.floor(Math.random() * (ROLE_SELFSET_NUM_MAX - ROLE_SELFSET_NUM_MIN + 1));
+      v = _clampNum(v, 'maxBubbles', 1, 10);
       let oldVal = 0;
       return {
         apply: function(){
@@ -28833,14 +29165,16 @@ function rollNewValueForKey(key){
       };
     }
     case 'maxBlocks': {
-      const v = ROLE_SELFSET_NUM_MIN + Math.floor(Math.random() * (ROLE_SELFSET_NUM_MAX - ROLE_SELFSET_NUM_MIN + 1));
-      const p = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let v = ROLE_SELFSET_NUM_MIN + Math.floor(Math.random() * (ROLE_SELFSET_NUM_MAX - ROLE_SELFSET_NUM_MIN + 1));
+      let p = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      v = _clampNum(v, 'maxBlocks', 1, 10);
+      p = _clampPct(p, 'maxBlocksProb');
       let oldVal = 0, oldP = 0;
       return {
         apply: function(){
           const cur = getReply();
           oldVal = cur.maxBlocks || 0;
-          oldP   = pct(cur.multiBlockProb || 0);
+          oldP = pct(cur.multiBlockProb || 0);
           cur.maxBlocks = v;
           cur.multiBlockProb = p / 100;
           saveReply();
@@ -28851,14 +29185,16 @@ function rollNewValueForKey(key){
       };
     }
     case 'pinyin': {
-      const v = ROLE_SELFSET_NUM_MIN + Math.floor(Math.random() * (ROLE_SELFSET_NUM_MAX - ROLE_SELFSET_NUM_MIN + 1));
-      const p = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let v = ROLE_SELFSET_NUM_MIN + Math.floor(Math.random() * (ROLE_SELFSET_NUM_MAX - ROLE_SELFSET_NUM_MIN + 1));
+      let p = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      v = _clampNum(v, 'pinyin', 1, 10);
+      p = _clampPct(p, 'pinyinProb');
       let oldVal = 0, oldP = 0;
       return {
         apply: function(){
           const cur = getReply();
           oldVal = cur.pinyinMax || 0;
-          oldP   = pct(cur.pinyinRate || 0);
+          oldP = pct(cur.pinyinRate || 0);
           cur.pinyinMax = v;
           cur.pinyinRate = p / 100;
           saveReply();
@@ -28869,7 +29205,8 @@ function rollNewValueForKey(key){
       };
     }
     case 'emoji': {
-      const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      v = _clampPct(v, 'emoji');
       let oldVal = 0;
       return {
         apply: function(){
@@ -28884,7 +29221,8 @@ function rollNewValueForKey(key){
       };
     }
     case 'kao': {
-      const v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      let v = ROLE_SELFSET_PCT_MIN + Math.floor(Math.random() * (ROLE_SELFSET_PCT_MAX - ROLE_SELFSET_PCT_MIN + 1));
+      v = _clampPct(v, 'kao');
       let oldVal = 0;
       return {
         apply: function(){
@@ -29170,6 +29508,15 @@ function scheduleRoleSelfSetTick(){
       e.stopPropagation();
       closeReplyMenu();
       openRoleSelfSetDialog();
+      return;
+    }
+
+    /* 点小菜单里的「角色可调参数」 */
+    if(t.closest('#rmRoleFloor')){
+      e.preventDefault();
+      e.stopPropagation();
+      closeReplyMenu();
+      openRoleFloorDialog();
       return;
     }
 
@@ -37501,16 +37848,75 @@ function uploadSound(type, file){
   });
 }
 
+/* 播放（一次）
+   修复：APP 在前台 / 正在看这个角色的聊天页时，收到消息也应该能听到「收到消息」音效。
+   关键点：
+     1. 用一个常驻 Audio 实例池，避免每次 new Audio 被浏览器拦截（尤其安卓内核 / 雨见 / 夸克，首次播放必须在用户手势链里，之后复用实例可以继续播）
+     2. 首次播放时如果 play() 被拒（NotAllowedError），记录一个「待解锁」标记，等下一次用户点屏幕时自动补播
+     3. 播放本身不做任何「是否在前台」的判断，交给调用方（showSystemNotify / appendMsgToRole）自己决定要不要调它
+*/
+const _soundAudioPool = {};      /* type -> HTMLAudioElement */
+let _soundUnlocked = false;      /* 是否已经成功播过一次（解锁） */
+let _pendingSoundType = '';      /* 待补播的类型（play 被拒时记录） */
+
+/* 首次用户手势时解锁音频：安卓内核对「自动播放」有限制 */
+function _unlockSoundOnGesture(){
+  if(_soundUnlocked) return;
+  _soundUnlocked = true;
+  if(_pendingSoundType){
+    const t = _pendingSoundType;
+    _pendingSoundType = '';
+    try{ playSoundOnce(t); }catch(e){}
+  }
+}
+document.addEventListener('touchstart', _unlockSoundOnGesture, {passive:true, capture:true});
+document.addEventListener('click',      _unlockSoundOnGesture, {passive:true, capture:true});
+document.addEventListener('keydown',    _unlockSoundOnGesture, {capture:true});
+
 /* 播放（一次） */
 function playSoundOnce(type){
   const e = getSoundEntry(type);
   if(!e || !e.key) return;
-  __idb.toURL(e.key).then(function(url){
+
+  /* 拿到 / 建一个该 type 的 Audio 实例 */
+  function doPlay(url){
     if(!url) return;
     try{
-      const a = new Audio(url);
-      a.play().catch(function(){});
-    }catch(err){}
+      let a = _soundAudioPool[type];
+      if(!a){
+        a = new Audio(url);
+        a.preload = 'auto';
+        a.setAttribute('playsinline', '');
+        a.setAttribute('webkit-playsinline', '');
+        _soundAudioPool[type] = a;
+      } else if(a.src !== url){
+        a.src = url;
+      }
+      try{ a.currentTime = 0; }catch(e){}
+      const p = a.play();
+      if(p && typeof p.catch === 'function'){
+        p.then(function(){
+          _soundUnlocked = true;
+        }).catch(function(err){
+          /* 被浏览器拦截：标记待补播，等下一次用户手势 */
+          if(err && (err.name === 'NotAllowedError' || err.name === 'NotSupportedError')){
+            _pendingSoundType = type;
+          }
+        });
+      }
+    }catch(err){
+      console.warn('音效播放异常', err);
+    }
+  }
+
+  /* 如果实例已经拿到 URL，直接播；否则先取 URL */
+  const cached = _soundAudioPool[type];
+  if(cached && cached.src){
+    doPlay(cached.src);
+    return;
+  }
+  __idb.toURL(e.key).then(doPlay).catch(function(err){
+    console.warn('音效 URL 获取失败', err);
   });
 }
 
