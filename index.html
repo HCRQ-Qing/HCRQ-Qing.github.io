@@ -11632,15 +11632,14 @@ window.__APP_CHANGELOG__ = [
   </div>
 </div>
 
-<!-- ★ 角色可调参数弹窗（下限） -->
-<div class="modal" id="mRoleFloor">
-  <div class="overlay" data-close></div>
-  <div class="sheet">
-    <div class="sheet-head">
-      <h3>角色可调参数</h3>
-      <button class="x" data-close type="button">✕</button>
+<!-- ★ 角色可调参数 · 全屏页 -->
+<div class="screen" id="roleFloorScreen">
+  <div class="rf-wrap" style="display:flex;flex-direction:column;height:100%;background:#fff;">
+    <div class="rf-top" style="flex:none;display:flex;align-items:center;padding:20px 22px 12px;border-bottom:0.6px solid #f2f2f2;">
+      <button class="rf-back" id="roleFloorBackBtn" type="button" style="width:38px;height:38px;border:none;background:transparent;color:#1a1a1a;font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0 0 4px;font-family:inherit;cursor:pointer;opacity:.55;">‹</button>
+      <div class="rf-title" style="flex:1;text-align:center;font-size:15px;font-weight:300;letter-spacing:6px;color:#1a1a1a;margin-left:-38px;">角 色 可 调 参 数</div>
     </div>
-    <div class="sheet-body" id="roleFloorBody"></div>
+    <div class="rf-body" id="roleFloorBody" style="flex:1;overflow-y:auto;padding:10px 22px 40px;scrollbar-width:none;"></div>
   </div>
 </div>
 
@@ -28369,6 +28368,8 @@ function getRoleSelfSet(roleId){
   if(typeof s.nextRollAt !== 'number') s.nextRollAt = 0;
   /* ★ 总开关默认开 */
   if(typeof s.selfOn !== 'boolean') s.selfOn = true;
+  /* ★ 允许调开关默认开 */
+  if(typeof s.allowSwitch !== 'boolean') s.allowSwitch = true;
   return s;
 }
 function saveRoleSelfSet(roleId, s){
@@ -28552,6 +28553,16 @@ function renderRoleSelfSetDialog(){
       '<button class="rss-lock-btn" type="button" data-lock-key="' + it.key + '" title="点一下切换锁">' + lockIcon + '</button>' +
     '</div>';
   }).join('');
+  
+  /* ★ 新增：开关权限总开关 */
+  const allowSwitchOn = s.allowSwitch !== false;
+  const switchHTML = '<div class="rss-check-item" style="margin-top:8px;padding-top:12px;border-top:0.6px dashed rgba(0,0,0,.06)">' +
+      '<label class="rss-check-label">' +
+        '<input type="checkbox" id="rssAllowSwitch" ' + (allowSwitchOn ? 'checked' : '') + '>' +
+        '<span class="rss-box"></span>' +
+        '<span class="rss-label" style="font-weight:400">允许角色控制开关</span>' +
+      '</label>' +
+    '</div>';
 
   /* ★ 关键修复：把邀请面板的 HTML 真正写进 DOM。
      原代码拼完 allowedHTML 之后没有任何 body.innerHTML 赋值，
@@ -28564,6 +28575,7 @@ function renderRoleSelfSetDialog(){
     '<div class="rss-section">' +
       '<div class="rss-title">允许角色改动的项</div>' +
       '<div class="rss-checks">' + allowedHTML + '</div>' +
+      switchHTML +
       '<div class="rss-desc">点勾选允许角色改；点右侧锁图标锁定，角色就不会碰这一项</div>' +
     '</div>' +
     '<div class="rss-section">' +
@@ -28586,6 +28598,16 @@ function renderRoleSelfSetDialog(){
       saveRoleSelfSet(rid, cur);
     });
   });
+
+  /* ★ 绑定新加的开关 */
+  const allowSw = document.getElementById('rssAllowSwitch');
+  if(allowSw){
+    allowSw.addEventListener('change', function(){
+      const cur = getRoleSelfSet(rid);
+      cur.allowSwitch = this.checked;
+      saveRoleSelfSet(rid, cur);
+    });
+  }
 
   /* ★ 新增：锁按钮点击 → 切换锁状态，重绘 */
   body.querySelectorAll('[data-lock-key]').forEach(function(btn){
@@ -28670,16 +28692,20 @@ function renderRoleSelfSetDialog(){
    保留：回复延迟、已读延迟、已读不回、引用、撤回、主动发消息、主动占卜、写理解、
         语音通话、视频通话、气泡最多、拼好卡最多、单字字卡最多、emoji、颜文字 */
 const ROLE_FLOOR_ITEMS = [
-  { key: 'replyDelay',    label: '回复延迟',     unit: '秒',  kind: 'range' },
-  { key: 'readDelay',     label: '已读延迟',     unit: '秒',  kind: 'range' },
+  { key: 'replyDelayMin', label: '回复最快延迟', unit: '秒',  kind: 'range' },
+  { key: 'replyDelayMax', label: '回复最慢延迟', unit: '秒',  kind: 'range' },
+  { key: 'readDelayMin',  label: '已读最快延迟', unit: '秒',  kind: 'range' },
+  { key: 'readDelayMax',  label: '已读最慢延迟', unit: '秒',  kind: 'range' },
   { key: 'noReply',       label: '已读不回',     unit: '%',   kind: 'pct'   },
   { key: 'quote',         label: '引用',         unit: '%',   kind: 'pct'   },
   { key: 'recall',        label: '撤回',         unit: '%',   kind: 'pct'   },
   { key: 'active',        label: '主动发消息',   unit: '%',   kind: 'pct'   },
   { key: 'divine',        label: '主动占卜',     unit: '%',   kind: 'pct'   },
   { key: 'divineRead',    label: '写理解',       unit: '%',   kind: 'pct'   },
-  { key: 'callVoice',     label: '语音通话',     unit: '%',   kind: 'pct'   },
-  { key: 'callVideo',     label: '视频通话',     unit: '%',   kind: 'pct'   },
+  { key: 'callVoice',     label: '语音通话概率', unit: '%',   kind: 'pct'   },
+  { key: 'callVideo',     label: '视频通话概率', unit: '%',   kind: 'pct'   },
+  { key: 'callVoiceCnt',  label: '通话语音条数', unit: '条',  kind: 'num'   },
+  { key: 'callWin',       label: '通话时间段',   unit: '秒',  kind: 'range' },
   { key: 'maxBubbles',    label: '气泡最多',     unit: '个',  kind: 'num'   },
   { key: 'maxBlocks',     label: '拼好卡最多',   unit: '张',  kind: 'num'   },
   { key: 'pinyin',        label: '单字字卡最多', unit: '条',  kind: 'num'   },
@@ -28695,13 +28721,8 @@ const ROLE_FLOOR_RANGE = {
 };
 
 function openRoleFloorDialog(){
-  const mask = document.getElementById('mRoleFloor');
-  if(!mask){
-    toast('角色可调参数面板缺失，请检查 HTML');
-    return;
-  }
   renderRoleFloorDialog();
-  mask.classList.add('show');
+  showScreen('roleFloorScreen');
 }
 
 function renderRoleFloorDialog(){
@@ -28711,28 +28732,33 @@ function renderRoleFloorDialog(){
   const f = getRoleSelfSetFloor(rid);
 
   box.innerHTML =
-    '<div class="rss-section">' +
-      '<div class="rss-title">范围限制</div>' +
-      '<div class="rss-desc">这里设的范围，只限制「角色自己摇骰子改设置」时摇出的数。</div>' +
-      '<div class="rss-desc" style="margin-top:4px">填 0 = 不限制；填两个一样的数 = 固定这个值。你自己手动改是不受限制的。</div>' +
+    '<div class="hint" style="padding:16px 0 20px;font-size:11.5px;color:#bbb;line-height:1.8;letter-spacing:.5px;border-bottom:0.6px dashed #f0f0f0;">' +
+      '只限制「角色自己摇骰子改设置」时摇出的数值。<br>填 0 = 不限制；填相同数字 = 固定该值。' +
     '</div>' +
-    '<div class="rss-section" style="padding-bottom:4px">' +
-      ROLE_FLOOR_ITEMS.map(function(it){
-        const r = ROLE_FLOOR_RANGE[it.kind] || { min:0, max:999 };
-        const slot = f[it.key] || {};
-        const vMin = (typeof slot.min === 'number' && slot.min > 0) ? slot.min : '';
-        const vMax = (typeof slot.max === 'number' && slot.max > 0) ? slot.max : '';
-        return '<div class="rss-line" style="justify-content:space-between;padding:9px 0;border-bottom:0.6px dashed rgba(0,0,0,.06)">' +
-          '<span class="rss-lbl" style="font-size:13px;color:#1a1a1a;flex:1">' + escapeHTML(it.label) + '</span>' +
-          '<input class="rss-num" type="number" data-floor-key="' + it.key + '" data-floor-kind="' + it.kind + '" data-bound="min" min="' + r.min + '" max="' + r.max + '" value="' + vMin + '" placeholder="0" style="width:55px;text-align:center">' +
-          '<span class="rss-unit" style="flex:none;margin:0 4px;color:#999">到</span>' +
-          '<input class="rss-num" type="number" data-floor-key="' + it.key + '" data-floor-kind="' + it.kind + '" data-bound="max" min="' + r.min + '" max="' + r.max + '" value="' + vMax + '" placeholder="0" style="width:55px;text-align:center">' +
-          '<span class="rss-unit" style="flex:none;margin-left:8px;min-width:24px;text-align:right">' + escapeHTML(it.unit) + '</span>' +
-        '</div>';
-      }).join('') +
-    '</div>' +
-    '<button class="rss-invite-btn" id="roleFloorSave" type="button">保 存</button>' +
-    '<button class="rss-back-btn" id="roleFloorBack" type="button">返 回</button>';
+    ROLE_FLOOR_ITEMS.map(function(it){
+      const r = ROLE_FLOOR_RANGE[it.kind] || { min:0, max:999 };
+      const slot = f[it.key] || {};
+      const vMin = (typeof slot.min === 'number' && slot.min > 0) ? slot.min : '';
+      const vMax = (typeof slot.max === 'number' && slot.max > 0) ? slot.max : '';
+      return '<div class="row" style="display:flex;align-items:center;justify-content:space-between;padding:18px 0;border-bottom:0.6px dashed #f0f0f0;">' +
+        '<div class="label" style="font-size:14px;font-weight:300;letter-spacing:1px;">' + escapeHTML(it.label) + '</div>' +
+        '<div class="inputs" style="display:flex;align-items:center;gap:8px;">' +
+          '<input type="number" data-floor-key="' + it.key + '" data-floor-kind="' + it.kind + '" data-bound="min" min="' + r.min + '" max="' + r.max + '" value="' + vMin + '" placeholder="0" style="width:50px;height:32px;border:none;border-bottom:0.8px solid #d0d0d0;background:transparent;text-align:center;font-size:15px;font-family:Georgia,serif;outline:none;color:#1a1a1a;">' +
+          '<span class="to" style="font-size:11px;color:#ccc;">到</span>' +
+          '<input type="number" data-floor-key="' + it.key + '" data-floor-kind="' + it.kind + '" data-bound="max" min="' + r.min + '" max="' + r.max + '" value="' + vMax + '" placeholder="0" style="width:50px;height:32px;border:none;border-bottom:0.8px solid #d0d0d0;background:transparent;text-align:center;font-size:15px;font-family:Georgia,serif;outline:none;color:#1a1a1a;">' +
+          '<span class="unit" style="font-size:11px;color:#999;width:16px;">' + escapeHTML(it.unit) + '</span>' +
+        '</div>' +
+      '</div>';
+    }).join('') +
+    '<div style="padding:24px 0 40px;">' +
+      '<button id="roleFloorSave" type="button" style="width:100%;padding:14px;border-radius:22px;border:none;background:#1a1a1a;color:#fff;font-size:13.5px;letter-spacing:4px;font-family:inherit;cursor:pointer;">保 存</button>' +
+    '</div>';
+
+  /* 绑定输入框的 focus 边框变黑 */
+  box.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('focus', () => { inp.style.borderBottomColor = '#1a1a1a'; });
+    inp.addEventListener('blur', () => { inp.style.borderBottomColor = '#d0d0d0'; });
+  });
 
   /* 保存 */
   const saveBtn = document.getElementById('roleFloorSave');
@@ -28768,11 +28794,14 @@ function renderRoleFloorDialog(){
       renderRoleFloorDialog();
     };
   }
-  const backBtn = document.getElementById('roleFloorBack');
+
+  /* 返回按钮：只关闭当前全屏页，退回到下面的「回复设置」 */
+  const backBtn = document.getElementById('roleFloorBackBtn');
   if(backBtn){
-    backBtn.onclick = function(){
-      const m = document.getElementById('mRoleFloor');
-      if(m) m.classList.remove('show');
+    backBtn.onclick = function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      document.getElementById('roleFloorScreen').classList.remove('on');
     };
   }
 }
@@ -28924,49 +28953,71 @@ function rollNewValueForKey(key){
   function pct(n){ return Math.round(n * 100); }
 
   switch(key){
-    case 'replyDelay': {
-      /* 区间：秒。用户填秒，roll 出来的也是秒。 */
-      const _a = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
-      const _b = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
-      let vMin = Math.min(_a, _b);
-      let vMax = Math.max(_a, _b);
-      /* ★ 应用下限（两个端点都保底） */
-      const _r = _applyFloorRange(vMin, vMax, 'replyDelay');
-      vMin = _r[0]; vMax = _r[1];
-      let oldMin = 0, oldMax = 0;
+    case 'replyDelayMin': {
+      let v = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
+      v = _clampSec(v, 'replyDelayMin');
+      let oldVal = 0;
       return {
         apply: function(){
           const cur = getReply();
-          oldMin = Math.round(((cur.minDelay||0) / 1000) * 10) / 10;
-          oldMax = Math.round(((cur.maxDelay||0) / 1000) * 10) / 10;
-          cur.minDelay = vMin * 1000;
-          cur.maxDelay = vMax * 1000;
+          oldVal = Math.round(((cur.minDelay||0) / 1000) * 10) / 10;
+          cur.minDelay = v * 1000;
+          if(cur.maxDelay < cur.minDelay) cur.maxDelay = cur.minDelay;
           saveReply();
         },
         text: function(){
-          return '【回复延迟】从 ' + oldMin + '~' + oldMax + ' 秒变成 ' + vMin + '~' + vMax + ' 秒';
+          return '【回复最快延迟】从 ' + oldVal + ' 秒变成 ' + v + ' 秒';
         }
       };
     }
-    case 'readDelay': {
-      const _a = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
-      const _b = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
-      let vMin = Math.min(_a, _b);
-      let vMax = Math.max(_a, _b);
-      const _r = _applyFloorRange(vMin, vMax, 'readDelay');
-      vMin = _r[0]; vMax = _r[1];
-      let oldMin = 0, oldMax = 0;
+    case 'replyDelayMax': {
+      let v = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
+      v = _clampSec(v, 'replyDelayMax');
+      let oldVal = 0;
       return {
         apply: function(){
           const cur = getReply();
-          oldMin = cur.readDelayMin || 0;
-          oldMax = cur.readDelayMax || 0;
-          cur.readDelayMin = vMin;
-          cur.readDelayMax = vMax;
+          oldVal = Math.round(((cur.maxDelay||0) / 1000) * 10) / 10;
+          cur.maxDelay = v * 1000;
+          if(cur.minDelay > cur.maxDelay) cur.minDelay = cur.maxDelay;
           saveReply();
         },
         text: function(){
-          return '【已读延迟】从 ' + oldMin + '~' + oldMax + ' 秒变成 ' + vMin + '~' + vMax + ' 秒';
+          return '【回复最慢延迟】从 ' + oldVal + ' 秒变成 ' + v + ' 秒';
+        }
+      };
+    }
+    case 'readDelayMin': {
+      let v = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
+      v = _clampSec(v, 'readDelayMin');
+      let oldVal = 0;
+      return {
+        apply: function(){
+          const cur = getReply();
+          oldVal = cur.readDelayMin || 0;
+          cur.readDelayMin = v;
+          if(cur.readDelayMax < cur.readDelayMin) cur.readDelayMax = cur.readDelayMin;
+          saveReply();
+        },
+        text: function(){
+          return '【已读最快延迟】从 ' + oldVal + ' 秒变成 ' + v + ' 秒';
+        }
+      };
+    }
+    case 'readDelayMax': {
+      let v = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
+      v = _clampSec(v, 'readDelayMax');
+      let oldVal = 0;
+      return {
+        apply: function(){
+          const cur = getReply();
+          oldVal = cur.readDelayMax || 0;
+          cur.readDelayMax = v;
+          if(cur.readDelayMin > cur.readDelayMax) cur.readDelayMin = cur.readDelayMax;
+          saveReply();
+        },
+        text: function(){
+          return '【已读最慢延迟】从 ' + oldVal + ' 秒变成 ' + v + ' 秒';
         }
       };
     }
@@ -29076,10 +29127,12 @@ function rollNewValueForKey(key){
           const cur = getCallCfg(rid);
           oldVal = pct(cur.voiceRate || 0);
           cur.voiceRate = v / 100;
+          /* 顺手把开关打开，不然概率改了也不会触发 */
+          cur.voiceOn = true;
           saveCallCfg(cur, rid);
         },
         text: function(){
-          return '【语音通话】概率从 ' + oldVal + '% 变成 ' + v + '%';
+          return '【语音通话概率】从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
@@ -29093,10 +29146,12 @@ function rollNewValueForKey(key){
           const cur = getCallCfg(rid);
           oldVal = pct(cur.videoRate || 0);
           cur.videoRate = v / 100;
+          /* 顺手把开关打开 */
+          cur.videoOn = true;
           saveCallCfg(cur, rid);
         },
         text: function(){
-          return '【视频通话】概率从 ' + oldVal + '% 变成 ' + v + '%';
+          return '【视频通话概率】从 ' + oldVal + '% 变成 ' + v + '%';
         }
       };
     }
@@ -29248,6 +29303,8 @@ function runRoleSelfSetChange(roleId){
   if(!keys.length) return;
 
   const results = [];
+  
+  /* 1. 正常摇数值 */
   keys.forEach(function(k){
     try{
       const rr = rollNewValueForKey(k);
@@ -29257,18 +29314,62 @@ function runRoleSelfSetChange(roleId){
     }catch(e){ console.error('角色自调出错 key=' + k, e); }
   });
 
-  if(!results.length) return;
+  /* 2. 额外：5% 概率顺手拨动开关（但必须先被允许） */
+  const curSet = getRoleSelfSet(roleId);
+  if(curSet.allowSwitch === false){
+    // 如果关闭了允许调开关，直接跳过这一步
+    return afterSwitchCheck();
+  }
+  
+  const switchMap = {
+    'noReply': 'noReplyOn',
+    'quote': 'quoteOn',
+    'recall': 'recallOn',
+    'active': 'activeOn',
+    'divine': 'divineOn',
+    'divineRead': 'divineReadOn'
+  };
+  const switchKeys = keys.filter(k => switchMap[k]);
+  
+  if(switchKeys.length > 0 && Math.random() < 0.05){
+    const k = switchKeys[Math.floor(Math.random() * switchKeys.length)];
+    const keyOn = switchMap[k];
+    const cur = getReply();
+    
+    if(keyOn in cur){
+      const oldState = cur[keyOn] !== false;
+      cur[keyOn] = !oldState;
+      saveReply();
+      
+      const switchName = {
+        'noReply': '已读不回',
+        'quote': '引用',
+        'recall': '撤回',
+        'active': '主动发消息',
+        'divine': '主动占卜',
+        'divineRead': '写理解'
+      }[k] || k;
 
-  /* ★ 全部合成一条气泡，用空行分隔，避免太挤 */
-  const fullText = results.join('\n\n');
-  try{
-    appendMsgToRole(roleId, {
-      id: uid(),
-      role: 'char',
-      text: fullText,
-      time: Date.now()
-    });
-  }catch(e){ console.error('角色自调发气泡失败', e); }
+      results.push('【' + switchName + '】开关被' + (cur[keyOn] ? '打开' : '关闭'));
+    }
+  }
+
+  function afterSwitchCheck(){
+    if(!results.length) return;
+
+    /* ★ 全部合成一条气泡，用空行分隔，避免太挤 */
+    const fullText = results.join('\n\n');
+    try{
+      appendMsgToRole(roleId, {
+        id: uid(),
+        role: 'char',
+        text: fullText,
+        time: Date.now()
+      });
+    }catch(e){ console.error('角色自调发气泡失败', e); }
+  }
+  
+  afterSwitchCheck();
 }
 
 /* ============================================================
