@@ -13977,77 +13977,70 @@ function getCardsFromGroup(owner, groupId){
   return arr;
 }
 
-function pickCard(){
-  const rid = getCurrentRoleId();
+ /* ★ 时间字卡池：把当前时段分类的卡，抽卡时临时并进普通池。
+   过了这个时段，getCurrentTimedSegment() 自动指向下一个时段，
+   上一个时段分类自动不再参与。不写回字卡库。 */
+function _getTimedSegPool(){
+  try{
+    const g = getGroupsByOwner('public').find(function(x){ return x.id === 'g-timed'; });
+    if(!g || !g.cats || !g.cats.length) return [];
+    const seg = getCurrentTimedSegment();
+    const cat = g.cats.find(function(c){ return c.id === seg.id; });
+    if(!cat) return [];
+    if(!Array.isArray(g.disabledCats)) g.disabledCats = [];
+    if(g.disabledCats.includes(cat.id)) return [];
+    if(!cat.list || !cat.list.length) return [];
+    return cat.list.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
+  }catch(e){ return []; }
+}
+
+/* ★ 天气字卡池：判定依据是当前天气。
+   天气变了自动换成新天气分类；分类被删空则不参与。
+   晴天只在 9:00~18:00 参与，避免傍晚说"天气真好"。 */
+function _getWeatherPool(){
+  try{
+    if(!lsGet('mj_weather_card_on', true)) return [];
+    const cfg = (typeof getWeatherCfg === 'function') ? getWeatherCfg() : null;
+    if(!cfg || !cfg.cache) return [];
+    const w = cfg.cache;
+
+    const codeNow = Number(w.code);
+    if(codeNow === 0){
+      const h = new Date().getHours();
+      if(h < 9 || h >= 18) return [];
+    }
+
+    let catId = 'cw-cloudy';
+    const code = Number(w.code);
+    if(code === 0) catId = 'cw-sunny';
+    else if(code >= 1 && code <= 3) catId = 'cw-cloudy';
+    else if(code === 45 || code === 48) catId = 'cw-fog';
+    else if(code >= 51 && code <= 67) catId = 'cw-rain';
+    else if(code >= 71 && code <= 77) catId = 'cw-snow';
+    else if(code >= 80 && code <= 82) catId = 'cw-rain';
+    else if(code >= 85 && code <= 86) catId = 'cw-snow';
+    else if(code >= 95 && code <= 99) catId = 'cw-storm';
+    if(w.temp >= 35) catId = 'cw-hot';
+    if(code >= 95 && code <= 99) catId = 'cw-storm';
+
+    const g = getGroupsByOwner('public').find(function(x){ return x.id === 'g-weather'; });
+    if(!g || !g.cats || !g.cats.length) return [];
+    const cat = g.cats.find(function(c){ return c.id === catId; });
+    if(!cat) return [];
+    if(!cat.list || !cat.list.length) return [];
+    return cat.list.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
+  }catch(e){ return []; }
+}
+
+/* 从池子里挑一张，池子为空则回退到兜底句 */
+function _pickOrFallback(pool){
+  if(pool && pool.length) return pickCardFrom(pool);
+  return '嗯，我在。';
+}
+
+function pickCard(roleId){
+  const rid = roleId || getCurrentRoleId();
   const strategy = getCardStrategy(rid);
-
-  /* ★ 时间字卡：把当前时段分类的卡，直接并入普通字卡池一起随机抽。
-     不写回字卡库，只是抽卡时临时并入。
-     过了这个时段，getCurrentTimedSegment() 会自动指向下一个时段，
-     上一个时段分类就自动不再参与。 */
-  function getTimedSegPool(){
-    try{
-      const g = getGroupsByOwner('public').find(function(x){ return x.id === 'g-timed'; });
-      if(!g || !g.cats || !g.cats.length) return [];
-      const seg = getCurrentTimedSegment();
-      const cat = g.cats.find(function(c){ return c.id === seg.id; });
-      if(!cat) return [];
-      /* 该时段被关掉 → 不参与 */
-      if(!Array.isArray(g.disabledCats)) g.disabledCats = [];
-      if(g.disabledCats.includes(cat.id)) return [];
-      if(!cat.list || !cat.list.length) return [];
-      return cat.list.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
-    }catch(e){ return []; }
-  }
-
-  /* ★ 天气字卡：跟时间字卡同款逻辑，只是判定依据换成当前天气。
-     天气变了 → 自动换成新天气对应的分类；天气分类的字卡被删空 → 不参与。
-     ★ 附加规则：天气为「晴」时，只在白天 9:00~18:00 参与抽卡，
-                避免角色在傍晚以后 / 上午太早说"天气真好" */
-  function getWeatherPool(){
-    try{
-      /* 天气字卡总开关（编辑桌面 → 设置 → 天气字卡） */
-      if(!lsGet('mj_weather_card_on', true)) return [];
-      const cfg = (typeof getWeatherCfg === 'function') ? getWeatherCfg() : null;
-      if(!cfg || !cfg.cache) return [];
-      const w = cfg.cache;
-
-      /* ★ 晴天时段限制：非 9~18 点 → 晴天字卡不参与 */
-      const codeNow = Number(w.code);
-      if(codeNow === 0){
-        const h = new Date().getHours();
-        if(h < 9 || h >= 18) return [];
-      }
-
-      /* 天气类型 → 分类 id（9 个分类） */
-      let catId = 'cw-cloudy';
-      const code = Number(w.code);
-      if(code === 0) catId = 'cw-sunny';
-      else if(code >= 1 && code <= 3) catId = 'cw-cloudy';
-      else if(code === 45 || code === 48) catId = 'cw-fog';
-      else if(code >= 51 && code <= 67) catId = 'cw-rain';
-      else if(code >= 71 && code <= 77) catId = 'cw-snow';
-      else if(code >= 80 && code <= 82) catId = 'cw-rain';
-      else if(code >= 85 && code <= 86) catId = 'cw-snow';
-      else if(code >= 95 && code <= 99) catId = 'cw-storm';
-      /* 温度 ≥ 35 归高温；台风暴雨单独归台风 */
-      if(w.temp >= 35) catId = 'cw-hot';
-      if(code >= 95 && code <= 99) catId = 'cw-storm';
-
-      const g = getGroupsByOwner('public').find(function(x){ return x.id === 'g-weather'; });
-      if(!g || !g.cats || !g.cats.length) return [];
-      const cat = g.cats.find(function(c){ return c.id === catId; });
-      if(!cat) return [];
-      if(!cat.list || !cat.list.length) return [];
-      return cat.list.map(cardText).map(function(s){ return String(s).trim(); }).filter(Boolean);
-    }catch(e){ return []; }
-  }
-
-  /* 从池子里挑一张，池子为空则回退到兜底句 */
-  function pickOrFallback(pool){
-    if(pool && pool.length) return pickCardFrom(pool);
-    return '嗯，我在。';
-  }
 
   /* 取某个角色的群聊字卡；自身为空时回退公用 */
   function groupchatOf(roleId){
@@ -14059,43 +14052,36 @@ function pickCard(){
   /* 策略 A：群聊字卡 + 当前时段字卡 + 天气字卡，等权混池 */
   if(strategy === 'A'){
     const gc = groupchatOf(rid);
-    const timed = getTimedSegPool();
-    const weather = getWeatherPool();
-    const pool = gc.concat(timed, weather);
-    return pickOrFallback(pool);
+    const pool = gc.concat(_getTimedSegPool(), _getWeatherPool());
+    return _pickOrFallback(pool);
   }
 
   /* 策略 B：群聊字卡 + 角色专属字卡 + 当前时段字卡 + 天气字卡，等权混池 */
   if(strategy === 'B'){
     const gc = groupchatOf(rid);
     const own = getAllNormalCards(rid);
-    const timed = getTimedSegPool();
-    const weather = getWeatherPool();
     let base;
     if(gc.length && own.length){
       base = gc.concat(own);
     } else {
       base = gc.length ? gc : own;
     }
-    const pool = base.concat(timed, weather);
-    return pickOrFallback(pool);
+    const pool = base.concat(_getTimedSegPool(), _getWeatherPool());
+    return _pickOrFallback(pool);
   }
 
   /* 策略 C（默认）：公用 + 角色专属按比例混，再并入当前时段字卡 + 天气字卡 */
   const pub = getAllNormalCards('public');
   const role = getAllNormalCards(rid);
   const pubRate = poolRate.public ?? 0.7;
-  const timed = getTimedSegPool();
-  const weather = getWeatherPool();
   let base;
   if(pub.length && role.length){
-    /* 按 pubRate 先决定主体从哪来 */
     base = (Math.random() < pubRate) ? pub : role;
   } else {
     base = pub.length ? pub : role;
   }
-  const pool = base.concat(timed, weather);
-  return pickOrFallback(pool);
+  const pool = base.concat(_getTimedSegPool(), _getWeatherPool());
+  return _pickOrFallback(pool);
 }
 
 /* ===== 时间字卡 ===== */
@@ -14138,34 +14124,14 @@ function isTimedCatDisabled(catId){
   if(!Array.isArray(g.disabledCats)) g.disabledCats = [];
   return g.disabledCats.includes(catId);
 }
-function pickTimedCard(){
-  const g = getGroupsByOwner('public').find(x=>x.id==='g-timed');
-  if(!g || !g.cats || !g.cats.length) return pickCard();
-  const seg = getCurrentTimedSegment();
-  let cat = g.cats.find(c=>c.id===seg.id);
-  if(!cat || isTimedCatDisabled(cat.id) || !cat.list || !cat.list.length){
-    const fallback = g.cats.filter(c=>!isTimedCatDisabled(c.id) && c.list && c.list.length);
-    if(!fallback.length) return pickCard();
-    cat = fallback[Math.floor(Math.random()*fallback.length)];
-  }
-  const pool = cat.list.map(cardText).map(s=>String(s).trim()).filter(Boolean);
-  if(!pool.length) return pickCard();
-  return pool[Math.floor(Math.random()*pool.length)];
-}
-function rollTimedCard(){
-  const rate = getTimedRate();
-  const seg = getCurrentTimedSegment();
-  const p = rate[seg.key];
-  if(typeof p !== 'number' || p <= 0) return false;
-  return Math.random() < p;
-}
+ 
 
 /* 包装一下：抽到 emoji / kao 后计数 +1
    注意：不用 const 抄旧函数，那会被 hoisting 打架。
    直接在函数体的末尾记账。 */
-function pickRoleSticker(){
+function pickRoleSticker(roleId){
   try{
-    const rid = getCurrentRoleId();
+    const rid = roleId || getCurrentRoleId();
     /* 开关打开 + 15% 概率 → 从「我的表情图」抽 */
     if(getStickerAllowMine(rid) && Math.random() < 0.15){
       const mineCats = getStickerBucket('mine');
@@ -14231,9 +14197,9 @@ function pickRoleKaoFor(roleId){
   }catch(e){ return ''; }
 }
 
-function pickRoleEmoji(){
+function pickRoleEmoji(roleId){
   try{
-    const rid = getCurrentRoleId();
+    const rid = roleId || getCurrentRoleId();
     // 直接走 getPanel：它每次都会重新读取 localStorage 并补全字段
     const panel = getPanel(rid);
     const cats = Array.isArray(panel.emojiCats) ? panel.emojiCats : [];
@@ -14255,9 +14221,9 @@ function pickRoleEmoji(){
     return one;
   }catch(e){ return ''; }
 }
-function pickRoleKao(){
+function pickRoleKao(roleId){
   try{
-    const rid = getCurrentRoleId();
+    const rid = roleId || getCurrentRoleId();
     const map = lsGet('mj_panel_map', null) || {};
     const panel = map[rid] || {};
     const cats = Array.isArray(panel.kaoCats) ? panel.kaoCats : [];
@@ -14591,8 +14557,9 @@ function pickNamecardKao(kind){
   return '让我考虑考虑';
 }
 
-function genReply(useTimed){
-  const r = getReply();
+function genReply(useTimed, roleId){
+  const _rid = roleId || getCurrentRoleId();
+  const r = getReply(_rid);
   /* ★ 气泡条数：删掉概率，改成在 1 ~ maxBubbles 之间均匀随机。
      权重一样，不是"有概率才多条"。 */
   const _maxB = Math.max(1, Math.min(10, r.maxBubbles || 3));
@@ -14607,19 +14574,16 @@ function genReply(useTimed){
 	}
 	const parts = [];
 	/* ★ 统一随机池：普通卡 / 单字卡 / emoji / 颜文字 / 表情图，根据概率权重抽 */
-	const pool = [];
-	pool.push({type:'card', weight: 100}); // 普通卡永远作为基础权重
+	const pool = [{type:'card', weight: 100}];
 	if(r.pinyinOn) pool.push({type:'pinyin', weight: (r.pinyinRate||0) * 100});
 	if(r.emojiOn)  pool.push({type:'emoji',  weight: (r.emojiRate||0) * 100});
 	if(r.kaoOn)    pool.push({type:'kao',    weight: (r.kaoRate||0) * 100});
 	if(r.stickerOn)pool.push({type:'sticker',weight: (r.stickerRate||0) * 100});
 
-	// 计算总权重
 	let totalWeight = 0;
 	pool.forEach(p => { totalWeight += p.weight; });
 
 	for(let k=0; k<blockCount; k++){
-	  // 根据权重随机选一个类型
 	  let rand = Math.random() * totalWeight;
 	  let selectedType = 'card';
 	  for(let i=0; i<pool.length; i++){
@@ -14627,7 +14591,6 @@ function genReply(useTimed){
 		if(rand <= 0){ selectedType = pool[i].type; break; }
 	  }
 
-	  // 根据选中的类型执行对应逻辑
 	  if(selectedType === 'pinyin'){
 		const cnt = 1 + Math.floor(Math.random() * (r.pinyinMax || 1));
 		const hans=[];
@@ -14646,24 +14609,90 @@ function genReply(useTimed){
 		}
 		parts.push({type:'pinyin', text:joined, han:hanOnly});
 	  } else if(selectedType === 'emoji'){
-		parts.push({type:'emoji', text: pickRoleEmoji()});
+		parts.push({type:'emoji', text: pickRoleEmoji(_rid)});
 	  } else if(selectedType === 'kao'){
-		parts.push({type:'kao', text: pickRoleKao()});
+		parts.push({type:'kao', text: pickRoleKao(_rid)});
 	  } else if(selectedType === 'sticker'){
 		if(blockCount > 1){
-		  // 拼好卡时，直接插入当前气泡
-		  parts.push({type:'sticker', text: pickRoleSticker()});
+		  parts.push({type:'sticker', text: pickRoleSticker(_rid), __inline:true});
 		} else {
-		  // 没拼卡（只有 1 块），独立成条发送
-		  parts.push({type:'sticker', text: pickRoleSticker(), __standalone:true});
+		  parts.push({type:'sticker', text: pickRoleSticker(_rid), __standalone:true});
 		}
 	  } else {
-		parts.push({type:'card', text: useTimed ? pickTimedCard() : pickCard()});
+		parts.push({type:'card', text: pickCard(_rid)});
 	  }
 	}
 	bubbles.push({parts});
   }
   return [{kind:'bubbles', bubbles}];
+}
+
+/* ============================================================
+   ★ 公共：把 genReply 返回的气泡结构，变成要落库的消息数组
+   - bubbles：genReply 返回的 [{kind:'bubbles', bubbles:[{parts}]}][0].bubbles
+   - roleId：要生成消息的角色 id
+   - quote：可选的引用对象，挂在第一条消息上
+   返回：消息数组（还没写进任何存储，调用方自己 push）
+   ============================================================ */
+function buildMsgsFromBubbles(bubbles, roleId, quote){
+  const out = [];
+  if(!Array.isArray(bubbles) || !bubbles.length) return out;
+  const r2 = getReply(roleId);
+  const baseTime = Date.now();
+  let timeOffset = 0;
+
+  bubbles.forEach(function(bubble, idx){
+    const inlineParts = [];
+    const standaloneParts = [];
+    (bubble.parts || []).forEach(function(p){
+      if(p.type === 'sticker' && p.__standalone) standaloneParts.push(p);
+      else inlineParts.push(p);
+    });
+
+    /* 先把独立表情图按顺序排好，跟内联消息共享时间戳递增 */
+    if(inlineParts.length){
+      const hasPinyin = inlineParts.some(function(p){ return p.type === 'pinyin'; });
+      const stickerPart = inlineParts.find(function(p){ return p.type === 'sticker'; });
+      let text = '';
+      let pinyinText = '', hanText = '';
+      inlineParts.forEach(function(p, i){
+        if(p.type === 'sticker') return;
+        text += p.text;
+        if(p.type === 'pinyin'){
+          pinyinText += (pinyinText ? ' ' : '') + p.text;
+          hanText += (hanText ? ' ' : '') + (p.han || '');
+        }
+        if(i < inlineParts.length - 1){
+          if(r2.punctOn && r2.punctList.length){
+            text += r2.punctList[Math.floor(Math.random() * r2.punctList.length)];
+          } else {
+            text += ' ';
+          }
+        }
+      });
+      if(r2.punctOn && r2.punctList.length && text.trim()){
+        text += r2.punctList[Math.floor(Math.random() * r2.punctList.length)];
+      }
+      const m = { id: uid(), role: 'char', text: text, time: baseTime + timeOffset++ };
+      if(stickerPart){ m.sticker = stickerPart.text; }
+      if(hasPinyin){
+        m.kind = 'pinyin';
+        m.pinyin = text;
+        m.han = hanText;
+      }
+      if(idx === 0 && quote){ m.quote = quote; }
+      out.push(m);
+    }
+
+    standaloneParts.forEach(function(p){
+      const m = { id: uid(), role: 'char', time: baseTime + timeOffset++ };
+      if(p.type === 'sticker'){ m.sticker = p.text; }
+      else { m.text = p.text; }
+      out.push(m);
+    });
+  });
+
+  return out;
 }
 
 /* ============================================================
@@ -15541,20 +15570,22 @@ function renderChat(forceBottom, force){
     box.scrollTop = box.scrollHeight;
   }
 
-  /* ★ 修复：轻量更新时，如果发现「上面未读、下面已读」的夹层，
+  /* ★ 修复：轻量更新时，如果发现「上面未读、下面已读/已读不回」的夹层，
      说明已读状态机出错乱了，直接走全量重建，让 UI 跟数据一致。
-     这一步能兜住撤回 / 删除 / 快速连发等场景下的已读错乱。 */
+     这一步能兜住撤回 / 删除 / 快速连发等场景下的已读错乱。
+     ★ noReply（已读不回）也算终态，它下面还挂着未读也要重绘。 */
   let sawUnread = false;
-  let hasReadAfterUnread = false;
+  let hasTerminalAfterUnread = false;
   for(let i = 0; i < msgs.length; i++){
     const x = msgs[i];
     if(!x || x.role !== 'user') continue;
     if(x.recalled || x.sys || x.namecard) continue;
-    if(x.readState === 'noReply') continue;
     if(x.readState === 'unread') sawUnread = true;
-    else if(x.readState === 'read' && sawUnread){ hasReadAfterUnread = true; break; }
+    else if((x.readState === 'read' || x.readState === 'noReply') && sawUnread){
+      hasTerminalAfterUnread = true; break;
+    }
   }
-  if(hasReadAfterUnread){
+  if(hasTerminalAfterUnread){
     __lastRenderSig = '';
     renderChatFull(forceBottom);
     return;
@@ -19735,114 +19766,7 @@ function scheduleActiveDivine(){
   }, DIVINE_TICK_MS);
 }
 
-/* 时间字卡模式：连做 1~3 轮 genReply，每轮独立延迟 */
-function runTimedReplyRounds(){
-  /* 锁住进入时的角色，后续 setTimeout 里不受切角色影响 */
-  const roleId = getCurrentRoleId();
-  const rounds = 1 + Math.floor(Math.random() * 3);   // 1~3
-  function fireOne(idx){
-    if(idx >= rounds) return;
-    /* 如果中途切了角色，直接放弃这轮 */
-    if(getCurrentRoleId() !== roleId) return;
-    const r = getReply();
-    const delay = (r.minDelay||800) + Math.random()*Math.max(0,(r.maxDelay||2200)-(r.minDelay||800));
-    const box = $('#chatList');
-    const res = genReply(true);
-    if(!res.length){
-      /* 这一轮被跳过，等延迟后继续下一轮 */
-      setTimeout(()=>fireOne(idx+1), delay);
-      return;
-    }
-    /* 记录本轮的撤回标记 */
-    window.__timedWillRecall = !!(res[0] && res[0].willRecall);
-    window.__timedSentIds = { inline:'', standalone:{} };
-    const typingDelay = Math.min(delay, 800 + Math.random()*1200);
-    setTimeout(()=>{
-      if(!box) return;
-      const bar = getTypingBar();
-      if(bar) bar.classList.add('show');
-    }, Math.max(0, delay - typingDelay));
-
-    setTimeout(()=>{
-      try{
-        const bar = getTypingBar();
-        if(bar) bar.classList.remove('show');
-        if(res[0].kind==='bubbles'){
-          /* 引用：跟 emitBubbles 同款逻辑 */
-          /* ★ 统一入口：定时连发的引用，也走 buildQuoteTarget 同一份逻辑 */
-          const quote = buildQuoteTarget(roleId);
-          res[0].bubbles.forEach((bubble, bi)=>{
-            const inlineParts = [];
-            const standaloneParts = [];
-            bubble.parts.forEach(p => {
-              if(p.__standalone || p.type === 'pinyin'){ standaloneParts.push(p); }
-              else { inlineParts.push(p); }
-            });
-            let inlineMsg = null;
-            if(inlineParts.length){
-              const hasPinyin = inlineParts.some(p => p.type === 'pinyin');
-              let text='';
-              let pinyinText='', hanText='';
-              inlineParts.forEach((p, i)=>{
-                if(p.type === 'sticker') return;
-                text += p.text;
-                if(p.type === 'pinyin'){
-                  pinyinText += (pinyinText ? ' ' : '') + p.text;
-                  hanText += (hanText ? ' ' : '') + (p.han || '');
-                }
-                if(i<inlineParts.length-1){
-                  if(r.punctOn && r.punctList.length){
-                    text += r.punctList[Math.floor(Math.random()*r.punctList.length)];
-                  }else{
-                    text += ' ';
-                  }
-                }
-              });
-              if(r.punctOn && r.punctList.length && text.trim()){
-                text += r.punctList[Math.floor(Math.random()*r.punctList.length)];
-              }
-              const m = {id:uid(),role:'char',text,time:Date.now()};
-              const stickerPart = inlineParts.find(p => p.type === 'sticker');
-              if(stickerPart){ m.sticker = stickerPart.text; }
-              if(hasPinyin){
-                m.kind = 'pinyin';
-                m.pinyin = text;
-                m.han = hanText;
-              }
-              if(bi===0 && quote) m.quote=quote;
-              inlineMsg = m;
-            }
-            const standaloneMsgs = standaloneParts.map((p, si) => {
-              if(p.type === 'sticker'){
-                return {id:uid(), role:'char', sticker:p.text, time:Date.now() + si + 1};
-              }
-              if(p.type === 'pinyin'){
-                return {id:uid(), role:'char', kind:'pinyin', pinyin:p.text, han:p.han, time:Date.now() + si + 1};
-              }
-              return {id:uid(), role:'char', text:p.text, time:Date.now() + si + 1};
-            });
-            /* 用 appendMsgToRole 写回"这个角色自己的"消息库 */
-            if(inlineMsg) appendMsgToRole(roleId, inlineMsg);
-            standaloneMsgs.forEach(m => appendMsgToRole(roleId, m));
-          });
-          /* 只有当前就在看这个角色，才更新 readState 并重绘 */
-          if(getCurrentRoleId() === roleId){
-            const lastUser = [...msgs].reverse().find(x=>x.role==='user' && !x.recalled && !x.sys && !x.namecard);
-            if(lastUser){
-              _applyReadStateUpTo(lastUser, 'noReply');
-            } else {
-              saveMsgs(); renderChat();
-            }
-          }
-        }
-      }catch(err){ console.error('runTimedReplyRounds error:', err); }
-      /* 这一轮发完，等随机间隔后继续下一轮 */
-      const gap = (getReply().minDelay||800) + Math.random()*Math.max(0,(getReply().maxDelay||2200)-(getReply().minDelay||800));
-      setTimeout(()=>fireOne(idx+1), gap);
-    }, delay);
-  }
-  fireOne(0);
-}
+ 
 
 /* 每个角色同一时刻只跑一条回复链；链跑完检查是否还有新消息要回 */
 var pendingReply = {};
@@ -20065,9 +19989,6 @@ function runReplyChain(onDone){
     try{
       hideTypingBar();
       if(res[0].kind==='bubbles'){
-        const srcMsgs = (getCurrentRoleId() === targetRoleId)
-          ? msgs
-          : (lsGet('mj_msgs_' + targetRoleId, null) || []);
         const r2 = getReply();
         const _qr = (typeof r2.quoteRate === 'number') ? r2.quoteRate : 0.08;
         const _qOn = (r2.quoteOn !== false);
@@ -20077,73 +19998,14 @@ function runReplyChain(onDone){
              这里只管按概率取用，不再重新筛消息。 */
           quote = role._quoteTarget || null;
         }
- 
-        res[0].bubbles.forEach((bubble,idx)=>{
-          const inlineParts = [];
-          const standaloneParts = [];
-          bubble.parts.forEach(p => {
-            /* ★ 统一拆分：如果是表情图且标记了独立，或者单字字卡，就单独成条 */
-            if(p.__standalone) standaloneParts.push(p);
-            else inlineParts.push(p);
-          });
 
-          let inlineMsg = null;
-          if(inlineParts.length){
-            const hasPinyin = inlineParts.some(p => p.type === 'pinyin');
-            let text='';
-            let pinyinText='', hanText='';
-            inlineParts.forEach((p,i)=>{
-              if(p.type === 'sticker') return;
-              text += p.text;
-              if(p.type === 'pinyin'){
-                pinyinText += (pinyinText ? ' ' : '') + p.text;
-                hanText += (hanText ? ' ' : '') + (p.han || '');
-              }
-              if(i<inlineParts.length-1){
-                if(r2.punctOn && r2.punctList.length){
-                  text += r2.punctList[Math.floor(Math.random()*r2.punctList.length)];
-                }else{
-                  text += ' ';
-                }
-              }
-            });
-            if(r2.punctOn && r2.punctList.length && text.trim()){
-              text += r2.punctList[Math.floor(Math.random()*r2.punctList.length)];
-            }
-            const m = {id:uid(),role:'char',text,time:Date.now()};
-            const stickerPart = inlineParts.find(p => p.type === 'sticker');
-            if(stickerPart){ m.sticker = stickerPart.text; }
-            if(hasPinyin){
-              m.kind = 'pinyin';
-              m.pinyin = text;
-              m.han = hanText;
-            }
-            if(idx===0 && quote) m.quote=quote;
-            inlineMsg = m;
+        const outMsgs = buildMsgsFromBubbles(res[0].bubbles, role.id, quote);
+        outMsgs.forEach(function(m){
+          const _id = appendMsgToRole(role.id, m);
+          if(_id){
+            try{ tryRoleReaction(role.id, _id); }catch(e){}
           }
-
-          const standaloneMsgs = standaloneParts.map((p, si) => {
-            if(p.type === 'sticker'){
-              return {id:uid(), role:'char', sticker:p.text, time:Date.now() + si + 1};
-            }
-            return {id:uid(), role:'char', text:p.text, time:Date.now() + si + 1};
-          });
-
-          if(inlineMsg){
-            const _id = appendMsgToRole(role.id, inlineMsg);
-            if(_id){
-              try{ tryRoleReaction(role.id, _id); }catch(e){}
-            }
-          }
-          standaloneMsgs.forEach(function(m, si){
-            const _id = appendMsgToRole(role.id, m);
-            if(_id){
-              try{ tryRoleReaction(role.id, _id); }catch(e){}
-            }
-          });
         });
-
- 
       }
     }catch(err){ console.error('triggerReply error:', err); }
     onDone();
@@ -26329,86 +26191,46 @@ function groupChatTriggerReply(){
     const t = setTimeout(function(){
       if(window.__curGroupId !== g.id) return;
       try {
-        /* ---- 用一个假的"当前角色"上下文，跑一遍 genReply(rid) 的逻辑 ---- */
-        /* 但 genReply 内部写死了 getCurrentRoleId()，这里改成手动拼一个简化版：
-           从群聊字卡抽一条，再按他设置里的单字字卡 / 标点 / emoji / 颜文字概率加工 */
-
-        /* 1) 抽主卡：优先该角色的群聊字卡，回退公用群聊字卡 */
-        let text = '';
+        /* ★ 走主路径：genReply 负责抽卡拼气泡，buildMsgsFromBubbles 负责变消息数组
+           genReply 内部读的是 getCurrentRoleId()，所以这里临时把当前角色
+           切到 rid，跑完再切回去，让单字字卡 / 标点 / emoji 都按这个角色自己的设置来 */
+        const _backupRid = getCurrentRoleId();
+        let outMsgs = [];
         try{
-          const gcPool = getCardsFromGroup(rid, 'g-groupchat');
-          const pubGcPool = getCardsFromGroup('public', 'g-groupchat');
-          const pool = gcPool.length ? gcPool : pubGcPool;
-          text = pool.length ? pool[Math.floor(Math.random() * pool.length)] : pickCard();
+          if(_backupRid !== rid){
+            /* 只改内存里的 role id，不动 localStorage 里的"当前聊天角色" */
+            window.__gchTmpRid = rid;
+          }
+          const _res = genReply();
+          outMsgs = buildMsgsFromBubbles(_res[0].bubbles, rid, null);
         }catch(e){
-          text = pickCard();
+          console.error('群聊 genReply 出错', e);
+          outMsgs = [];
+        }finally{
+          window.__gchTmpRid = '';
         }
 
-        /* 2) 单字字卡替换（按他的 pinyinRate / pinyinOn） */
-        if(r.pinyinOn && Math.random() < (r.pinyinRate || 0)){
-          const cnt = 1 + Math.floor(Math.random() * (r.pinyinMax || 1));
-          const hans = [];
-          for(let i = 0; i < cnt; i++){ hans.push(randPinyin().han); }
-          text = hans.join(r.punctOn && r.punctList && r.punctList.length
-            ? r.punctList[Math.floor(Math.random() * r.punctList.length)]
-            : ' ');
-        }
+        if(!outMsgs.length) return;
 
-        /* 3) 末尾标点（按他的 punctOn / punctList） */
-        if(r.punctOn && r.punctList && r.punctList.length && text){
-          text += r.punctList[Math.floor(Math.random() * r.punctList.length)];
-        }
-
-        /* 4) emoji / 颜文字 追加（各按他设置里的概率，随机决定插还是不插） */
-        let expr = '';
-        if(r.emojiOn && Math.random() < (r.emojiRate || 0)){
-          const e = (typeof pickRoleEmojiFor === 'function') ? pickRoleEmojiFor(rid) : '';
-          if(e) expr = e;
-        }
-        if(!expr && r.kaoOn && Math.random() < (r.kaoRate || 0)){
-          const k = (typeof pickRoleKaoFor === 'function') ? pickRoleKaoFor(rid) : '';
-          if(k) expr = k;
-        }
-
-        /* 5) 把 text 和 expr 拼一起（40% 拼在气泡里，60% 单独成一条） */
-        const now = Date.now();
         const arr = getGroupMsgs(g.id);
-
-        if(expr && Math.random() < 0.4){
-          text = text + expr;
-        }
-
-        arr.push({
-          id: uid(),
-          role: 'char',
-          roleId: rid,
-          text: text,
-          time: now
+        outMsgs.forEach(function(m){
+          m.roleId = rid;
+          arr.push(m);
         });
-
-        if(expr && Math.random() >= 0.4){
-          arr.push({
-            id: uid(),
-            role: 'char',
-            roleId: rid,
-            text: expr,
-            time: now + 1
-          });
-        }
-
         saveGroupMsgs(g.id, arr);
         g.lastMsgAt = Date.now();
-        g.lastMsgText = text.slice(0, 30);
+        const firstText = outMsgs[0].text || outMsgs[0].sticker || '';
+        g.lastMsgText = String(firstText).slice(0, 30);
         saveGroup(g);
 
         if(window.__curGroupId === g.id){
           renderGroupChat();
         } else {
           const role = getRoleById(rid) || {};
-          showMsgNotify((role.name || '角色') + ' · ' + (g.name || '群聊'), text, role.avatar);
+          showMsgNotify((role.name || '角色') + ' · ' + (g.name || '群聊'), String(firstText), role.avatar);
         }
 
-        /* 6) 撤回（按他的 recallOn / recallRate）：1~60 秒后撤掉刚才那条 */
+        /* 撤回：按这个角色的 recallOn / recallRate，1~60 秒后撤掉最后一条 */
         if(r.recallOn && Math.random() < (r.recallRate || 0)){
           const targetId = arr[arr.length - 1] ? arr[arr.length - 1].id : '';
           if(targetId){
@@ -40728,7 +40550,7 @@ function sendVideoMessage(roleId, video){
     // genReply 返回 [{kind:'bubbles', bubbles:[...]}] 或 [{kind:'recall'}]
     let result;
     try {
-      result = genReply();
+      result = genReply(undefined, roleId);
     } catch(e){
       result = null;
     }
@@ -40737,45 +40559,13 @@ function sendVideoMessage(roleId, video){
       // 撤回：只发一张卡片（不说话）
       toSend.push(cardMsg);
     } else if(result && result.length && result[0].kind === 'bubbles'){
-      const r = getReply();
-      // 把 genReply 返回的每个气泡转成消息
-      result[0].bubbles.forEach((bubble, idx)=>{
-        const hasPinyin = bubble.parts.some(p => p.type === 'pinyin');
-        let text = '';
-        let pinyinText = '', hanText = '';
-        bubble.parts.forEach((p, i)=>{
-          text += p.text;
-          if(p.type === 'pinyin'){
-            pinyinText += (pinyinText ? ' ' : '') + p.text;
-            hanText += (hanText ? ' ' : '') + (p.han || '');
-          }
-          if(r.punctOn && r.punctList.length && i < bubble.parts.length - 1){
-            text += r.punctList[Math.floor(Math.random() * r.punctList.length)];
-          }
-        });
-        if(r.punctOn && r.punctList.length){
-          text += r.punctList[Math.floor(Math.random() * r.punctList.length)];
-        }
-
-        const m = {
-          id: uid(),
-          role: 'char',
-          text: text,
-          time: Date.now() + idx
-        };
-        if(hasPinyin){
-          m.kind = 'pinyin';
-          m.pinyin = text;
-          m.han = hanText;
-        }
-        // 最后一条气泡挂上视频卡片
-        if(idx === result[0].bubbles.length - 1){
-          m.videoCard = cardMsg.videoCard;
-        }
-        toSend.push(m);
-      });
-      // genReply 返回空时，仅发送卡片
-      if(!toSend.length){
+      // 调公共函数把气泡结构变成消息数组，跟聊天页一套
+      const builtMsgs = buildMsgsFromBubbles(result[0].bubbles, roleId, null);
+      if(builtMsgs.length){
+        // 最后一条挂上视频卡片
+        builtMsgs[builtMsgs.length - 1].videoCard = cardMsg.videoCard;
+        builtMsgs.forEach(function(m){ toSend.push(m); });
+      } else {
         toSend.push(cardMsg);
       }
     } else {
