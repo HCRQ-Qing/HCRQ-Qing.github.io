@@ -11602,6 +11602,15 @@ window.__APP_VERSION__ = '0.1.0';
     </div>
   </div>
 
+  <!-- 关系网（新增） -->
+  <div class="nf-form-row">
+    <label>关系网</label>
+    <div class="nf-group-pick" id="nfRelPick">
+      <span class="nf-group-val" id="nfRelVal">未设置</span>
+      <span class="nf-group-arr">›</span>
+    </div>
+  </div>
+
   <!-- 勾选框已移到「建立内置角色」表单 -->
   <button class="primary-btn" id="btnCreateFriend">创建</button>
 </div></div></div>
@@ -11644,6 +11653,14 @@ window.__APP_VERSION__ = '0.1.0';
     </div>
   </div>
 
+  <div class="nf-form-row">
+    <label>关系网</label>
+    <div class="nf-group-pick" id="biRelPick">
+      <span class="nf-group-val" id="biRelVal">未设置</span>
+      <span class="nf-group-arr">›</span>
+    </div>
+  </div>
+
   <button class="primary-btn" id="btnCreateBuiltin">创建内置角色</button>
 </div></div></div>
 
@@ -11659,6 +11676,14 @@ window.__APP_VERSION__ = '0.1.0';
   <div class="cat-panel">
     <div class="cp-title">选择分组</div>
     <div id="biGroupList"></div>
+  </div>
+</div>
+
+<!-- 通用：关系网选择底部弹层（增加角色和内置角色共用） -->
+<div class="cat-panel-mask" id="biRelMask">
+  <div class="cat-panel">
+    <div class="cp-title">选择好友关系</div>
+    <div id="biRelList" style="max-height:50vh;overflow-y:auto;padding:0 16px 10px;scrollbar-width:none"></div>
   </div>
 </div>
 <!-- ============ 编辑好友（真名 + 关系网） ============ -->
@@ -12828,10 +12853,18 @@ function applyBeautyCfg(){
   //   否则每次渲染消息都会跑一遍 querySelectorAll，聊天记录长了会明显变慢
   if(_lastAvatarShape !== shape){
     _lastAvatarShape = shape;
-    document.querySelectorAll('.msg-av, .msg-av-inner, .f-av, .chat-avatar, #meAvatar, #profileAvatar, .cip-av, .nf-av, .mm-av, .mp-av, .nc-av, .bl-av, .pick-av, .pav').forEach(el=>{
+    document.querySelectorAll('.msg-av, .msg-av-inner, .f-av, .chat-avatar, #meAvatar, #profileAvatar, .cip-av, .nf-av, .mm-av, .mp-av, .nc-av, .bl-av, .pick-av, .pav, .ef-av, .gcc-av, .rel-av, .rel-detail-av, .gchd-mav, .bl-edit-av').forEach(el=>{
+      /* ★ 核心修复：彻底干掉旧代码里强加的边框、底色和圆角，全部交给内部统一处理 */
       el.style.borderRadius = '';
+      el.style.background = 'transparent';
+      el.style.overflow = 'visible';
+      el.style.border = 'none';
       const img = el.querySelector('img');
-      if(img) img.style.borderRadius = '';
+      if(img){ 
+        img.style.borderRadius = '';
+        img.style.width = '100%';
+        img.style.height = '100%';
+      }
     });
     const mmRadius = (shape === 'circle') ? '50%' : '12%';
     document.documentElement.style.setProperty('--mm-av-radius', mmRadius);
@@ -14793,8 +14826,22 @@ setInterval(function(){
     }
   }catch(e){}
 }, 60 * 1000);
-function avatarHTML(a){ if(a && String(a).startsWith('data:')) return `<img src="${a}">`; return `<svg viewBox="0 0 100 100"><circle class="silhouette" cx="50" cy="38" r="19"/><path class="silhouette" d="M12 100 C12 74 28 62 50 62 C72 62 88 74 88 100 Z"/></svg>`; }
-function userAvHTML(a){ if(a && String(a).startsWith('data:')) return `<img src="${a}">`; return `<svg viewBox="0 0 100 100"><circle class="silhouette" cx="50" cy="38" r="19"/><path class="silhouette" d="M12 100 C12 74 28 62 50 62 C72 62 88 74 88 100 Z"/></svg>`; }
+function avatarHTML(a){ 
+  /* ★ 统一头像生成入口：全站所有头像都走这里 */
+  var shape = (typeof beautyCfg !== 'undefined' && beautyCfg.avatarShape === 'circle') ? '50%' : '12%';
+  var inner = '';
+  
+  if(a && String(a).startsWith('data:')) {
+    inner = `<img src="${a}" style="border-radius:inherit;width:100%;height:100%;object-fit:cover;display:block;">`;
+  } else {
+    /* 没有头像时，画一个灰色的默认小人，并且跟随方圆设置 */
+    inner = `<svg viewBox="0 0 100 100" style="width:100%;height:100%;display:block;"><circle fill="#e0e0e0" cx="50" cy="38" r="19"/><path fill="#e0e0e0" d="M12 100 C12 74 28 62 50 62 C72 62 88 74 88 100 Z"/></svg>`;
+  }
+  
+  return `<div style="width:100%;height:100%;border-radius:${shape};background:#f2f2f2;overflow:hidden;display:flex;align-items:center;justify-content:center;">${inner}</div>`;
+}
+/* ★ 死代码清理：userAvHTML 直接复用统一入口 avatarHTML，防止两套逻辑打架 */
+function userAvHTML(a){ return avatarHTML(a); }
 function nameClass(name){ const n = Array.from(String(name||'')).length; if(n>=7) return 'xlong-name'; if(n>=5) return 'long-name'; return ''; }
 
 /* ===== 时间戳格式化（微信风） ===== */
@@ -33906,7 +33953,11 @@ function uniCancel(){
     });
   });
 })();
-on('#meAvatar','click',()=>$('#meAvFile').click());
+on('#meAvatar','click',()=>{
+  /* ★ 统一出口：我的页面点头像走总水管，但这里用专属的隐藏 input */
+  var f = document.getElementById('meAvFile');
+  if(f){ f.value = ''; f.click(); }
+});
 on('#meAvFile','change',function(){
   const f = this.files[0]; this.value=''; if(!f) return;
   openCrop(f, 'square', (data)=>{
@@ -33968,56 +34019,49 @@ function renderEditAvPrev(){ const el = $('#editAvPrev'); if(el) el.innerHTML = 
 on('#editAvFile','change',function(){
   const f = this.files[0]; this.value=''; if(!f) return;
 
-  /* ★ 先取出三个"这次要给谁用"的标记，避免裁切回调里 this 上下文变了 */
-  const _forProfile = !!this._forProfileAvatar;
-  const _forBuiltin = !!this._forBuiltinEdit;
-  this._forProfileAvatar = false;
-  this._forBuiltinEdit = false;
+  const context = window.__uploadContext || '';
+  window.__uploadContext = ''; // 用完立刻清空，防止下次误认
 
   openCrop(f, 'square', (data)=>{
-
-    /* 场景 1：个人主页头像（DREAM PROFILE） */
-    if(_forProfile){
+    if(context === 'profile') {
       var pid = window.__profileViewId || getCurrentRoleId();
       saveRoleField(pid, 'avatar', data);
-      /* 立刻刷这一页的头像 */
       var pAv = document.getElementById('profileAvatar');
       if(pAv) pAv.innerHTML = avatarHTML(data);
-      /* 如果改的就是当前聊天角色，同步刷新聊天列表里所有旧头像 */
       if(pid === getCurrentRoleId()){
-        try{ refreshChatRole(); }catch(err){ console.error(err); }
-        try{
-          try{ msgs = loadMsgs(); }catch(e){}
-          if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
-          if(typeof renderChatFull === 'function'){ renderChatFull(true); }
-          else if(typeof renderChat === 'function'){ renderChat(true); }
-        }catch(err){ console.error('个人主页头像刷新失败', err); }
+        try{ refreshChatRole(); }catch(err){}
+        if(typeof window.__forceRenderChat === 'function') window.__forceRenderChat();
+        if(typeof renderChatFull === 'function') renderChatFull(true);
       }
       toast('头像已更新');
       return;
     }
 
-    /* 场景 2：内置角色编辑弹窗里的头像 */
-    if(_forBuiltin){
+    if(context === 'builtin') {
       blEditAvatarTmp = data;
       renderBlEditAvatar();
       return;
     }
 
-    /* 场景 3：原来的两个场景 */
-    if(nfUploadingAv){
+    if(context === 'cip') {
+      var rid = getCurrentRoleId();
+      saveRoleField(rid, 'avatar', data);
+      var cipAv = document.getElementById('cipAvatar');
+      if(cipAv) cipAv.innerHTML = avatarHTML(data);
+      try { refreshChatRole(); } catch(err){}
+      toast('头像已更新');
+      return;
+    }
+
+    if(context === 'newfriend') {
       nfAvatarTmp = data;
       renderNfAvatar();
-      nfUploadingAv = false;
-    } else if(biUploadingAv){
-      biAvatarTmp = data;
-      renderBiAvatar();
-      /* ★ 修复：裁切完要把标记清掉，否则下次选图会一直走「内置角色」分支 */
-      biUploadingAv = false;
-    } else {
-      editAvatarTmp = data;
-      renderEditAvPrev();
+      return;
     }
+
+    /* 编辑资料弹窗（老功能） */
+    editAvatarTmp = data;
+    renderEditAvPrev();
   });
 });
 
@@ -34639,10 +34683,8 @@ function bindGmDragSort(){
 /* ===== 增加角色 · 头像 / 个签 / 分组 ===== */
 let nfAvatarTmp = '';
 let nfGroupTmp = '';
-let nfUploadingAv = false;
 let biAvatarTmp = '';
 let biAutoAddTmp = false;
-let biUploadingAv = false;
 
 function renderBiAvatar(){
   const box = $('#biAvatarPreview');
@@ -34718,9 +34760,11 @@ on('#nfGroupMask','click',function(e){
   if(e.target === this) this.classList.remove('show');
 });
 on('#btnNfClearAv','click',()=>{ nfAvatarTmp=''; renderNfAvatar(); });
-on('#btnNfUploadAv','click',()=>{ nfUploadingAv = true; $('#editAvFile').click(); });
+on('#btnNfUploadAv','click',()=>{ 
+  window.triggerAvatarUpload('newfriend'); 
+});
 
-/* ★ 新增：点「增加角色」弹窗里的头像预览框，直接触发上传 */
+/* ★ 统一出口：点「增加角色」弹窗里的头像预览框，走总水管 */
 (function bindNfAvatarPreviewClick(){
   function bindOnce(){
     var el = document.getElementById('nfAvatarPreview');
@@ -34731,14 +34775,13 @@ on('#btnNfUploadAv','click',()=>{ nfUploadingAv = true; $('#editAvFile').click()
     el.addEventListener('click', function(e){
       e.preventDefault();
       e.stopPropagation();
-      nfUploadingAv = true;
-      $('#editAvFile').click();
+      window.triggerAvatarUpload('newfriend');
     }, false);
   }
   bindOnce();
 })();
 
-/* ★ 新增：点「建立内置角色」弹窗里的头像预览框，直接触发上传 */
+/* ★ 统一出口：点「建立内置角色」弹窗里的头像，走总水管 */
 (function bindBiAvatarPreviewClick(){
   if(window.__biAvatarClickBound) return;
   window.__biAvatarClickBound = true;
@@ -34747,15 +34790,22 @@ on('#btnNfUploadAv','click',()=>{ nfUploadingAv = true; $('#editAvFile').click()
     if(!el) return;
     e.preventDefault();
     e.stopPropagation();
-    biUploadingAv = true;
-    var f = document.getElementById('editAvFile');
-    if(f){ f.value = ''; f.click(); }
+    window.triggerAvatarUpload('builtin');
   }, true);
 })();
 
-/* ★ 修复：内置角色弹窗「上传」按钮点了没反应
-   原来这个按钮没有任何点击监听，所以点了什么都不发生。
-   这里补一个监听：打上 biUploadingAv 标记，再去点隐藏的文件选择框。 */
+/* ============================================================
+   ★ 全站统一头像上传总入口
+   - 不管在哪点上传，只要调 triggerAvatarUpload() 就行
+   - 以后加新功能传头像，直接绑这个函数，不用再写文件选择器了
+   ============================================================ */
+window.triggerAvatarUpload = function(context) {
+  window.__uploadContext = context || ''; // 记录是谁点的上传
+  var f = document.getElementById('editAvFile');
+  if(f){ f.value = ''; f.click(); }
+};
+
+/* 内置角色上传绑定 */
 (function bindBiUploadBtn(){
   if(window.__biUploadBtnBound) return;
   window.__biUploadBtnBound = true;
@@ -34764,56 +34814,172 @@ on('#btnNfUploadAv','click',()=>{ nfUploadingAv = true; $('#editAvFile').click()
     if(!btn) return;
     e.preventDefault();
     e.stopPropagation();
-    biUploadingAv = true;
-    var f = document.getElementById('editAvFile');
-    if(f){ f.value = ''; f.click(); }
+    window.triggerAvatarUpload('builtin');
   }, true);
 })();
 
-/* ★ 新增：点「增加角色」弹窗里的头像预览框，直接触发上传 */
-(function bindNfAvatarPreviewClick(){
-  function bindOnce(){
-    var el = document.getElementById('nfAvatarPreview');
-    if(!el){ setTimeout(bindOnce, 300); return; }
-    if(el._nfAvBound) return;
-    el._nfAvBound = true;
-    el.style.cursor = 'pointer';
-    el.addEventListener('click', function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      nfUploadingAv = true;
-      $('#editAvFile').click();
-    }, false);
+/* ★ 统一关系网选择数据层（普通增加角色 & 内置角色共用） */
+let uniRelSelected = new Set();
+let uniRelTarget = ''; // 记录当前是哪个按钮触发的 ('bi' 内置，'nf' 普通)
+
+/* 打开关系网选择面板 */
+function openUniRelPicker(target){
+  uniRelTarget = target;
+  var box = document.getElementById('biRelList');
+  if(!box) return;
+  var all = getFriends().filter(function(f){ 
+    // 不显示已删除/拉黑/内置，只显示普通好友
+    return !f.hidden && !f.builtin; 
+  });
+  
+  if(!all.length){
+    box.innerHTML = '<div style="text-align:center;color:#bbb;font-size:12.5px;padding:24px 0">没有可以建立关系的角色</div>';
+  } else {
+    box.innerHTML = all.map(function(f){
+      var on = uniRelSelected.has(f.id);
+      return '<div class="ef-friend-row" data-id="' + f.id + '" style="display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:0.6px dashed rgba(0,0,0,.06);cursor:pointer">' +
+        '<div class="ef-av" style="width:38px;height:38px;flex:none;">' + avatarHTML(f.avatar) + '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:14px;color:#1a1a1a;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHTML(displayName(f)) + '</div>' +
+        '</div>' +
+        '<div class="ef-chk" style="width:20px;height:20px;flex:none;border-radius:50%;border:0.7px solid rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:11px;color:' + (on ? '#fff' : 'transparent') + ';background:' + (on ? '#1a1a1a' : 'transparent') + '">✓</div>' +
+      '</div>';
+    }).join('');
+    
+    box.querySelectorAll('.ef-friend-row').forEach(function(row){
+      row.onclick = function(){
+        var id = row.dataset.id;
+        if(uniRelSelected.has(id)) uniRelSelected.delete(id);
+        else uniRelSelected.add(id);
+        openUniRelPicker(uniRelTarget); // 重新渲染勾选状态
+      };
+    });
   }
-  bindOnce();
-})();
+  
+  var mask = document.getElementById('biRelMask');
+  if(mask) mask.classList.add('show');
+}
+
+/* 绑定点击关系网行 */
+document.addEventListener('click', function(e){
+  // 内置角色触发
+  if(e.target.closest('#biRelPick')){
+    e.preventDefault();
+    e.stopPropagation();
+    uniRelSelected = new Set(); // 清空上次的
+    openUniRelPicker('bi');
+    return;
+  }
+  // 普通角色触发
+  if(e.target.closest('#nfRelPick')){
+    e.preventDefault();
+    e.stopPropagation();
+    uniRelSelected = new Set(); // 清空上次的
+    openUniRelPicker('nf');
+    return;
+  }
+  // 点击遮罩关闭
+  var mask = e.target.closest('#biRelMask');
+  if(mask && e.target === mask){
+    mask.classList.remove('show');
+    // 更新右侧显示的数值
+    var valEl = document.getElementById(uniRelTarget === 'bi' ? 'biRelVal' : 'nfRelVal');
+    if(valEl){
+      var count = uniRelSelected.size;
+      valEl.textContent = count > 0 ? ('已选 ' + count + ' 人') : '未设置';
+    }
+  }
+}, true);
+
+/* ★ 创建内置角色时，把关系网和自主开关存进去 */
+document.addEventListener('click', function(e){
+  if(e.target.closest('#btnCreateBuiltin')){
+    var n = document.getElementById('biName').value.trim();
+    if(!n){ toast('请输入名字'); return; }
+    var sign = document.getElementById('biSign').value.trim() || SIGN_PLACEHOLDER;
+    var friends = getFriends();
+    var role = {
+      id: uid(),
+      name: n,
+      avatar: biAvatarTmp || '',
+      sub: sign,
+      group: '',
+      shape: 'square',
+      topbarBg: '',
+      star: false,
+      pinned: false,
+      builtin: true,
+      hidden: true,
+      blocked: false,
+      deletedAt: 0,
+      nextBuiltinApplyAt: 0,
+      builtinStage: 0,
+      builtinReject: 0
+    };
+    friends.push(role);
+    saveFriends(friends);
+    setRoleAutoAdd(role.id, biAutoAddTmp);
+    
+    // ★ 写入关系网：把勾选的人跟新角色关联起来
+    uniRelSelected.forEach(function(targetId){
+      addFriendPair(role.id, targetId);
+    });
+
+    // 清空状态
+    uniRelSelected = new Set();
+    var valEl = document.getElementById('biRelVal');
+    if(valEl) valEl.textContent = '未设置';
+
+    renderFriends();
+    document.getElementById('mNewBuiltin').classList.remove('show');
+    toast('已创建内置角色');
+  }
+}, true);
+
+/* ★ 核心修复：找到原来创建普通角色的代码，替换掉，加入关系网保存 */
+document.addEventListener('click', function(e){
+  if(e.target.closest('#btnCreateFriend')){
+    var n = document.getElementById('nfName').value.trim();
+    if(!n){ toast('请输入名字'); return; }
+    var sign = document.getElementById('nfSign').value.trim() || SIGN_PLACEHOLDER;
+    var friends = getFriends();
+    var role = {
+      id: uid(),
+      name: n,
+      avatar: nfAvatarTmp || '',
+      sub: sign,
+      group: nfGroupTmp || '',
+      shape: 'square',
+      topbarBg: '',
+      star: false,
+      pinned: false
+    };
+    friends.push(role);
+    saveFriends(friends);
+
+    // ★ 写入关系网：把勾选的人跟新角色关联起来
+    uniRelSelected.forEach(function(targetId){
+      addFriendPair(role.id, targetId);
+    });
+
+    // 清空状态
+    uniRelSelected = new Set();
+    var valEl = document.getElementById('nfRelVal');
+    if(valEl) valEl.textContent = '未设置';
+
+    renderFriends();
+    document.getElementById('mNewFriend').classList.remove('show');
+    toast('已创建');
+  }
+}, true);
+
+ 
 
  
 
 on('#closeNewFriend','click',()=>$('#mNewFriend').classList.remove('show'));
 
-on('#btnCreateFriend','click',()=>{
-  const n = $('#nfName').value.trim();
-  if(!n){ toast('请输入名字'); return; }
-  const sign = $('#nfSign').value.trim() || SIGN_PLACEHOLDER;
-  const friends = getFriends();
-  const role = {
-    id: uid(),
-    name: n,
-    avatar: nfAvatarTmp || '',
-    sub: sign,
-    group: nfGroupTmp || '',
-    shape: 'square',
-    topbarBg: '',
-    star: false,
-    pinned: false
-  };
-  friends.push(role);
-  saveFriends(friends);
-  renderFriends();
-  $('#mNewFriend').classList.remove('show');
-  toast('已创建');
-});
+
 on('#closeNewGroup','click',()=>$('#mNewGroup').classList.remove('show'));
 function openNewGroup(){
   $('#ngName').value = '';
@@ -35007,13 +35173,8 @@ on('#profilePin','change',function(){ saveRoleField(window.__profileViewId || ge
     if(!av) return;
     e.preventDefault();
     e.stopPropagation();
-    var f = document.getElementById('editAvFile');
-    if(f){
-      /* 打一个标记，告诉 editAvFile 的 change 处理函数：这次是"个人主页头像" */
-      f._forProfileAvatar = true;
-      f.value = '';
-      f.click();
-    }
+    /* ★ 统一出口：个人主页点头像走总水管 */
+    window.triggerAvatarUpload('profile');
   }, true);
 })();
 
@@ -35468,8 +35629,8 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
     av.addEventListener('click', function(e){
       e.preventDefault();
       e.stopPropagation();
-      var f = document.getElementById('cipAvFile');
-      if(f){ f.value = ''; f.click(); }
+      /* ★ 统一出口：聊天面板点头像走总水管 */
+      window.triggerAvatarUpload('cip');
     }, false);
   }
   bindAvatarClick();
