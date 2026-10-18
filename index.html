@@ -2197,6 +2197,20 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
   letter-spacing:1px;
 }
 .entry .e-sub{font-size:11.5px;color:#bbb;margin-top:4px;font-weight:400;letter-spacing:.5px}
+.entry .entry-badge{
+  display:inline-block;
+  min-width:16px;
+  height:16px;
+  line-height:16px;
+  text-align:center;
+  padding:0 5px;
+  border-radius:8px;
+  background:#1a1a1a;
+  color:#fff;
+  font-size:10px;
+  margin-left:6px;
+  vertical-align:1px;
+}
 .entry .chev{color:#1a1a1a;opacity:.3;font-size:15px;font-weight:300}
 
 /* 分组标题：细体 */
@@ -6229,19 +6243,10 @@ html[data-theme="bw"] .tarot .t-suit-en{
 #mChoice .choice-head{display:flex;gap:8px;margin-bottom:16px}
 #mChoice .choice-head .mode-btn{flex:1;padding:10px 0;border-radius:22px;font-size:12.5px;font-family:inherit;letter-spacing:2px;font-weight:300;border:0.7px solid rgba(0,0,0,.1);background:#fafafa;color:#999;cursor:pointer;transition:all .2s ease}
 #mChoice .choice-head .mode-btn.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a;font-weight:400}
-#mChoice .opt-label2{font-size:10.5px;color:#bbb;letter-spacing:2px;font-weight:300;margin:18px 0 8px;padding-left:2px;font-family:Georgia,serif}
 #mChoice .choice-q{width:100%;border:none;background:#fafafa;border-radius:14px;padding:16px 18px;font-size:14px;font-family:inherit;color:#1a1a1a;font-weight:300;line-height:1.9;min-height:60px;resize:none;outline:none;box-sizing:border-box}
 #mChoice .choice-q::placeholder{color:#d0d0d0;letter-spacing:1px}
-#mChoice .choice-opts-row{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:0.6px dashed #f2f2f2}
-#mChoice .choice-opts-row:last-child{border-bottom:none}
-#mChoice .choice-idx{width:20px;flex:none;font-size:10.5px;color:#ccc;font-family:Georgia,serif;letter-spacing:1px}
-#mChoice .choice-opt-input{flex:1;border:none;background:transparent;font-size:13.5px;font-family:inherit;color:#1a1a1a;font-weight:300;padding:4px 0;outline:none;letter-spacing:.5px}
-#mChoice .choice-opt-input::placeholder{color:#d0d0d0}
-#mChoice .choice-del{width:22px;height:22px;flex:none;border:none;background:transparent;color:#d0d0d0;font-size:11px;cursor:pointer;font-family:inherit;padding:0}
-#mChoice .choice-del:active{color:#1a1a1a}
-#mChoice .choice-add{width:100%;padding:12px 0;border-radius:14px;border:none;background:#fafafa;color:#1a1a1a;font-size:12.5px;font-family:inherit;letter-spacing:2px;font-weight:300;cursor:pointer;margin-top:12px}
-#mChoice .choice-add:active{background:#f0f0f0}
-#mChoice .choice-range{display:none}
+#mChoice .choice-opts-row{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:none}
+#mChoice .choice-opt-input{flex:1;border:none;background:transparent !important;box-shadow:none !important;font-size:13.5px;font-family:inherit;color:#1a1a1a;font-weight:300;padding:4px 0;outline:none;letter-spacing:.5px;text-align:center;max-width:52px}
 #mChoice .choice-go{width:100%;padding:14px 0;border-radius:22px;border:none;background:#1a1a1a;color:#fff;font-size:13.5px;font-family:inherit;letter-spacing:6px;text-indent:6px;font-weight:300;cursor:pointer;margin-top:20px;flex:none}
 #mChoice .choice-go:active{opacity:.85}
 #mChoice .choice-result{margin-top:14px;padding:20px 0;border-radius:0;background:transparent;border:none;text-align:center;display:none}
@@ -11266,7 +11271,7 @@ window.__APP_VERSION__ = '0.1.0';
     </div>
   </div>
 </div>
-<div class="cd-menu" id="cdMenu">
+<div class="cd-menu pop-menu" id="cdMenu">
   <div class="grp">
     <div class="grp-label">编辑</div>
     <div class="it" data-act="add"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>添加字卡</div>
@@ -11555,7 +11560,7 @@ window.__APP_VERSION__ = '0.1.0';
   </div>
 </div>
 
-<div class="cd-menu" id="mAdd">
+<div class="cd-menu pop-menu" id="mAdd">
   <div class="it" id="optNewFriend"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>增加角色</div>
   <div class="it" id="optNewBuiltin"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.9 7.1 18.2l.9-5.5-4-3.9L9.5 8z"/></svg>建立内置角色</div>
   <div class="it" id="optBuiltinList"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>内置角色一览</div>
@@ -11677,7 +11682,7 @@ window.__APP_VERSION__ = '0.1.0';
   <label style="margin-top:0">选择要放进这个组的角色</label><div id="ngPick"></div>
   <button class="primary-btn" id="btnCreateGroup">建立分组</button>
 </div></div></div>
-<div class="cd-menu" id="mFriendMenu">
+<div class="cd-menu pop-menu" id="mFriendMenu">
   <div class="it" id="fmEditFriend"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>编辑好友</div>
   <div class="it" id="fmChangeGroup"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><path d="M16 13H8"/></svg>修改分组</div>
   <div class="it" id="fmDelete" style="color:var(--th-danger)"><svg viewBox="0 0 24 24" style="stroke:var(--th-danger)"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13h10l1-13"/></svg>删除好友</div>
@@ -23108,7 +23113,6 @@ on('#drSearchInput','input',()=>renderDivineRecords());
 })();
 
 let choiceMode='multi';   /* 'yn' | 'multi' */
-let choiceOpts=[''];
 
 /* ★ 选择弹窗的记忆存储
    结构：{
@@ -23120,30 +23124,36 @@ let choiceOpts=[''];
      mOpts:'上次的多选选项文本'
    }
    打开弹窗时读取并回填，点「让 Ta 选」时写回。 */
-const CHOICE_MEM_KEY = 'mj_choice_mem_v1';
+/* ★ 升级 key 名字：和旧版分开，彻底避免串记忆 */
+const CHOICE_MEM_KEY = 'mj_choice_mem_v2';
 function getChoiceMem(){
   let m = lsGet(CHOICE_MEM_KEY, null);
   if(!m || typeof m !== 'object') m = {};
+  /* ★ 新增两个独立的桶 */
+  if(!m.yn || typeof m.yn !== 'object') m.yn = {};
+  if(!m.multi || typeof m.multi !== 'object') m.multi = {};
   return m;
 }
 function saveChoiceMem(m){ lsSet(CHOICE_MEM_KEY, m); }
 
 function openChoice(){
-  /* ★ 从上次记忆里读，没有就用默认值 */
+  /* ★ 从上次记忆里读，读独立桶 */
   const mem = getChoiceMem();
   choiceMode = (mem.mode === 'yn') ? 'yn' : 'multi';
-  choiceOpts = [''];
 
-  const _q       = (typeof mem.q === 'string') ? mem.q : '';
-  const _ynMin   = (typeof mem.ynMin === 'number') ? mem.ynMin : 2;
-  const _ynMax   = (typeof mem.ynMax === 'number') ? mem.ynMax : 5;
-  const _mMin    = (typeof mem.mMin === 'number') ? mem.mMin : 2;
-  const _mMax    = (typeof mem.mMax === 'number') ? mem.mMax : 5;
-  const _mCntMin = (typeof mem.mCntMin === 'number') ? mem.mCntMin : 1;
-  const _mCntMax = (typeof mem.mCntMax === 'number') ? mem.mCntMax : 2;
-  const _mOpts   = (typeof mem.mOpts === 'string') ? mem.mOpts : '';
-  const _ynQ     = (typeof mem.ynQ === 'string') ? mem.ynQ : '';
-  const _mQ      = (typeof mem.mQ === 'string') ? mem.mQ : '';
+  const yn = mem.yn;
+  const mu = mem.multi;
+
+  const _ynQ     = (typeof yn.q === 'string') ? yn.q : '';
+  const _ynMin   = (typeof yn.min === 'number') ? yn.min : 2;
+  const _ynMax   = (typeof yn.max === 'number') ? yn.max : 5;
+  const _q       = (choiceMode === 'yn') ? _ynQ : ((typeof mu.q === 'string') ? mu.q : '');
+  const _mQ      = (typeof mu.q === 'string') ? mu.q : '';
+  const _mMin    = (typeof mu.min === 'number') ? mu.min : 2;
+  const _mMax    = (typeof mu.max === 'number') ? mu.max : 5;
+  const _mCntMin = (typeof mu.cntMin === 'number') ? mu.cntMin : 1;
+  const _mCntMax = (typeof mu.cntMax === 'number') ? mu.cntMax : 2;
+  const _mOpts   = (typeof mu.opts === 'string') ? mu.opts : '';
 
   const ynOn    = (choiceMode === 'yn')    ? 'on' : '';
   const multiOn = (choiceMode === 'multi') ? 'on' : '';
@@ -23212,17 +23222,21 @@ function openChoice(){
 	let answer = '';
 	let thinkMs = 3000;
 
-	/* ★ 点这一刻，先把当前所有值写回记忆 */
+	/* ★ 点这一刻，先把当前所有值写回记忆（yn 和 multi 各存各的） */
 	const memNow = getChoiceMem();
 	memNow.mode = choiceMode;
-	memNow.q    = $('#cq').value;
-	memNow.ynMin   = Math.max(1, parseInt(($('#ynMin')||{}).value) || 2);
-	memNow.ynMax   = Math.max(1, parseInt(($('#ynMax')||{}).value) || 5);
-	memNow.mMin    = Math.max(1, parseInt(($('#mMin')||{}).value) || 2);
-	memNow.mMax    = Math.max(1, parseInt(($('#mMax')||{}).value) || 5);
-	memNow.mCntMin = Math.max(1, parseInt(($('#mCntMin')||{}).value) || 1);
-	memNow.mCntMax = Math.max(1, parseInt(($('#mCntMax')||{}).value) || 2);
-	memNow.mOpts   = ($('#mOpts') ? $('#mOpts').value : '');
+	if (choiceMode === 'yn') {
+	  memNow.yn.q   = $('#cq').value;
+	  memNow.yn.min = Math.max(1, parseInt(($('#ynMin')||{}).value) || 2);
+	  memNow.yn.max = Math.max(1, parseInt(($('#ynMax')||{}).value) || 5);
+	} else {
+	  memNow.multi.q      = $('#cq').value;
+	  memNow.multi.min    = Math.max(1, parseInt(($('#mMin')||{}).value) || 2);
+	  memNow.multi.max    = Math.max(1, parseInt(($('#mMax')||{}).value) || 5);
+	  memNow.multi.cntMin = Math.max(1, parseInt(($('#mCntMin')||{}).value) || 1);
+	  memNow.multi.cntMax = Math.max(1, parseInt(($('#mCntMax')||{}).value) || 2);
+	  memNow.multi.opts   = ($('#mOpts') ? $('#mOpts').value : '');
+	}
 	saveChoiceMem(memNow);
 
 	if(choiceMode === 'yn'){
@@ -23296,8 +23310,7 @@ function openChoice(){
   $('#mChoice').classList.add('show');
 }
 
-/* 兼容旧代码里可能的调用，保留一个空壳，避免报错 */
-function renderChoiceOpts(){}
+ 
 
 const NAME_CARD_PROB = { agree:0.25, reject:0.55, hold:0.20 };
 const INTRO_AGREE_PROB = 0.30;
@@ -31904,14 +31917,7 @@ function inviteSignSwitch(type){
   });
 }
 
-document.addEventListener('click',e=>{
-  /* 点在菜单内部 → 不关（菜单项自己处理） */
-  if(e.target.closest('#cdMenu')) return;
-  /* 点在 ⋯ 按钮上 → 交给 #cdMore 自己的 toggle 逻辑处理 */
-  if(e.target.closest('#cdMore')) return;
-  /* 其它地方 → 关闭 */
-  cdMenu.classList.remove('show');
-});
+ 
 if(cdMenu) cdMenu.addEventListener('click',e=>{
   const it=e.target.closest('.it'); if(!it) return;
   const act=it.dataset.act;
@@ -34006,6 +34012,7 @@ on('#editAvFile','change',function(){
     } else if(biUploadingAv){
       biAvatarTmp = data;
       renderBiAvatar();
+      /* ★ 修复：裁切完要把标记清掉，否则下次选图会一直走「内置角色」分支 */
       biUploadingAv = false;
     } else {
       editAvatarTmp = data;
@@ -34025,8 +34032,8 @@ function renderFriends(){
   const match = f=>!kw || displayName(f).toLowerCase().includes(kw);
   let html = '';
   if(!kw){
-        const applyCount = getApplyList().filter(a => a.state === 'pending').length;
-    const badge = applyCount ? ' <span style="display:inline-block;min-width:16px;height:16px;line-height:16px;text-align:center;padding:0 5px;border-radius:8px;background:#1a1a1a;color:#fff;font-size:10px;margin-left:6px;vertical-align:1px">'+applyCount+'</span>' : '';
+    const applyCount = getApplyList().filter(a => a.state === 'pending').length;
+    const badge = applyCount ? ' <span class="entry-badge">' + applyCount + '</span>' : '';
     html += `<div class="entry" id="entryNew"><div class="e-main"><div class="e-tt">新朋友${badge}</div><div class="e-sub">查看好友申请</div></div><span class="chev">›</span></div>`;
   }
   const defFriends = friends.filter(f=>!f.pinned && (!f.group||!groups.includes(f.group))).filter(match);
@@ -34118,13 +34125,26 @@ function openFriendMenu(fid, anchorBtn){
   m.style.top = (r.bottom + 6) + 'px';
   m.classList.add('show');
 }
-/* ★ 新增：点好友操作菜单外任意处关闭（与字卡页菜单一致） */
-document.addEventListener('click',e=>{
-  const m = document.getElementById('mFriendMenu');
-  if(!m) return;
-  if(e.target.closest('#mFriendMenu')) return;
-  if(e.target.closest('[data-fm]')) return;
-  m.classList.remove('show');
+/* 点菜单外任意处关闭（通用版：一个函数管所有 .pop-menu）
+   - 点在某个菜单内部 → 这个菜单不关
+   - 点在某个菜单的触发按钮上 → 这个菜单不关，交给按钮自己的 toggle 处理
+     （好友菜单按钮 [data-fm]、加号菜单 #btnAdd、字卡菜单 #cdMore）
+*/
+function closePopupMenus(exceptEl){
+  var keepByBtn = {
+    'mFriendMenu': '[data-fm]',
+    'mAdd':        '#btnAdd',
+    'cdMenu':      '#cdMore'
+  };
+  document.querySelectorAll('.pop-menu.show').forEach(function(m){
+    if(exceptEl && m.contains(exceptEl)) return;
+    var sel = keepByBtn[m.id];
+    if(sel && exceptEl && exceptEl.closest(sel)) return;
+    m.classList.remove('show');
+  });
+}
+document.addEventListener('click', function(e){
+  closePopupMenus(e.target);
 });
 on('#fmEditFriend','click',()=>{
   $('#mFriendMenu').classList.remove('show');
@@ -34388,14 +34408,7 @@ on('#btnAdd','click',()=>{
   mAdd.style.top = (r.bottom + 6) + 'px';
   mAdd.classList.add('show');
 });
-/* ★ 新增：点菜单外任意处关闭（复刻字卡页菜单） */
-document.addEventListener('click',e=>{
-  const mAdd = document.getElementById('mAdd');
-  if(!mAdd) return;
-  if(e.target.closest('#mAdd')) return;
-  if(e.target.closest('#btnAdd')) return;
-  mAdd.classList.remove('show');
-});
+ 
 on('#optNewFriend','click',()=>{
   $('#mAdd').classList.remove('show');
   $('#nfName').value = '';
@@ -34740,6 +34753,23 @@ on('#btnNfUploadAv','click',()=>{ nfUploadingAv = true; $('#editAvFile').click()
   }, true);
 })();
 
+/* ★ 修复：内置角色弹窗「上传」按钮点了没反应
+   原来这个按钮没有任何点击监听，所以点了什么都不发生。
+   这里补一个监听：打上 biUploadingAv 标记，再去点隐藏的文件选择框。 */
+(function bindBiUploadBtn(){
+  if(window.__biUploadBtnBound) return;
+  window.__biUploadBtnBound = true;
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('#btnBiUploadAv');
+    if(!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    biUploadingAv = true;
+    var f = document.getElementById('editAvFile');
+    if(f){ f.value = ''; f.click(); }
+  }, true);
+})();
+
 /* ★ 新增：点「增加角色」弹窗里的头像预览框，直接触发上传 */
 (function bindNfAvatarPreviewClick(){
   function bindOnce(){
@@ -34761,13 +34791,6 @@ on('#btnNfUploadAv','click',()=>{ nfUploadingAv = true; $('#editAvFile').click()
  
 
 on('#closeNewFriend','click',()=>$('#mNewFriend').classList.remove('show'));
-/* 内置角色勾选状态 */
-let nfBuiltinTmp = false;
-on('#nfBuiltinRow','click',function(){
-  nfBuiltinTmp = !nfBuiltinTmp;
-  const chk = $('#nfBuiltinChk');
-  if(chk){ chk.textContent = nfBuiltinTmp ? '✓' : ''; chk.style.background = nfBuiltinTmp ? '#1a1a1a' : 'transparent'; chk.style.borderColor = nfBuiltinTmp ? '#1a1a1a' : '#d0d0d0'; chk.style.color = nfBuiltinTmp ? '#fff' : 'transparent'; }
-});
 
 on('#btnCreateFriend','click',()=>{
   const n = $('#nfName').value.trim();
@@ -34785,24 +34808,11 @@ on('#btnCreateFriend','click',()=>{
     star: false,
     pinned: false
   };
-  if(nfBuiltinTmp){
-    role.builtin = true;
-    role.hidden = true;
-    role.blocked = false;
-    role.deletedAt = 0;
-    role.nextBuiltinApplyAt = 0;
-    role.builtinStage = 0;
-    role.builtinReject = 0;
-  }
   friends.push(role);
   saveFriends(friends);
-  // 重置勾选
-  nfBuiltinTmp = false;
-  const chk = $('#nfBuiltinChk');
-  if(chk){ chk.textContent=''; chk.style.background='transparent'; chk.style.borderColor='#d0d0d0'; chk.style.color='transparent'; }
   renderFriends();
   $('#mNewFriend').classList.remove('show');
-  toast(nfBuiltinTmp ? '已创建内置角色' : '已创建');
+  toast('已创建');
 });
 on('#closeNewGroup','click',()=>$('#mNewGroup').classList.remove('show'));
 function openNewGroup(){
@@ -37828,21 +37838,16 @@ function switchToRole(id){
   if(!id) return;
   if(id === getCurrentRoleId()) return;
   closeAllOverlays();
-  /* 清掉上一轮角色排下的主动占卜延时任务，避免累积 */
   try { clearActiveDivinePending(); } catch(e){}
   setCurrentRoleId(id);
   msgs = loadMsgs();
-  try{ if(typeof settleQuizCards === 'function') settleQuizCards(); }catch(e){}
-  /* ★ 切角色时，强制清掉聊天渲染签名缓存，
-     否则新角色的旧消息会沿用上一个角色的头像不刷新 */
-  if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
+  try{ settleQuizCards(); }catch(e){}
+  window.__forceRenderChat && window.__forceRenderChat();
   refreshChatRole();
-  if(typeof renderChatFull === 'function'){ renderChatFull(true); }
-  else if(typeof renderChat === 'function'){ renderChat(true); }
+  renderChatFull ? renderChatFull(true) : (renderChat && renderChat(true));
   applyMoodUI();
   applyTopbarBg();
   clearUnread(id);
-  /* ★ 收藏页开着的话，重渲染一次让「Ta 的收藏」名字跟着换 */
   const colScr = document.getElementById('collectScreen');
   if(colScr && colScr.classList.contains('on')){
     const activeTab = document.querySelector('#colTabs .memo-tab.on');
