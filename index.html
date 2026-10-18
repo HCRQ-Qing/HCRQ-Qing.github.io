@@ -1163,60 +1163,7 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
 
 .toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:var(--th-accent);color:#fff;font-size:12.5px;letter-spacing:1px;padding:9px 18px;border-radius:10px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:4000}
 
-/* ★ 开屏更新公告 */
-.update-mask{
-  position:fixed;inset:0;z-index:99999;
-  background:rgba(0,0,0,.35);
-  backdrop-filter:blur(3px);
-  -webkit-backdrop-filter:blur(3px);
-  display:none;align-items:center;justify-content:center;
-  padding:24px;
-}
-.update-mask.show{display:flex}
-.update-sheet{
-  width:100%;max-width:320px;
-  background:#fff;border-radius:18px;
-  border:0.7px solid rgba(0,0,0,.06);
-  box-shadow:0 20px 60px rgba(0,0,0,.18);
-  padding:24px 22px 18px;
-  box-sizing:border-box;
-}
-.update-title{
-  font-size:15px;font-weight:300;letter-spacing:4px;
-  color:#1a1a1a;text-align:center;
-  -webkit-text-stroke:.15px #1a1a1a;
-  -webkit-font-smoothing:antialiased;
-}
-.update-sub{
-  font-size:8.5px;letter-spacing:5px;color:#d0d0d0;
-  font-family:Georgia,serif;text-align:center;
-  margin-top:5px;margin-bottom:18px;
-}
-.update-list{
-  max-height:180px;overflow-y:auto;
-  padding-bottom:6px;
-  margin-bottom:14px;
-  border-bottom:0.6px dashed #ececec;
-  scrollbar-width:none;
-}
-.update-list::-webkit-scrollbar{display:none}
-.update-list .up-item{
-  font-size:12.5px;color:#1a1a1a;line-height:1.7;
-  letter-spacing:.3px;padding:5px 0 5px 12px;position:relative;
-  -webkit-font-smoothing:antialiased;
-}
-.update-list .up-item::before{
-  content:"·";position:absolute;left:0;top:5px;
-  color:#1a1a1a;font-size:14px;
-}
-.update-ok{
-  width:100%;padding:12px 0;border-radius:22px;
-  border:none;background:#1a1a1a;color:#fff;
-  font-size:13px;font-family:inherit;
-  letter-spacing:4px;text-indent:4px;cursor:pointer;
-  font-weight:300;
-}
-.update-ok:active{opacity:.85}
+ 
 .toast.show{opacity:1}
 
 /* ===== 消息提示气泡 · 顶部滑下 ===== */
@@ -2871,15 +2818,15 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .modal > .sheet > .sheet-head .x:hover{color:#1a1a1a}
 .modal > .sheet > .sheet-body{padding:14px 20px 20px}
 
-/* ===== 回复设置 · 整页 ===== */
-.screen#mReply{
+/* ===== 回复设置 · 整页（重构版） ===== */
+#mReply{
   background:#fff;
   flex-direction:column;
   align-items:stretch;
   justify-content:flex-start;
   padding:0;
 }
-.screen#mReply .reply-page{
+#mReply .reply-page{
   max-width:420px;
   margin:0 auto;
   width:100%;
@@ -2888,7 +2835,7 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
   flex-direction:column;
   overflow:hidden;
 }
-.screen#mReply .reply-top{
+#mReply .reply-top{
   flex:none;
   display:flex;
   align-items:center;
@@ -3259,7 +3206,7 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 }
 .rss-switch input:checked + .rss-sw-slider{background:#1a1a1a}
 .rss-switch input:checked + .rss-sw-slider:before{transform:translateX(16px)}
-.screen#mReply .reply-back{
+#mReply .reply-back{
   width:38px;height:38px;flex:none;
   border:none;background:transparent;
   color:#1a1a1a;font-size:22px;line-height:1;
@@ -3269,8 +3216,8 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
   opacity:.55;
   transition:opacity .18s ease;
 }
-.screen#mReply .reply-back:active{opacity:1}
-.screen#mReply .reply-title{
+#mReply .reply-back:active{opacity:1}
+#mReply .reply-title{
   flex:1;
   font-size:15px;font-weight:300;
   letter-spacing:6px;
@@ -3280,29 +3227,17 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
 }
-.screen#mReply .reply-top-right{width:38px;flex:none}
+#mReply .reply-top-right{width:38px;flex:none}
 #mReply #replyBody{
   flex:1 1 auto;
   min-height:0;
   overflow-y:auto;
-  /* ★ 去掉 -webkit-overflow-scrolling: touch
-     部分安卓内核（含雨见）在这个属性下，
-     滚动容器里超出初始可视区的输入框点击会失效 */
   scrollbar-width:none;
-  padding:4px 22px calc(22px + env(safe-area-inset-bottom)) !important;
+  padding:4px 22px calc(22px + env(safe-area-inset-bottom));
 }
-#mReply .rs-tabs{margin-bottom:0}
 #mReply #replyBody::-webkit-scrollbar{display:none}
 
-/* ===== 回复设置 · 磨砂版 · 新样式 ===== */
-#mReply .rs-tabs{
-  padding:18px 22px 0 !important;
-  gap:22px !important;
-  border-bottom:0.6px solid rgba(0,0,0,.06) !important;
-  margin-bottom:0 !important;
-  background:#fff !important;
-}
-/* ★ 固定 tab 容器：不可滚动，撑在顶部栏和滚动区之间 */
+/* ===== 回复设置 · tab 栏（重构版） ===== */
 #mReply #replyTabsFixed{
   flex:none;
   display:flex;
@@ -3317,20 +3252,18 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 #mReply #replyTabsFixed::-webkit-scrollbar{display:none}
 #mReply #replyTabsFixed .rs-tab{
   flex:none;
-  padding:6px 0 12px !important;
-  font-size:12.5px !important;
-  letter-spacing:2px !important;
-  color:#c8c8c8 !important;
-  background:transparent !important;
-  border:none !important;
-  font-weight:300 !important;
+  padding:6px 0 12px;
+  font-size:12.5px;
+  letter-spacing:2px;
+  color:#c8c8c8;
+  background:transparent;
+  border:none;
+  font-weight:300;
   position:relative;
   cursor:pointer;
   -webkit-font-smoothing:antialiased;
 }
-#mReply #replyTabsFixed .rs-tab.on{
-  color:#1a1a1a !important;
-}
+#mReply #replyTabsFixed .rs-tab.on{color:#1a1a1a}
 #mReply #replyTabsFixed .rs-tab.on::after{
   content:"";
   position:absolute;
@@ -3340,43 +3273,12 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
   width:14px;
   height:1px;
   background:#1a1a1a;
-}#mReply .rs-tab{
-  flex:none !important;
-  padding:6px 0 12px !important;
-  font-size:12.5px !important;
-  letter-spacing:2px !important;
-  color:#c8c8c8 !important;
-  background:transparent !important;
-  font-weight:300 !important;
-  -webkit-font-smoothing:antialiased;
 }
-#mReply .rs-tab.on{
-  color:#1a1a1a !important;
-}
-#mReply .rs-tab.on::after{
-  content:"" !important;
-  position:absolute !important;
-  left:50% !important;
-  bottom:0 !important;
-  transform:translateX(-50%) !important;
-  width:14px !important;
-  height:1px !important;
-  background:#1a1a1a !important;
-  border-radius:0 !important;
-}
-#mReply #replyBody{
-  flex:1 1 auto;
-  min-height:0;
-  overflow-y:auto;
-  scrollbar-width:none;
-  padding:4px 22px calc(22px + env(safe-area-inset-bottom)) !important;
-}
-#mReply #replyBody::-webkit-scrollbar{display:none}
 #mReply #replyBody .section{
-  padding:18px 8px 18px 0 !important;
-  border-bottom:0.6px dashed rgba(0,0,0,.06) !important;
-  background:transparent !important;
-  margin-bottom:0 !important;
+  padding:18px 8px 18px 0;
+  border-bottom:0.6px dashed rgba(0,0,0,.06);
+  background:transparent;
+  margin-bottom:0;
 }
 /* ★ 分组小标题：标题在左，内容在右同一行 */
 .rs-row{display:flex;align-items:center;gap:14px;padding:2px 0}
@@ -3425,120 +3327,120 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 
 /* ★ 带开关的标题：标题左，开关右，同一行 */
 #mReply #replyBody .title.title-sw{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:space-between !important;
-  padding-bottom:14px !important;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding-bottom:14px;
 }
 #mReply #replyBody .title.title-sw > span{
-  font-size:15px !important;
-  font-weight:500 !important;
-  letter-spacing:2px !important;
-  color:#1a1a1a !important;
+  font-size:15px;
+  font-weight:500;
+  letter-spacing:2px;
+  color:#1a1a1a;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
 }
 #mReply #replyBody .title.title-sw .switch{
-  position:relative !important;
-  width:38px !important;
-  height:22px !important;
-  flex:none !important;
-  margin:0 !important;
-  display:inline-block !important;
+  position:relative;
+  width:38px;
+  height:22px;
+  flex:none;
+  margin:0;
+  display:inline-block;
 }
-#mReply #replyBody .title.title-sw .switch input{display:none !important}
+#mReply #replyBody .title.title-sw .switch input{display:none}
 #mReply #replyBody .title.title-sw .switch .slider{
-  position:absolute !important;
-  inset:0 !important;
-  border-radius:20px !important;
-  background:#e5e5e5 !important;
-  border:none !important;
-  transition:.22s !important;
-  display:block !important;
+  position:absolute;
+  inset:0;
+  border-radius:20px;
+  background:#e5e5e5;
+  border:none;
+  transition:.22s;
+  display:block;
 }
 #mReply #replyBody .title.title-sw .switch .slider:before{
-  content:"" !important;
-  position:absolute !important;
-  width:16px !important;
-  height:16px !important;
-  border-radius:50% !important;
-  background:#fff !important;
-  top:3px !important;
-  left:3px !important;
-  transition:.22s !important;
-  box-shadow:0 1px 3px rgba(0,0,0,.15) !important;
+  content:"";
+  position:absolute;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  background:#fff;
+  top:3px;
+  left:3px;
+  transition:.22s;
+  box-shadow:0 1px 3px rgba(0,0,0,.15);
 }
 #mReply #replyBody .title.title-sw .switch input:checked + .slider{
-  background:#1a1a1a !important;
+  background:#1a1a1a;
 }
 #mReply #replyBody .title.title-sw .switch input:checked + .slider:before{
-  transform:translateX(16px) !important;
+  transform:translateX(16px);
 }
 #mReply #replyBody .name{
-  font-size:14px !important;
-  font-weight:300 !important;
-  letter-spacing:1px !important;
-  color:#1a1a1a !important;
+  font-size:14px;
+  font-weight:300;
+  letter-spacing:1px;
+  color:#1a1a1a;
 }
 #mReply #replyBody .desc{
-  font-size:11px !important;
-  color:#bbb !important;
-  letter-spacing:.5px !important;
-  margin-top:5px !important;
-  margin-bottom:12px !important;
-  font-weight:300 !important;
+  font-size:11px;
+  color:#bbb;
+  letter-spacing:.5px;
+  margin-top:5px;
+  margin-bottom:12px;
+  font-weight:300;
 }
 #mReply #replyBody .sw-row{
-  padding:4px 0 !important;
-  margin-bottom:0 !important;
+  padding:4px 0;
+  margin-bottom:0;
 }
 #mReply #replyBody .sw-row .sw-main .t1{
-  font-size:14px !important;
-  font-weight:300 !important;
-  letter-spacing:1px !important;
-  color:#1a1a1a !important;
+  font-size:14px;
+  font-weight:300;
+  letter-spacing:1px;
+  color:#1a1a1a;
 }
 #mReply #replyBody .sw-row .sw-main .t2{
-  font-size:11px !important;
-  color:#bbb !important;
-  margin-top:5px !important;
-  letter-spacing:.5px !important;
-  font-weight:300 !important;
+  font-size:11px;
+  color:#bbb;
+  margin-top:5px;
+  letter-spacing:.5px;
+  font-weight:300;
 }
 /* 细线开关 */
 #mReply #replyBody .switch{
-  position:relative !important;
-  width:38px !important;
-  height:22px !important;
-  flex:none !important;
-  margin-right:8px !important;
+  position:relative;
+  width:38px;
+  height:22px;
+  flex:none;
+  margin-right:8px;
 }
-#mReply #replyBody .switch input{display:none !important}
+#mReply #replyBody .switch input{display:none}
 #mReply #replyBody .switch .slider{
-  position:absolute !important;
-  inset:0 !important;
-  border-radius:20px !important;
-  background:#e5e5e5 !important;
-  border:none !important;
-  transition:.22s !important;
+  position:absolute;
+  inset:0;
+  border-radius:20px;
+  background:#e5e5e5;
+  border:none;
+  transition:.22s;
 }
 #mReply #replyBody .switch .slider:before{
-  content:"" !important;
-  position:absolute !important;
-  width:16px !important;
-  height:16px !important;
-  border-radius:50% !important;
-  background:#fff !important;
-  top:3px !important;
-  left:3px !important;
-  transition:.22s !important;
-  box-shadow:0 1px 3px rgba(0,0,0,.15) !important;
+  content:"";
+  position:absolute;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  background:#fff;
+  top:3px;
+  left:3px;
+  transition:.22s;
+  box-shadow:0 1px 3px rgba(0,0,0,.15);
 }
 #mReply #replyBody .switch input:checked + .slider{
-  background:#1a1a1a !important;
+  background:#1a1a1a;
 }
 #mReply #replyBody .switch input:checked + .slider:before{
-  left:19px !important;
+  left:19px;
 }
 /* 滑杆 */
  
@@ -3580,115 +3482,115 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 #mReply #replyBody .n-row .lbl,
 #mReply #replyBody .n-row .unit,
 #mReply #replyBody .n-row .to{
-  font-size:11.5px !important;
-  color:#999 !important;
-  letter-spacing:.5px !important;
-  font-weight:300 !important;
+  font-size:11.5px;
+  color:#999;
+  letter-spacing:.5px;
+  font-weight:300;
 }
 /* 标点 */
 #mReply #replyBody .punc-grid{
-  display:flex !important;
-  flex-wrap:wrap !important;
-  gap:20px 26px !important;
-  padding-bottom:6px !important;
+  display:flex;
+  flex-wrap:wrap;
+  gap:20px 26px;
+  padding-bottom:6px;
 }
 #mReply #replyBody .punc-item{
-  position:relative !important;
-  display:inline-flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  min-width:auto !important;
-  min-height:auto !important;
-  padding:2px 0 !important;
-  background:transparent !important;
-  border:none !important;
-  box-shadow:none !important;
-  border-radius:0 !important;
-  font-size:14px !important;
-  color:#1a1a1a !important;
-  letter-spacing:.5px !important;
-  font-family:inherit !important;
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:auto;
+  min-height:auto;
+  padding:2px 0;
+  background:transparent;
+  border:none;
+  box-shadow:none;
+  border-radius:0;
+  font-size:14px;
+  color:#1a1a1a;
+  letter-spacing:.5px;
+  font-family:inherit;
 }
 #mReply #replyBody .punc-item.on{
-  background:transparent !important;
-  color:#1a1a1a !important;
-  font-weight:500 !important;
+  background:transparent;
+  color:#1a1a1a;
+  font-weight:500;
 }
 #mReply #replyBody .punc-item.on::after{
-  content:"" !important;
-  position:absolute !important;
-  left:50% !important;
-  bottom:-3px !important;
-  transform:translateX(-50%) !important;
-  width:12px !important;
-  height:1px !important;
-  background:#1a1a1a !important;
-  border-radius:0 !important;
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-3px;
+  transform:translateX(-50%);
+  width:12px;
+  height:1px;
+  background:#1a1a1a;
+  border-radius:0;
 }
 #mReply #replyBody .punc-item.off{
-  background:transparent !important;
-  color:#dcdcdc !important;
-  border:none !important;
-  box-shadow:none !important;
+  background:transparent;
+  color:#dcdcdc;
+  border:none;
+  box-shadow:none;
 }
 #mReply #replyBody .punc-item.fixed-toggle{
-  background:transparent !important;
-  color:#1a1a1a !important;
-  border:none !important;
-  box-shadow:none !important;
+  background:transparent;
+  color:#1a1a1a;
+  border:none;
+  box-shadow:none;
 }
 #mReply #replyBody .punc-item.fixed-toggle.on{
-  color:#1a1a1a !important;
-  font-weight:500 !important;
+  color:#1a1a1a;
+  font-weight:500;
 }
 #mReply #replyBody .punc-item.fixed-toggle.on::after{
-  content:"" !important;
-  position:absolute !important;
-  left:50% !important;
-  bottom:-3px !important;
-  transform:translateX(-50%) !important;
-  width:12px !important;
-  height:1px !important;
-  background:#1a1a1a !important;
-  border-radius:0 !important;
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:-3px;
+  transform:translateX(-50%);
+  width:12px;
+  height:1px;
+  background:#1a1a1a;
+  border-radius:0;
 }
 /* 添加标点那一行 */
 #mReply #replyBody .add-punc{
-  display:flex !important;
-  align-items:baseline !important;
-  gap:14px !important;
-  margin-top:22px !important;
-  border-bottom:0.6px solid rgba(0,0,0,.12) !important;
-  padding-bottom:8px !important;
+  display:flex;
+  align-items:baseline;
+  gap:14px;
+  margin-top:22px;
+  border-bottom:0.6px solid rgba(0,0,0,.12);
+  padding-bottom:8px;
 }
 #mReply #replyBody .add-punc input{
-  flex:1 !important;
-  border:none !important;
-  background:transparent !important;
-  padding:6px 0 !important;
-  font-size:13px !important;
-  font-family:inherit !important;
-  outline:none !important;
-  color:#1a1a1a !important;
-  letter-spacing:.5px !important;
-  border-radius:0 !important;
-  box-shadow:none !important;
+  flex:1;
+  border:none;
+  background:transparent;
+  padding:6px 0;
+  font-size:13px;
+  font-family:inherit;
+  outline:none;
+  color:#1a1a1a;
+  letter-spacing:.5px;
+  border-radius:0;
+  box-shadow:none;
 }
 #mReply #replyBody .add-punc input::placeholder{
-  color:#ccc !important;
+  color:#ccc;
 }
 #mReply #replyBody .add-punc button{
-  padding:4px 0 !important;
-  border:none !important;
-  background:transparent !important;
-  color:#1a1a1a !important;
-  font-size:12px !important;
-  font-family:inherit !important;
-  cursor:pointer !important;
-  letter-spacing:2px !important;
-  border-bottom:0.8px solid #1a1a1a !important;
-  border-radius:0 !important;
-  box-shadow:none !important;
+  padding:4px 0;
+  border:none;
+  background:transparent;
+  color:#1a1a1a;
+  font-size:12px;
+  font-family:inherit;
+  cursor:pointer;
+  letter-spacing:2px;
+  border-bottom:0.8px solid #1a1a1a;
+  border-radius:0;
+  box-shadow:none;
 }
 /* 新头部样式 */
 #mReply .rp-sheet-head{
@@ -10263,15 +10165,7 @@ body[data-bubble="custom"] .gch-bubble{
 */
 window.__APP_VERSION__ = '0.1.0';
 
-/* ★ 更新日志：每次改完代码，把版本号和内容改一下。
-   用户看到版本号变了，开屏就会弹一次，告诉他更新了什么。
-   如果不想弹，把下面的数组清空即可。 */
-window.__APP_CHANGELOG__ = [
-  '字卡页菜单重新排版：按「编辑 / 特殊 / 数据」分组，更清爽',
-  '修复已读逻辑：不再出现「上面未读、下面已读」的夹层',
-  '单字字卡不再合并成一坨，每条独立显示、数量可控',
-  '修复占卜问题文字不再斜体',
-];
+ 
 
 /* ★ 把版本号显示在网页标题上，你在雨见标签页就能看到 */
 (function showVersionInTitle(){
@@ -10281,69 +10175,7 @@ window.__APP_CHANGELOG__ = [
   }catch(e){}
 })();
 
-/* ★ 开屏更新公告
-   - 存一个 mj_last_seen_version
-   - 跟当前版本不一样，就弹一次
-   - 用户点「知道啦」之后，记下当前版本，下次不弹
-*/
-(function showUpdateNotice(){
-  var KEY = 'mj_last_seen_version';
-  function tryShow(){
-    var el = document.getElementById('updateMask');
-    if(!el){ setTimeout(tryShow, 300); return; }
-
-    var lastSeen = null;
-    try { lastSeen = localStorage.getItem(KEY); } catch(e){}
-    var cur = window.__APP_VERSION__ || '';
-    var list = Array.isArray(window.__APP_CHANGELOG__) ? window.__APP_CHANGELOG__ : [];
-
-    /* ★ 一进入就先把当前版本记下来。
-       即使后面用户没点「知道啦」、或者页面直接刷新/被杀，
-       下次进来 lastSeen 就等于 cur，不会再弹第二次。
-       只有「版本号变了」才会再次弹。 */
-    try { localStorage.setItem(KEY, cur); } catch(e){}
-
-    /* 没更新，或没写日志，就不弹 */
-    if(lastSeen === cur) return;
-    if(!list.length) {
-      return;
-    }
-
-    /* 填内容 */
-    var vEl = document.getElementById('updateVer');
-    if(vEl) vEl.textContent = 'VERSION · v' + cur;
-    var lEl = document.getElementById('updateList');
-    if(lEl){
-      lEl.innerHTML = list.map(function(t){
-        return '<div class="up-item">' + String(t)
-          .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-          + '</div>';
-      }).join('');
-    }
-    el.classList.add('show');
-
-    /* 点确认 */
-    var ok = document.getElementById('updateOk');
-    if(ok){
-      ok.onclick = function(){
-        try { localStorage.setItem(KEY, cur); } catch(e){}
-        el.classList.remove('show');
-      };
-    }
-    /* 点遮罩也算关闭 */
-    el.addEventListener('click', function(e){
-      if(e.target === el){
-        try { localStorage.setItem(KEY, cur); } catch(e){}
-        el.classList.remove('show');
-      }
-    });
-  }
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', tryShow);
-  } else {
-    tryShow();
-  }
-})();
+ 
 
 /* ★ 在"关于"页顶部显示版本号 */
 (function bindVersionDisplay(){
@@ -12773,15 +12605,7 @@ window.__APP_CHANGELOG__ = [
 
 <div class="toast" id="toast"></div>
 
-<!-- ★ 开屏更新公告 -->
-<div class="update-mask" id="updateMask">
-  <div class="update-sheet">
-    <div class="update-title">更 新 公 告</div>
-    <div class="update-sub" id="updateVer">VERSION</div>
-    <div class="update-list" id="updateList"></div>
-    <button class="update-ok" id="updateOk" type="button">知道啦</button>
-  </div>
-</div>
+ 
 <div class="msg-notify" id="msgNotify"></div>
 <!-- ===== 统一输入弹窗 · 方案 A ===== -->
 <div class="uni-mask" id="uniMask" onclick="if(event.target===this)uniCancel()">
@@ -13878,12 +13702,7 @@ function getReply(roleId){
   if(typeof r.multiBlockOn !== 'boolean') r.multiBlockOn = true;
   if(typeof r.pinyinOn !== 'boolean')    r.pinyinOn = true;
   if(typeof r.quoteRate !== 'number')    r.quoteRate = 0.08;
-  /* ★ 引用总开关关掉时，把 quoteRate 强制视为 0，
-     这样所有引用入口（runReplyChain、fireActiveMessage、runTimedReplyRounds）
-     一处不用改，自动全部生效 */
-  if(r.quoteOn === false){
-    r.quoteRate = 0;
-  }
+ 
   if(typeof r.quoteFullRate !== 'number') r.quoteFullRate = 0.8;
   if(typeof r.quotePartRate !== 'number') r.quotePartRate = 0.2;
   /* ★ 双击回应：默认关；自定义列表兜底为空数组 */
@@ -13892,11 +13711,10 @@ function getReply(roleId){
   /* ★ 角色写占卜理解 · 兼容老数据 */
   if(typeof r.divineReadOn !== 'boolean')        r.divineReadOn = true;
   if(typeof r.divineReadRate !== 'number')       r.divineReadRate = 0.50;
-  if(typeof r.divineReadCardMax !== 'number')    r.divineReadCardMax = 3;
+  if(typeof r.divineReadCardMax !== 'number')    r.divineReadCardMax = 15;
   if(typeof r.divineReadMaxTimes !== 'number')   r.divineReadMaxTimes = 4;
   if(typeof r.divineReadLastFireAt !== 'number') r.divineReadLastFireAt = 0;
-  /* 兜底：disabledPunctList 必须是数组 */
-  if(!Array.isArray(r.disabledPunctList)) r.disabledPunctList = [];
+ 
   /* 迁移：把标点池里的换行 '\n' 删掉；把老的空格 '\n\n' 换成 ' ' */
   if(Array.isArray(r.punctList)){
     r.punctList = r.punctList
@@ -14700,23 +14518,18 @@ function pickNamecardKao(kind){
 
 function genReply(useTimed){
   const r = getReply();
-  /* 撤回：本次回复先正常生成，命中撤回概率时在 runReplyChain 里
-     把「即将发出的这条」在 1~60 秒后撤回。不再需要"之前说过话"的前置条件。 */
-  const willRecall = !!(r.recallOn && Math.random() < r.recallRate);
   /* ★ 气泡条数：删掉概率，改成在 1 ~ maxBubbles 之间均匀随机。
      权重一样，不是"有概率才多条"。 */
   const _maxB = Math.max(1, Math.min(10, r.maxBubbles || 3));
-  let bubbleCount = 1 + Math.floor(Math.random() * _maxB);
-  if(bubbleCount > _maxB) bubbleCount = _maxB;
+  let bubbleCount = _calcRandInt(1, _maxB, 1, 3);
   const bubbles = [];
   for(let b=0;b<bubbleCount;b++){
 	let blockCount = 1;
 	if((r.multiBlockOn !== false) && Math.random() < (r.multiBlockProb||0)){
 	  /* ★全局硬上限：所有角色拼好卡最大块数强制上限6张 */
 	  const GLOBAL_MULTI_BLOCK_MAX = 6;
-	  blockCount = 1 + Math.floor(Math.random() * Math.max(1, (r.maxBlocks||1)-1));
-	  blockCount = Math.min(blockCount, r.maxBlocks||1);
-	  blockCount = Math.min(blockCount, GLOBAL_MULTI_BLOCK_MAX);
+	  const _maxBlk = Math.min(r.maxBlocks || 1, GLOBAL_MULTI_BLOCK_MAX);
+	  blockCount = _calcRandInt(1, _maxBlk, 1, 1);
 	}
 	const parts = [];
 	/* ★【新增】单字字卡条数不能超过拼好卡块数上限，取两者最小值 */
@@ -14770,7 +14583,7 @@ function genReply(useTimed){
 	}
 	bubbles.push({parts});
   }
-  return [{kind:'bubbles', bubbles, willRecall: willRecall}];
+  return [{kind:'bubbles', bubbles}];
 }
 
 /* ============================================================
@@ -18320,6 +18133,56 @@ function sendMessage(){
      - 处理完一条，下一条的回复延迟重新计算（串行）
    ============================================================ */
 
+ /* ---------- 公共小工具：延迟计算 ----------
+   已读线、回复线都从这里拿随机延迟，不再各写一遍 */
+function _calcDelayMs(minVal, maxVal, defaultMin, defaultMax, scale){
+  const dMin = (typeof minVal === 'number') ? minVal : defaultMin;
+  const dMax = (typeof maxVal === 'number') ? Math.max(dMin, maxVal) : defaultMax;
+  const s = (typeof scale === 'number') ? scale : 1;
+  return (dMin + Math.random() * (dMax - dMin)) * s;
+}
+
+/* 公共小工具：取一个范围内的随机整数（含两端），夹上下限 */
+function _calcRandInt(minVal, maxVal, defaultMin, defaultMax){
+  const dMin = (typeof minVal === 'number') ? minVal : defaultMin;
+  const dMax = (typeof maxVal === 'number') ? Math.max(dMin, maxVal) : defaultMax;
+  return dMin + Math.floor(Math.random() * (dMax - dMin + 1));
+}
+
+/* 公共小工具：一条角色气泡发出去后，要不要排撤回
+   - 读该角色自己的 recallOn / recallRate
+   - 摇中就给它排 1~60 秒后撤回，只管这一条 */
+function _scheduleRecallForMsg(roleId, msgId){
+  if(!roleId || !msgId) return;
+  const r = getReply(roleId);
+  if(!r.recallOn) return;
+  const rate = (typeof r.recallRate === 'number') ? r.recallRate : 0.05;
+  if(Math.random() >= rate) return;
+  const wait = 1000 + Math.floor(Math.random() * 59000);
+  setTimeout(function(){
+    const key = 'mj_msgs_' + roleId;
+    if(getCurrentRoleId() === roleId){
+      const idx = msgs.findIndex(function(x){ return x && x.id === msgId; });
+      if(idx >= 0 && !msgs[idx].recalled){
+        const oldT = msgs[idx].time || Date.now();
+        msgs[idx] = { id: msgs[idx].id, role: 'char', recalled: true, time: oldT };
+        saveMsgs();
+        renderChat();
+      }
+    } else {
+      let arr = lsGet(key, null);
+      if(Array.isArray(arr)){
+        const idx = arr.findIndex(function(x){ return x && x.id === msgId; });
+        if(idx >= 0 && !arr[idx].recalled){
+          const oldT = arr[idx].time || Date.now();
+          arr[idx] = { id: arr[idx].id, role: 'char', recalled: true, time: oldT };
+          lsSet(key, arr);
+        }
+      }
+    }
+  }, wait);
+}
+
 /* ---------- 已读线 ---------- */
 let _readQueue = [];
 let _readQueueRunning = false;
@@ -18359,9 +18222,7 @@ function _drainReadQueue(){
 
   /* 已读延迟：1~10 秒 */
   const r = getReply();
-  const dMin = (typeof r.readDelayMin === 'number') ? r.readDelayMin : 1;
-  const dMax = (typeof r.readDelayMax === 'number') ? Math.max(dMin, r.readDelayMax) : 10;
-  const delayMs = (dMin + Math.random() * (dMax - dMin)) * 1000;
+  const delayMs = _calcDelayMs(r.readDelayMin, r.readDelayMax, 1, 10, 1000);
 
   setTimeout(function(){
     if(!_readQueueRunning) return;
@@ -18421,9 +18282,7 @@ function _drainReplyQueue(){
 
   /* 回复延迟：minDelay~maxDelay */
   const r = getReply();
-  const dMin = (typeof r.minDelay === 'number') ? r.minDelay : 1000;
-  const dMax = (typeof r.maxDelay === 'number') ? Math.max(dMin, r.maxDelay) : 10000;
-  const delayMs = dMin + Math.random() * (dMax - dMin);
+  const delayMs = _calcDelayMs(r.minDelay, r.maxDelay, 1000, 10000, 1);
 
   setTimeout(function(){
     try{
@@ -18481,17 +18340,10 @@ function _drainReplyQueue(){
     }
   }, delayMs);
 }
-/* ===== 已读状态机 =====
-   scheduleReadReceipt 已删除：全站无调用。
-   现在所有「未读 → 终态」的推进，统一走 armReadTimer → _applyReadStateUpTo。
-*/
+ 
 
  /* ===== 撤回：辅助函数 ===== */
-function pickRandomCardText(){
-  const pool = getAllNormalCards('public').concat(getAllNormalCards(getCurrentRoleId()));
-  if(!pool.length) return '刚刚手滑了';
-  return pool[Math.floor(Math.random()*pool.length)];
-}
+ 
 
 /* 输入中尾巴：统一显示 / 隐藏入口，同时更新跨渲染的状态 */
 function getTypingBar(){
@@ -18510,10 +18362,7 @@ function hideTypingBar(){
   const bar = getTypingBar();
   if(bar) bar.classList.remove('show');
 }
-function showTypingHint(){
-  showTypingBar();
-  return ()=> hideTypingBar();
-}
+ 
 
 /* 把某条 user 消息以及它上面的所有未读 user 消息，统一推成同一个状态。
    规则：
@@ -18553,10 +18402,7 @@ function _applyReadStateUpTo(anchorMsg, state){
 
  
 
-function markLastUserRead(){
-  const lastUser = [...msgs].reverse().find(x=>x.role==='user' && !x.recalled && !x.sys && !x.namecard);
-  _applyReadStateUpTo(lastUser, 'read');
-}
+ 
 
   
 
@@ -18577,6 +18423,10 @@ function appendMsgToRole(roleId, msg){
   if(!Array.isArray(arr)) arr = [];
   arr.push(msg);
   lsSet(key, arr);
+  /* ★ 统一撤回入口：只要是角色发的、不是系统/撤回消息，就各自摇一次撤回 */
+  if(msg && msg.role === 'char' && !msg.sys && !msg.recalled){
+    try{ _scheduleRecallForMsg(roleId, msg.id); }catch(e){}
+  }
   /* 如果用户正在看这个角色，直接刷 UI */
   if(getCurrentRoleId() === roleId){
     msgs = arr;
@@ -19576,34 +19426,16 @@ function fireActiveMessage(roleId){
     return fresh;
   })();
 
-  /* ★ 主动发消息落地后：把当前正在看的这个角色里，我方所有未读翻成"已读不回" */
+  /* ★ 主动发消息落地后：把当前正在看的这个角色里，我方所有未读翻成"已读" */
   function markActiveUnreadNoReply(){
     if(getCurrentRoleId() !== roleId) return;
     try{
       const lastU = [...msgs].reverse().find(x => x.role==='user' && !x.recalled && !x.sys && !x.namecard && x.readState === 'unread');
-      if(lastU) _applyReadStateUpTo(lastU, 'noReply');
-    }catch(e){ console.error('主动消息已读不回推平失败', e); }
+      if(lastU) _applyReadStateUpTo(lastU, 'read');
+    }catch(e){ console.error('主动消息已读推平失败', e); }
   }
 
-  /* ★ bug2 修复：
-     如果这个角色最近一次回复是「已读不回」（noReply），
-     说明 Ta 现在就是不想理你，主动消息也一起压住，
-     避免「显示已读不回、转头又主动发一条」这种自相矛盾。 */
-  try{
-    const key = 'mj_msgs_' + roleId;
-    const arr = lsGet(key, null);
-    if(Array.isArray(arr) && arr.length){
-      const lastUser = [...arr].reverse().find(x =>
-        x && x.role === 'user' && !x.recalled && !x.sys && !x.namecard
-      );
-      if(lastUser && lastUser.readState === 'noReply'){
-        /* 已读不回：这次主动直接取消，并重新排下一次掷骰 */
-        cfg.activeLastFireAt = Date.now();
-        saveReply();
-        return;
-      }
-    }
-  }catch(e){ console.error('已读不回拦截主动消息出错', e); }
+ 
 
   const text = pickActiveCardText(roleId);
   if(!text){
@@ -19654,7 +19486,8 @@ function fireActiveMessage(roleId){
         time: Date.now(),
         active: true
       };
-      appendMsgToRole(roleId, vMsg);
+      const _vId = appendMsgToRole(roleId, vMsg);
+      if(_vId){ try{ _scheduleRecallForMsg(roleId, _vId); }catch(e){} }
       markActiveUnreadNoReply();
       markActiveUnreadNoReply();
       if(!isViewingRole(roleId)){
@@ -19684,25 +19517,11 @@ function fireActiveMessage(roleId){
     active: true
   };
 
-  /* 随机引用旧消息：30% 概率引用一条，按"距今多久"加权（越远概率越小） */
-  if(Math.random() < 0.30){
-    const key = 'mj_msgs_' + roleId;
-    const hist = lsGet(key, null);
-    if(Array.isArray(hist) && hist.length){
-      /* 排除撤回、系统、名片，只引用有文字内容的 */
-      const cands = hist.filter(m => !m.recalled && !m.sys && (m.text || m.sticker || m.voice));
-      if(cands.length){
-        /* 用加权随机：私聊上限 2 个月，越远权重越低 */
-        const pick = pickQuoteTarget(cands, false, null) || cands[Math.floor(Math.random() * cands.length)];
-        let quoteText = pick.text || '';
-        if(!quoteText && pick.sticker) quoteText = '[表情图]';
-        if(!quoteText && pick.voice)   quoteText = '[语音]';
-        if(quoteText){
-          const who = pick.role === 'user' ? userName() : getRoleNameById(roleId);
-          msg.quote = { name: who, text: quoteText };
-        }
-      }
-    }
+  /* ★ 统一入口：主动发消息时的引用，也走 buildQuoteTarget 同一份逻辑，
+     不再自己筛消息、自己拼文字 */
+  const _activeQuote = buildQuoteTarget(roleId);
+  if(_activeQuote){
+    msg.quote = { name: _activeQuote.name, text: _activeQuote.text, msgId: _activeQuote.msgId };
   }
 
   appendMsgToRole(roleId, msg);
@@ -19799,11 +19618,6 @@ function fireActiveDivine(roleId){
   appendMsgToRole(roleId, msg);
   markActiveUnreadNoReply();
 
-  if(!isViewingRole(roleId)){
-    const role = getRoleById(roleId) || {};
-    showMsgNotify(role.name || '角色', '占卜：' + q, role.avatar, roleId);
-  }
-
   r.divineLastFireAt = Date.now();
   saveReply();
 }
@@ -19883,34 +19697,8 @@ function runTimedReplyRounds(){
         if(bar) bar.classList.remove('show');
         if(res[0].kind==='bubbles'){
           /* 引用：跟 emitBubbles 同款逻辑 */
-          const r = getReply();
-          const _qr = (typeof r.quoteRate === 'number') ? r.quoteRate : 0.08;
-          let quote = null;
-          if(Math.random() < _qr){
-            const myCands = msgs.filter(x => x.role === 'user' && !x.recalled && !x.sys && x.text);
-            const taCands = msgs.filter(x => x.role === 'char' && !x.recalled && !x.sys && x.text);
-            let useMine = Math.random() < 0.5;
-            let pick = null;
-            if(useMine){
-              pick = pickQuoteTarget(myCands, false, null);
-              if(!pick && taCands.length){ pick = pickQuoteTarget(taCands, false, null); useMine = false; }
-            } else {
-              pick = pickQuoteTarget(taCands, false, null);
-              if(!pick && myCands.length){ pick = pickQuoteTarget(myCands, false, null); useMine = true; }
-            }
-            if(pick && pick.text){
-              const _fullRate = (typeof r.quoteFullRate === 'number') ? r.quoteFullRate : 0.8;
-              const useFull = Math.random() < _fullRate;
-              let txt = pick.text;
-              if(!useFull && txt.length > 4){
-                const len = 1 + Math.floor(Math.random()*txt.length);
-                const start = Math.floor(Math.random()*(txt.length-len+1));
-                txt = txt.slice(start, start+len);
-              }
-              const who = useMine ? userName() : getRoleNameById(roleId);
-              quote = { name: who, text: txt, msgId: pick.id };
-            }
-          }
+          /* ★ 统一入口：定时连发的引用，也走 buildQuoteTarget 同一份逻辑 */
+          const quote = buildQuoteTarget(roleId);
           res[0].bubbles.forEach((bubble, bi)=>{
             const inlineParts = [];
             const standaloneParts = [];
@@ -20021,7 +19809,7 @@ var ReplyRunner = (function(){
    3. 已读状态每 30 秒摇一次 5% 概率变回未读
    4. 已读不回（noReply）不参与
 */
-var _readArmTimer = null;
+ 
 
 /* 已读回滚：只允许最后一条 read 及其之后的 user 消息一起变未读，
    绝不允许"上面已读、下面未读"的夹层出现 */
@@ -20034,10 +19822,7 @@ var _readArmTimer = null;
    4. 已读后每 30 秒摇一次 5% 概率 → 未读
    5. 已读不回（noReply）独立，不参与
 */
-/* armReadCooldown 已删除：全站无调用。
-   原来那次「2 分钟冷却重摇」已经被 armReadTimer 取代。 */
-
-  
+ 
 
  
 
@@ -20045,17 +19830,19 @@ function triggerReply(onFinish){
   const role = getRole();
   const roleId = role.id;
 
+  /* ★ 统一入口：所有回复（含主动、被动、连发）在动手前，
+     先把这条角色消息能引用的对象先定好，挂到 role 上。
+     runReplyChain、fireActiveMessage、runTimedReplyRounds
+     都从这里读，不再各自写一套引用判断。 */
+  role._quoteTarget = buildQuoteTarget(roleId);
+
   /* 该角色已在回复中：
      ★ 关键修复：绝不能立刻 onFinish，否则队列会以为这轮完了，
        马上去处理下一条 → 第一条还在打字，第二条就被摇成已读不回。
      正确做法：把 onFinish 挂起，等当前链真正跑完，再统一触发。 */
   if(ReplyRunner.isRunning(roleId)){
     pendingReply[roleId] = true;
-    if(typeof onFinish === 'function'){
-      if(!window.__pendingOnFinish) window.__pendingOnFinish = {};
-      if(!Array.isArray(window.__pendingOnFinish[roleId])) window.__pendingOnFinish[roleId] = [];
-      window.__pendingOnFinish[roleId].push(onFinish);
-    }
+ 
     return;
   }
 
@@ -20063,26 +19850,75 @@ function triggerReply(onFinish){
 
   ReplyRunner.start(roleId, function(done){
     runReplyChain(function(){
-      /* 先把当前链挂起的 onFinish 全部取出来，等 done 之后一起调 */
-      const queued = (window.__pendingOnFinish && Array.isArray(window.__pendingOnFinish[roleId]))
-        ? window.__pendingOnFinish[roleId].slice()
-        : [];
-      if(window.__pendingOnFinish) window.__pendingOnFinish[roleId] = [];
-
       if(pendingReply[roleId]){
         pendingReply[roleId] = false;
         done();
-        /* 当前链刚结束，先把挂起回调按序触发，再触发新一轮 */
-        queued.forEach(function(fn){ try{ fn(); }catch(e){} });
         if(typeof onFinish === 'function'){ try{ onFinish(); }catch(e){} }
         setTimeout(triggerReply, 300);
       } else {
         done();
-        queued.forEach(function(fn){ try{ fn(); }catch(e){} });
         if(typeof onFinish === 'function'){ try{ onFinish(); }catch(e){} }
       }
     });
   });
+}
+
+/* ============================================================
+   ★ 统一引用目标构建
+   - 所有回复路径（被动回复、主动发消息、定时连发、主动占卜后的回复）
+     都调这一个函数拿引用对象
+   - 我方消息 + 角色自己的消息，两边都算候选
+   - 按「距今多久」加权：越近权重越高，超出上限不引用
+   - 支持的消息类型：文字 / 名片 / 占卜 / 语音 / 表情图 / 转发卡 / 视频卡 / 单字字卡
+   ============================================================ */
+function buildQuoteTarget(roleId){
+  const r = getReply(roleId);
+  if(r.quoteOn === false) return null;
+  const rate = (typeof r.quoteRate === 'number') ? r.quoteRate : 0.08;
+  if(Math.random() >= rate) return null;
+
+  const key = 'mj_msgs_' + roleId;
+  const srcMsgs = (getCurrentRoleId() === roleId) ? msgs : (lsGet(key, null) || []);
+  if(!Array.isArray(srcMsgs) || !srcMsgs.length) return null;
+
+  /* 候选：我方发的 + 角色自己发的，两边都算 */
+  const myCands = srcMsgs.filter(x => x.role === 'user' && !x.recalled && !x.sys);
+  const taCands = srcMsgs.filter(x => x.role === 'char' && !x.recalled && !x.sys);
+
+  let useMine = Math.random() < 0.5;
+  let pick = null;
+  if(useMine){
+    pick = pickQuoteTarget(myCands, false, null);
+    if(!pick && taCands.length){ pick = pickQuoteTarget(taCands, false, null); useMine = false; }
+  } else {
+    pick = pickQuoteTarget(taCands, false, null);
+    if(!pick && myCands.length){ pick = pickQuoteTarget(myCands, false, null); useMine = true; }
+  }
+  if(!pick) return null;
+
+  /* 把这条消息变成可显示的文字 */
+  let txt = pick.text || '';
+  if(!txt && pick.kind === 'pinyin') txt = pick.pinyin || pick.han || '';
+  if(!txt && pick.namecard && pick.namecard.name) txt = '[名片] ' + pick.namecard.name;
+  if(!txt && pick.divine) txt = 'Q：' + (pick.divine.q || '');
+  if(!txt && pick.voice) txt = '[语音 ' + (pick.voice || 0) + '"]';
+  if(!txt && pick.sticker) txt = '[表情图]';
+  if(!txt && pick.forwardCard) txt = pick.forwardCard.text || '[转发]';
+  if(!txt && pick.mergeCard) txt = '[聊天记录]';
+  if(!txt && pick.videoCard) txt = '[视频] ' + (pick.videoCard.title || '');
+  if(!txt) return null;
+
+  /* 整段引 / 部分引 */
+  const fullRate = (typeof r.quoteFullRate === 'number') ? r.quoteFullRate : 0.8;
+  const useFull = Math.random() < fullRate;
+  if(!useFull && txt.length > 4){
+    const len = 1 + Math.floor(Math.random() * txt.length);
+    const start = Math.floor(Math.random() * (txt.length - len + 1));
+    txt = txt.slice(start, start + len);
+  }
+
+  const who = useMine ? userName() : getRoleNameById(roleId);
+  return { name: who, text: txt, msgId: pick.id };
 }
 
 /* 一条完整的回复链：抽牌 → 判断空/撤回 → 排打字中 → 排 gap → 发消息 */
@@ -20165,35 +20001,12 @@ function runReplyChain(onDone){
         const _qOn = (r2.quoteOn !== false);
         let quote = null;
         if(_qOn && Math.random() < _qr){
-          const myCands = srcMsgs.filter(x => x.role === 'user' && !x.recalled && !x.sys && x.text);
-          const taCands = srcMsgs.filter(x => x.role === 'char' && !x.recalled && !x.sys && x.text);
-          let useMine = Math.random() < 0.5;
-          let pick = null;
-          if(useMine){
-            pick = pickQuoteTarget(myCands, false, null);
-            if(!pick && taCands.length){ pick = pickQuoteTarget(taCands, false, null); useMine = false; }
-          } else {
-            pick = pickQuoteTarget(taCands, false, null);
-            if(!pick && myCands.length){ pick = pickQuoteTarget(myCands, false, null); useMine = true; }
-          }
-          if(pick && pick.text){
-            const _fullRate = (typeof r2.quoteFullRate === 'number') ? r2.quoteFullRate : 0.8;
-            const useFull = Math.random() < _fullRate;
-            let txt = pick.text;
-            if(!useFull && txt.length > 4){
-              const len = 1 + Math.floor(Math.random()*txt.length);
-              const start = Math.floor(Math.random()*(txt.length-len+1));
-              txt = txt.slice(start, start+len);
-            }
-            const who = useMine ? userName() : getRoleNameById(targetRoleId);
-            quote = { name: who, text: txt, msgId: pick.id };
-          }
+          /* ★ 统一入口：引用对象在 triggerReply 里已经算好挂在 role 上，
+             这里只管按概率取用，不再重新筛消息。 */
+          quote = role._quoteTarget || null;
         }
-        if(!window.__lastSentIds) window.__lastSentIds = { inline:'', standalone:{} };
-        window.__lastSentIds.inline = '';
-        window.__lastSentIds.standalone = {};
+ 
         res[0].bubbles.forEach((bubble,idx)=>{
-          bubble.__bidx = idx;
           const inlineParts = [];
           const standaloneParts = [];
           bubble.parts.forEach(p => {
@@ -20246,53 +20059,18 @@ function runReplyChain(onDone){
           if(inlineMsg){
             const _id = appendMsgToRole(role.id, inlineMsg);
             if(_id){
-              window.__lastSentIds.inline = _id;
               try{ tryRoleReaction(role.id, _id); }catch(e){}
             }
           }
           standaloneMsgs.forEach(function(m, si){
             const _id = appendMsgToRole(role.id, m);
             if(_id){
-              window.__lastSentIds.standalone[bubble.__bidx + '_' + si] = _id;
               try{ tryRoleReaction(role.id, _id); }catch(e){}
             }
           });
         });
 
-        if(res[0] && res[0].willRecall){
-          let lastId = '';
-          const ids = window.__lastSentIds || { inline:'', standalone:{} };
-          const allIds = [];
-          if(ids.inline) allIds.push(ids.inline);
-          Object.keys(ids.standalone || {}).forEach(function(k){
-            allIds.push(ids.standalone[k]);
-          });
-          if(allIds.length) lastId = allIds[allIds.length - 1];
-
-          if(lastId){
-            const recallDelay = 1000 + Math.floor(Math.random() * 59000);
-            setTimeout(function(){
-              const key = 'mj_msgs_' + role.id;
-              if(getCurrentRoleId() === role.id){
-                const idx = msgs.findIndex(function(x){ return x && x.id === lastId; });
-                if(idx >= 0){
-                  msgs[idx] = { id: msgs[idx].id, role: 'char', recalled: true, time: msgs[idx].time || Date.now() };
-                  saveMsgs();
-                  renderChat();
-                }
-              } else {
-                let arr = lsGet(key, null);
-                if(Array.isArray(arr)){
-                  const idx = arr.findIndex(function(x){ return x && x.id === lastId; });
-                  if(idx >= 0){
-                    arr[idx] = { id: arr[idx].id, role: 'char', recalled: true, time: arr[idx].time || Date.now() };
-                    lsSet(key, arr);
-                  }
-                }
-              }
-            }, recallDelay);
-          }
-        }
+ 
       }
     }catch(err){ console.error('triggerReply error:', err); }
     onDone();
@@ -22920,7 +22698,8 @@ function openMergeDetail(mergeCard){
 
 /* 抽 1~3 条普通字卡拼成理解文本 */
 function pickDivineRoleReadText(roleId, maxN){
-  const n = 1 + Math.floor(Math.random() * (Math.max(1, maxN||3)));
+  const _rmax = (typeof maxN === 'number' && maxN > 0) ? maxN : ((getReply(roleId).divineReadCardMax) || 15);
+  const n = _calcRandInt(1, Math.max(1, _rmax), 1, 15);
   const pub = getAllNormalCards('public');
   const own = getAllNormalCards(roleId);
   const pool = own.concat(pub);
@@ -22929,21 +22708,29 @@ function pickDivineRoleReadText(roleId, maxN){
   for(let i = 0; i < n; i++){
     parts.push(pool[Math.floor(Math.random() * pool.length)]);
   }
-  /* 用标点池拼一下，让文本不显得生硬 */
-  try{
-    const r = getReply(roleId);
-    if(r.punctOn && Array.isArray(r.punctList) && r.punctList.length){
-      const seg = [];
-      for(let i = 0; i < parts.length; i++){
-        seg.push(parts[i]);
-        if(i < parts.length - 1){
-          seg.push(r.punctList[Math.floor(Math.random() * r.punctList.length)]);
-        }
-      }
-      return seg.join('') + r.punctList[Math.floor(Math.random() * r.punctList.length)];
+  /* 用标点池拼，按角色自己的概率带 emoji / 颜文字 */
+  let r = { punctOn:false, punctList:[], emojiOn:false, emojiRate:0, kaoOn:false, kaoRate:0 };
+  try{ r = getReply(roleId); }catch(e){}
+  const seg = [];
+  for(let i = 0; i < parts.length; i++){
+    seg.push(parts[i]);
+    if(i < parts.length - 1 && r.punctOn && Array.isArray(r.punctList) && r.punctList.length){
+      seg.push(r.punctList[Math.floor(Math.random() * r.punctList.length)]);
     }
-  }catch(e){}
-  return parts.join('　');
+  }
+  let out = seg.join('');
+  if(r.punctOn && Array.isArray(r.punctList) && r.punctList.length){
+    out += r.punctList[Math.floor(Math.random() * r.punctList.length)];
+  }
+  if(r.emojiOn && Math.random() < (r.emojiRate || 0)){
+    const e = pickRoleEmojiFor(roleId);
+    if(e) out += e;
+  }
+  if(r.kaoOn && Math.random() < (r.kaoRate || 0)){
+    const k = pickRoleKaoFor(roleId);
+    if(k) out += k;
+  }
+  return out || parts.join('　');
 }
 
 /* 找一张占卜卡消息（用来挂理解）
@@ -25323,7 +25110,7 @@ function pickQuoteTarget(arr, isGroup, excludeRoleId){
   arr.forEach(function(m){
     if(!m || m.sys) return;
     if(m.recalled) return;
-    if(!m.text) return;
+    if(!(m.text || m.namecard || m.divine || m.voice || m.sticker)) return;
     if(excludeRoleId && m.roleId === excludeRoleId) return;
     const w = quoteWeightOf(m.time, isGroup);
     if(w <= 0) return;
@@ -28872,24 +28659,17 @@ function pickAllowedItemKeys(roleId){
     }
   }
 
-  /* ★ 新增：从"允许"的项里，再去掉被锁住的。
-     锁住的项角色不改值，但这里要顺便掷一次 5% 解锁 */
+  /* 从"允许"的项里，再去掉被锁住的。
+     锁住的项角色永远不改，不存在自动解锁 */
   const unlocked = [];
   allowed.forEach(function(k){
     if(s.locked && s.locked[k]){
-      /* 锁住了：5% 概率解锁 */
-      if(Math.random() < 0.05){
-        s.locked[k] = false;
-        /* 解锁后这一项立刻加入可改名单 */
-        unlocked.push(k);
-      }
-      /* 没摇中解锁 → 跳过，这一轮不改它 */
+      /* 锁住了：直接跳过，永不自动解开 */
+      return;
     } else {
       unlocked.push(k);
     }
   });
-  /* 把解锁结果写回 */
-  saveRoleSelfSet(roleId, s);
 
   if(!unlocked.length) return [];
   /* 一次全切 */
@@ -28907,16 +28687,18 @@ function rollNewValueForKey(key){
   /* 读取某一项的「用户设定范围」：
      - 返回 { has:false, min:0, max:0 } → 用户没设，角色随便摇
      - 返回 { has:true,  min, max }   → 角色摇出来必须落在这区间内
-     判断依据：getRoleSelfSetFloorOne 返回 { min, max }，两个都 0 视为未设 */
+     判断依据：getRoleSelfSetFloorOne 返回 { min, max }，两个都 0 视为未设
+     ★ 只填一端：另一端放开（只限下限 / 只限上限），不再补成固定值 */
   const _range = function(k){
     let l = { min: 0, max: 0 };
     try{ l = getRoleSelfSetFloorOne(_rid, k); }catch(e){}
     const mn = (typeof l.min === 'number' && l.min > 0) ? l.min : 0;
     const mx = (typeof l.max === 'number' && l.max > 0) ? l.max : 0;
     if(mn === 0 && mx === 0) return { has:false, min: 0, max: 0 };
-    /* 只填了一个数：另一端补同一个数 → 变成固定 */
-    if(mn > 0 && mx === 0) return { has:true, min: mn, max: mn };
-    if(mn === 0 && mx > 0) return { has:true, min: mx, max: mx };
+    /* 只填了下限：上限放开，只保证 ≥ min */
+    if(mn > 0 && mx === 0) return { has:true, min: mn, max: Number.POSITIVE_INFINITY };
+    /* 只填了上限：下限放开，只保证 ≤ max */
+    if(mn === 0 && mx > 0) return { has:true, min: 0, max: mx };
     return { has:true, min: Math.min(mn, mx), max: Math.max(mn, mx) };
   };
 
@@ -29314,43 +29096,40 @@ function runRoleSelfSetChange(roleId){
     }catch(e){ console.error('角色自调出错 key=' + k, e); }
   });
 
-  /* 2. 额外：5% 概率顺手拨动开关（但必须先被允许） */
+  /* 2. 额外：50% 概率顺手拨动一个总开关（但必须先被允许） */
   const curSet = getRoleSelfSet(roleId);
-  if(curSet.allowSwitch === false){
-    // 如果关闭了允许调开关，直接跳过这一步
-    return afterSwitchCheck();
-  }
-  
-  const switchMap = {
-    'noReply': 'noReplyOn',
-    'quote': 'quoteOn',
-    'recall': 'recallOn',
-    'active': 'activeOn',
-    'divine': 'divineOn',
-    'divineRead': 'divineReadOn'
-  };
-  const switchKeys = keys.filter(k => switchMap[k]);
-  
-  if(switchKeys.length > 0 && Math.random() < 0.05){
-    const k = switchKeys[Math.floor(Math.random() * switchKeys.length)];
-    const keyOn = switchMap[k];
-    const cur = getReply();
+  if(curSet.allowSwitch !== false){
+    const switchMap = {
+      'noReply': 'noReplyOn',
+      'quote': 'quoteOn',
+      'recall': 'recallOn',
+      'active': 'activeOn',
+      'divine': 'divineOn',
+      'divineRead': 'divineReadOn'
+    };
+    const switchKeys = keys.filter(k => switchMap[k]);
     
-    if(keyOn in cur){
-      const oldState = cur[keyOn] !== false;
-      cur[keyOn] = !oldState;
-      saveReply();
+    if(switchKeys.length > 0 && Math.random() < 0.05){
+      const k = switchKeys[Math.floor(Math.random() * switchKeys.length)];
+      const keyOn = switchMap[k];
+      const cur = getReply();
       
-      const switchName = {
-        'noReply': '已读不回',
-        'quote': '引用',
-        'recall': '撤回',
-        'active': '主动发消息',
-        'divine': '主动占卜',
-        'divineRead': '写理解'
-      }[k] || k;
+      if(keyOn in cur){
+        const oldState = cur[keyOn] !== false;
+        cur[keyOn] = !oldState;
+        saveReply();
+        
+        const switchName = {
+          'noReply': '已读不回',
+          'quote': '引用',
+          'recall': '撤回',
+          'active': '主动发消息',
+          'divine': '主动占卜',
+          'divineRead': '写理解'
+        }[k] || k;
 
-      results.push('【' + switchName + '】开关被' + (cur[keyOn] ? '打开' : '关闭'));
+        results.push('【' + switchName + '】开关被' + (cur[keyOn] ? '打开' : '关闭'));
+      }
     }
   }
 
@@ -29519,6 +29298,46 @@ function settleRoleSelfSetInvite(roleId){
         if(rr){ rr.apply(); results.push(rr.text()); }
       }catch(e){ console.error('邀请同意执行失败 key=' + k, e); }
     });
+  }
+
+  /* ★ 邀请同意时，也 50% 概率顺手拨动一个开关 */
+  const curSet = getRoleSelfSet(roleId);
+  if(curSet.allowSwitch !== false){
+    const switchMap = {
+      'noReply': 'noReplyOn',
+      'quote': 'quoteOn',
+      'recall': 'recallOn',
+      'active': 'activeOn',
+      'divine': 'divineOn',
+      'divineRead': 'divineReadOn'
+    };
+    const eligibleKeys = ROLE_SELFSET_ITEMS
+      .filter(it => curSet.allowed[it.key] && !(curSet.locked && curSet.locked[it.key]))
+      .map(it => it.key)
+      .filter(k => switchMap[k]);
+
+    if(eligibleKeys.length > 0 && Math.random() < 0.05){
+      const k = eligibleKeys[Math.floor(Math.random() * eligibleKeys.length)];
+      const keyOn = switchMap[k];
+      const cur = getReply();
+      
+      if(keyOn in cur){
+        const oldState = cur[keyOn] !== false;
+        cur[keyOn] = !oldState;
+        saveReply();
+        
+        const switchName = {
+          'noReply': '已读不回',
+          'quote': '引用',
+          'recall': '撤回',
+          'active': '主动发消息',
+          'divine': '主动占卜',
+          'divineRead': '写理解'
+        }[k] || k;
+
+        results.push('【' + switchName + '】开关被' + (cur[keyOn] ? '打开' : '关闭'));
+      }
+    }
   }
 
   if(!results.length) return;
@@ -33205,7 +33024,6 @@ function openReplySettings(){ renderReplyPanel('reply'); showScreen('mReply'); }
 function renderReplyPanel(tab){
   const r = getReply();
   const body = $('#replyBody');
-  /* ★ tab 栏不再塞进 replyBody，改渲染到 replyTabsFixed（固定在顶部） */
   const tabsHost = $('#replyTabsFixed');
   if(tabsHost){
 	tabsHost.innerHTML = `
@@ -33213,8 +33031,13 @@ function renderReplyPanel(tab){
 	  <button class="rs-tab ${tab==='special'?'on':''}" data-tab="special">特殊</button>
 	  <button class="rs-tab ${tab==='call'?'on':''}" data-tab="call">通话</button>
 	  <button class="rs-tab ${tab==='sound'?'on':''}" data-tab="sound">音效</button>`;
+	tabsHost.querySelectorAll('.rs-tab').forEach(function(btn){
+	  btn.onclick = function(){
+		const t = btn.dataset.tab;
+		if(t && t !== tab) renderReplyPanel(t);
+	  };
+	});
   }
-  const tabs = '';
   let content = '';
   if(tab === 'reply'){
 	content = `
@@ -33250,12 +33073,12 @@ function renderReplyPanel(tab){
 
 	  <div class="section">
 		<div class="title title-sw">
-		  <span>已读不回</span>
+		  <span>已读不回概率</span>
 		  <label class="switch"><input type="checkbox" id="rsNoReplyOn" ${(r.noReplyOn!==false)?'checked':''}><span class="slider"></span></label>
 		</div>
 		${(r.noReplyOn!==false) ? `
 		  <div class="rs-line">
-		    <div class="rs-item"><span class="lbl">已读不回概率</span><input class="rs-num" type="number" id="rsNoReplyRate" min="0" max="100" value="${Math.round((r.noReplyRate||0.25)*100)}"><span class="unit">%</span></div>
+		    <div class="rs-item"><span class="lbl">概率</span><input class="rs-num" type="number" id="rsNoReplyRate" min="0" max="100" value="${Math.round((r.noReplyRate||0.25)*100)}"><span class="unit">%</span></div>
 		  </div>
 		` : ''}
 	  </div>
@@ -33311,6 +33134,9 @@ function renderReplyPanel(tab){
 		${r.divineReadOn ? `
 		  <div class="rs-line">
 		    <div class="rs-item"><span class="lbl">概率</span><input class="rs-num" type="number" id="rsDivineReadRate" min="0" max="100" value="${Math.round((r.divineReadRate||0)*100)}"><span class="unit">%</span></div>
+		  </div>
+		  <div class="rs-line">
+		    <div class="rs-item"><span class="lbl">最多拼卡</span><input class="rs-num" type="number" id="rsDivineReadCardMax" min="1" max="15" value="${r.divineReadCardMax||15}"><span class="unit">张</span></div>
 		  </div>
 		` : ''}
 	  </div>
@@ -33527,22 +33353,11 @@ function renderReplyPanel(tab){
 		<input type="file" id="soundFilePicker" accept="audio/*" style="display:none">
 	  </div>`;
   }
-  body.innerHTML = tabs + content;
+  body.innerHTML = content;
 
-  /* ★ 给固定 tab 栏的按钮绑定点击（tabs 现在渲染到 #replyTabsFixed 里了） */
-  const _tabsHost = document.getElementById('replyTabsFixed');
-  if(_tabsHost){
-    _tabsHost.querySelectorAll('.rs-tab').forEach(function(btn){
-      btn.onclick = function(){
-        const t = btn.dataset.tab;
-        if(!t) return;
-        renderReplyPanel(t);
-      };
-    });
-  }
+ 
   /* ★ 如果切到音效 tab，渲染一下每行状态 */
   if(tab === 'sound'){ try{ renderSoundRows(); }catch(e){} }
-  $$('#replyBody .rs-tab').forEach(t=>t.addEventListener('click', ()=>renderReplyPanel(t.dataset.tab)));
   /* ★ bindNum 改为从存储里取最新 r，避免闭包里的旧 r 覆盖最新设置 */
   const bindNum = (id,key,parser)=>{
     const el = $('#'+id);
@@ -33941,6 +33756,16 @@ function renderReplyPanel(tab){
     saveReply();
     const valEl = $('#rsDivineReadRateVal');
     if(valEl) valEl.textContent = this.value + '%';
+  });
+  const drCardMax = $('#rsDivineReadCardMax');
+  if(drCardMax) drCardMax.addEventListener('change', function(){
+    const cur = getReply();
+    let v = parseInt(this.value, 10);
+    if(isNaN(v) || v < 1) v = 1;
+    if(v > 15) v = 15;
+    this.value = v;
+    cur.divineReadCardMax = v;
+    saveReply();
   });
  
 }
@@ -40110,52 +39935,49 @@ function goToPage(name){
 .rs-item .rs-num[type=number]{-moz-appearance:textfield}
 
 /* ============================================================
-   ★ 回复设置 · 终极覆盖（一次性压死所有旧规则）
-   不管旧规则有没有删干净，这段加在最后，
-   对所有旧的 .n-row / .s-row / .rs-row / .rs-row-main 里的
-   数字输入框和标签一律强压。
+   回复设置 · 数字输入 & 滑杆 & 标签（重构版 · 单套规则）
    ============================================================ */
 
-/* 1. 所有数字输入框，不管在哪，全部变成 64px 宽的下划线 */
+/* 数字输入框：统一 64px 下划线风格 */
 #mReply #replyBody input[type=number]{
-  width:64px !important;
-  max-width:64px !important;
-  min-width:64px !important;
-  height:auto !important;
-  flex:none !important;
-  padding:4px 0 5px !important;
-  margin:0 !important;
-  border:none !important;
-  border-bottom:0.8px solid rgba(0,0,0,.15) !important;
-  border-radius:0 !important;
-  background:transparent !important;
-  font-size:15px !important;
-  font-family:Georgia,serif !important;
-  color:#1a1a1a !important;
-  text-align:center !important;
-  letter-spacing:.5px !important;
-  outline:none !important;
-  box-shadow:none !important;
-  line-height:1.3 !important;
-  -webkit-appearance:none !important;
-  appearance:none !important;
+  width:64px;
+  max-width:64px;
+  min-width:64px;
+  height:auto;
+  flex:none;
+  padding:4px 0 5px;
+  margin:0;
+  border:none;
+  border-bottom:0.8px solid rgba(0,0,0,.15);
+  border-radius:0;
+  background:transparent;
+  font-size:15px;
+  font-family:Georgia,serif;
+  color:#1a1a1a;
+  text-align:center;
+  letter-spacing:.5px;
+  outline:none;
+  box-shadow:none;
+  line-height:1.3;
+  -webkit-appearance:none;
+  appearance:none;
+  -moz-appearance:textfield;
 }
 #mReply #replyBody input[type=number]:focus{
-  border-bottom-color:#1a1a1a !important;
+  border-bottom-color:#1a1a1a;
 }
 #mReply #replyBody input[type=number]::-webkit-outer-spin-button,
 #mReply #replyBody input[type=number]::-webkit-inner-spin-button{
-  -webkit-appearance:none !important;
-  margin:0 !important;
+  -webkit-appearance:none;
+  margin:0;
 }
-#mReply #replyBody input[type=number]{ -moz-appearance:textfield !important; }
 
-/* 2. 所有滑杆一律隐藏 */
+/* 滑杆：统一隐藏 */
 #mReply #replyBody input[type=range]{
-  display:none !important;
+  display:none;
 }
 
-/* 3. 所有标签、单位、to 字，一律短、不换行、细体 */
+/* 标签 / 单位 / to 字 */
 #mReply #replyBody .n-row .lbl,
 #mReply #replyBody .n-row .unit,
 #mReply #replyBody .n-row .to,
@@ -40167,19 +39989,19 @@ function goToPage(name){
 #mReply #replyBody .rs-row-main .unit,
 #mReply #replyBody .rs-item .lbl,
 #mReply #replyBody .rs-item .unit{
-  font-size:11.5px !important;
-  color:#aaa !important;
-  letter-spacing:.5px !important;
-  font-weight:300 !important;
-  flex:none !important;
-  width:auto !important;
-  min-width:0 !important;
-  max-width:none !important;
-  white-space:nowrap !important;
-  padding:0 !important;
-  margin:0 !important;
-  background:transparent !important;
-  border:none !important;
+  font-size:11.5px;
+  color:#aaa;
+  letter-spacing:.5px;
+  font-weight:300;
+  flex:none;
+  width:auto;
+  min-width:0;
+  max-width:none;
+  white-space:nowrap;
+  padding:0;
+  margin:0;
+  background:transparent;
+  border:none;
   -webkit-font-smoothing:antialiased;
 }
 #mReply #replyBody .n-row .to,
@@ -40188,36 +40010,29 @@ function goToPage(name){
 #mReply #replyBody .rs-row .to,
 #mReply #replyBody .rs-row-main .unit,
 #mReply #replyBody .rs-item .unit{
-  color:#c8c8c8 !important;
+  color:#c8c8c8;
 }
 
-/* 4. 所有 .n-row / .s-row / .rs-row / .rs-row-main 包着的数字，一律横排 */
+/* 数字行容器：统一横排 */
 #mReply #replyBody .n-row,
 #mReply #replyBody .s-row,
 #mReply #replyBody .rs-row,
 #mReply #replyBody .rs-row-main,
 #mReply #replyBody .rs-line{
-  display:flex !important;
-  align-items:baseline !important;
-  flex-wrap:wrap !important;
-  gap:14px 22px !important;
-  padding:4px 0 !important;
-  width:100% !important;
-  border:none !important;
-  background:transparent !important;
+  display:flex;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:14px 22px;
+  padding:4px 0;
+  width:100%;
+  border:none;
+  background:transparent;
 }
 
-/* 5. 旧的 .num 数字，不再展示 */
+/* 旧的 .num 数字，不再展示 */
 #mReply #replyBody .s-row .num,
 #mReply #replyBody .rs-row-main .num{
-  display:none !important;
-}
-
-/* 6. 移除旧 input[type=number] 里可能残留的 focus / hover 样式 */
-#mReply #replyBody input[type=number]:hover,
-#mReply #replyBody input[type=number]:active{
-  border:none !important;
-  border-bottom:0.8px solid rgba(0,0,0,.15) !important;
+  display:none;
 }
 
   
