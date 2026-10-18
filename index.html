@@ -10,6 +10,57 @@
 <style>
 @font-face{font-family:'LikeJian';src:url('https://cdn.jsdelivr.net/gh/maoken-fonts/MaokenYingBiKaiShuJ@main/MaokenYingBiKaiShuJ_0.20.ttf') format('truetype');font-display:swap}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:rgba(0,0,0,0) !important;-webkit-touch-callout:none;user-select:none}
+/* ★ 开屏启动页样式 */
+#bootLoader {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--app-font);
+  transition: opacity 0.5s ease;
+}
+#bootLoader.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+#bootLoader .boot-icon {
+  width: 80px; height: 80px;
+  margin-bottom: 24px;
+  animation: bootFloat 3s ease-in-out infinite;
+}
+@keyframes bootFloat {
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-6px)}
+}
+#bootLoader .boot-name {
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: 4px;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+#bootLoader .boot-sub {
+  font-size: 9px;
+  letter-spacing: 6px;
+  color: #bde8f5;
+  font-family: Georgia, serif;
+  font-weight: bold;
+}
+#bootLoader .boot-line {
+  width: 20px;
+  height: 1px;
+  background: #bde8f5;
+  margin-top: 20px;
+  animation: bootExpand 2s ease-in-out infinite;
+}
+@keyframes bootExpand {
+  0%,100%{width:20px; opacity:0.5}
+  50%{width:60px; opacity:1}
+}
 /* ★ 输入框放开选中和呼出键盘 */
 input,textarea,select,[contenteditable="true"]{
   -webkit-user-select:text !important;
@@ -10158,6 +10209,33 @@ body[data-bubble="custom"] .gch-bubble{
 </head>
 <body>
 
+<!-- ★ 开屏启动页 -->
+<div id="bootLoader">
+  <svg class="boot-icon" viewBox="0 0 100 100">
+    <rect width="100" height="100" rx="22" fill="#bde8f5"/>
+    <path d="M62 22 A30 30 0 1 0 62 78 A24 24 0 1 1 62 22 Z" fill="#ffffff"/>
+    <circle cx="76" cy="34" r="2.6" fill="#ffffff"/>
+    <circle cx="82" cy="50" r="1.8" fill="#ffffff"/>
+    <circle cx="74" cy="64" r="1.4" fill="#ffffff"/>
+  </svg>
+  <div class="boot-name">our-dreamland</div>
+  <div class="boot-sub">THE OTHER SIDE</div>
+  <div class="boot-line"></div>
+</div>
+
+<script>
+  // 页面加载完成后，延迟 1.2 秒淡出启动页
+  window.addEventListener('load', function() {
+    setTimeout(function() {
+      var loader = document.getElementById('bootLoader');
+      if(loader) {
+        loader.classList.add('fade-out');
+        setTimeout(function() { loader.remove(); }, 500);
+      }
+    }, 1200);
+  });
+</script>
+
 <script>
 /* ===== 开屏版本提醒 · 版本号 =====
    每次你更新 index.html，把这个数字 +1（或改成日期）
@@ -13630,6 +13708,7 @@ const DEFAULT_REPLY = {
   punctOn:true,punctList:[' ','','。','？','！','，','……','——','：','~','♡','…'],disabledPunctList:[],
   emojiOn:true,emojiRate:0.15,
   kaoOn:true,kaoRate:0.15,
+  stickerOn:true,stickerRate:0.15,
   mbAnim:'1',
   activeOn:true,
   activeRate:0.08,
@@ -13676,6 +13755,8 @@ function getReply(roleId){
 	  if(typeof r.emojiRate !== 'number') r.emojiRate = 0.15;
 	  if(typeof r.kaoOn !== 'boolean') r.kaoOn = true;
 	  if(typeof r.kaoRate !== 'number') r.kaoRate = 0.15;
+  if(typeof r.stickerOn !== 'boolean') r.stickerOn = true;
+  if(typeof r.stickerRate !== 'number') r.stickerRate = 0.15;
 	});
 	saveReply();
 	lsSet(MIGRATE_KEY, true);
@@ -14520,60 +14601,65 @@ function genReply(useTimed){
   for(let b=0;b<bubbleCount;b++){
 	let blockCount = 1;
 	if((r.multiBlockOn !== false) && Math.random() < (r.multiBlockProb||0)){
-	  /* ★全局硬上限：所有角色拼好卡最大块数强制上限6张 */
-	  const GLOBAL_MULTI_BLOCK_MAX = 6;
-	  const _maxBlk = Math.min(r.maxBlocks || 1, GLOBAL_MULTI_BLOCK_MAX);
+	  /* ★ 取消了 6 张的硬上限，完全按角色自己的设置来 */
+	  const _maxBlk = r.maxBlocks || 1;
 	  blockCount = _calcRandInt(1, _maxBlk, 1, 1);
 	}
 	const parts = [];
-	/* ★【新增】单字字卡条数不能超过拼好卡块数上限，取两者最小值 */
-	const pyUpper = Math.min(r.pinyinMax||1, blockCount);
-	let pyRemain = Math.max(1, pyUpper);
-	for(let k=0;k<blockCount;k++){
-	  if(r.pinyinOn && pyRemain > 0 && Math.random() < r.pinyinRate){
-  const cnt = 1 + Math.floor(Math.random() * Math.min(pyRemain, pyUpper));
-  pyRemain -= cnt;
-  const hans=[];
-  for(let i=0;i<cnt;i++){ const p=randPinyin(); hans.push(p.han); }
-  // 主体（text）走标点；小字（han）永远空格拼，不带标点
-  const hanOnly = hans.join(' ');        // 小字用的纯字版本
-  let joined;
-  if(r.punctOn && r.punctList && r.punctList.length && hans.length > 1){
-    const withPunct = [];
-    for(let i=0;i<hans.length;i++){
-      withPunct.push(hans[i]);
-      if(i < hans.length - 1){
-        withPunct.push(r.punctList[Math.floor(Math.random()*r.punctList.length)]);
-      }
-    }
-    joined = withPunct.join('');         // 主体用带标点的
-  } else {
-    joined = hanOnly;                    // 没标点就走纯字
-  }
-  parts.push({type:'pinyin', text:joined, han:hanOnly});
-}else{
-  parts.push({type:'card', text: useTimed ? pickTimedCard() : pickCard()});
-}
-	}
-	// 角色面板表情 / 颜文字 / 表情图：触发后 40% 插入当前气泡，60% 独立成条
-	const addExpr = (item, type) => {
-	  if(!item) return;
-	  if(Math.random() < 0.4){
-		// 40%：插入当前气泡（跟卡片/单字字卡拼一起）
-		parts.push({type, text:item});
-	  } else {
-		// 60%：独立成条
-		parts.push({type, text:item, __standalone:true});
+	/* ★ 统一随机池：普通卡 / 单字卡 / emoji / 颜文字 / 表情图，根据概率权重抽 */
+	const pool = [];
+	pool.push({type:'card', weight: 100}); // 普通卡永远作为基础权重
+	if(r.pinyinOn) pool.push({type:'pinyin', weight: (r.pinyinRate||0) * 100});
+	if(r.emojiOn)  pool.push({type:'emoji',  weight: (r.emojiRate||0) * 100});
+	if(r.kaoOn)    pool.push({type:'kao',    weight: (r.kaoRate||0) * 100});
+	if(r.stickerOn)pool.push({type:'sticker',weight: (r.stickerRate||0) * 100});
+
+	// 计算总权重
+	let totalWeight = 0;
+	pool.forEach(p => { totalWeight += p.weight; });
+
+	for(let k=0; k<blockCount; k++){
+	  // 根据权重随机选一个类型
+	  let rand = Math.random() * totalWeight;
+	  let selectedType = 'card';
+	  for(let i=0; i<pool.length; i++){
+		rand -= pool[i].weight;
+		if(rand <= 0){ selectedType = pool[i].type; break; }
 	  }
-	};
-	if(r.emojiOn && Math.random() < (r.emojiRate||0)){
-	  addExpr(pickRoleEmoji(), 'emoji');
-	}
-	if(r.kaoOn && Math.random() < (r.kaoRate||0)){
-	  addExpr(pickRoleKao(), 'kao');
-	}
-	if(r.emojiOn && Math.random() < (r.emojiRate||0)){
-	  addExpr(pickRoleSticker(), 'sticker');
+
+	  // 根据选中的类型执行对应逻辑
+	  if(selectedType === 'pinyin'){
+		const cnt = 1 + Math.floor(Math.random() * (r.pinyinMax || 1));
+		const hans=[];
+		for(let i=0;i<cnt;i++){ const p=randPinyin(); hans.push(p.han); }
+		const hanOnly = hans.join(' ');
+		let joined = hanOnly;
+		if(r.punctOn && r.punctList && r.punctList.length && hans.length > 1){
+		  const withPunct = [];
+		  for(let i=0;i<hans.length;i++){
+			withPunct.push(hans[i]);
+			if(i < hans.length - 1){
+			  withPunct.push(r.punctList[Math.floor(Math.random()*r.punctList.length)]);
+			}
+		  }
+		  joined = withPunct.join('');
+		}
+		parts.push({type:'pinyin', text:joined, han:hanOnly});
+	  } else if(selectedType === 'emoji'){
+		parts.push({type:'emoji', text: pickRoleEmoji()});
+	  } else if(selectedType === 'kao'){
+		parts.push({type:'kao', text: pickRoleKao()});
+	  } else if(selectedType === 'sticker'){
+		if(blockCount > 1){
+		  // 拼好卡时，直接插入当前气泡
+		  parts.push({type:'sticker', text: pickRoleSticker()});
+		} else {
+		  // 没拼卡（只有 1 块），独立成条发送
+		  parts.push({type:'sticker', text: pickRoleSticker(), __standalone:true});
+		}
+	  } else {
+		parts.push({type:'card', text: useTimed ? pickTimedCard() : pickCard()});
+	  }
 	}
 	bubbles.push({parts});
   }
@@ -15139,8 +15225,15 @@ function renderChatFull(forceBottom){
 		rawText = String(t || '');
 	  }
 	  // 显示时把所有 [xxx] 都剥成 xxx，只在气泡里生效，不改存储
-	  const showText = rawText.replace(/\[([\s\S]*?)\]/g, '$1');
-	  body = `<div class="bubble${m.sendFailed ? ' bubble-failed' : ''}">${escapeHTML(showText)}${failedMark}</div>`;
+	  /* ★ 保留换行排版，防止图片挤在一起 */
+	  /* ★ 如果文字里含有 [图片]，就把它变成真正的图片 */
+	  if(rawText === '[图片]'){
+		/* 占位，避免崩坏，这里等会儿发真实图片时用 */
+		body = `<div class="bubble${m.sendFailed ? ' bubble-failed' : ''}">[图片]</div>`;
+	  } else {
+		const showText = rawText.replace(/\[([\s\S]*?)\]/g, '$1');
+		body = `<div class="bubble${m.sendFailed ? ' bubble-failed' : ''}">${escapeHTML(showText)}${failedMark}</div>`;
+	  }
 	}
 
 	// 已读标签（我方）+ 主动标签（对方）
@@ -18078,6 +18171,13 @@ function sendMessage(){
 	const inp = $('#chatInput'); if(!inp) return;
 	const text = String(inp.value||'').trim(); if(!text) return;
 
+	/* ★ 修复：如果输入框里是 [图片]，那就把这个占位符删掉，去发送真实的图片 */
+	if(text === '[图片]'){
+	  inp.value = ''; inp.style.height = 'auto';
+	  closeAllDrawers();
+	  return;
+	}
+
 	// 被拉黑 / 已删除 → 发送失败
 	const role = getRole();
 	if(role && (role.blocked || role.hidden)){
@@ -18429,24 +18529,8 @@ function appendMsgToRole(roleId, msg){
     /* 消息不是当前角色 → 记未读 */
     bumpUnread(roleId);
   }
-  /* 无论是不是当前角色，只要不是系统/撤回消息，都弹顶部提示 */
-  try{
-    if(msg && !msg.sys && !msg.recalled){
-      const role = getRoleById(roleId) || {};
-      let notifyText = '';
-      if(msg.text) notifyText = msg.text;
-      else if(msg.sticker) notifyText = '[表情图]';
-      else if(msg.voice) notifyText = '[语音]';
-      else if(msg.namecard && msg.namecard.name) notifyText = '[名片] ' + msg.namecard.name;
-      else if(msg.videoCard) notifyText = '[视频] ' + (msg.videoCard.title || '');
-      else if(msg.divine) notifyText = '[占卜] ' + (msg.divine.q || '');
-      if(notifyText){
-        /* ★ 先把角色 id 挂上，再弹通知 —— 这样通知点击能定位到具体角色 */
-        window.__lastNotifyRoleId = roleId;
-        showMsgNotify(role.name || '角色', notifyText, role.avatar, roleId);
-      }
-    }
-  }catch(e){ console.error('消息提示出错', e); }
+  /* 无论是不是当前角色，只要不是系统/撤回消息，都弹顶部提示（统一走总闸） */
+  try{ notifyPush(roleId, msg); }catch(e){ console.error('消息提示出错', e); }
   /* ★ 返回写入的消息 id，方便调用方后续撤回 */
   return (msg && msg.id) ? msg.id : '';
 }
@@ -18698,46 +18782,11 @@ function showMsgNotify(roleName, text, roleAvatar, targetRoleId){
     '</div>' +
     '<div class="mn-time">现在</div>';
 
-  /* 点这条提示 → 跳到该角色的聊天界面 */
+  /* 点这条提示 → 统一走 jumpToRoleChat */
   el.onclick = function(){
-    /* 先收掉提示条 */
     el.classList.remove('show');
     clearTimeout(_msgNotifyTimer);
-    /* 没有角色 id 就啥也不做（比如手动调用没传的情况） */
-    if(!targetRoleId) return;
-
-    /* 先切角色（不同角色才切），再跳到聊天页 */
-    try {
-      if(getCurrentRoleId() !== targetRoleId){
-        switchToRole(targetRoleId);
-      }
-    } catch(e){ console.error(e); }
-
-    /* 统一跳到聊天页：关掉过渡，瞬间到位 */
-    try {
-      var stack = document.getElementById('pageStack');
-      var app = document.getElementById('app');
-      var prevStack = stack ? stack.style.transition : '';
-      var prevApp = app ? app.style.transition : '';
-      if(stack) stack.style.transition = 'none';
-      if(app) app.style.transition = 'none';
-      goToPage('chat');
-      /* 强制同步一次布局，确保这一帧就已经在目标页 */
-      if(stack) void stack.offsetWidth;
-      /* 下一帧再把过渡恢复，避免影响后续左右滑动切页 */
-      requestAnimationFrame(function(){
-        requestAnimationFrame(function(){
-          if(stack) stack.style.transition = prevStack;
-          if(app) app.style.transition = prevApp;
-        });
-      });
-    } catch(e){ goToPage('chat'); }
-
-    /* 跳过去后，滚到底部（也去掉平滑，避免看着像在滑） */
-    setTimeout(function(){
-      var box = document.getElementById('chatList');
-      if(box) box.scrollTo({ top: box.scrollHeight, behavior: 'auto' });
-    }, 100);
+    if(targetRoleId) jumpToRoleChat(targetRoleId);
   };
 
   el.classList.add('show');
@@ -18750,14 +18799,7 @@ function showMsgNotify(roleName, text, roleAvatar, targetRoleId){
   showSystemNotify(roleName, text);
 }
 
-/* ★ 带 roleId 的版本：通知点击时能定位到具体角色 */
-window.__showSystemNotifyWithRole = function(roleName, text, roleId){
-  try{
-    /* 把目标 roleId 挂到全局，showSystemNotify 内部会读它 */
-    if(roleId) window.__lastNotifyRoleId = roleId;
-    showSystemNotify(roleName, text);
-  }catch(e){ console.error('带 roleId 的系统通知失败', e); }
-};
+ 
 
 /* ============================================================
    ★ 通知点击 · 主页面侧的完整闭环
@@ -19243,20 +19285,76 @@ function _fallbackNewNotification(title, opts){
     });
     n.onclick = function(){
       try{ window.focus(); }catch(e){}
-      try{
-        if(window.__lastNotifyRoleId && typeof switchToRole === 'function'){
-          if(getCurrentRoleId() !== window.__lastNotifyRoleId){
-            switchToRole(window.__lastNotifyRoleId);
-          }
-          if(typeof goToPage === 'function') goToPage('chat');
-        }
-      }catch(e){}
+      if(window.__lastNotifyRoleId) jumpToRoleChat(window.__lastNotifyRoleId);
       n.close();
     };
     setTimeout(function(){ try{ n.close(); }catch(e){} }, 8000);
   }catch(e){
     console.warn('降级 new Notification 也失败', e);
   }
+}
+
+/* ============================================================
+   ★ 通知总闸 · 所有"角色发消息"类通知只走这一个入口
+   - 内部负责：去重、判断前台后台、拼文案、选横幅还是系统通知
+   - 外部只需调 notifyPush(roleId, msg)
+   ============================================================ */
+/* ============================================================
+   ★ 统一跳转：点任何通知都走这一个函数
+   - 先切到目标角色，再跳到聊天页，最后滚到底
+   - 全程关掉过渡动画，避免看着像在滑
+   ============================================================ */
+function jumpToRoleChat(roleId){
+  try{
+    if(!roleId) return;
+    if(getCurrentRoleId() !== roleId){
+      try{ switchToRole(roleId); }catch(e){ console.error(e); }
+    }
+    var stack = document.getElementById('pageStack');
+    var app = document.getElementById('app');
+    var prevStack = stack ? stack.style.transition : '';
+    var prevApp = app ? app.style.transition : '';
+    if(stack) stack.style.transition = 'none';
+    if(app) app.style.transition = 'none';
+    goToPage('chat');
+    if(stack) void stack.offsetWidth;
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        if(stack) stack.style.transition = prevStack;
+        if(app) app.style.transition = prevApp;
+      });
+    });
+    setTimeout(function(){
+      var box = document.getElementById('chatList');
+      if(box) box.scrollTo({ top: box.scrollHeight, behavior: 'auto' });
+    }, 100);
+  }catch(e){ console.error('jumpToRoleChat 出错', e); }
+}
+
+function notifyPush(roleId, msg){
+  try{
+    if(!msg || msg.sys || msg.recalled) return;
+    /* ① 去重：同一条消息只弹一次 */
+    window.__notifiedMsgIds = window.__notifiedMsgIds || new Set();
+    if(msg.id && window.__notifiedMsgIds.has(msg.id)) return;
+    if(msg.id){
+      window.__notifiedMsgIds.add(msg.id);
+      if(window.__notifiedMsgIds.size > 500) window.__notifiedMsgIds = new Set();
+    }
+    /* ② 拼文案 */
+    const role = getRoleById(roleId) || {};
+    let notifyText = '';
+    if(msg.text) notifyText = msg.text;
+    else if(msg.sticker) notifyText = '[表情图]';
+    else if(msg.voice) notifyText = '[语音]';
+    else if(msg.namecard && msg.namecard.name) notifyText = '[名片] ' + msg.namecard.name;
+    else if(msg.videoCard) notifyText = '[视频] ' + (msg.videoCard.title || '');
+    else if(msg.divine) notifyText = '[占卜] ' + (msg.divine.q || '');
+    if(!notifyText) return;
+    /* ③ 交给横幅/系统通知自己判断前台后台 */
+    window.__lastNotifyRoleId = roleId;
+    showMsgNotify(role.name || '角色', notifyText, role.avatar, roleId);
+  }catch(e){ console.error('notifyPush 出错', e); }
 }
 
 function showSystemNotify(title, body){
@@ -19269,12 +19367,8 @@ function showSystemNotify(title, body){
       if(typeof getCurrentRoleId === 'function'){ window.__lastNotifyRoleId = getCurrentRoleId(); }
     }catch(e){}
 
-    /* 只要不是"明确在前台且页面可见"就允许弹 */
-    const onScreen = (document.visibilityState === 'visible')
-                  && (!document.hidden)
-                  && (!window.visualViewport || window.visualViewport.height > 0);
-    const isBg = !onScreen;
-    if(!isBg) return;
+    /* 只在页面不可见时才弹系统通知（前台判断交给上层总闸） */
+    if(document.visibilityState === 'visible' && !document.hidden) return;
 
     const finalTitle = String(title || '角色').trim() || '角色';
     const finalBody  = String(body || '').trim();
@@ -19364,14 +19458,7 @@ function _fallbackNewNotification(title, opts){
     });
     n.onclick = function(){
       try { window.focus(); } catch(e){}
-      try{
-        if(window.__lastNotifyRoleId && typeof switchToRole === 'function'){
-          if(getCurrentRoleId() !== window.__lastNotifyRoleId){
-            switchToRole(window.__lastNotifyRoleId);
-          }
-          if(typeof goToPage === 'function') goToPage('chat');
-        }
-      }catch(e){}
+      if(window.__lastNotifyRoleId) jumpToRoleChat(window.__lastNotifyRoleId);
       n.close();
     };
     setTimeout(function(){ try{ n.close(); }catch(e){} }, 8000);
@@ -19463,10 +19550,7 @@ function fireActiveMessage(roleId){
         markActiveUnreadNoReply();
       markActiveUnreadNoReply();
         markActiveUnreadNoReply();
-        if(!isViewingRole(roleId)){
-          const role = getRoleById(roleId) || {};
-          showMsgNotify(role.name || '角色', text, role.avatar);
-        }
+        notifyPush(roleId, { id: uid(), role: 'char', text: text, time: Date.now() });
         cfg.activeLastFireAt = Date.now();
         saveReply();
         return;
@@ -19484,10 +19568,7 @@ function fireActiveMessage(roleId){
       if(_vId){ try{ _scheduleRecallForMsg(roleId, _vId); }catch(e){} }
       markActiveUnreadNoReply();
       markActiveUnreadNoReply();
-      if(!isViewingRole(roleId)){
-        const role = getRoleById(roleId) || {};
-        showMsgNotify(role.name || '角色', '[语音]', role.avatar);
-      }
+      notifyPush(roleId, vMsg);
       cfg.activeLastFireAt = Date.now();
       saveReply();
     }).catch(function(){
@@ -19521,11 +19602,8 @@ function fireActiveMessage(roleId){
   appendMsgToRole(roleId, msg);
   markActiveUnreadNoReply();
 
-  /* 用户不在看这个角色 → 顶部弹提示条 */
-  if(!isViewingRole(roleId)){
-    const role = getRoleById(roleId) || {};
-    showMsgNotify(role.name || '角色', text, role.avatar, roleId);
-  }
+  /* 用户不在看这个角色 → 顶部弹提示条（统一走总闸） */
+  notifyPush(roleId, msg);
 
   cfg.activeLastFireAt = Date.now();
   saveReply();
@@ -20004,6 +20082,7 @@ function runReplyChain(onDone){
           const inlineParts = [];
           const standaloneParts = [];
           bubble.parts.forEach(p => {
+            /* ★ 统一拆分：如果是表情图且标记了独立，或者单字字卡，就单独成条 */
             if(p.__standalone) standaloneParts.push(p);
             else inlineParts.push(p);
           });
@@ -21689,7 +21768,10 @@ function renderBody(){
         dispatchUserMsg({ id:uid(), role:'user', sticker:c.list[i], time:Date.now() });
         closeAllDrawers();
       } else {
-        insertText(`[sticker:${c.list[i]}]`);
+        /* ★ 记下这张图的真实地址，存在输入框的属性上 */
+        const ta = document.getElementById('chatInput');
+        if(ta) ta.dataset.stickerSrc = c.list[i];
+        insertText('[图片]');
       }
     });
   });
@@ -25292,7 +25374,15 @@ function gchRenderBody(){
         const i = +el.dataset.gsi;
         const c = gchGetStickerCats().find(x => x.name === window.__gchDrawer.stickerCat);
         if(!c || !c.list[i]) return;
-        gchSendSticker(c.list[i]);
+        
+        /* ★ 统一：判断是直接发，还是插入 */
+        if(typeof stickerMode !== 'undefined' && stickerMode === 'send'){
+          gchSendSticker(c.list[i]);
+        } else {
+          const ta = document.getElementById('gchInput');
+          if(ta) ta.dataset.stickerSrc = c.list[i];
+          gchAppendText('[图片]');
+        }
       };
     });
     return;
@@ -26361,6 +26451,25 @@ document.addEventListener('click', function(e){
     const inp = document.getElementById('gchInput');
     const text = (inp ? inp.value : '').trim();
 
+    /* ★ 统一：如果是 [图片]，就当成表情图发出去 */
+    if(text === '[图片]' && inp){
+      const src = inp.dataset.stickerSrc || '';
+      inp.value = ''; inp.style.height = 'auto'; delete inp.dataset.stickerSrc;
+      if(src){
+        const g = getGroupById(window.__curGroupId);
+        if(g){
+          const arr = getGroupMsgs(g.id);
+          arr.push({ id: uid(), role: 'user', sticker: src, time: Date.now() });
+          saveGroupMsgs(g.id, arr);
+          g.lastMsgAt = Date.now();
+          saveGroup(g);
+          renderGroupChat();
+          groupChatTriggerReply();
+        }
+      }
+      return;
+    }
+
     /* ★ 引用时允许空文字（跟聊天页一致） */
     const hasQuote = !!window.__gchQuote;
     if(!text && !hasQuote) return;
@@ -26632,8 +26741,9 @@ function runGroupActorAction(gid, roleId){
   if(window.__curGroupId === gid){
     renderGroupChat();
   } else {
+    /* ★ 群聊统一走总闸；title 用角色名，群名放在正文前缀里 */
     const r = getRoleById(roleId) || {};
-    showMsgNotify((r.name || '角色') + ' · ' + (g.name || '群聊'), text, r.avatar);
+    notifyPush(roleId, { id: msg.id, role: 'char', text: '[' + (g.name || '群聊') + '] ' + text, time: msg.time });
   }
 }
 
@@ -26717,7 +26827,7 @@ function groupDivineOnce(gid){
         renderGroupChat();
       } else {
         const r = getRoleById(rid) || {};
-        showMsgNotify((r.name || '角色') + ' · ' + (g.name || '群聊'), '占卜：' + q, r.avatar);
+        notifyPush(rid, { id: msg.id, role: 'char', text: '[' + (g.name || '群聊') + '] 占卜：' + q, time: msg.time });
       }
     }catch(e){ console.error('群占卜出错', e); }
   }, delay);
@@ -33182,6 +33292,17 @@ function renderReplyPanel(tab){
 	  </div>
 	  <div class="section">
 		<div class="title title-sw">
+		  <span>表情图</span>
+		  <label class="switch"><input type="checkbox" id="rsStickerOn" ${r.stickerOn?'checked':''}><span class="slider"></span></label>
+		</div>
+		${r.stickerOn ? `
+		  <div class="rs-line">
+		    <div class="rs-item"><span class="lbl">概率</span><input class="rs-num" type="number" id="rsStickerRate" min="0" max="100" value="${Math.round((r.stickerRate||0)*100)}"><span class="unit">%</span></div>
+		  </div>
+		` : ''}
+	  </div>
+	  <div class="section">
+		<div class="title title-sw">
 		  <span>标点符号</span>
 		  <label class="switch"><input type="checkbox" id="rsPunctOn" ${r.punctOn?'checked':''}><span class="slider"></span></label>
 		</div>
@@ -33430,7 +33551,7 @@ function renderReplyPanel(tab){
       if(id === 'rsRecallOn' || id === 'rsActiveOn' || id === 'rsNoReplyOn' || id === 'rsQuoteOn'){
         renderReplyPanel('reply');
       }
-      if(id === 'rsDivineOn' || id === 'rsDivineReadOn' || id === 'rsMultiBlockOn' || id === 'rsPinyinOn' || id === 'rsEmojiOn' || id === 'rsKaoOn' || id === 'rsPunctOn' || id === 'rsReactOn'){
+      if(id === 'rsDivineOn' || id === 'rsDivineReadOn' || id === 'rsMultiBlockOn' || id === 'rsPinyinOn' || id === 'rsEmojiOn' || id === 'rsKaoOn' || id === 'rsStickerOn' || id === 'rsPunctOn' || id === 'rsReactOn'){
         renderReplyPanel('special');
       }
     });
@@ -33469,6 +33590,8 @@ function renderReplyPanel(tab){
  
   bindSl('rsEmojiRate','rsEmojiRateVal','emojiRate');
   bindSl('rsKaoRate','rsKaoRateVal','kaoRate');
+  bindSw('rsStickerOn','stickerOn');
+  bindSl('rsStickerRate','rsStickerRateVal','stickerRate');
   $$('#replyBody [data-anim]').forEach(el=>{
 	el.addEventListener('click', ()=>{ r.mbAnim = el.dataset.anim; saveReply(); renderReplyPanel('reply'); });
   });
@@ -43406,11 +43529,10 @@ function broadcastToAllRoles(text, opts){
           active: true
         };
         if(opts.type) msg.festivalType = opts.type;
+        /* ★ appendMsgToRole 内部已经走总闸了，这里再判断一次
+             用 msg.id 做去重键，跟内部那条是同一条消息，不会弹两遍 */
         appendMsgToRole(rid, msg);
-        if(!isViewingRole(rid)){
-          const r = getRoleById(rid) || {};
-          showMsgNotify(r.name || '角色', text, r.avatar, rid);
-        }
+        notifyPush(rid, msg);
       }catch(e){ console.error('广播祝福出错', e); }
     }, delay);
   });
