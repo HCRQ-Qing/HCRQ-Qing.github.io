@@ -22,6 +22,7 @@
   justify-content: center;
   font-family: var(--app-font);
   transition: opacity 0.5s ease;
+  cursor: pointer;
 }
 #bootLoader.fade-out {
   opacity: 0;
@@ -86,8 +87,8 @@ input,textarea,select,[contenteditable="true"]{
 }
 /* ===== 全站统一遮罩变量 ===== */
 :root{
-  --mask-bg:rgba(0,0,0,.35);
-  --mask-blur:blur(3px);
+  --mask-bg:rgba(0,0,0,.15);
+  --mask-blur:blur(2px);
 }
 html,body{height:100%;overflow:hidden}
 body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th-text,#fff0f5)}
@@ -4540,8 +4541,8 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
   transition:border-color .2s, box-shadow .2s;
   min-height:auto;
 }
-.nf-form-row input[type=text]:focus{
-  border-color:#1a1a1a;box-shadow:0 2px 8px rgba(0,0,0,.05);
+ .nf-form-row input[type=text]:focus{
+  border-color:rgba(0,0,0,.2);box-shadow:none;
 }
 .nf-form-row input::placeholder{color:#ccc}
 
@@ -4550,7 +4551,7 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
   padding:12px 14px;border:0.7px solid #d8d8d8;border-radius:11px;
   cursor:pointer;background:#fff;transition:border-color .2s;
 }
-.nf-group-pick:active{border-color:#1a1a1a}
+.nf-group-pick:active{border-color:rgba(0,0,0,.2)}
 .nf-group-val{font-size:13.5px;color:#1a1a1a}
 .nf-group-arr{color:#ccc;font-size:14px}
 .cat-panel .cp-item .cp-count{
@@ -10226,13 +10227,20 @@ body[data-bubble="custom"] .gch-bubble{
 <script>
   // 页面加载完成后，延迟 1.2 秒淡出启动页
   window.addEventListener('load', function() {
+    var loader = document.getElementById('bootLoader');
+    if(!loader) return;
     setTimeout(function() {
-      var loader = document.getElementById('bootLoader');
-      if(loader) {
-        loader.classList.add('fade-out');
-        setTimeout(function() { loader.remove(); }, 500);
-      }
+      loader.classList.add('fade-out');
+      setTimeout(function() { if(loader.parentNode) loader.parentNode.removeChild(loader); }, 500);
     }, 1200);
+  });
+  // 点击启动页直接跳过
+  document.getElementById('bootLoader')?.addEventListener('click', function() {
+    var loader = this;
+    if(!loader.classList.contains('fade-out')) {
+      loader.classList.add('fade-out');
+      setTimeout(function() { if(loader.parentNode) loader.parentNode.removeChild(loader); }, 500);
+    }
   });
 </script>
 
@@ -11552,7 +11560,7 @@ window.__APP_VERSION__ = '0.1.0';
   <div class="it" id="optNewBuiltin"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.9 7.1 18.2l.9-5.5-4-3.9L9.5 8z"/></svg>建立内置角色</div>
   <div class="it" id="optBuiltinList"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>内置角色一览</div>
   <div class="it" id="optNewGroup"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>建立分组</div>
-  <div class="it" id="optManageGroup"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>分组管理</div>
+  <div class="it" id="optManageGroup"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>分组管理</div>
 </div>
 <div class="modal" id="mNewFriend"><div class="overlay" data-close></div><div class="sheet"><div class="sheet-head"><h3>增加角色</h3><button class="x" id="closeNewFriend">✕</button></div><div class="sheet-body">
 
@@ -11670,8 +11678,8 @@ window.__APP_VERSION__ = '0.1.0';
   <button class="primary-btn" id="btnCreateGroup">建立分组</button>
 </div></div></div>
 <div class="cd-menu" id="mFriendMenu">
-  <div class="it" id="fmEditFriend"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>编辑好友</div>
-  <div class="it" id="fmChangeGroup"><svg viewBox="0 0 24 24"><path d="M4 6h16M8 6V4h8v2M18 6l-1 14H7L6 6"/></svg>修改分组</div>
+  <div class="it" id="fmEditFriend"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>编辑好友</div>
+  <div class="it" id="fmChangeGroup"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><path d="M16 13H8"/></svg>修改分组</div>
   <div class="it" id="fmDelete" style="color:var(--th-danger)"><svg viewBox="0 0 24 24" style="stroke:var(--th-danger)"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13h10l1-13"/></svg>删除好友</div>
 </div>
 
@@ -19341,6 +19349,11 @@ function jumpToRoleChat(roleId){
     if(getCurrentRoleId() !== roleId){
       try{ switchToRole(roleId); }catch(e){ console.error(e); }
     }
+    closeScreen();
+    closeAllOverlays();
+    closeProfile();
+    if(typeof closeChatInfo === 'function') closeChatInfo();
+    
     var stack = document.getElementById('pageStack');
     var app = document.getElementById('app');
     var prevStack = stack ? stack.style.transition : '';
@@ -23129,6 +23142,8 @@ function openChoice(){
   const _mCntMin = (typeof mem.mCntMin === 'number') ? mem.mCntMin : 1;
   const _mCntMax = (typeof mem.mCntMax === 'number') ? mem.mCntMax : 2;
   const _mOpts   = (typeof mem.mOpts === 'string') ? mem.mOpts : '';
+  const _ynQ     = (typeof mem.ynQ === 'string') ? mem.ynQ : '';
+  const _mQ      = (typeof mem.mQ === 'string') ? mem.mQ : '';
 
   const ynOn    = (choiceMode === 'yn')    ? 'on' : '';
   const multiOn = (choiceMode === 'multi') ? 'on' : '';
@@ -34712,20 +34727,17 @@ on('#btnNfUploadAv','click',()=>{ nfUploadingAv = true; $('#editAvFile').click()
 
 /* ★ 新增：点「建立内置角色」弹窗里的头像预览框，直接触发上传 */
 (function bindBiAvatarPreviewClick(){
-  function bindOnce(){
-    var el = document.getElementById('biAvatarPreview');
-    if(!el){ setTimeout(bindOnce, 300); return; }
-    if(el._biAvBound) return;
-    el._biAvBound = true;
-    el.style.cursor = 'pointer';
-    el.addEventListener('click', function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      biUploadingAv = true;
-      $('#editAvFile').click();
-    }, false);
-  }
-  bindOnce();
+  if(window.__biAvatarClickBound) return;
+  window.__biAvatarClickBound = true;
+  document.addEventListener('click', function(e){
+    var el = e.target.closest('#biAvatarPreview');
+    if(!el) return;
+    e.preventDefault();
+    e.stopPropagation();
+    biUploadingAv = true;
+    var f = document.getElementById('editAvFile');
+    if(f){ f.value = ''; f.click(); }
+  }, true);
 })();
 
 /* ★ 新增：点「增加角色」弹窗里的头像预览框，直接触发上传 */
@@ -34746,23 +34758,7 @@ on('#btnNfUploadAv','click',()=>{ nfUploadingAv = true; $('#editAvFile').click()
   bindOnce();
 })();
 
-/* ★ 新增：点「建立内置角色」弹窗里的头像预览框，直接触发上传 */
-(function bindBiAvatarPreviewClick(){
-  function bindOnce(){
-    var el = document.getElementById('biAvatarPreview');
-    if(!el){ setTimeout(bindOnce, 300); return; }
-    if(el._biAvBound) return;
-    el._biAvBound = true;
-    el.style.cursor = 'pointer';
-    el.addEventListener('click', function(e){
-      e.preventDefault();
-      e.stopPropagation();
-      biUploadingAv = true;
-      $('#editAvFile').click();
-    }, false);
-  }
-  bindOnce();
-})();
+ 
 
 on('#closeNewFriend','click',()=>$('#mNewFriend').classList.remove('show'));
 /* 内置角色勾选状态 */
