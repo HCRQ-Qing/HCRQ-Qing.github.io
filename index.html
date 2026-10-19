@@ -28695,7 +28695,8 @@ function rollNewValueForKey(key){
 
   switch(key){
     case 'replyDelayMin': {
-      let v = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
+      const _r = _range('replyDelayMin');
+      let v = _r.has ? _r.min : (ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1)));
       v = _clampSec(v, 'replyDelayMin');
       let oldVal = 0;
       return {
@@ -28712,7 +28713,8 @@ function rollNewValueForKey(key){
       };
     }
     case 'replyDelayMax': {
-      let v = ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1));
+      const _r = _range('replyDelayMax');
+      let v = _r.has ? _r.max : (ROLE_SELFSET_SEC_MIN + Math.floor(Math.random() * (ROLE_SELFSET_SEC_MAX - ROLE_SELFSET_SEC_MIN + 1)));
       v = _clampSec(v, 'replyDelayMax');
       let oldVal = 0;
       return {
