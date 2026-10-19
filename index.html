@@ -27986,8 +27986,10 @@ const ROLE_SELFSET_KEY = 'mj_role_selfset_v1';
 
 /* 所有可调项的清单，key 是内部标识，label 是显示名 */
 const ROLE_SELFSET_ITEMS = [
-  { key:'replyDelay',  label:'回复延迟' },
-  { key:'readDelay',   label:'已读延迟' },
+  { key:'replyDelayMin', label:'回复最快延迟' },
+  { key:'replyDelayMax', label:'回复最慢延迟' },
+  { key:'readDelayMin',  label:'已读最快延迟' },
+  { key:'readDelayMax',  label:'已读最慢延迟' },
   { key:'noReply',     label:'已读不回概率' },
   { key:'quote',       label:'引用概率' },
   { key:'recall',      label:'撤回概率' },
@@ -28598,6 +28600,10 @@ function pickAllowedItemKeys(roleId){
   if(copy.indexOf('readDelayMin') >= 0 || copy.indexOf('readDelayMax') >= 0){
     if(unlocked.indexOf('readDelayMin') >= 0 && copy.indexOf('readDelayMin') < 0) copy.push('readDelayMin');
     if(unlocked.indexOf('readDelayMax') >= 0 && copy.indexOf('readDelayMax') < 0) copy.push('readDelayMax');
+  }
+  if(copy.indexOf('replyDelayMin') >= 0 || copy.indexOf('replyDelayMax') >= 0){
+    if(unlocked.indexOf('replyDelayMin') >= 0 && copy.indexOf('replyDelayMin') < 0) copy.push('replyDelayMin');
+    if(unlocked.indexOf('replyDelayMax') >= 0 && copy.indexOf('replyDelayMax') < 0) copy.push('replyDelayMax');
   }
   return copy;
 }
