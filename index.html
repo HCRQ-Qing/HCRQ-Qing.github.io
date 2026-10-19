@@ -28594,6 +28594,11 @@ function pickAllowedItemKeys(roleId){
     const j = Math.floor(Math.random() * (i + 1));
     const t = copy[i]; copy[i] = copy[j]; copy[j] = t;
   }
+  /* 已读最快 / 已读最慢绑成一组，挑到任意一个就把另一个也带上 */
+  if(copy.indexOf('readDelayMin') >= 0 || copy.indexOf('readDelayMax') >= 0){
+    if(unlocked.indexOf('readDelayMin') >= 0 && copy.indexOf('readDelayMin') < 0) copy.push('readDelayMin');
+    if(unlocked.indexOf('readDelayMax') >= 0 && copy.indexOf('readDelayMax') < 0) copy.push('readDelayMax');
+  }
   return copy;
 }
 
