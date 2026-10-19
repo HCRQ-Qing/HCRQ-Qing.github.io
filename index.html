@@ -14971,19 +14971,35 @@ function renderChatFull(forceBottom){
   const _wasTypingShown = !!(_oldTb && _oldTb.classList.contains('show'));
   if(_wasTypingShown) window.__typingVisible = true;
 
-  /* ★ 终极防夹层：从下往上扫，只要看到已读/已读不回，就把上面所有的未读强行抹平 */
-  let seenTerminal = false;
-  for(let i = msgs.length - 1; i >= 0; i--){
-    const mm = msgs[i];
-    if(!mm || mm.role !== 'user' || mm.recalled || mm.sys) continue;
-    if(mm.readState === 'read' || mm.readState === 'noReply' || mm.readNoReply){
-      seenTerminal = true;
-    } else if(seenTerminal && mm.readState === 'unread'){
-      // 强行改掉底层数据
-      mm.readState = 'read';
-      mm.readAt = Date.now();
+  /* ★ 防夹层：从下往上扫，从底部第一条"终态"开始，往上凡是未读的，全部强行抹平成已读。
+     根因：原来这段是从"最顶部"往下扫，只要中途碰到终态，就继续往上抹，等于一路抹到顶。
+     正确做法：先从底部找到第一条终态当锚点，再从这条开始往上抹，碰到下一条终态就停。
+     这样底部已经是"已读/已读不回"的消息不会被上面新来的未读污染，
+     也不会出现"上面未读、下面已读"的夹层。 */
+  (function fixReadSandwich(){
+    /* 1. 从下往上，找到第一条终态消息的下标（没有就是 -1） */
+    let anchorIdx = -1;
+    for(let i = msgs.length - 1; i >= 0; i--){
+      const mm = msgs[i];
+      if(!mm || mm.role !== 'user' || mm.recalled || mm.sys || mm.namecard) continue;
+      if(mm.readState === 'read' || mm.readState === 'noReply' || mm.readNoReply){
+        anchorIdx = i;
+        break;
+      }
     }
-  }
+    if(anchorIdx < 0) return;   /* 一条终态都没有，没必要扫 */
+    /* 2. 从锚点往上一路扫，只要还是未读，就改成已读；再碰到终态就停 */
+    for(let i = anchorIdx - 1; i >= 0; i--){
+      const mm = msgs[i];
+      if(!mm || mm.role !== 'user' || mm.recalled || mm.sys || mm.namecard) continue;
+      if(mm.readState === 'read' || mm.readState === 'noReply' || mm.readNoReply) break;
+      if(mm.readState === 'unread'){
+        mm.readState = 'read';
+        mm.readNoReply = false;
+        mm.readAt = Date.now();
+      }
+    }
+  })();
 
   const role = getRole();
   const wasAtBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
@@ -28616,11 +28632,27 @@ function rollNewValueForKey(key){
      - 返回 { has:true,  min, max }   → 角色摇出来必须落在这区间内
      判断依据：getRoleSelfSetFloorOne 返回 { min, max }，两个都 0 视为未设
      ★ 只填一端：另一端放开（只限下限 / 只限上限），不再补成固定值 */
+  /* ★ 修：留空 ≠ 填 0。
+     根因：输入框空着时，保存那一步 parseFloat('') 拿到 NaN，被夹成 0 写进存储，
+           这里又把"下限 0、上限 0"当成"设了下限且固定为 0"，角色摇出来只能是 0，
+           等于没改，还可能被当成异常直接跳过、连气泡都不发。
+     改法：先看存储里到底有没有这一项（有 key 才算"用户填过"），
+           只有真的没填过/两边都空，才判定为"没设下限，角色随便摇"；
+           只有一端有值，另一端彻底放开（不再补成固定值）。 */
   const _range = function(k){
-    let l = { min: 0, max: 0 };
-    try{ l = getRoleSelfSetFloorOne(_rid, k); }catch(e){}
-    const mn = (typeof l.min === 'number' && l.min > 0) ? l.min : 0;
-    const mx = (typeof l.max === 'number' && l.max > 0) ? l.max : 0;
+    let raw = null;
+    try{ raw = getRoleSelfSetFloor(k)[k]; }catch(e){ raw = null; }
+    /* 完全没填过这一项 → 没设下限 */
+    if(!raw || typeof raw !== 'object') return { has:false, min: 0, max: 0 };
+    /* 把原始值转成数字，空字符串 / NaN / 负数一律当 0（= 这一端没填） */
+    function _toNum(v){
+      if(v === '' || v === null || v === undefined) return 0;
+      const n = Number(v);
+      if(!isFinite(n) || n < 0) return 0;
+      return n;
+    }
+    const mn = _toNum(raw.min);
+    const mx = _toNum(raw.max);
     if(mn === 0 && mx === 0) return { has:false, min: 0, max: 0 };
     /* 只填了下限：上限放开，只保证 ≥ min */
     if(mn > 0 && mx === 0) return { has:true, min: mn, max: Number.POSITIVE_INFINITY };
