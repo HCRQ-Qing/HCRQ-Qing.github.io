@@ -11686,21 +11686,7 @@ window.__APP_VERSION__ = '0.1.0';
     <div id="biRelList" style="max-height:50vh;overflow-y:auto;padding:0 16px 10px;scrollbar-width:none"></div>
   </div>
 </div>
-<!-- ============ 编辑好友（真名 + 关系网） ============ -->
-<div class="modal" id="mEditFriend">
-  <div class="overlay" data-close></div>
-  <div class="sheet">
-    <div class="sheet-head"><h3>编辑好友</h3><button class="x" data-close type="button">✕</button></div>
-    <div class="sheet-body">
-      <label>真名</label>
-      <input type="text" id="efName" placeholder="角色的真名">
-      <label style="margin-top:18px">好友关系网</label>
-      <div class="hint" style="font-size:11px;color:#bbb;line-height:1.7;margin:4px 0 8px">勾选 = 默认已经是好友；取消 = 解除好友关系。已删除 / 已拉黑也会出现在这里，可一并设置。</div>
-      <div id="efFriendList" style="max-height:280px;overflow-y:auto;scrollbar-width:none"></div>
-      <button class="primary-btn" id="efSave" style="margin-top:18px">保 存</button>
-    </div>
-  </div>
-</div>
+ 
 
 <div class="modal" id="mNewGroup"><div class="overlay" data-close></div><div class="sheet"><div class="sheet-head"><h3>建立分组</h3><button class="x" id="closeNewGroup">✕</button></div><div class="sheet-body">
   <label>分组名</label><input type="text" id="ngName" placeholder="例如：我的爱人们" style="margin-bottom:18px">
@@ -11827,6 +11813,14 @@ window.__APP_VERSION__ = '0.1.0';
   <div class="line-row">
 	<span class="lb">签名</span>
 	<input type="text" id="inSign" placeholder="这个人很懒，什么都没有留下。">
+  </div>
+  
+  <div class="line-row">
+	<span class="lb">关系网</span>
+	<div id="nfRelPick" style="display:flex;align-items:center;flex:1;cursor:pointer;border-bottom:0.7px solid rgba(0,0,0,.12);padding:6px 2px 8px;">
+	  <span id="nfRelVal" style="flex:1;font-size:13.5px;color:#999;letter-spacing:.5px;">未设置</span>
+	  <span style="color:#ccc;font-size:14px;font-family:Arial;margin-left:auto;">›</span>
+	</div>
   </div>
 
   <button class="primary-btn" id="btnSaveEdit">保存</button>
@@ -14198,55 +14192,14 @@ function pickRoleSticker(roleId){
 }
 /* ★ 支持指定角色：群聊里给"某个角色"抽 emoji 用
    不传参数时行为跟 pickRoleEmoji() 完全一样 */
-function pickRoleEmojiFor(roleId){
-  try{
-    const rid = roleId || getCurrentRoleId();
-    const panel = getPanel(rid);
-    const cats = Array.isArray(panel.emojiCats) ? panel.emojiCats : [];
-    const disabled = Array.isArray(panel.disabledEmojiCats) ? panel.disabledEmojiCats
-                   : (Array.isArray(panel.hiddenEmojiCats) ? panel.hiddenEmojiCats : []);
-    const enabled = cats.filter(c=>!disabled.includes(c.name));
-    const pool = [];
-    enabled.forEach(c=>{ (c.list||[]).forEach(ch=>{ if(ch && String(ch).trim()) pool.push(String(ch).trim()); }); });
-    if(!pool.length) return '';
-    const n = 1 + Math.floor(Math.random() * 3);
-    const picked = [];
-    for(let i=0; i<n; i++){
-      const one = pool[Math.floor(Math.random()*pool.length)];
-      picked.push(one);
-      try{ usageBump(USAGE_EMOJI_KEY, rid, one); }catch(e){}
-    }
-    return picked.join('');
-  }catch(e){ return ''; }
-}
+ 
 
 /* ★ 支持指定角色：群聊里给"某个角色"抽颜文字用 */
-function pickRoleKaoFor(roleId){
-  try{
-    const rid = roleId || getCurrentRoleId();
-    const map = lsGet('mj_panel_map', null) || {};
-    const panel = map[rid] || {};
-    const cats = Array.isArray(panel.kaoCats) ? panel.kaoCats : [];
-    const disabled = Array.isArray(panel.disabledKaoCats) ? panel.disabledKaoCats : [];
-    const enabled = cats.filter(c=>!disabled.includes(c.name));
-    const pool = [];
-    enabled.forEach(c=>{ (c.list||[]).forEach(k=>{ if(k && String(k).trim()) pool.push(String(k).trim()); }); });
-    if(!pool.length) return '';
-    const n = 1 + Math.floor(Math.random() * 3);
-    const picked = [];
-    for(let i=0; i<n; i++){
-      const one = pool[Math.floor(Math.random()*pool.length)];
-      picked.push(one);
-      try{ usageBump(USAGE_KAO_KEY, rid, one); }catch(e){}
-    }
-    return picked.join('');
-  }catch(e){ return ''; }
-}
+ 
 
 function pickRoleEmoji(roleId){
   try{
     const rid = roleId || getCurrentRoleId();
-    // 直接走 getPanel：它每次都会重新读取 localStorage 并补全字段
     const panel = getPanel(rid);
     const cats = Array.isArray(panel.emojiCats) ? panel.emojiCats : [];
     const disabled = Array.isArray(panel.disabledEmojiCats) ? panel.disabledEmojiCats
@@ -14255,13 +14208,6 @@ function pickRoleEmoji(roleId){
     const pool = [];
     enabled.forEach(c=>{ (c.list||[]).forEach(ch=>{ if(ch && String(ch).trim()) pool.push(String(ch).trim()); }); });
     if(!pool.length) return '';
-    /* ★ 修复：一次只抽 1 个。
-       之前是"随机抽 1~3 次拼起来"，
-       会专门凑出 2~3 个 emoji 连在一起。
-       现在跟普通字卡一样，一次只出 1 个；
-       如果同一气泡里出现多个 emoji，
-       那是拼好卡（multiBlock）抽到多个 emoji 卡的结果，
-       不是专门的"3 个 emoji"逻辑。 */
     const one = pool[Math.floor(Math.random()*pool.length)];
     try{ usageBump(USAGE_EMOJI_KEY, rid, one); }catch(e){}
     return one;
@@ -14270,15 +14216,13 @@ function pickRoleEmoji(roleId){
 function pickRoleKao(roleId){
   try{
     const rid = roleId || getCurrentRoleId();
-    const map = lsGet('mj_panel_map', null) || {};
-    const panel = map[rid] || {};
+    const panel = getPanel(rid);
     const cats = Array.isArray(panel.kaoCats) ? panel.kaoCats : [];
     const disabled = Array.isArray(panel.disabledKaoCats) ? panel.disabledKaoCats : [];
     const enabled = cats.filter(c=>!disabled.includes(c.name));
     const pool = [];
     enabled.forEach(c=>{ (c.list||[]).forEach(k=>{ if(k && String(k).trim()) pool.push(String(k).trim()); }); });
     if(!pool.length) return '';
-    /* ★ 修复：同 emoji，一次只抽 1 个 */
     const one = pool[Math.floor(Math.random()*pool.length)];
     try{ usageBump(USAGE_KAO_KEY, rid, one); }catch(e){}
     return one;
@@ -18262,10 +18206,15 @@ function sendMessage(){
 	const inp = $('#chatInput'); if(!inp) return;
 	const text = String(inp.value||'').trim(); if(!text) return;
 
-	/* ★ 修复：如果输入框里是 [图片]，那就把这个占位符删掉，去发送真实的图片 */
+	/* ★ 修复：输入框里是 [图片] 时，读 textarea 上存的 stickerSrc，发真图 */
 	if(text === '[图片]'){
+	  const src = inp.dataset.stickerSrc || '';
 	  inp.value = ''; inp.style.height = 'auto';
+	  delete inp.dataset.stickerSrc;
 	  closeAllDrawers();
+	  if(src){
+	    dispatchUserMsg({ id: uid(), role: 'user', sticker: src, time: Date.now() });
+	  }
 	  return;
 	}
 
@@ -24223,47 +24172,7 @@ on('#bhSetSub','click',function(){ behaviorCfg.sub=!behaviorCfg.sub; this.classL
 on('#bhSetCompact','click',function(){ behaviorCfg.compact=!behaviorCfg.compact; this.classList.toggle('on',behaviorCfg.compact); saveBehaviorCfg(); renderBehavior(); });
 $$('#bhSetTimeTabs .mode-tab').forEach(t=>{ t.addEventListener('click',()=>{ $$('#bhSetTimeTabs .mode-tab').forEach(x=>x.classList.remove('on')); t.classList.add('on'); behaviorCfg.time = t.dataset.time; saveBehaviorCfg(); renderBehavior(); }); });
 
-/* ===== 通话设置子页渲染 ===== */
-function renderCallCfgPage(){
-  if(typeof getCallCfg !== 'function'){ return; }
-  const c = getCallCfg();
-  const el = (id) => document.getElementById(id);
-  if(el('callCfgOn')) el('callCfgOn').checked = !!c.on;
-  if(el('callCfgRate')){ el('callCfgRate').value = Math.round(c.rate * 100); }
-  if(el('callCfgRateVal')) el('callCfgRateVal').textContent = Math.round(c.rate * 100) + '%';
-  if(el('callCfgRollMin')) el('callCfgRollMin').value = c.rollMin;
-  if(el('callCfgRollMax')) el('callCfgRollMax').value = c.rollMax;
-  if(el('callCfgWinMin')) el('callCfgWinMin').value = c.winMin;
-  if(el('callCfgWinMax')) el('callCfgWinMax').value = c.winMax;
-  if(el('callCfgMaxVoice')) el('callCfgMaxVoice').value = c.maxVoice;
-  if(el('callCfgStartMiniIn')) el('callCfgStartMiniIn').checked = !!c.startMiniIncoming;
-  if(el('callCfgStartMiniOut')) el('callCfgStartMiniOut').checked = !!c.startMiniOutgoing;
-
-  const bind = (id, ev, fn) => {
-    const node = el(id);
-    if(!node || node._boundCall) return;
-    node._boundCall = true;
-    node.addEventListener(ev, fn);
-  };
-
-  bind('callCfgOn','change', function(){
-    const c2 = getCallCfg(); c2.on = this.checked; saveCallCfg(c2);
-    if(!c2.on){ if(typeof callState !== 'undefined'){ callState.nextRollAt = 0; saveCallState(); } }
-    else { if(typeof scheduleNextRoll === 'function') scheduleNextRoll(); }
-    syncCallValLabel();
-  });
-  bind('callCfgRate','input', function(){
-    const c2 = getCallCfg(); c2.rate = parseInt(this.value,10) / 100; saveCallCfg(c2);
-    if(el('callCfgRateVal')) el('callCfgRateVal').textContent = this.value + '%';
-  });
-  bind('callCfgRollMin','change', function(){ const c2 = getCallCfg(); c2.rollMin = Math.max(1, parseInt(this.value,10)||1); saveCallCfg(c2); });
-  bind('callCfgRollMax','change', function(){ const c2 = getCallCfg(); c2.rollMax = Math.max(1, parseInt(this.value,10)||1); saveCallCfg(c2); });
-  bind('callCfgWinMin','change',  function(){ const c2 = getCallCfg(); c2.winMin  = Math.max(1, parseInt(this.value,10)||1); saveCallCfg(c2); });
-  bind('callCfgWinMax','change',  function(){ const c2 = getCallCfg(); c2.winMax  = Math.max(1, parseInt(this.value,10)||1); saveCallCfg(c2); });
-  bind('callCfgMaxVoice','change',function(){ const c2 = getCallCfg(); c2.maxVoice= Math.max(1, parseInt(this.value,10)||1); saveCallCfg(c2); });
-  bind('callCfgStartMiniIn','change', function(){ const c2 = getCallCfg(); c2.startMiniIncoming = this.checked; saveCallCfg(c2); });
-  bind('callCfgStartMiniOut','change',function(){ const c2 = getCallCfg(); c2.startMiniOutgoing = this.checked; saveCallCfg(c2); });
-}
+ 
 function syncCallValLabel(){
   const el = document.getElementById('callVal');
   if(el){
@@ -24402,7 +24311,6 @@ $$('.bp-row[data-panel]').forEach(row=>{
 	const map = {theme:'#spTheme', bubble:'#spBubble', avatar:'#spAvatar', layout:'#spLayout', call:'#spCall'};
 	const target = map[p];
 	if(target) $(target).classList.add('show');
-	if(p === 'call' && typeof renderCallCfgPage === 'function'){ try{ renderCallCfgPage(); }catch(e){ console.error(e); } }
   });
 });
 $$('.sub-panel [data-close]').forEach(el=>{
@@ -28583,13 +28491,14 @@ function renderRoleFloorDialog(){
     };
   }
 
-  /* 返回按钮：只关闭当前全屏页，退回到下面的「回复设置」 */
+  /* 返回按钮：关掉当前全屏页，并重新打开「回复设置」 */
   const backBtn = document.getElementById('roleFloorBackBtn');
   if(backBtn){
     backBtn.onclick = function(e){
       e.preventDefault();
       e.stopPropagation();
       document.getElementById('roleFloorScreen').classList.remove('on');
+      document.getElementById('mReply').classList.add('on');
     };
   }
 }
@@ -29518,9 +29427,7 @@ function renderSettingsCounts(){
   try{
     const friends = getFriends();
     const blocked = friends.filter(f => f.hidden && f.blocked).length;
-    const deleted = friends.filter(f => f.hidden && !f.blocked).length;
-    const b1 = document.getElementById('setBlockedCount');
-    if(b1) b1.textContent = blocked;
+    document.getElementById('setBlockedCount').textContent = blocked;
   }catch(e){}
 }
 
@@ -34190,88 +34097,18 @@ function closePopupMenus(exceptEl){
 document.addEventListener('click', function(e){
   closePopupMenus(e.target);
 });
-on('#fmEditFriend','click',()=>{
-  $('#mFriendMenu').classList.remove('show');
-  /* ★ 改成打开「编辑资料」（含个签切换），而不是「编辑好友」 */
-  setTimeout(function(){
+/* ★ 修复：点菜单里的“编辑好友”，直接走编辑资料弹窗，废弃那个旧的 mEditFriend */
+document.addEventListener('click', function(e){
+  if(e.target.closest('#fmEditFriend')){
+    e.preventDefault();
+    e.stopPropagation();
+    var m = document.getElementById('mFriendMenu');
+    if(m) m.classList.remove('show');
     if(typeof openEditProfile === 'function') openEditProfile();
-    else openEditFriend();
-  }, 100);
-});
+  }
+}, true);
 
-/* ===== 编辑好友：真名 + 关系网 ===== */
-let efRoleId = '';
-let efSelected = new Set();
-function openEditFriend(){
-  const rid = friendMenuId;
-  const role = getRoleById(rid);
-  if(!role){ toast('角色不存在'); return; }
-  efRoleId = rid;
-  const nameEl = document.getElementById('efName');
-  if(nameEl) nameEl.value = role.name || '';
-  efSelected = new Set((getRoleFriendsMap()[rid] || []).filter(fid => fid !== rid));
-  renderEfFriendList();
-  $('#mEditFriend').classList.add('show');
-  setTimeout(()=>{ const el = document.getElementById('efName'); if(el) el.focus(); }, 200);
-}
-function renderEfFriendList(){
-  const box = document.getElementById('efFriendList');
-  if(!box) return;
-  const all = getFriends().filter(f => f.id !== efRoleId);
-  if(!all.length){
-    box.innerHTML = '<div style="text-align:center;color:#bbb;font-size:12.5px;padding:24px 0">没有可以建立关系的角色</div>';
-    return;
-  }
-  const shape = (beautyCfg.avatarShape === 'circle') ? '50%' : '10px';
-  box.innerHTML = all.map(f => {
-    const on = efSelected.has(f.id);
-    return '<div class="ef-friend-row" data-id="' + f.id + '" style="display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:0.6px dashed rgba(0,0,0,.06);cursor:pointer">' +
-      '<div class="ef-av" style="width:38px;height:38px;flex:none;border-radius:' + shape + ';background:#f2f2f2;overflow:hidden;position:relative">' + avatarHTML(f.avatar) + '</div>' +
-      '<div style="flex:1;min-width:0">' +
-        '<div style="font-size:14px;color:#1a1a1a;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escapeHTML(displayName(f)) + '</div>' +
-      '</div>' +
-      '<div class="ef-chk" style="width:20px;height:20px;flex:none;border-radius:50%;border:0.7px solid rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:11px;color:' + (on ? '#fff' : 'transparent') + ';background:' + (on ? '#1a1a1a' : 'transparent') + '">✓</div>' +
-    '</div>';
-  }).join('');
-  box.querySelectorAll('.ef-friend-row').forEach(row => {
-    row.onclick = () => {
-      const id = row.dataset.id;
-      if(efSelected.has(id)) efSelected.delete(id);
-      else efSelected.add(id);
-      renderEfFriendList();
-    };
-  });
-}
-on('#efSave','click',()=>{
-  const rid = efRoleId;
-  const role = getRoleById(rid);
-  if(!role){ toast('角色不存在'); return; }
-  const nameEl = document.getElementById('efName');
-  const newName = (nameEl ? nameEl.value : '').trim();
-  if(!newName){ toast('真名不能为空'); return; }
-  /* 改真名 */
-  if(newName !== role.name){
-    const friends = getFriends();
-    const f = friends.find(x => x.id === rid);
-    if(f){ f.name = newName; saveFriends(friends); }
-  }
-  /* 写关系网：以勾选为准 */
-  const map = getRoleFriendsMap();
-  const old = new Set(map[rid] || []);
-  const now = new Set(efSelected);
-  /* 新增：勾了但现在没有 */
-  now.forEach(fid => {
-    if(!old.has(fid)) addFriendPair(rid, fid);
-  });
-  /* 移除：以前有但现在没勾 */
-  old.forEach(fid => {
-    if(!now.has(fid)) deleteFriendPair(rid, fid);
-  });
-  renderFriends();
-  refreshChatRole();
-  $('#mEditFriend').classList.remove('show');
-  toast('已保存');
-});
+ 
 
 on('#fmChangeGroup','click',()=>{
   $('#mFriendMenu').classList.remove('show');
@@ -43301,15 +43138,6 @@ function closeDeskCalendar(){
   window.addEventListener('touchstart', msArmBgmAutoPlay, {once:false, passive:true});
   window.addEventListener('click', msArmBgmAutoPlay, {once:false, passive:true});
 
-  /* 暴露给下一组替换点用 */
-  window.__music = {
-    lists: _msLists,
-    state: _msState,
-    audio: _msAudio,
-    render: window.renderMusicScreen,
-    open: window.openMusicScreen,
-    close: window.closeMusicScreen
-  };
 })();
 window.__calendar = {
   init: initCalendarPage,
@@ -43329,23 +43157,7 @@ try{
 }catch(e){ console.error('日历初始化失败', e); }
 </script>
 
-<script>
-/* ============================================================
-   兜底：getWeatherPool 全局定义
-   防止 pickCard 里的内部函数没写进去导致报错
-   ============================================================ */
-if(typeof window.getWeatherPool !== 'function'){
-  window.getWeatherPool = function(){
-    try{
-      if(typeof lsGet !== 'function') return [];
-      if(!lsGet('mj_weather_card_on', true)) return [];
-      if(typeof pickWeatherCard !== 'function') return [];
-      var wText = pickWeatherCard();
-      return wText ? [wText] : [];
-    }catch(e){ return []; }
-  };
-}
-</script>
+ 
 
 
 
