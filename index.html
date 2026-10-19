@@ -13568,7 +13568,7 @@ function getRole(){ const f = getFriends().find(x=>x.id===getCurrentRoleId()); r
 function getRoleSign(role){ const s = role && role.sub ? String(role.sub).trim() : ''; if(!s || OLD_SIGN_PLACEHOLDERS.includes(s)) return SIGN_PLACEHOLDER; return s; }
 function saveRoleField(id, key, val){ const friends=getFriends(); const f=friends.find(x=>x.id===id); if(!f) return; f[key]=val; saveFriends(friends); }
 function getRoleById(id){ const f = getFriends().find(x=>x.id===id); return f || null; }
-function getRoleNameById(id){ const f = getFriends().find(x=>x.id===id); return f?f.name:'?'; }
+function getRoleNameById(id){ const f = getFriends().find(x=>x.id===id); return f ? displayName(f) : '?'; }
 /* 显示名：优先备注，没有备注就用原名。被删/拉黑时，调用方会先清空 remark，自动回退到原名 */
 function displayName(role){ if(!role) return '?'; const r = role.remark; return (r && String(r).trim()) ? String(r).trim() : role.name; }
 
@@ -13809,8 +13809,10 @@ function getReply(roleId){
   if(typeof r.divineRate !== 'number')  r.divineRate = 0.05;
   if(typeof r.divineLastFireAt !== 'number') r.divineLastFireAt = 0;
   /* ★ 已读延迟 & 已读不回概率 兼容老数据 */
-  if(typeof r.readDelayMin !== 'number') r.readDelayMin = 1;
-  if(typeof r.readDelayMax !== 'number') r.readDelayMax = 10;
+  if(typeof r.readDelayMinLo !== 'number') r.readDelayMinLo = (typeof r.readDelayMin === 'number') ? r.readDelayMin : 1;
+  if(typeof r.readDelayMinHi !== 'number') r.readDelayMinHi = (typeof r.readDelayMin === 'number') ? r.readDelayMin : 5;
+  if(typeof r.readDelayMaxLo !== 'number') r.readDelayMaxLo = (typeof r.readDelayMax === 'number') ? r.readDelayMax : 8;
+  if(typeof r.readDelayMaxHi !== 'number') r.readDelayMaxHi = (typeof r.readDelayMax === 'number') ? r.readDelayMax : 10;
   if(typeof r.noReplyOn !== 'boolean')   r.noReplyOn = true;
   if(typeof r.noReplyRate !== 'number')  r.noReplyRate = 0.25;
   if(typeof r.quoteOn !== 'boolean')     r.quoteOn = true;
@@ -18356,7 +18358,14 @@ function _drainReadQueue(){
 
   /* 已读延迟：1~10 秒 */
   const r = getReply();
-  const delayMs = _calcDelayMs(r.readDelayMin, r.readDelayMax, 1, 10, 1000);
+  const _rdMinLo = (typeof r.readDelayMinLo === 'number') ? r.readDelayMinLo : 1;
+  const _rdMinHi = (typeof r.readDelayMinHi === 'number') ? Math.max(_rdMinLo, r.readDelayMinHi) : 5;
+  const _rdMaxLo = (typeof r.readDelayMaxLo === 'number') ? r.readDelayMaxLo : 8;
+  const _rdMaxHi = (typeof r.readDelayMaxHi === 'number') ? Math.max(_rdMaxLo, r.readDelayMaxHi) : 10;
+  const _rdMin = _rdMinLo + Math.random() * (_rdMinHi - _rdMinLo);
+  const _rdMax = _rdMaxLo + Math.random() * (_rdMaxHi - _rdMaxLo);
+  const _rdRealMax = Math.max(_rdMin, _rdMax);
+  const delayMs = (_rdMin + Math.random() * (_rdRealMax - _rdMin)) * 1000;
 
   setTimeout(function(){
     if(!_readQueueRunning) return;
@@ -18775,10 +18784,7 @@ function showMsgNotify(roleName, text, roleAvatar, targetRoleId){
   /* ★ 优先用备注名（有备注就显示备注） */
   if(targetRoleId){
     const r = getRoleById(targetRoleId);
-    if(r){
-      const rk = (r.remark && String(r.remark).trim());
-      if(rk) roleName = rk;
-    }
+    if(r) roleName = displayName(r);
   }
   /* ★ 收到消息 → 播收消息音效 */
   try{ playSoundOnce('inMsg'); }catch(e){}
@@ -19398,7 +19404,7 @@ function notifyPush(roleId, msg){
     if(!notifyText) return;
     /* ③ 交给横幅/系统通知自己判断前台后台 */
     window.__lastNotifyRoleId = roleId;
-    showMsgNotify(role.name || '角色', notifyText, role.avatar, roleId);
+    showMsgNotify(displayName(role) || '角色', notifyText, role.avatar, roleId);
   }catch(e){ console.error('notifyPush 出错', e); }
 }
 
@@ -23340,7 +23346,7 @@ function openCardPicker(){
   const box = $('#cardPickerBody');
   if(!box) return;
   if(!friends.length){ box.innerHTML = `<div class="empty">没有可以发送的名片</div>`; $('#mCardPicker').classList.add('show'); return; }
-  box.innerHTML = friends.map(f=>`<div class="pick" data-cid="${f.id}" style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--th-accent-soft);border:1.5px solid var(--th-accent-line);margin-bottom:10px;cursor:pointer"><div style="width:42px;height:42px;border-radius:50%;flex:none;background:var(--th-av-bg);overflow:hidden;position:relative">${avatarHTML(f.avatar)}</div><div style="flex:1;min-width:0"><div style="font-size:14.5px;font-weight:700;color:var(--th-text);margin-bottom:4px">${escapeHTML(f.name)}</div><div style="font-size:11px;color:var(--th-text-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(getRoleSign(f))}</div></div></div>`).join('');
+  box.innerHTML = friends.map(f=>`<div class="pick" data-cid="${f.id}" style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--th-accent-soft);border:1.5px solid var(--th-accent-line);margin-bottom:10px;cursor:pointer"><div style="width:42px;height:42px;border-radius:50%;flex:none;background:var(--th-av-bg);overflow:hidden;position:relative">${avatarHTML(f.avatar)}</div><div style="flex:1;min-width:0"><div style="font-size:14.5px;font-weight:700;color:var(--th-text);margin-bottom:4px">${escapeHTML(displayName(f))}</div><div style="font-size:11px;color:var(--th-text-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(getRoleSign(f))}</div></div></div>`).join('');
   box.querySelectorAll('.pick').forEach(p=>{
 	p.addEventListener('click',()=>{
 	  const cid = p.dataset.cid;
@@ -26210,7 +26216,7 @@ function groupChatTriggerReply(){
           renderGroupChat();
         } else {
           const role = getRoleById(rid) || {};
-          showMsgNotify((role.name || '角色') + ' · ' + (g.name || '群聊'), String(firstText), role.avatar);
+          showMsgNotify((displayName(role) || '角色') + ' · ' + (g.name || '群聊'), String(firstText), role.avatar);
         }
 
         /* 撤回：按这个角色的 recallOn / recallRate，1~60 秒后撤掉最后一条 */
@@ -30066,7 +30072,7 @@ function renderBuiltinList(){
     return '<div class="nf-item" data-bid="' + f.id + '">' +
       '<div class="nf-av" style="border-radius:' + shape + ';cursor:pointer" data-bl-av="' + f.id + '">' + avatarHTML(f.avatar) + '</div>' +
       '<div class="nf-info">' +
-        '<div class="nf-name">' + escapeHTML(f.name) + '</div>' +
+        '<div class="nf-name">' + escapeHTML(displayName(f)) + '</div>' +
         '<div class="nf-sub">' + escapeHTML(getRoleSign(f)) + '</div>' +
       '</div>' +
     '</div>';
@@ -32967,8 +32973,10 @@ function renderReplyPanel(tab){
 	  </div>
 	  <div class="section"><div class="title">已读延迟</div>
 		<div class="rs-line">
-		  <div class="rs-item"><span class="lbl">最快</span><input class="rs-num" type="number" id="rsReadDelayMin" value="${r.readDelayMin||1}" min="0" step="1"><span class="unit">秒</span></div>
-		  <div class="rs-item"><span class="lbl">最慢</span><input class="rs-num" type="number" id="rsReadDelayMax" value="${r.readDelayMax||10}" min="0" step="1"><span class="unit">秒</span></div>
+		  <div class="rs-item"><span class="lbl">最快</span><input class="rs-num" type="number" id="rsReadDelayMinLo" value="${r.readDelayMinLo||1}" min="0" step="1"><span class="unit">到</span><input class="rs-num" type="number" id="rsReadDelayMinHi" value="${r.readDelayMinHi||5}" min="0" step="1"><span class="unit">秒</span></div>
+		</div>
+		<div class="rs-line">
+		  <div class="rs-item"><span class="lbl">最慢</span><input class="rs-num" type="number" id="rsReadDelayMaxLo" value="${r.readDelayMaxLo||8}" min="0" step="1"><span class="unit">到</span><input class="rs-num" type="number" id="rsReadDelayMaxHi" value="${r.readDelayMaxHi||10}" min="0" step="1"><span class="unit">秒</span></div>
 		</div>
 	  </div>
 
@@ -33284,18 +33292,32 @@ function renderReplyPanel(tab){
   bindNum('rsMinDelay','minDelay',v=>Math.round(parseFloat(v||0)*1000));
   bindNum('rsMaxDelay','maxDelay',v=>Math.round(parseFloat(v||0)*1000));
   /* ★ 已读延迟：改为每次直接从存储取最新 r */
-  const rdMinEl = $('#rsReadDelayMin');
-  if(rdMinEl) rdMinEl.addEventListener('change', function(){
+  const rdMinLoEl = $('#rsReadDelayMinLo');
+  if(rdMinLoEl) rdMinLoEl.addEventListener('change', function(){
     const cur = getReply();
-    cur.readDelayMin = Math.max(0, parseInt(this.value, 10) || 0);
-    if(cur.readDelayMax < cur.readDelayMin) cur.readDelayMax = cur.readDelayMin;
+    cur.readDelayMinLo = Math.max(0, parseInt(this.value, 10) || 0);
+    if(cur.readDelayMinHi < cur.readDelayMinLo) cur.readDelayMinHi = cur.readDelayMinLo;
     saveReply();
   });
-  const rdMaxEl = $('#rsReadDelayMax');
-  if(rdMaxEl) rdMaxEl.addEventListener('change', function(){
+  const rdMinHiEl = $('#rsReadDelayMinHi');
+  if(rdMinHiEl) rdMinHiEl.addEventListener('change', function(){
     const cur = getReply();
-    cur.readDelayMax = Math.max(1, parseInt(this.value, 10) || 10);
-    if(cur.readDelayMax < cur.readDelayMin) cur.readDelayMin = cur.readDelayMax;
+    cur.readDelayMinHi = Math.max(0, parseInt(this.value, 10) || 0);
+    if(cur.readDelayMinHi < cur.readDelayMinLo) cur.readDelayMinLo = cur.readDelayMinHi;
+    saveReply();
+  });
+  const rdMaxLoEl = $('#rsReadDelayMaxLo');
+  if(rdMaxLoEl) rdMaxLoEl.addEventListener('change', function(){
+    const cur = getReply();
+    cur.readDelayMaxLo = Math.max(1, parseInt(this.value, 10) || 1);
+    if(cur.readDelayMaxHi < cur.readDelayMaxLo) cur.readDelayMaxHi = cur.readDelayMaxLo;
+    saveReply();
+  });
+  const rdMaxHiEl = $('#rsReadDelayMaxHi');
+  if(rdMaxHiEl) rdMaxHiEl.addEventListener('change', function(){
+    const cur = getReply();
+    cur.readDelayMaxHi = Math.max(1, parseInt(this.value, 10) || 1);
+    if(cur.readDelayMaxHi < cur.readDelayMaxLo) cur.readDelayMaxLo = cur.readDelayMaxHi;
     saveReply();
   });
   const nrEl = $('#rsNoReplyRate');
@@ -34942,7 +34964,7 @@ function openProfileFor(roleId){
   // 记录当前正在查看的角色（点"发消息"时用）
   window.__profileViewId = roleId;
   $('#profileAvatar').innerHTML = avatarHTML(role.avatar);
-  $('#profileName').textContent = (role.remark && String(role.remark).trim()) ? String(role.remark).trim() : role.name;
+  $('#profileName').textContent = displayName(role);
   $('#profileSign').textContent = getRoleSign(role);
   // 状态和心情要读那个角色的
   const bakId = getCurrentRoleId();
@@ -36459,7 +36481,7 @@ function openTagPicker(targetId){
 function syncRoleNameEverywhere(){
   var role = getRole();
   if(!role) return;
-  var showName = (role.remark && String(role.remark).trim()) ? String(role.remark).trim() : role.name;
+  var showName = displayName(role);
 
   // 顶部栏
   var chatName = document.getElementById('chatName');
