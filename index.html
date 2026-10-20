@@ -10211,6 +10211,41 @@ body[data-bubble="custom"] .gch-bubble{
 .sound-name.set{color:#1a1a1a}
 
 
+/* ===== 聊天图片：无气泡 + 褪潮加载效果 ===== */
+.msg-image-bubble{
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+.img-wrapper{
+  width: 140px;
+  height: 140px;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  background: #f0f0f0;
+  transition: background 0.3s;
+}
+.img-wrapper.loading::before{
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+  transform: translateX(-100%); animation: imgShimmer 1.5s infinite;
+}
+@keyframes imgShimmer{ 100%{ transform: translateX(100%); } }
+.img-wrapper.loading::after{
+  content: "加载中"; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: #bbb; letter-spacing: 1px;
+}
+.img-wrapper .img-real{
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22,1,0.36,1);
+}
+.img-wrapper.loaded .img-real{ opacity: 1; transform: translateY(0); }
+.img-wrapper.loaded::before, .img-wrapper.loaded::after{ display: none; }
+.img-wrapper.loaded{ background: transparent; }
 </style>
 </head>
 <body>
@@ -14959,6 +14994,49 @@ function doPat(targetMsgEl, fromIsUser){
   }, false);
 })();
 
+/* ============================================================
+   全局唯一的图片加载总入口
+   不管你是在私聊还是群聊，只要带了 data-idbkey，就归它管
+   ============================================================ */
+function hydrateAllImages(container){
+  if(!container) return;
+  container.querySelectorAll('.msg-image-bubble[data-idbkey]').forEach(function(bubble){
+    const key = bubble.dataset.idbkey;
+    if(!key) return;
+    if(bubble.dataset.hydrated === '1') return;
+    bubble.dataset.hydrated = '1';
+    
+    const wrapper = bubble.querySelector('.img-wrapper');
+    if(!wrapper) return;
+
+    function showFail(msg){
+      wrapper.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px">' + (msg || '加载失败') + '</div>';
+      wrapper.classList.remove('loading');
+      wrapper.style.background = '#f0f0f0';
+      bubble.dataset.hydrated = '0';
+    }
+
+    __idb.toURL(key).then(function(url){
+      if(!url){ showFail('图片不存在'); return; }
+      const img = new Image();
+      img.className = 'img-real';
+      img.onload = function(){
+        wrapper.innerHTML = '';
+        wrapper.appendChild(img);
+        requestAnimationFrame(() => {
+          wrapper.classList.remove('loading');
+          wrapper.classList.add('loaded');
+        });
+      };
+      img.onerror = function(){ showFail('加载失败'); };
+      img.src = url;
+    }).catch(function(e){
+      console.error('图片加载失败', e);
+      showFail('加载失败');
+    });
+  });
+}
+
 function renderChatFull(forceBottom){
   const box = $('#chatList'); if(!box) return;
   /* 跳转中：禁止自动滚到底 */
@@ -15203,8 +15281,8 @@ function renderChatFull(forceBottom){
 	  const stickerBubbleCls = isUser ? 'message-sent message-bubble-user' : 'message-received message-bubble-char';
 	  body = `<div class="bubble ${stickerBubbleCls}" data-side="${isUser?'user':'char'}" style="padding:4px"><img src="${m.sticker}" style="max-width:140px;border-radius:12px;display:block"></div>`;
 	}else if(m.imageIdbKey){
-	  /* ★ 图片消息：小图显示，点击放大 */
-	  body = `<div class="bubble msg-image-bubble" data-idbkey="${m.imageIdbKey}" style="padding:4px;background:transparent;border:none"><div class="img-loading" style="width:100px;height:100px;background:#f0f0f0;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px">加载中…</div></div>`;
+	  /* ★ 图片消息：骨架屏占位 */
+	  body = `<div class="bubble msg-image-bubble" data-idbkey="${m.imageIdbKey}"><div class="img-wrapper loading"></div></div>`;
 	}else if(m.divine){
 	  const reads = m.divine.reads || [];
 	  const roleReads = m.divine.roleReads || [];
@@ -15291,27 +15369,6 @@ function renderChatFull(forceBottom){
 	const meta = getMsgMeta(m, isUser);
 	let readFlush = meta.readFlush;
 	const activeMark = meta.activeMark;
-
-	/* ★ 修复：防止「已读」下面夹着「未读」
-	   如果是已读/已读不回，说明之前的消息在逻辑上已经被带过了，
-	   直接强制让它上面的所有「未读」在视觉上都变成「已读」 */
-	if (isUser && (m.readState === 'read' || m.readState === 'noReply')) {
-		if (!window.__visualReadPassed) window.__visualReadPassed = {};
-		// 把这之前的消息 id 全部记为已读
-		for (let i = 0; i < idx; i++) {
-			if (msgs[i] && msgs[i].role === 'user') {
-				window.__visualReadPassed[msgs[i].id] = true;
-			}
-		}
-	}
-	
-	// 如果在之前被强制带过了，覆盖未读标签
-	if (isUser && readFlush && readFlush.includes('未读')) {
-		if (window.__visualReadPassed && window.__visualReadPassed[m.id]) {
-			readFlush = `<div class="read-flush">已读</div>`;
-			m.readState = 'read'; // 顺手把实际数据也修了
-		}
-	}
 
 	/* ★ 气泡回应：贴在气泡下方，固定靠左 */
 	const reactList = getReactions(m.id);
@@ -15410,48 +15467,8 @@ function renderChatFull(forceBottom){
     });
   })();
 
-  /* ★ 图片消息：异步补 IndexedDB 里的图片 URL
-     修复「一直显示加载中」：
-       1. 防止重复绑定 hydrate（data-hydrated 标记已有，但重建 DOM 后标记会丢，所以必须每次重建都重新执行）
-       2. 用「先把图加载完成，再替换」的方式：new Image() 预加载 → onload 才写入 DOM，避免出现 src 已经指过去、但图还没解码的空窗
-       3. 加载失败时把占位换成「加载失败」，不再一直显示「加载中…」
-       4. 如果 IndexedDB 里没这个 key / 返回 null，也给出失败提示，不让占位卡死 */
-  (function hydrateImageUrls(){
-    const list = document.getElementById('chatList');
-    if(!list) return;
-    list.querySelectorAll('.msg-image-bubble[data-idbkey]').forEach(function(bubble){
-      const key = bubble.dataset.idbkey;
-      if(!key) return;
-      if(bubble.dataset.hydrated === '1') return;
-      bubble.dataset.hydrated = '1';
-
-      function showFail(msg){
-        bubble.innerHTML = '<div class="img-loading" style="width:100px;height:100px;background:#f0f0f0;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px">' + (msg || '加载失败') + '</div>';
-        bubble.dataset.hydrated = '0';
-      }
-
-      __idb.toURL(key).then(function(url){
-        if(!url){ showFail('图片不存在'); return; }
-        const img = new Image();
-        img.onload = function(){
-          bubble.innerHTML = '';
-          img.style.maxWidth = '180px';
-          img.style.maxHeight = '240px';
-          img.style.borderRadius = '12px';
-          img.style.display = 'block';
-          img.style.cursor = 'zoom-in';
-          bubble.appendChild(img);
-        };
-        img.onerror = function(){
-          showFail('加载失败');
-        };
-        img.src = url;
-      }).catch(function(e){
-        console.error('图片加载失败', e);
-        showFail('加载失败');
-      });
-    });
-  })();
+  /* ★ 图片消息：统一呼叫总入口 */
+  hydrateAllImages(document.getElementById('chatList'));
 
   if(forceBottom || wasAtBottom) box.scrollTop = box.scrollHeight;
   bindMsgLongPress();
@@ -15590,27 +15607,6 @@ function renderChat(forceBottom, force){
   /* 2. 强制滚到底部 */
   if(forceBottom){
     box.scrollTop = box.scrollHeight;
-  }
-
-  /* ★ 修复：轻量更新时，如果发现「上面未读、下面已读/已读不回」的夹层，
-     说明已读状态机出错乱了，直接走全量重建，让 UI 跟数据一致。
-     这一步能兜住撤回 / 删除 / 快速连发等场景下的已读错乱。
-     ★ noReply（已读不回）也算终态，它下面还挂着未读也要重绘。 */
-  let sawUnread = false;
-  let hasTerminalAfterUnread = false;
-  for(let i = 0; i < msgs.length; i++){
-    const x = msgs[i];
-    if(!x || x.role !== 'user') continue;
-    if(x.recalled || x.sys || x.namecard) continue;
-    if(x.readState === 'unread') sawUnread = true;
-    else if((x.readState === 'read' || x.readState === 'noReply') && sawUnread){
-      hasTerminalAfterUnread = true; break;
-    }
-  }
-  if(hasTerminalAfterUnread){
-    __lastRenderSig = '';
-    renderChatFull(forceBottom);
-    return;
   }
 
   /* 3. 刷新跳到底部按钮 */
@@ -18539,17 +18535,29 @@ function hideTypingBar(){
      - 落盘 + 强制全量重绘，绕过渲染签名缓存
    ============================================================ */
 function _applyReadStateUpTo(anchorMsg, state){
-  /* 现在只处理传入的这一条，不再往上推平 */
   if(!anchorMsg || !anchorMsg.id) return;
-  const cur = msgs.find(x => x.id === anchorMsg.id);
-  if(!cur || cur.recalled || cur.sys || cur.namecard) return;
-  if(cur.readState === 'read' || cur.readState === 'noReply') return;
-
   const finalState = (state === 'noReply') ? 'noReply' : 'read';
-  cur.readState = finalState;
-  cur.readNoReply = (finalState === 'noReply');
-  cur.readAt = Date.now();
-  if(finalState === 'read') window.__lastReadAt = cur.readAt;
+  let changed = false;
+  
+  /* 找到锚点的索引，从底部往上扫，遇到终态就停。
+     把途中所有 unread 全部推成终态，消灭夹层。 */
+  const anchorIdx = msgs.findIndex(x => x.id === anchorMsg.id);
+  if(anchorIdx === -1) return;
+  
+  for(let i = anchorIdx; i >= 0; i--){
+    const m = msgs[i];
+    if(!m || m.role !== 'user' || m.recalled || m.sys || m.namecard) continue;
+    if(m.readState === 'read' || m.readState === 'noReply') break; // 遇到终态，停止推平
+    if(m.readState === 'unread'){
+      m.readState = finalState;
+      m.readNoReply = (finalState === 'noReply');
+      m.readAt = Date.now();
+      changed = true;
+    }
+  }
+  
+  if(!changed) return;
+  if(finalState === 'read') window.__lastReadAt = Date.now();
   saveMsgs();
 
   try{
@@ -26100,7 +26108,7 @@ function renderGroupChat(){
         '<div class="gch-mav">' + av + '</div>' +
         '<div class="gch-body"><div class="gch-name">' + nm + '</div>' +
         timeSep + quoteHTML +
-        '<div class="gch-bubble msg-image-bubble" data-idbkey="' + m.imageIdbKey + '" style="background:transparent;padding:0"><div class="img-loading" style="width:100px;height:100px;background:#f0f0f0;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px">加载中…</div></div></div>' +
+        '<div class="gch-bubble msg-image-bubble" data-idbkey="' + m.imageIdbKey + '"><div class="img-wrapper loading"></div></div></div>' +
       '</div>';
     }
 
@@ -26135,21 +26143,8 @@ function renderGroupChat(){
       '<div class="gch-bubble message-received msg-in msg-bubble" data-side="char">' + escapeHTML(m.text || '') + '</div></div>' +
     '</div>';
   }).join('');
-  /* ★ 图片消息：异步补 IndexedDB 里的图片 URL */
-  (function hydrateGroupImageUrls(){
-    list.querySelectorAll('.msg-image-bubble[data-idbkey]').forEach(function(bubble){
-      const key = bubble.dataset.idbkey;
-      if(!key) return;
-      if(bubble.dataset.hydrated === '1') return;
-      bubble.dataset.hydrated = '1';
-      __idb.toURL(key).then(function(url){
-        if(!url) return;
-        bubble.innerHTML = '<img src="' + url + '" style="max-width:180px;max-height:240px;border-radius:12px;display:block;cursor:zoom-in">';
-      }).catch(function(e){
-        console.error('群聊图片加载失败', e);
-      });
-    });
-  })();
+  /* ★ 图片消息：统一呼叫总入口 */
+  hydrateAllImages(list);
 
   list.scrollTop = list.scrollHeight;
 
@@ -28262,15 +28257,12 @@ function renderRoleSelfSetDialog(){
   /* ==== 模式 2：邀请面板 ==== */
   const allowedHTML = ROLE_SELFSET_ITEMS.map(function(it){
     const on = s.allowed[it.key] ? 'checked' : '';
-    const lockOn = (s.locked && s.locked[it.key]) ? ' locked' : '';
-    const lockIcon = (s.locked && s.locked[it.key]) ? '🔒' : '🔓';
-    return '<div class="rss-check-item' + lockOn + '">' +
+    return '<div class="rss-check-item">' +
       '<label class="rss-check-label">' +
         '<input type="checkbox" data-rss-key="' + it.key + '" ' + on + '>' +
         '<span class="rss-box"></span>' +
         '<span class="rss-label">' + escapeHTML(it.label) + '</span>' +
       '</label>' +
-      '<button class="rss-lock-btn" type="button" data-lock-key="' + it.key + '" title="点一下切换锁">' + lockIcon + '</button>' +
     '</div>';
   }).join('');
   
@@ -28329,18 +28321,7 @@ function renderRoleSelfSetDialog(){
     });
   }
 
-  /* ★ 新增：锁按钮点击 → 切换锁状态，重绘 */
-  body.querySelectorAll('[data-lock-key]').forEach(function(btn){
-    btn.addEventListener('click', function(e){
-      e.stopPropagation();
-      const cur = getRoleSelfSet(rid);
-      const k = btn.dataset.lockKey;
-      if(!cur.locked) cur.locked = {};
-      cur.locked[k] = !cur.locked[k];
-      saveRoleSelfSet(rid, cur);
-      renderRoleSelfSetDialog();
-    });
-  });
+ 
 
   /* 思考时间 */
   bindRssNum('rssThinkMin', function(v){
@@ -28593,17 +28574,8 @@ function pickAllowedItemKeys(roleId){
     }
   }
 
-  /* 从"允许"的项里，再去掉被锁住的。
-     锁住的项角色永远不改，不存在自动解锁 */
-  const unlocked = [];
-  allowed.forEach(function(k){
-    if(s.locked && s.locked[k]){
-      /* 锁住了：直接跳过，永不自动解开 */
-      return;
-    } else {
-      unlocked.push(k);
-    }
-  });
+  /* 直接使用 allowed，不再判断 locked，只要打勾就能改 */
+  const unlocked = allowed.slice();
 
   if(!unlocked.length) return [];
   /* 一次全切 */
@@ -28644,7 +28616,7 @@ function rollNewValueForKey(key){
     try{ raw = getRoleSelfSetFloor(k)[k]; }catch(e){ raw = null; }
     /* 完全没填过这一项 → 没设下限 */
     if(!raw || typeof raw !== 'object') return { has:false, min: 0, max: 0 };
-    /* 把原始值转成数字，空字符串 / NaN / 负数一律当 0（= 这一端没填） */
+    
     function _toNum(v){
       if(v === '' || v === null || v === undefined) return 0;
       const n = Number(v);
@@ -28653,10 +28625,10 @@ function rollNewValueForKey(key){
     }
     const mn = _toNum(raw.min);
     const mx = _toNum(raw.max);
+    /* 修复：两边都是0或空，才算没设 */
     if(mn === 0 && mx === 0) return { has:false, min: 0, max: 0 };
-    /* 只填了下限：上限放开，只保证 ≥ min */
+    /* 修复：只填了一边，另一边放开。哪怕填了 1到0，也按 1到无穷 算 */
     if(mn > 0 && mx === 0) return { has:true, min: mn, max: Number.POSITIVE_INFINITY };
-    /* 只填了上限：下限放开，只保证 ≤ max */
     if(mn === 0 && mx > 0) return { has:true, min: 0, max: mx };
     return { has:true, min: Math.min(mn, mx), max: Math.max(mn, mx) };
   };
@@ -40067,32 +40039,7 @@ function goToPage(name){
   min-width:0;
   cursor:pointer;
 }
-#mRoleSelfSet .rss-lock-btn{
-  flex:none;
-  width:28px;
-  height:28px;
-  border:none;
-  background:transparent;
-  font-size:14px;
-  cursor:pointer;
-  border-radius:6px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:0;
-  opacity:.55;
-  transition:opacity .18s ease, background .18s ease;
-}
-#mRoleSelfSet .rss-lock-btn:active{
-  background:#f5f5f5;
-  opacity:1;
-}
-#mRoleSelfSet .rss-check-item.locked .rss-label{
-  color:#bbb;
-}
-#mRoleSelfSet .rss-check-item.locked .rss-box{
-  opacity:.35;
-}
+
 
 /* ===== 时间字卡开关弹窗 · 方案 B 紧凑单行 ===== */
 /* ★ 个签切换弹窗 · 极简样式 */
@@ -40386,6 +40333,41 @@ function goToPage(name){
   left:3px !important;
   transform:translateX(16px) !important;
 }
+/* ===== 聊天图片：无气泡 + 褪潮加载效果 ===== */
+.msg-image-bubble{
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+.img-wrapper{
+  width: 140px;
+  height: 140px;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  background: #f0f0f0;
+  transition: background 0.3s;
+}
+.img-wrapper.loading::before{
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+  transform: translateX(-100%); animation: imgShimmer 1.5s infinite;
+}
+@keyframes imgShimmer{ 100%{ transform: translateX(100%); } }
+.img-wrapper.loading::after{
+  content: "加载中"; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: #bbb; letter-spacing: 1px;
+}
+.img-wrapper .img-real{
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22,1,0.36,1);
+}
+.img-wrapper.loaded .img-real{ opacity: 1; transform: translateY(0); }
+.img-wrapper.loaded::before, .img-wrapper.loaded::after{ display: none; }
+.img-wrapper.loaded{ background: transparent; }
 </style>
 
 <script>
