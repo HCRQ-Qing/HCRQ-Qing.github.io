@@ -18600,6 +18600,25 @@ function appendMsgToRole(roleId, msg){
   const key = 'mj_msgs_' + roleId;
   let arr = lsGet(key, null);
   if(!Array.isArray(arr)) arr = [];
+
+  /* ★ 角色冒气泡 = 强制已读它上面所有未读的用户消息（所有入口统一） */
+  if(msg && msg.role === 'char' && !msg.sys && !msg.recalled){
+    let _ch = false;
+    arr.forEach(function(mm){
+      if(!mm || mm.role !== 'user') return;
+      if(mm.recalled || mm.sys || mm.namecard) return;
+      if(mm.readState === 'unread'){
+        mm.readState = 'read';
+        mm.readNoReply = false;
+        mm.readAt = Date.now();
+        _ch = true;
+      }
+    });
+    if(_ch && getCurrentRoleId() === roleId){
+      window.__lastReadAt = Date.now();
+    }
+  }
+
   arr.push(msg);
   lsSet(key, arr);
   /* ★ 统一撤回入口：只要是角色发的、不是系统/撤回消息，就各自摇一次撤回 */
@@ -23257,6 +23276,14 @@ function openChoice(){
 
   $('#go').onclick = () => {
 	const q = $('#cq').value.trim() || '（未填写问题）';
+	/* ★ 独立记忆：把问题按「模式」分开存，yes/no 和 多选 互不覆盖 */
+	const _memQ = getChoiceMem();
+	if(choiceMode === 'yn'){
+	  _memQ.yn.q = $('#cq').value;
+	} else {
+	  _memQ.multi.q = $('#cq').value;
+	}
+	saveChoiceMem(_memQ);
 	let answer = '';
 	let thinkMs = 3000;
 
