@@ -12567,6 +12567,16 @@ window.__APP_VERSION__ = '0.1.0';
     sendImagesToChat(files);
   }, true);
 
+  /* 1.5 存图公用函数：私聊群聊都走这里
+     ownerId = 角色 id 或 群 id
+     返回 Promise<{ key, msg }>，msg 里已经带上 imageIdbKey */
+  function saveMsgImage(file, ownerId){
+    var key = 'msgimg_' + ownerId + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6);
+    return __idb.set(key, file).then(function(){
+      return { key: key };
+    });
+  }
+
   /* 2. 发送：每张图作为一条消息，间隔 100~500ms */
   function sendImagesToChat(files){
     var roleId = getCurrentRoleId();
@@ -12574,8 +12584,8 @@ window.__APP_VERSION__ = '0.1.0';
 
     files.forEach(function(file, idx){
       setTimeout(function(){
-        var key = 'chatimg_' + roleId + '_' + Date.now().toString(36) + '_' + idx + '_' + Math.random().toString(36).slice(2,6);
-        __idb.set(key, file).then(function(){
+        saveMsgImage(file, roleId).then(function(r){
+          var key = r.key;
           var msg = {
             id: uid(),
             role: 'user',
@@ -12626,8 +12636,8 @@ window.__APP_VERSION__ = '0.1.0';
 
     files.forEach(function(file, idx){
       setTimeout(function(){
-        var key = 'gchimg_' + g.id + '_' + Date.now().toString(36) + '_' + idx + '_' + Math.random().toString(36).slice(2,6);
-        __idb.set(key, file).then(function(){
+        saveMsgImage(file, g.id).then(function(r){
+          var key = r.key;
           arr.push({
             id: uid(),
             role: 'user',
@@ -12652,7 +12662,7 @@ window.__APP_VERSION__ = '0.1.0';
 
   /* 5. 图片点击放大 */
   document.addEventListener('click', function(e){
-    var img = e.target.closest && e.target.closest('.msg-image-bubble img');
+    var img = e.target.closest && e.target.closest('.msg-image-bubble .img-real');
     if(!img) return;
     e.preventDefault();
     e.stopPropagation();
@@ -15281,8 +15291,8 @@ function renderChatFull(forceBottom){
 	  const stickerBubbleCls = isUser ? 'message-sent message-bubble-user' : 'message-received message-bubble-char';
 	  body = `<div class="bubble ${stickerBubbleCls}" data-side="${isUser?'user':'char'}" style="padding:4px"><img src="${m.sticker}" style="max-width:140px;border-radius:12px;display:block"></div>`;
 	}else if(m.imageIdbKey){
-	  /* ★ 图片消息：骨架屏占位 */
-	  body = `<div class="bubble msg-image-bubble" data-idbkey="${m.imageIdbKey}"><div class="img-wrapper loading"></div></div>`;
+	  /* ★ 图片消息：不包 .bubble，直接一张图 */
+	  body = `<div class="msg-image-bubble" data-idbkey="${m.imageIdbKey}"><div class="img-wrapper loading"></div></div>`;
 	}else if(m.divine){
 	  const reads = m.divine.reads || [];
 	  const roleReads = m.divine.roleReads || [];
@@ -17441,6 +17451,8 @@ function showMsgMenu(msgEl,x,y){
 		  return c.card.name + rev;
 		}).join('、');
 		const text = `Q：${d.q}\n牌面：${cardText}`;
+		if(!text){ toast('没有可引用的内容'); return; }
+		setQuote({name, text, msgId: m.id});
 	  } else if(act === 'collect'){
 		const rid0 = getCurrentRoleId();
 		const arr = getCollectMine(rid0);
@@ -25497,6 +25509,19 @@ document.addEventListener('click', function(e){
   }
 }, true);
 
+/* ===== 群聊引用 · 统一入口 ===== */
+function setGchQuote(q){
+  if(!q) return;
+  window.__gchQuote = {
+    msgId: q.msgId || '',
+    name: q.name || '?',
+    text: q.text || ''
+  };
+  toast('已引用，去输入框写点什么吧');
+  const ta = document.getElementById('gchInput');
+  if(ta) ta.focus();
+}
+
 /* ===== 群聊长按菜单 ===== */
 function gchShowMenu(msgEl, x, y){
   let menu = document.getElementById('gchMenu');
@@ -25546,14 +25571,11 @@ function gchShowMenu(msgEl, x, y){
         copyText(m.text || '', '已复制');
 
       } else if(act === 'quote'){
-        window.__gchQuote = {
+        setGchQuote({
           msgId: m.id,
           name: m.role === 'user' ? userName() : ((getRoleById(m.roleId) || {}).name || '?'),
           text: m.text || ''
-        };
-        toast('已引用，去输入框写点什么吧');
-        const ta = document.getElementById('gchInput');
-        if(ta) ta.focus();
+        });
 
       } else if(act === 'quote-part'){
         /* 引用部分文字：让用户输入要引用的片段（群聊里先简化成弹窗输入） */
@@ -25585,14 +25607,11 @@ function gchShowMenu(msgEl, x, y){
           return (c.card && c.card.name ? c.card.name : '?') + rev;
         }).join('、');
         const text = 'Q：' + (d.q || '') + (cards ? '\n牌面：' + cards : '');
-        window.__gchQuote = {
+        setGchQuote({
           msgId: m.id,
           name: (getRoleById(m.roleId) || {}).name || '?',
           text: text
-        };
-        toast('已引用，去输入框写点什么吧');
-        const ta = document.getElementById('gchInput');
-        if(ta) ta.focus();
+        });
 
       } else if(act === 'collect'){
         /* 收藏到当前角色的收藏里（简化：存到该角色私聊的收藏库） */
@@ -26108,7 +26127,7 @@ function renderGroupChat(){
         '<div class="gch-mav">' + av + '</div>' +
         '<div class="gch-body"><div class="gch-name">' + nm + '</div>' +
         timeSep + quoteHTML +
-        '<div class="gch-bubble msg-image-bubble" data-idbkey="' + m.imageIdbKey + '"><div class="img-wrapper loading"></div></div></div>' +
+        '<div class="msg-image-bubble" data-idbkey="' + m.imageIdbKey + '"><div class="img-wrapper loading"></div></div></div>' +
       '</div>';
     }
 
@@ -30751,12 +30770,26 @@ function jumpToMsg(id){
     }
     /* 居中滚动 */
     el.scrollIntoView({block:'center', behavior:'smooth'});
-    /* 黑底反白高亮，2 秒 */
+    /* 黑底反白高亮：一直亮着，点空白处才灭 */
     el.classList.add('hit');
-    setTimeout(function(){
-      el.classList.remove('hit');
-      window.__jumpingToMsg = false;
-    }, 2000);
+    window.__jumpingToMsg = false;
+    (function bindHitClear(){
+      /* 先清掉上一次没撤掉的监听，防止叠一堆 */
+      if(window.__hitClearHandler){
+        document.removeEventListener('click', window.__hitClearHandler, true);
+        window.__hitClearHandler = null;
+      }
+      function clearHit(ev){
+        /* 点在这条高亮消息里面 → 不灭 */
+        if(ev.target && ev.target.closest && ev.target.closest('.msg.hit')) return;
+        el.classList.remove('hit');
+        document.removeEventListener('click', clearHit, true);
+        window.__hitClearHandler = null;
+      }
+      window.__hitClearHandler = clearHit;
+      /* 用 capture 阶段，保证先于其它点击逻辑跑 */
+      document.addEventListener('click', clearHit, true);
+    })();
   }, 50);
 }
 
