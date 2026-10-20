@@ -28363,6 +28363,7 @@ function renderRoleSelfSetDialog(){
         if(ev){ ev.preventDefault(); ev.stopPropagation(); }
         const mask = document.getElementById('mRoleSelfSet');
         if(mask) mask.classList.remove('show');
+        window.__rssInviteMode = false;
         sendRoleSelfSetInvite(rid);
       };
     }
@@ -28578,7 +28579,6 @@ function pickAllowedItemKeys(roleId){
   const unlocked = allowed.slice();
 
   if(!unlocked.length) return [];
-  /* 一次全切 */
   const copy = unlocked.slice();
   for(let i = copy.length - 1; i > 0; i--){
     const j = Math.floor(Math.random() * (i + 1));
@@ -28611,12 +28611,16 @@ function rollNewValueForKey(key){
      改法：先看存储里到底有没有这一项（有 key 才算"用户填过"），
            只有真的没填过/两边都空，才判定为"没设下限，角色随便摇"；
            只有一端有值，另一端彻底放开（不再补成固定值）。 */
+  /* ★ 修复：角色可调参数的读值入口
+     - 原来 getRoleSelfSetFloor(k) 传的是"参数 key"，但那个函数签名是 (roleId)，
+       等于把 key 当 roleId 查了，永远查不到用户填的表 → 下限形同虚设
+     - 现在显式传当前角色 id，才能真读到用户填的那张表 */
   const _range = function(k){
     let raw = null;
-    try{ raw = getRoleSelfSetFloor(k)[k]; }catch(e){ raw = null; }
+    try{ raw = getRoleSelfSetFloor(getCurrentRoleId())[k]; }catch(e){ raw = null; }
     /* 完全没填过这一项 → 没设下限 */
     if(!raw || typeof raw !== 'object') return { has:false, min: 0, max: 0 };
-    
+
     function _toNum(v){
       if(v === '' || v === null || v === undefined) return 0;
       const n = Number(v);
@@ -28625,9 +28629,9 @@ function rollNewValueForKey(key){
     }
     const mn = _toNum(raw.min);
     const mx = _toNum(raw.max);
-    /* 修复：两边都是0或空，才算没设 */
+    /* 两边都是0或空，才算没设 */
     if(mn === 0 && mx === 0) return { has:false, min: 0, max: 0 };
-    /* 修复：只填了一边，另一边放开。哪怕填了 1到0，也按 1到无穷 算 */
+    /* 只填了一边，另一边放开 */
     if(mn > 0 && mx === 0) return { has:true, min: mn, max: Number.POSITIVE_INFINITY };
     if(mn === 0 && mx > 0) return { has:true, min: 0, max: mx };
     return { has:true, min: Math.min(mn, mx), max: Math.max(mn, mx) };
@@ -29211,26 +29215,38 @@ function settleRoleSelfSetInvite(roleId){
     return;
   }
 
-  /* 同意：从允许项里挑 1~3 项改，全部合成一条气泡 */
+
   const results = [];
+  const floorMap = getRoleSelfSetFloor(roleId);
+  const hasFloor = floorMap && Object.keys(floorMap).length > 0;
   const keys = pickAllowedItemKeys(roleId);
+  const doChange = function(k){
+    try{
+      const rr = rollNewValueForKey(k);
+      if(rr){ rr.apply(); results.push(rr.text()); }
+    }catch(e){ console.error('邀请同意执行失败 key=' + k, e); }
+  };
   if(!keys.length){
     /* 一项都没勾，回退为全部改（但要跳过被锁的） */
     const s2 = getRoleSelfSet(roleId);
     ROLE_SELFSET_ITEMS.forEach(function(it){
       if(s2.locked && s2.locked[it.key]) return;
-      try{
-        const rr = rollNewValueForKey(it.key);
-        if(rr){ rr.apply(); results.push(rr.text()); }
-      }catch(e){ console.error('邀请同意执行失败 key=' + it.key, e); }
+      doChange(it.key);
     });
   } else {
-    keys.forEach(function(k){
-      try{
-        const rr = rollNewValueForKey(k);
-        if(rr){ rr.apply(); results.push(rr.text()); }
-      }catch(e){ console.error('邀请同意执行失败 key=' + k, e); }
-    });
+    keys.forEach(doChange);
+  }
+  /* ★ 如果用户填了角色可调参数，但这次一条都没摇出来（说明全被下限夹掉了），
+     就不要发空气泡，给用户一个明确提示 */
+  if(hasFloor && !results.length){
+    try{
+      appendMsgToRole(roleId, {
+        id: uid(),
+        role: 'char',
+        text: '这次没什么想改的。',
+        time: Date.now()
+      });
+    }catch(e){}
   }
 
   /* ★ 邀请同意时，也 50% 概率顺手拨动一个开关 */
