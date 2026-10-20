@@ -15033,6 +15033,18 @@ function hydrateAllImages(container){
       img.onload = function(){
         wrapper.innerHTML = '';
         wrapper.appendChild(img);
+        /* ★ 动态判断图片比例并应用，实现微信那种保持原比例、大图缩小 */
+        if(img.naturalWidth && img.naturalHeight){
+          let w = img.naturalWidth;
+          let h = img.naturalHeight;
+          const maxSide = 200;
+          if (w > maxSide || h > maxSide) {
+            if (w > h) { h = Math.round(h * maxSide / w); w = maxSide; }
+            else { w = Math.round(w * maxSide / h); h = maxSide; }
+          }
+          wrapper.style.width = w + 'px';
+          wrapper.style.height = h + 'px';
+        }
         requestAnimationFrame(() => {
           wrapper.classList.remove('loading');
           wrapper.classList.add('loaded');
@@ -15291,8 +15303,12 @@ function renderChatFull(forceBottom){
 	  const stickerBubbleCls = isUser ? 'message-sent message-bubble-user' : 'message-received message-bubble-char';
 	  body = `<div class="bubble ${stickerBubbleCls}" data-side="${isUser?'user':'char'}" style="padding:4px"><img src="${m.sticker}" style="max-width:140px;border-radius:12px;display:block"></div>`;
 	}else if(m.imageIdbKey){
-	  /* ★ 图片消息：不包 .bubble，直接一张图 */
-	  body = `<div class="msg-image-bubble" data-idbkey="${m.imageIdbKey}"><div class="img-wrapper loading"></div></div>`;
+	  /* ★ 图片消息：不包 .bubble，直接一张图，记录宽高比防抖动 */
+	  var _imgRatioStyle = '';
+	  if(m.imageRatio){
+	    _imgRatioStyle = ` style="aspect-ratio:${m.imageRatio};"`;
+	  }
+	  body = `<div class="msg-image-bubble" data-idbkey="${m.imageIdbKey}"><div class="img-wrapper loading"${_imgRatioStyle}></div></div>`;
 	}else if(m.divine){
 	  const reads = m.divine.reads || [];
 	  const roleReads = m.divine.roleReads || [];
@@ -23204,7 +23220,6 @@ function openChoice(){
   const _ynQ     = (typeof yn.q === 'string') ? yn.q : '';
   const _ynMin   = (typeof yn.min === 'number') ? yn.min : 2;
   const _ynMax   = (typeof yn.max === 'number') ? yn.max : 5;
-  const _q       = (choiceMode === 'yn') ? _ynQ : ((typeof mu.q === 'string') ? mu.q : '');
   const _mQ      = (typeof mu.q === 'string') ? mu.q : '';
   const _mMin    = (typeof mu.min === 'number') ? mu.min : 2;
   const _mMax    = (typeof mu.max === 'number') ? mu.max : 5;
@@ -23223,7 +23238,7 @@ function openChoice(){
 	  <button class="mode-btn ${multiOn}" data-mode="multi" type="button">多 选</button>
 	</div>
 
-	<textarea class="choice-q" id="cq" rows="2" placeholder="比如：今晚想干嘛？" style="height:64px;min-height:64px;max-height:64px;overflow-y:auto;line-height:1.6;">${escapeHTML(_q)}</textarea>
+	<textarea class="choice-q" id="cq" rows="2" placeholder="比如：今晚想干嘛？" style="height:64px;min-height:64px;max-height:64px;overflow-y:auto;line-height:1.6;">${escapeHTML(choiceMode === 'yn' ? _ynQ : _mQ)}</textarea>
 
 	<div id="paneYn" style="display:${paneYnShow}">
 	  <div class="choice-opts-row" style="padding:8px 2px;border-bottom:none;margin-top:6px;">
@@ -23261,9 +23276,31 @@ function openChoice(){
 
   $$('#choiceBody .mode-btn').forEach(b => {
 	b.onclick = () => {
+	  const prevMode = choiceMode;
+	  const nextMode = b.dataset.mode;
+	  if(prevMode === nextMode) return;
+
+	  /* ★ 切换前，先把当前模式正在填的问题存回自己的桶 */
+	  const memNow = getChoiceMem();
+	  const cq = $('#cq');
+	  const curQ = cq ? cq.value : '';
+	  if(prevMode === 'yn'){
+		memNow.yn.q = curQ;
+	  } else {
+		memNow.multi.q = curQ;
+	  }
+	  memNow.mode = nextMode;
+	  saveChoiceMem(memNow);
+
 	  $$('#choiceBody .mode-btn').forEach(x => x.classList.remove('on'));
 	  b.classList.add('on');
-	  choiceMode = b.dataset.mode;
+	  choiceMode = nextMode;
+
+	  /* ★ 切换后，把新模式的自己的问题填回问题框 */
+	  if(cq){
+		cq.value = (nextMode === 'yn') ? (memNow.yn.q || '') : (memNow.multi.q || '');
+	  }
+
 	  if(choiceMode === 'yn'){
 		$('#paneYn').style.display = 'block';
 		$('#paneMulti').style.display = 'none';
@@ -40444,6 +40481,32 @@ function goToPage(name){
 .img-wrapper.loaded .img-real{ opacity: 1; transform: translateY(0); }
 .img-wrapper.loaded::before, .img-wrapper.loaded::after{ display: none; }
 .img-wrapper.loaded{ background: transparent; }
+
+/* ===== 极简纯文字版确认弹窗 ===== */
+.mj-confirm-mask{
+  position:fixed;inset:0;z-index:2147483647;
+  background:rgba(0,0,0,.4);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  display:none;align-items:center;justify-content:center;padding:24px;
+}
+.mj-confirm-mask.show{display:flex}
+.mj-confirm-sheet{
+  width:100%;max-width:280px;background:#fff;border-radius:20px;
+  padding:28px 22px 20px;text-align:center;
+  animation:pop .24s cubic-bezier(.22,1,.36,1);
+}
+.mj-confirm-title{
+  font-size:14px;font-weight:300;letter-spacing:2px;color:#1a1a1a;
+}
+.mj-confirm-desc{
+  font-size:13px;color:#999;margin-top:10px;letter-spacing:.5px;
+}
+.mj-confirm-acts{display:flex;gap:10px;margin-top:28px}
+.mj-confirm-acts button{
+  flex:1;padding:12px 0;border-radius:22px;font-size:13px;
+  font-family:inherit;letter-spacing:1px;cursor:pointer;border:none;font-weight:400;
+}
+.mj-confirm-cancel{background:#f5f5f5;color:#666}
+.mj-confirm-ok{background:#1a1a1a;color:#fff}
 </style>
 
 <script>
