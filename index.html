@@ -5611,32 +5611,39 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .shape-btn .pv.sq{border-radius:12%}
 .shape-btn .pv.ci{border-radius:50%}
 
-.crop-mask{position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.85) !important;display:none;flex-direction:column}
+.crop-mask{position:fixed;inset:0;z-index:2147483646;background:#000 !important;display:none;flex-direction:column}
 .crop-mask.show{display:flex}
-.crop-top{flex:none;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;color:#fff !important;font-size:14px;font-weight:700;letter-spacing:2px;position:relative;z-index:20;background:transparent}
-.crop-top .cancel{color:#ccc !important;font-size:13px;cursor:pointer;font-weight:400}
-.crop-stage{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.crop-frame{position:relative;width:min(78vw,320px);aspect-ratio:1/1;overflow:hidden;background:#000 !important;touch-action:none;z-index:7;border-radius:0;margin:auto}
-.crop-frame[style*="width"]{aspect-ratio:auto}
+.crop-top{flex:none;display:flex;align-items:center;padding:16px 20px 8px;position:relative;z-index:20;background:transparent}
+.crop-top .cancel{width:56px;flex:none;font-size:13px;color:#8a8a8a;letter-spacing:1px;cursor:pointer;font-weight:300}
+.crop-top .cancel:active{color:#fff}
+.crop-top .title{flex:1;text-align:center;font-size:14px;font-weight:300;letter-spacing:3px;color:#fff}
+.crop-top .spacer{width:56px;flex:none}
+.crop-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0 24px}
+.crop-frame{position:relative;width:100%;max-width:320px;aspect-ratio:1/1;overflow:hidden;background:#1a1a1a !important;touch-action:none;z-index:7;margin:auto}
 .crop-frame .crop-img{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;user-select:none;-webkit-user-drag:none;pointer-events:none;z-index:1}
 .crop-frame .grid{position:absolute;inset:0;pointer-events:none;z-index:2}
-.crop-frame .grid::before,.crop-frame .grid::after{content:"";position:absolute;background:rgba(255,255,255,.25)}
+.crop-frame .grid::before,.crop-frame .grid::after{content:"";position:absolute;background:rgba(255,255,255,.18)}
 .crop-frame .grid::before{left:33.33%;top:0;bottom:0;width:1px}
 .crop-frame .grid::after{left:66.66%;top:0;bottom:0;width:1px}
-.crop-frame .grid span{position:absolute;left:0;right:0;height:1px;background:rgba(255,255,255,.25)}
+.crop-frame .grid span{position:absolute;left:0;right:0;height:1px;background:rgba(255,255,255,.18)}
 .crop-frame .grid span.h1{top:33.33%}
 .crop-frame .grid span.h2{top:66.66%}
-.crop-ring{position:absolute;left:50%;top:50%;width:100%;height:100%;transform:translate(-50%,-50%);border-radius:50%;box-shadow:0 0 0 2px rgba(255,111,168,.95),0 0 24px rgba(255,111,168,.55) inset;pointer-events:none;z-index:4;display:none}
-.crop-mask.circle-mode .crop-ring{display:block}
-.crop-bottom{flex:none;padding:14px 20px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;background:#fff !important;border-top:1px solid rgba(0,0,0,.1);position:relative;z-index:20}
-.zoom-row{display:flex;align-items:center;gap:10px}
-.zoom-row .z-label{font-size:12px;color:var(--th-text-soft);flex:none}
-.zoom-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:3px;border-radius:2px;background:var(--th-accent-soft-2);outline:none}
-.zoom-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--th-accent);box-shadow:0 0 10px var(--th-accent);cursor:pointer}
-.crop-actions{display:flex;gap:10px}
-.crop-actions .btn-cancel,.crop-actions .btn-ok{flex:1;padding:12px 0;border-radius:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;border:none}
-.crop-actions .btn-cancel{background:var(--th-accent-soft);border:1px solid var(--th-accent-line);color:var(--th-accent)}
-.crop-actions .btn-ok{background:var(--th-accent);color:#fff}
+.crop-frame .corner{position:absolute;width:18px;height:18px;border:1.5px solid #fff;z-index:3;pointer-events:none}
+.crop-frame .corner.tl{left:0;top:0;border-right:none;border-bottom:none}
+.crop-frame .corner.tr{right:0;top:0;border-left:none;border-bottom:none}
+.crop-frame .corner.bl{left:0;bottom:0;border-right:none;border-top:none}
+.crop-frame .corner.br{right:0;bottom:0;border-left:none;border-top:none}
+.crop-bottom{flex:none;padding:20px 24px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:20px;background:#000 !important}
+.zoom-row{display:flex;align-items:center;gap:14px}
+.zoom-row .z-label{font-size:11px;color:#6a6a6a;letter-spacing:2px;flex:none;font-weight:300}
+.zoom-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:2px;border-radius:2px;background:#2a2a2a;outline:none}
+.zoom-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.crop-actions{display:flex;gap:12px}
+.crop-actions .btn-cancel,.crop-actions .btn-ok{flex:1;padding:15px 0;border-radius:24px;font-size:14px;font-family:inherit;letter-spacing:4px;text-indent:4px;font-weight:300;cursor:pointer;border:none;transition:opacity .18s ease}
+.crop-actions .btn-cancel{background:transparent;border:0.7px solid rgba(255,255,255,.18);color:#8a8a8a}
+.crop-actions .btn-cancel:active{border-color:#fff;color:#fff}
+.crop-actions .btn-ok{background:#fff;color:#111}
+.crop-actions .btn-ok:active{opacity:.75}
 
 
 .upload-block{padding:16px;border-radius:14px;border:1.5px dashed rgba(255,111,168,.4);background:rgba(255,111,168,.05);text-align:center;margin:10px 0;cursor:pointer}
@@ -12278,19 +12285,28 @@ window.__APP_VERSION__ = '0.1.0';
 <div class="crop-mask" id="cropMask">
   <div class="crop-top">
 	<div class="cancel" id="cropCancelTop">取消</div>
-	<div id="cropTitle">调整头像位置（正方形）</div>
-	<div style="width:36px"></div>
+	<div class="title" id="cropTitle">调整头像位置</div>
+	<div class="spacer"></div>
   </div>
   <div class="crop-stage" id="cropStage">
 	<div class="crop-frame" id="cropFrame">
 	  <img class="crop-img" id="cropImg" alt="">
 	  <div class="grid"><span class="h1"></span><span class="h2"></span></div>
-	  <div class="crop-ring"></div>
+	  <div class="corner tl"></div>
+	  <div class="corner tr"></div>
+	  <div class="corner bl"></div>
+	  <div class="corner br"></div>
 	</div>
   </div>
   <div class="crop-bottom">
-	<div class="zoom-row"><span class="z-label">缩放</span><input type="range" id="zoomRange" min="1" max="3" step="0.01" value="1"></div>
-	<div class="crop-actions"><button class="btn-cancel" id="cropCancel">取消</button><button class="btn-ok" id="cropOk">确认</button></div>
+	<div class="zoom-row">
+	  <span class="z-label">缩 放</span>
+	  <input type="range" id="zoomRange" min="1" max="3" step="0.01" value="1">
+	</div>
+	<div class="crop-actions">
+	  <button class="btn-cancel" id="cropCancel" type="button">取 消</button>
+	  <button class="btn-ok" id="cropOk" type="button">确 认</button>
+	</div>
   </div>
 </div>
 
@@ -25245,37 +25261,22 @@ $$('#spLayout .layout-opt').forEach(btn=>{
   });
 });
 
-const cropState = { naturalW:0, naturalH:0, scale:1, baseScale:1, tx:0, ty:0, shape:'square', frameW:0, frameH:0, onDone:null };
+const cropState = { naturalW:0, naturalH:0, scale:1, baseScale:1, tx:0, ty:0, frameW:0, frameH:0, onDone:null };
 function openCrop(file, ratio, titleText, onDone){
   if(!file){ return; }
-  const useRatio = (typeof ratio === 'number' && ratio > 0) ? ratio : 1;
-  const useTitle = titleText || (useRatio === 1 ? '调整头像位置（正方形）' : '调整图片位置');
+  const useTitle = titleText || '调整头像位置';
   const r = new FileReader();
   r.onload = e=>{
 	const img = new Image();
 	img.onload = ()=>{
 	  cropState.naturalW = img.width;
 	  cropState.naturalH = img.height;
-	  cropState.ratio = useRatio;
 	  cropState.onDone = onDone || null;
 	  const mask = $('#cropMask');
-	  mask.classList.remove('circle-mode');
 	  $('#cropTitle').textContent = useTitle;
 	  const cimg = $('#cropImg');
 	  cimg.src = e.target.result;
 	  cimg.onload = ()=>{
-		const stage = $('#cropStage');
-		const stageW = stage.clientWidth;
-		const stageH = stage.clientHeight;
-		const padding = 40;
-		const maxW = stageW - padding * 2;
-		const maxH = stageH - padding * 2;
-		let fw, fh;
-		if(maxW / maxH > useRatio){ fh = maxH; fw = fh * useRatio; }
-		else { fw = maxW; fh = fw / useRatio; }
-		const frame = $('#cropFrame');
-		frame.style.width = fw + 'px';
-		frame.style.height = fh + 'px';
 		initCropLayout();
 	  };
 	  mask.classList.add('show');
