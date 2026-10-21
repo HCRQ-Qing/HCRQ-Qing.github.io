@@ -35391,7 +35391,7 @@ on('#btnNfUploadAv','click',()=>{
    - 以后加新功能传头像，直接绑这个函数，不用再写文件选择器了
    ============================================================ */
 window.triggerAvatarUpload = function(context) {
-  window.__uploadContext = context || ''; 
+  window.__uploadContext = context || '';
   var f = document.getElementById('editAvFile');
   if(f){ f.value = ''; f.click(); }
 };
