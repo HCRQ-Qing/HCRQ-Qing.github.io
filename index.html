@@ -25245,6 +25245,7 @@ $$('#spLayout .layout-opt').forEach(btn=>{
 
 const cropState = { naturalW:0, naturalH:0, scale:1, baseScale:1, tx:0, ty:0, shape:'square', frameW:0, frameH:0, onDone:null };
 function openCrop(file, ratio, titleText, onDone){
+  if(!file){ return; }
   const useRatio = (typeof ratio === 'number' && ratio > 0) ? ratio : 1;
   const useTitle = titleText || (useRatio === 1 ? '调整头像位置（正方形）' : '调整图片位置');
   const r = new FileReader();
@@ -35388,10 +35389,54 @@ on('#btnNfUploadAv','click',()=>{
    - 以后加新功能传头像，直接绑这个函数，不用再写文件选择器了
    ============================================================ */
 window.triggerAvatarUpload = function(context) {
-  window.__uploadContext = context || ''; // 记录是谁点的上传
+  window.__uploadContext = context || ''; 
   var f = document.getElementById('editAvFile');
   if(f){ f.value = ''; f.click(); }
 };
+
+on('#editAvFile','change',function(){
+  const f = this.files[0]; this.value=''; if(!f) return;
+
+  const context = window.__uploadContext || '';
+  window.__uploadContext = ''; 
+
+  openCrop(f, 'square', (data)=>{
+    if(context === 'profile') {
+      var pid = window.__profileViewId || getCurrentRoleId();
+      saveRoleField(pid, 'avatar', data);
+      var pAv = document.getElementById('profileAvatar');
+      if(pAv) pAv.innerHTML = avatarHTML(data);
+      if(pid === getCurrentRoleId()){
+        try{ refreshChatRole(); }catch(err){}
+        if(typeof window.__forceRenderChat === 'function') window.__forceRenderChat();
+        if(typeof renderChatFull === 'function') renderChatFull(true);
+      }
+      toast('头像已更新');
+      return;
+    }
+    if(context === 'builtin') {
+      blEditAvatarTmp = data;
+      renderBlEditAvatar();
+      return;
+    }
+    if(context === 'cip') {
+      var rid = getCurrentRoleId();
+      saveRoleField(rid, 'avatar', data);
+      var cipAv = document.getElementById('cipAvatar');
+      if(cipAv) cipAv.innerHTML = avatarHTML(data);
+      try { refreshChatRole(); } catch(err){}
+      toast('头像已更新');
+      return;
+    }
+    if(context === 'newfriend') {
+      nfAvatarTmp = data;
+      renderNfAvatar();
+      return;
+    }
+    editAvatarTmp = data;
+    renderEditAvPrev();
+  });
+});
 
 /* 内置角色上传绑定 */
 (function bindBiUploadBtn(){
