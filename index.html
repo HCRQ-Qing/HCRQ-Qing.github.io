@@ -5611,39 +5611,34 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .shape-btn .pv.sq{border-radius:12%}
 .shape-btn .pv.ci{border-radius:50%}
 
-.crop-mask{position:fixed;inset:0;z-index:2147483646;background:#000 !important;display:none;flex-direction:column}
+.crop-mask{position:fixed;inset:0;z-index:2147483647;background:#000 !important;display:none;flex-direction:column;overflow:hidden !important}
 .crop-mask.show{display:flex}
-.crop-top{flex:none;display:flex;align-items:center;padding:16px 20px 8px;position:relative;z-index:20;background:transparent}
-.crop-top .cancel{width:56px;flex:none;font-size:13px;color:#8a8a8a;letter-spacing:1px;cursor:pointer;font-weight:300}
+.crop-top{flex:none;display:flex;align-items:center;padding:20px 24px 10px;position:relative;z-index:20;background:#000}
+.crop-top .cancel{width:56px;flex:none;font-size:14px;color:rgba(255,255,255,.5);letter-spacing:1px;cursor:pointer;font-weight:300}
 .crop-top .cancel:active{color:#fff}
-.crop-top .title{flex:1;text-align:center;font-size:14px;font-weight:300;letter-spacing:3px;color:#fff}
+.crop-top .title{flex:1;text-align:center;font-size:15px;font-weight:400;letter-spacing:3px;color:#fff}
 .crop-top .spacer{width:56px;flex:none}
-.crop-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0 24px}
-.crop-frame{position:relative;width:100%;max-width:320px;aspect-ratio:1/1;overflow:hidden;background:#1a1a1a !important;touch-action:none;z-index:7;margin:auto}
-.crop-frame .crop-img{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;user-select:none;-webkit-user-drag:none;pointer-events:none;z-index:1}
-.crop-frame .grid{position:absolute;inset:0;pointer-events:none;z-index:2}
-.crop-frame .grid::before,.crop-frame .grid::after{content:"";position:absolute;background:rgba(255,255,255,.18)}
+.crop-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0 20px}
+.crop-frame{position:relative;width:100%;max-width:320px;aspect-ratio:1/1;overflow:hidden;background:#111 !important;touch-action:none;z-index:7;margin:auto}
+.crop-frame .crop-img{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;user-select:none;-webkit-user-drag:none;pointer-events:none;z-index:1;max-width:none}
+.crop-frame .grid{position:absolute;inset:0;pointer-events:none;z-index:2;border:1px solid rgba(255,255,255,.2)}
+.crop-frame .grid::before,.crop-frame .grid::after{content:"";position:absolute;background:rgba(255,255,255,.15)}
 .crop-frame .grid::before{left:33.33%;top:0;bottom:0;width:1px}
 .crop-frame .grid::after{left:66.66%;top:0;bottom:0;width:1px}
-.crop-frame .grid span{position:absolute;left:0;right:0;height:1px;background:rgba(255,255,255,.18)}
+.crop-frame .grid span{position:absolute;left:0;right:0;height:1px;background:rgba(255,255,255,.15)}
 .crop-frame .grid span.h1{top:33.33%}
 .crop-frame .grid span.h2{top:66.66%}
-.crop-frame .corner{position:absolute;width:18px;height:18px;border:1.5px solid #fff;z-index:3;pointer-events:none}
-.crop-frame .corner.tl{left:0;top:0;border-right:none;border-bottom:none}
-.crop-frame .corner.tr{right:0;top:0;border-left:none;border-bottom:none}
-.crop-frame .corner.bl{left:0;bottom:0;border-right:none;border-top:none}
-.crop-frame .corner.br{right:0;bottom:0;border-left:none;border-top:none}
-.crop-bottom{flex:none;padding:20px 24px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:20px;background:#000 !important}
-.zoom-row{display:flex;align-items:center;gap:14px}
-.zoom-row .z-label{font-size:11px;color:#6a6a6a;letter-spacing:2px;flex:none;font-weight:300}
-.zoom-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:2px;border-radius:2px;background:#2a2a2a;outline:none}
-.zoom-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.crop-bottom{flex:none;padding:24px 24px calc(30px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:24px;background:#000 !important}
+.zoom-row{display:flex;align-items:center;gap:16px}
+.zoom-row .z-label{font-size:12px;color:rgba(255,255,255,.4);letter-spacing:2px;flex:none;font-weight:300}
+.zoom-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:2px;border-radius:2px;background:rgba(255,255,255,.2);outline:none}
+.zoom-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5)}
 .crop-actions{display:flex;gap:12px}
-.crop-actions .btn-cancel,.crop-actions .btn-ok{flex:1;padding:15px 0;border-radius:24px;font-size:14px;font-family:inherit;letter-spacing:4px;text-indent:4px;font-weight:300;cursor:pointer;border:none;transition:opacity .18s ease}
-.crop-actions .btn-cancel{background:transparent;border:0.7px solid rgba(255,255,255,.18);color:#8a8a8a}
+.crop-actions .btn-cancel,.crop-actions .btn-ok{flex:1;padding:16px 0;border-radius:24px;font-size:15px;font-family:inherit;letter-spacing:4px;text-indent:4px;font-weight:400;cursor:pointer;border:none;transition:all .18s ease}
+.crop-actions .btn-cancel{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.6)}
 .crop-actions .btn-cancel:active{border-color:#fff;color:#fff}
-.crop-actions .btn-ok{background:#fff;color:#111}
-.crop-actions .btn-ok:active{opacity:.75}
+.crop-actions .btn-ok{background:#fff;color:#000}
+.crop-actions .btn-ok:active{opacity:.8}
 
 
 .upload-block{padding:16px;border-radius:14px;border:1.5px dashed rgba(255,111,168,.4);background:rgba(255,111,168,.05);text-align:center;margin:10px 0;cursor:pointer}
@@ -12285,17 +12280,13 @@ window.__APP_VERSION__ = '0.1.0';
 <div class="crop-mask" id="cropMask">
   <div class="crop-top">
 	<div class="cancel" id="cropCancelTop">取消</div>
-	<div class="title" id="cropTitle">调整头像位置</div>
+	<div class="title" id="cropTitle">调整图片</div>
 	<div class="spacer"></div>
   </div>
   <div class="crop-stage" id="cropStage">
 	<div class="crop-frame" id="cropFrame">
 	  <img class="crop-img" id="cropImg" alt="">
 	  <div class="grid"><span class="h1"></span><span class="h2"></span></div>
-	  <div class="corner tl"></div>
-	  <div class="corner tr"></div>
-	  <div class="corner bl"></div>
-	  <div class="corner br"></div>
 	</div>
   </div>
   <div class="crop-bottom">
@@ -25263,8 +25254,8 @@ $$('#spLayout .layout-opt').forEach(btn=>{
 
 const cropState = { naturalW:0, naturalH:0, scale:1, baseScale:1, tx:0, ty:0, frameW:0, frameH:0, onDone:null };
 function openCrop(file, ratio, titleText, onDone){
-  if(!file){ return; }
-  const useTitle = titleText || '调整头像位置';
+  if(!file) return;
+  const useTitle = titleText || '调整图片';
   const r = new FileReader();
   r.onload = e=>{
 	const img = new Image();
@@ -34684,7 +34675,7 @@ on('#editAvFile','change',function(){
   const f = this.files[0]; this.value=''; if(!f) return;
 
   const context = window.__uploadContext || '';
-  window.__uploadContext = ''; // 用完立刻清空，防止下次误认
+  window.__uploadContext = ''; 
 
   openCrop(f, 'square', (data)=>{
     if(context === 'profile') {
@@ -34700,13 +34691,11 @@ on('#editAvFile','change',function(){
       toast('头像已更新');
       return;
     }
-
     if(context === 'builtin') {
       blEditAvatarTmp = data;
       renderBlEditAvatar();
       return;
     }
-
     if(context === 'cip') {
       var rid = getCurrentRoleId();
       saveRoleField(rid, 'avatar', data);
@@ -34716,14 +34705,11 @@ on('#editAvFile','change',function(){
       toast('头像已更新');
       return;
     }
-
     if(context === 'newfriend') {
       nfAvatarTmp = data;
       renderNfAvatar();
       return;
     }
-
-    /* 编辑资料弹窗（老功能） */
     editAvatarTmp = data;
     renderEditAvPrev();
   });
