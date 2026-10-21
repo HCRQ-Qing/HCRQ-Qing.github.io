@@ -35389,49 +35389,7 @@ window.triggerAvatarUpload = function(context) {
   if(f){ f.value = ''; f.click(); }
 };
 
-on('#editAvFile','change',function(){
-  const f = this.files[0]; this.value=''; if(!f) return;
-
-  const context = window.__uploadContext || '';
-  window.__uploadContext = ''; 
-
-  openCrop(f, 'square', (data)=>{
-    if(context === 'profile') {
-      var pid = window.__profileViewId || getCurrentRoleId();
-      saveRoleField(pid, 'avatar', data);
-      var pAv = document.getElementById('profileAvatar');
-      if(pAv) pAv.innerHTML = avatarHTML(data);
-      if(pid === getCurrentRoleId()){
-        try{ refreshChatRole(); }catch(err){}
-        if(typeof window.__forceRenderChat === 'function') window.__forceRenderChat();
-        if(typeof renderChatFull === 'function') renderChatFull(true);
-      }
-      toast('头像已更新');
-      return;
-    }
-    if(context === 'builtin') {
-      blEditAvatarTmp = data;
-      renderBlEditAvatar();
-      return;
-    }
-    if(context === 'cip') {
-      var rid = getCurrentRoleId();
-      saveRoleField(rid, 'avatar', data);
-      var cipAv = document.getElementById('cipAvatar');
-      if(cipAv) cipAv.innerHTML = avatarHTML(data);
-      try { refreshChatRole(); } catch(err){}
-      toast('头像已更新');
-      return;
-    }
-    if(context === 'newfriend') {
-      nfAvatarTmp = data;
-      renderNfAvatar();
-      return;
-    }
-    editAvatarTmp = data;
-    renderEditAvPrev();
-  });
-});
+ 
 
 /* 内置角色上传绑定 */
 (function bindBiUploadBtn(){
