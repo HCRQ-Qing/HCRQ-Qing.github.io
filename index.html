@@ -7879,45 +7879,47 @@ body[data-bubble="custom"] .preview-bubble{
 .col-body{
   display:flex;
   flex-direction:column;
-  padding-bottom:40px;
+  padding:0 16px 40px;
+  background:#f7f7f7;
 }
 .col-item{
-  display:flex;
-  gap:12px;
-  padding:14px 0;
-  border-bottom:0.6px dashed #f0f0f0;
+  background:#fff;
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:12px;
+  box-shadow:0 1px 6px rgba(0,0,0,.02);
   position:relative;
-  border-radius:8px;
-  transition:background .2s ease;
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
 }
-.col-item:last-child{border-bottom:none}
-.col-item.press{background:rgba(0,0,0,.03)}
+.col-item.press{background:#fafafa}
 .col-item .col-av{
-  width:38px;
-  height:38px;
+  width:28px;
+  height:28px;
   flex:none;
-  background:#f2f2f2;
+  background:#f0f0f0;
   overflow:hidden;
   position:relative;
+  margin-top:1px;
 }
 .col-item .col-av svg{position:absolute;inset:0;width:100%;height:100%}
 .col-item .col-av .silhouette{fill:#d4d4d4}
-.col-item .col-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.col-item .col-main{flex:1;min-width:0}
+.col-item .col-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0.85}
+.col-item .col-main{flex:1;min-width:0;}
 .col-item .col-txt{
-  font-size:13.5px;
-  color:#1a1a1a;
-  line-height:1.7;
+  font-size:12.5px;
+  color:#333;
+  line-height:1.5;
   letter-spacing:.3px;
   word-break:break-word;
   white-space:pre-wrap;
-  padding-right:36px;
   font-weight:300;
 }
 .col-item .col-meta{
-  font-size:10.5px;
-  color:#bbb;
-  margin-top:6px;
+  font-size:9.5px;
+  color:#c8c8c8;
+  font-family:Georgia,serif;
   letter-spacing:.5px;
   font-weight:300;
 }
@@ -8610,19 +8612,19 @@ body[data-bubble="custom"] .preview-bubble{
 }
 
 /* ===== 收藏页 · 右侧常驻按钮 · 方案A 极简线条 ===== */
-.col-item{position:relative;padding-right:88px}
+/* ★ 移除了原本给右侧按钮留的 88px 内边距，这样正文就能铺满 */
+.col-item{
+  position:relative;
+  /* 这里原先是 padding-right:88px，现在删了，因为按钮去底部了 */
+}
+/* ★ 底部操作按钮：不用绝对定位，靠 margin-left 推到最右边 */
 .col-act-wrap{
-  position:absolute;
-  top:14px;
-  right:0;
   display:flex !important;
   flex-direction:row !important;
   flex-wrap:nowrap !important;
-  gap:2px;
+  gap:12px;
   align-items:center;
-  justify-content:flex-end;
-  width:auto !important;
-  height:auto !important;
+  margin-left:auto;
 }
 .col-act-btn{
   width:32px;
@@ -16328,9 +16330,11 @@ function renderCollectScreen(tab){
       '</svg>';
 
     const actBtns =
-      '<button class="col-act-btn col-share" data-share="' + it.id + '" type="button" title="分享">' + iconShare + '</button>' +
-      '<button class="col-act-btn col-note-btn" data-note-btn="' + it.id + '" type="button" title="备注">' + iconNote + '</button>' +
-      (tab === 'mine' ? '<button class="col-act-btn col-del" data-del="' + it.id + '" type="button" title="删除">' + iconDel + '</button>' : '');
+      '<div class="col-act-wrap">' +
+        '<button class="col-act-btn col-share" data-share="' + it.id + '" type="button" title="分享">' + iconShare + '</button>' +
+        '<button class="col-act-btn col-note-btn" data-note-btn="' + it.id + '" type="button" title="备注">' + iconNote + '</button>' +
+        (tab === 'mine' ? '<button class="col-act-btn col-del" data-del="' + it.id + '" type="button" title="删除">' + iconDel + '</button>' : '') +
+      '</div>';
 
     let contentHTML = '';
     if(it.kind === 'voice' && it.voiceIdbKey){
