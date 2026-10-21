@@ -1359,7 +1359,7 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
 .tb-mb{position:absolute;left:calc(100% - 8px);top:-12px;background:#1a1a1a;color:#fff;font-family:"PingFang SC","Hiragino Sans GB",sans-serif;line-height:1;display:inline-flex;align-items:center;justify-content:center;height:20px;padding:0 8px;border-radius:50px;font-size:11px;white-space:nowrap;z-index:30;opacity:0;visibility:hidden;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 .tb-mb::after{content:"";position:absolute;background:#1a1a1a;left:12px;bottom:-3px;width:8px;height:8px;clip-path:polygon(0 0,100% 0,0 100%)}
 
-#chatList{flex:1;overflow-y:auto;padding:26px 16px;display:flex;flex-direction:column;gap:26px;position:relative;z-index:2;scrollbar-width:none;background:#ffffff}
+#chatList{flex:1;overflow-y:auto;padding:26px 16px;display:flex;flex-direction:column;gap:26px;position:relative;z-index:2;scrollbar-width:none;background:transparent}
 #chatList > *{position:relative;z-index:1}
 #chatList::-webkit-scrollbar{width:0}
 .msg{display:flex;gap:10px;align-items:flex-start;animation:pop .28s ease}
@@ -1458,9 +1458,9 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
 /* ===== 气泡样式主题（由美化面板切换） ===== */
 
 /* 气泡尖角 —— 大圆角 + 一侧小尖角 */
-body[data-bubble="gray"] .msg .bubble,
-body[data-bubble="gray"] .msg.char .bubble,
-body[data-bubble="gray"] .msg.user .bubble{
+body[data-bubble="gray"]:not([data-bubble-custom]) .msg .bubble,
+body[data-bubble="gray"]:not([data-bubble-custom]) .msg.char .bubble,
+body[data-bubble="gray"]:not([data-bubble-custom]) .msg.user .bubble{
   padding:8px 13px;
   font-size:13.5px;
   line-height:1.5;
@@ -5616,6 +5616,7 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .crop-top .cancel{color:var(--th-text-soft);font-size:13px;cursor:pointer;font-weight:400}
 .crop-stage{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .crop-frame{position:relative;width:min(78vw,320px);aspect-ratio:1/1;overflow:hidden;background:#0a0508;touch-action:none;z-index:7;border-radius:0}
+.crop-frame[style*="width"]{aspect-ratio:auto}
 .crop-frame .crop-img{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;user-select:none;-webkit-user-drag:none;pointer-events:none;z-index:1}
 .crop-frame .grid{position:absolute;inset:0;pointer-events:none;z-index:2}
 .crop-frame .grid::before,.crop-frame .grid::after{content:"";position:absolute;background:rgba(255,255,255,.25)}
@@ -6937,6 +6938,7 @@ body[data-bubble="custom"] .preview-bubble{
 .layout-opt.minimal .lo-demo .min-line.short{width:60%;flex:none}
 
 #page-chat.minimal-mode{background:#FDFDF0}
+#page-chat.minimal-mode #chatList{background:transparent}
 #page-chat.minimal-mode .split-side{display:none}
 #page-chat.minimal-mode .chat-topbar{background:#FDFDF0;border-bottom:0.7px solid #e5e5e5;padding:18px 22px 14px}
 #page-chat.minimal-mode .split-main{background:#FDFDF0}
@@ -12062,6 +12064,7 @@ window.__APP_VERSION__ = '0.1.0';
         <button class="up-btn primary" id="btnTopbarBgUpload" type="button">上传图片</button>
         <button class="up-btn ghost" id="btnTopbarBgReset" type="button">恢复默认</button>
       </div>
+      <div class="op-row"><span class="op-lbl">透明度</span><input type="range" class="op-range" id="topbarBgOpacity" min="0" max="100" value="100"><span class="op-val" id="topbarBgOpacityVal">100%</span></div>
     </div>
   </div>
 </div>
@@ -12928,6 +12931,11 @@ function applyBeautyCfg(){
 
   // 气泡样式：gray / bracket / custom
   document.body.setAttribute('data-bubble', beautyCfg.bubble || 'gray');
+  if((beautyCfg.bubble || 'gray') === 'custom' && String(getCustomCss() || '').trim()){
+    document.body.setAttribute('data-bubble-custom', '1');
+  } else {
+    document.body.removeAttribute('data-bubble-custom');
+  }
   // 自定义 CSS：每次应用美化都重新注入一次，保证生效
   injectCustomCss();
 
@@ -24725,57 +24733,70 @@ const CHAT_BG_KEY = 'mj_chat_bg_v1';
 const TOPBAR_BG_KEY = 'mj_topbar_bg_v1';
 function getChatBgCfg(){ let c=lsGet(CHAT_BG_KEY,null); if(!c||typeof c!=='object')c={key:'',opacity:85,blur:0,align:'center'}; return c; }
 function saveChatBgCfg(c){ lsSet(CHAT_BG_KEY,c); }
-function getTopbarBgCfg(){ let c=lsGet(TOPBAR_BG_KEY,null); if(!c||typeof c!=='object')c={key:''}; return c; }
+function getTopbarBgCfg(){
+  let c = lsGet(TOPBAR_BG_KEY, null);
+  if(!c || typeof c !== 'object') c = { key: '' };
+  if(typeof c.opacity !== 'number') c.opacity = 100;
+  return c;
+}
 function saveTopbarBgCfg(c){ lsSet(TOPBAR_BG_KEY,c); }
 function applyChatBg(){
   const c = getChatBgCfg();
-  const list = document.getElementById('chatList');
-  if(!list) return;
-  if(!c.key){ 
-    list.style.backgroundImage=''; list.style.backgroundSize=''; list.style.backgroundPosition=''; list.style.filter=''; 
+  const wrap = document.getElementById('page-chat');
+  if(!wrap) return;
+  wrap.style.backgroundImage = '';
+  wrap.style.backgroundSize = '';
+  wrap.style.backgroundPosition = '';
+  wrap.style.backgroundRepeat = '';
+  wrap.style.backgroundColor = '';
+  if(!c.key){
     applyTopbarBg2();
-    return; 
+    return;
   }
   __idb.toURL(c.key).then(function(url){
     if(!url) return;
-    list.style.backgroundImage='linear-gradient(rgba(255,255,255,'+((100-c.opacity)/100)+'),rgba(255,255,255,'+((100-c.opacity)/100)+')),url('+url+')';
-    list.style.backgroundSize='cover';
-    list.style.backgroundPosition = c.align==='top'?'center top':(c.align==='bottom'?'center bottom':'center center');
-    list.style.backgroundRepeat='no-repeat';
-    list.style.filter = c.blur>0?('blur('+c.blur+'px)'):'';
+    wrap.style.backgroundImage = 'url(' + url + ')';
+    wrap.style.backgroundSize = 'cover';
+    wrap.style.backgroundPosition = c.align === 'top' ? 'center top' : (c.align === 'bottom' ? 'center bottom' : 'center center');
+    wrap.style.backgroundRepeat = 'no-repeat';
+    wrap.style.backgroundColor = 'rgba(255,255,255,' + ((100 - c.opacity) / 100) + ')';
     applyTopbarBg2();
   });
 }
 function applyTopbarBg2(){
   const c = getTopbarBgCfg();
-  const cb = getChatBgCfg();
   const bar = document.getElementById('chatTopbar');
   if(!bar) return;
-  
-  if(c.key){
-    __idb.toURL(c.key).then(function(url){
-      if(!url) return;
-      bar.style.backgroundImage='linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.88)), url('+url+')';
-      bar.style.backgroundSize='cover';
-      bar.style.backgroundPosition='center';
-    });
-  } else if(cb.key){
-    __idb.toURL(cb.key).then(function(url){
-      if(!url) return;
-      bar.style.backgroundImage='linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.88)), url('+url+')';
-      bar.style.backgroundSize='cover';
-      bar.style.backgroundPosition='center';
-    });
-  } else {
-    bar.style.backgroundImage='';
-  }
+  bar.style.backgroundImage = '';
+  bar.style.backgroundSize = '';
+  bar.style.backgroundPosition = '';
+  if(!c.key) return;
+  __idb.toURL(c.key).then(function(url){
+    if(!url) return;
+    var _op = (typeof c.opacity === 'number') ? c.opacity : 100;
+    bar.style.backgroundImage = 'linear-gradient(rgba(255,255,255,' + ((100 - _op) / 100) + '),rgba(255,255,255,' + ((100 - _op) / 100) + ')), url(' + url + ')';
+    bar.style.backgroundSize = 'cover';
+    bar.style.backgroundPosition = 'center';
+  });
 }
 function renderBgImgPanel(){
   const cc = getChatBgCfg(), tc = getTopbarBgCfg();
   const cp = document.getElementById('chatBgPreview');
   if(cp){
-    if(cc.key){ __idb.toURL(cc.key).then(function(u){ if(u) cp.innerHTML='<img src="'+u+'">'; }); }
-    else cp.innerHTML='<span class="ph">还没上传</span>';
+    cp.style.backgroundImage = '';
+    cp.style.backgroundSize = '';
+    cp.style.backgroundPosition = '';
+    cp.innerHTML = '';
+    if(cc.key){
+      __idb.toURL(cc.key).then(function(u){
+        if(!u) return;
+        cp.style.backgroundImage = 'url(' + u + ')';
+        cp.style.backgroundSize = 'cover';
+        cp.style.backgroundPosition = cc.align === 'top' ? 'center top' : (cc.align === 'bottom' ? 'center bottom' : 'center');
+      });
+    } else {
+      cp.innerHTML = '<span class="ph">还没上传</span>';
+    }
   }
   const op = document.getElementById('chatBgOpacity'); if(op){ op.value=cc.opacity; }
   const opv = document.getElementById('chatBgOpacityVal'); if(opv) opv.textContent=cc.opacity+'%';
@@ -24784,9 +24805,26 @@ function renderBgImgPanel(){
   document.querySelectorAll('.align-btn').forEach(function(b){ b.classList.toggle('on', b.dataset.align===cc.align); });
   const tp = document.getElementById('topbarBgPreview');
   if(tp){
-    if(tc.key){ __idb.toURL(tc.key).then(function(u){ if(u) tp.innerHTML='<img src="'+u+'">'; }); }
-    else tp.innerHTML='<span class="ph">还没上传</span>';
+    tp.style.backgroundImage = '';
+    tp.style.backgroundSize = '';
+    tp.style.backgroundPosition = '';
+    tp.innerHTML = '';
+    if(tc.key){
+      __idb.toURL(tc.key).then(function(u){
+        if(!u) return;
+        tp.style.backgroundImage = 'url(' + u + ')';
+        tp.style.backgroundSize = 'cover';
+        tp.style.backgroundPosition = 'center';
+      });
+    } else {
+      tp.innerHTML = '<span class="ph">还没上传</span>';
+    }
   }
+
+  const opEl = document.getElementById('topbarBgOpacity');
+  if(opEl) opEl.value = (typeof tc.opacity === 'number') ? tc.opacity : 100;
+  const opVal = document.getElementById('topbarBgOpacityVal');
+  if(opVal) opVal.textContent = ((typeof tc.opacity === 'number') ? tc.opacity : 100) + '%';
 }
 (function ensureBgFileInput(){
   if(document.getElementById('bgImgPicker')) return;
@@ -24810,25 +24848,41 @@ document.addEventListener('change', function(e){
   if(!t || t.id!=='bgImgPicker') return;
   var file = t.files && t.files[0]; t.value='';
   if(!file) return;
-  var key = 'bg_' + _bgUploadTarget + '_' + Date.now().toString(36);
-  __idb.set(key, file).then(function(){
-    if(_bgUploadTarget==='chat'){
-      var c = getChatBgCfg();
-      if(c.key) __idb.del(c.key).catch(function(){});
-      c.key = key; saveChatBgCfg(c); applyChatBg(); renderBgImgPanel();
-    } else {
-      var c2 = getTopbarBgCfg();
-      if(c2.key) __idb.del(c2.key).catch(function(){});
-      c2.key = key; saveTopbarBgCfg(c2); applyTopbarBg2(); renderBgImgPanel();
+  var target = _bgUploadTarget;
+  var ratio = (target === 'topbar') ? (16 / 5) : (window.innerWidth / window.innerHeight);
+  var titleText = (target === 'topbar') ? '调整顶部栏背景' : '调整聊天背景';
+  openCrop(file, ratio, titleText, function(dataUrl){
+    function dataURLToBlob(u){
+      var parts = String(u).split(',');
+      var mime = (parts[0].match(/:(.*?);/) || [])[1] || 'image/png';
+      var bin = atob(parts[1]);
+      var len = bin.length;
+      var arr = new Uint8Array(len);
+      for(var i = 0; i < len; i++) arr[i] = bin.charCodeAt(i);
+      return new Blob([arr], { type: mime });
     }
-    toast('已上传');
-  }).catch(function(err){ console.error(err); toast('上传失败'); });
+    var blob = dataURLToBlob(dataUrl);
+    var key = 'bg_' + target + '_' + Date.now().toString(36);
+    __idb.set(key, blob).then(function(){
+      if(target === 'chat'){
+        var c = getChatBgCfg();
+        if(c.key) __idb.del(c.key).catch(function(){});
+        c.key = key; saveChatBgCfg(c); applyChatBg(); renderBgImgPanel();
+      } else {
+        var c2 = getTopbarBgCfg();
+        if(c2.key) __idb.del(c2.key).catch(function(){});
+        c2.key = key; saveTopbarBgCfg(c2); applyTopbarBg2(); renderBgImgPanel();
+      }
+      toast('已上传');
+    }).catch(function(err){ console.error(err); toast('上传失败'); });
+  });
 }, true);
 document.addEventListener('input', function(e){
   var t = e.target;
   if(!t || !t.id) return;
   if(t.id==='chatBgOpacity'){ var c=getChatBgCfg(); c.opacity=parseInt(t.value,10); saveChatBgCfg(c); var v=document.getElementById('chatBgOpacityVal'); if(v)v.textContent=c.opacity+'%'; applyChatBg(); }
   if(t.id==='chatBgBlur'){ var c2=getChatBgCfg(); c2.blur=parseInt(t.value,10); saveChatBgCfg(c2); var v2=document.getElementById('chatBgBlurVal'); if(v2)v2.textContent=c2.blur+'px'; applyChatBg(); }
+  if(t.id==='topbarBgOpacity'){ var c3=getTopbarBgCfg(); c3.opacity=parseInt(t.value,10); saveTopbarBgCfg(c3); var v3=document.getElementById('topbarBgOpacityVal'); if(v3)v3.textContent=c3.opacity+'%'; applyTopbarBg2(); }
 }, true);
 
 /* ===== 文字子页 ===== */
@@ -25190,22 +25244,37 @@ $$('#spLayout .layout-opt').forEach(btn=>{
 });
 
 const cropState = { naturalW:0, naturalH:0, scale:1, baseScale:1, tx:0, ty:0, shape:'square', frameW:0, frameH:0, onDone:null };
-function openCrop(file, shape, onDone){
-  const useShape = 'square';
+function openCrop(file, ratio, titleText, onDone){
+  const useRatio = (typeof ratio === 'number' && ratio > 0) ? ratio : 1;
+  const useTitle = titleText || (useRatio === 1 ? '调整头像位置（正方形）' : '调整图片位置');
   const r = new FileReader();
   r.onload = e=>{
 	const img = new Image();
 	img.onload = ()=>{
 	  cropState.naturalW = img.width;
 	  cropState.naturalH = img.height;
-	  cropState.shape = useShape;
+	  cropState.ratio = useRatio;
 	  cropState.onDone = onDone || null;
 	  const mask = $('#cropMask');
 	  mask.classList.remove('circle-mode');
-	  $('#cropTitle').textContent = '调整头像位置（正方形）';
+	  $('#cropTitle').textContent = useTitle;
 	  const cimg = $('#cropImg');
 	  cimg.src = e.target.result;
-	  cimg.onload = ()=> initCropLayout();
+	  cimg.onload = ()=>{
+		const stage = $('#cropStage');
+		const stageW = stage.clientWidth;
+		const stageH = stage.clientHeight;
+		const padding = 40;
+		const maxW = stageW - padding * 2;
+		const maxH = stageH - padding * 2;
+		let fw, fh;
+		if(maxW / maxH > useRatio){ fh = maxH; fw = fh * useRatio; }
+		else { fw = maxW; fh = fw / useRatio; }
+		const frame = $('#cropFrame');
+		frame.style.width = fw + 'px';
+		frame.style.height = fh + 'px';
+		initCropLayout();
+	  };
 	  mask.classList.add('show');
 	};
 	img.src = e.target.result;
@@ -25262,11 +25331,13 @@ function clampCrop(){
 	const fw=cropState.frameW, fh=cropState.frameH;
 	const s=cropState.baseScale*cropState.scale;
 	const sx=(-cropState.tx)/s, sy=(-cropState.ty)/s, sw=fw/s, sh=fh/s;
-	const c=document.createElement('canvas'); c.width=c.height=240;
-	const ctx=c.getContext('2d'); ctx.clearRect(0,0,240,240);
-	ctx.drawImage($('#cropImg'), sx,sy,sw,sh, 0,0,240,240);
+	const outW = Math.round(fw * 2);
+	const outH = Math.round(fh * 2);
+	const c=document.createElement('canvas'); c.width=outW; c.height=outH;
+	const ctx=c.getContext('2d'); ctx.clearRect(0,0,outW,outH);
+	ctx.drawImage($('#cropImg'), sx,sy,sw,sh, 0,0,outW,outH);
 	const data=c.toDataURL('image/png');
-	if(cropState.onDone) cropState.onDone(data, 'square');
+	if(cropState.onDone) cropState.onDone(data);
 	$('#cropMask').classList.remove('show');
   };
 })();
