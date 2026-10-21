@@ -5302,10 +5302,7 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .switch input:checked + .slider{background:var(--th-accent)}
 .switch input:checked + .slider:before{transform:translateX(20px)}
 
-#chatSearchScreen .cs-top{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--th-accent-line);flex:none}
-#chatSearchScreen .cs-input-wrap{flex:1;display:flex;align-items:center;gap:8px;background:var(--th-accent-soft);border:1.5px solid var(--th-accent-line);border-radius:12px;padding:8px 12px}
-#chatSearchScreen .cs-input-wrap svg{flex:none}
-#chatSearchScreen .cs-input-wrap input{flex:1;border:none;background:transparent;outline:none;font-size:14px;color:var(--th-text);font-family:inherit}
+ 
 #chatSearchScreen .cs-meta{flex:none;padding:8px 18px;font-size:11.5px;color:var(--th-text-soft);border-bottom:1px solid var(--th-accent-line)}
 #chatSearchScreen .cs-list{flex:1;overflow-y:auto;padding:6px 0 30px}
 
@@ -5491,7 +5488,73 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .bp-row:active .r-arr{transform:translateX(2px)}
 .sub-panel{position:fixed;inset:0;z-index:110;max-width:520px;margin:0 auto;background:#ffffff;display:flex;flex-direction:column;transform:translateX(100%);visibility:hidden;transition:none}
 .sub-panel.show{transform:translateX(0);visibility:visible}
-.sub-panel.show{transform:translateX(0);visibility:visible}
+/* ===== 我的美化 · 独立界面 ===== */
+.my-beauty-panel{position:fixed;inset:0;z-index:100;max-width:520px;margin:0 auto;background:#ffffff;display:none;flex-direction:column}
+.my-beauty-panel.show{display:flex}
+.my-beauty-panel .bp-head{flex:none;display:flex;align-items:center;gap:12px;padding:20px 22px 12px;background:#fff}
+.my-beauty-panel .bp-back{width:38px;height:38px;flex:none;border:none;background:transparent;color:#1a1a1a;font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0 0 4px;font-family:inherit;cursor:pointer;opacity:.55;transition:opacity .18s ease}
+.my-beauty-panel .bp-back:active{opacity:1}
+.my-beauty-panel .bp-title{flex:1;font-size:15px;font-weight:300;letter-spacing:6px;text-align:center;color:#1a1a1a;-webkit-text-stroke:.15px #1a1a1a;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.my-beauty-panel .bp-head-right{width:38px;flex:none}
+.my-beauty-panel .bp-body{flex:1;overflow-y:auto;padding:16px 22px 24px;scrollbar-width:none}
+.my-beauty-panel .bp-body::-webkit-scrollbar{width:0}
+.my-beauty-panel .bp-row{display:flex;align-items:center;gap:12px;padding:18px 2px;border-bottom:.6px dashed rgba(0,0,0,.06);cursor:pointer;transition:background .18s ease}
+.my-beauty-panel .bp-row:active{background:rgba(0,0,0,.02)}
+.my-beauty-panel .bp-row:last-child{border-bottom:none}
+.my-beauty-panel .bp-row .num{width:20px;flex:none;font-size:10px;color:#d8d8d8;font-family:Georgia,serif;letter-spacing:1.5px;font-weight:300}
+.my-beauty-panel .bp-row .r-name{flex:1;font-size:14.5px;color:#1a1a1a;font-weight:300;letter-spacing:1.5px}
+.my-beauty-panel .bp-row .r-val{font-size:11px;color:#bbb;flex:none;font-weight:300;letter-spacing:.5px}
+.my-beauty-panel .bp-row .r-arr{color:#e0e0e0;font-size:12px;flex:none}
+/* 我的美化 · 子页共用样式 */
+#mySpBg,#mySpTxt{position:fixed;inset:0;z-index:110;max-width:520px;margin:0 auto;background:#fff;display:none;flex-direction:column}
+#mySpBg.show,#mySpTxt.show{display:flex}
+.sub-panel.show{display:flex !important; transform:translateX(0) !important; visibility:visible !important}
+#mySpBg .bp-head,#mySpTxt .bp-head{flex:none;display:flex;align-items:center;gap:12px;padding:20px 22px 12px;background:#fff}
+#mySpBg .bp-back,#mySpTxt .bp-back{width:38px;height:38px;flex:none;border:none;background:transparent;color:#1a1a1a;font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0 0 4px;font-family:inherit;cursor:pointer;opacity:.55}
+#mySpBg .bp-back:active,#mySpTxt .bp-back:active{opacity:1}
+#mySpBg .bp-title,#mySpTxt .bp-title{flex:1;font-size:15px;font-weight:300;letter-spacing:6px;text-align:center;color:#1a1a1a;-webkit-text-stroke:.15px #1a1a1a}
+#mySpBg .bp-head-right,#mySpTxt .bp-head-right{width:38px;flex:none}
+#mySpBg .sp-body,#mySpTxt .sp-body{flex:1;overflow-y:auto;padding:16px 22px 40px;scrollbar-width:none}
+#mySpBg .sp-body::-webkit-scrollbar,#mySpTxt .sp-body::-webkit-scrollbar{width:0}
+/* ===== 上传图片子页 ===== */
+.up-section{padding:20px 0;border-bottom:.6px dashed rgba(0,0,0,.06)}
+.up-section:first-child{padding-top:4px}
+.up-section:last-child{border-bottom:none}
+.up-title{font-size:15px;font-weight:400;letter-spacing:1.5px;color:#1a1a1a;margin-bottom:8px;-webkit-font-smoothing:antialiased}
+.up-desc{font-size:12.5px;color:#999;line-height:1.75;letter-spacing:.3px;margin-bottom:14px;font-weight:300;-webkit-font-smoothing:antialiased}
+.up-preview{width:100%;aspect-ratio:16/9;border-radius:12px;background:#f7f7f7;border:.7px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;margin-bottom:14px}
+.up-preview img{width:100%;height:100%;object-fit:cover;display:block}
+.up-preview .ph{font-size:12px;color:#c8c8c8;letter-spacing:1px;font-weight:300}
+.up-acts{display:flex;gap:10px}
+.up-btn{flex:1;padding:12px 0;border-radius:20px;font-size:13px;font-family:inherit;letter-spacing:2px;cursor:pointer;border:none;transition:all .18s ease}
+.up-btn.primary{background:#1a1a1a;color:#fff;font-weight:300}
+.up-btn.primary:active{opacity:.85}
+.up-btn.ghost{background:transparent;border:.7px solid rgba(0,0,0,.14);color:#999;font-weight:300}
+.up-btn.ghost:active{background:#fafafa;color:#1a1a1a}
+.op-row{display:flex;align-items:center;gap:12px;margin-top:14px}
+.op-lbl{font-size:12px;color:#999;letter-spacing:.5px;flex:none;font-weight:300}
+.op-val{font-size:12px;color:#1a1a1a;font-family:Georgia,serif;flex:none;min-width:40px;text-align:right;font-weight:300}
+.op-range{flex:1;-webkit-appearance:none;appearance:none;height:2px;background:#ececec;border-radius:2px;outline:none}
+.op-range::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#1a1a1a;cursor:pointer}
+.align-tabs{display:flex;gap:6px;flex:1}
+.align-btn{flex:1;padding:8px 0;border-radius:14px;font-size:12px;font-family:inherit;letter-spacing:1.5px;cursor:pointer;border:.7px solid rgba(0,0,0,.14);background:transparent;color:#999;font-weight:300;transition:all .18s ease}
+.align-btn.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a;font-weight:400}
+/* ===== 文字子页 ===== */
+.txt-section{padding:20px 0;border-bottom:.6px dashed rgba(0,0,0,.06)}
+.txt-section:last-of-type{border-bottom:none}
+.txt-title{font-size:15px;font-weight:400;letter-spacing:1.5px;color:#1a1a1a;margin-bottom:6px}
+.txt-desc{font-size:12px;color:#999;line-height:1.75;letter-spacing:.3px;margin-bottom:12px;font-weight:300}
+.txt-input{width:100%;border:none;border-bottom:.7px solid rgba(0,0,0,.15);background:transparent;padding:8px 2px;font-size:14px;font-family:inherit;color:#1a1a1a;outline:none;letter-spacing:1px;transition:border-color .2s ease}
+.txt-input:focus{border-bottom-color:#1a1a1a}
+.txt-input::placeholder{color:#d0d0d0;font-weight:300}
+.txt-count{font-size:10.5px;color:#c8c8c8;text-align:right;margin-top:5px;font-family:Georgia,serif;font-weight:300}
+.txt-preview{margin-top:24px;padding:16px 14px;background:#fafafa;border-radius:12px;border:.7px solid rgba(0,0,0,.05)}
+.txt-preview-lbl{font-size:9.5px;color:#c8c8c8;letter-spacing:4px;font-family:Georgia,serif;text-align:center;margin-bottom:12px}
+.txt-preview-inner{display:flex;align-items:baseline;gap:10px;justify-content:center}
+.txt-preview-cn{font-size:13px;letter-spacing:4px;color:#1a1a1a;font-weight:300}
+.txt-preview-en{font-size:9px;letter-spacing:4px;color:#bbb;font-family:Georgia,serif}
+#titlePreviewBox.light .txt-preview-cn{color:#fff}
+#titlePreviewBox.light .txt-preview-en{color:rgba(255,255,255,.6)}
 
 /* ===== #spAvatar · 头像方圆弹窗（方案A · 楷体标题 · 英文副标题） =====
    宽度不写死，交给 .modal 默认的 max-width:460px + padding:20px，
@@ -6405,21 +6468,12 @@ html[data-theme="bw"] .tarot .t-suit-en{
   color:#1a1a1a;
   font-weight:400;
 }
-.dr-filter.on::after{
-  content:"";
-  position:absolute;
-  left:50%;
-  bottom:-4px;
-  transform:translateX(-50%);
-  width:16px;height:1.5px;
-  background:#1a1a1a;
-  border-radius:2px;
-}
+ 
 .dr-card{border:0.7px solid rgba(0,0,0,.12);border-radius:22px;background:#ffffff;padding:22px 20px 18px;margin-bottom:14px;position:relative}
 .dr-card .dr-head{display:flex;align-items:center;justify-content:space-between;font-size:10.5px;color:#ccc;font-family:Georgia,serif;letter-spacing:2px;margin-bottom:0}
 .dr-card .dr-head::before{display:none}
 .dr-card .dr-time{margin-left:0;font-size:10.5px;color:#ccc}
-.dr-card .dr-q-label{margin-top:16px;font-size:10px;color:#bbb;font-family:Georgia,serif;letter-spacing:4px}
+ 
 .dr-card .dr-q{font-size:15px;color:#1a1a1a;font-weight:300;letter-spacing:1px;line-height:1.7;margin:6px 0 0;font-style:normal;word-break:break-word}
 .dr-card .dr-q::before{display:none}
 .dr-card .dr-cards{display:flex;gap:8px;flex-wrap:wrap;padding:4px 0 10px}
@@ -10294,6 +10348,28 @@ body[data-bubble="custom"] .gch-bubble{
 .img-wrapper.loaded .img-real{ opacity: 1; transform: translateY(0); }
 .img-wrapper.loaded::before, .img-wrapper.loaded::after{ display: none; }
 .img-wrapper.loaded{ background: transparent; }
+
+/* ===== 占卜记录页 · 极简胶囊版 ===== */
+#divineRecordScreen{ background:#ffffff !important; }
+#divineRecordScreen .dr-wrap{ padding:0 22px 60px; }
+#divineRecordScreen .a-top{ border-bottom:none !important; padding:24px 22px 20px !important; margin:0 !important; }
+#divineRecordScreen .dr-search, 
+#divineRecordScreen .dr-search-line { padding:8px 0 !important; margin:0 0 16px !important; border:none !important; border-radius:0 !important; background:transparent !important; box-shadow: none !important; }
+#divineRecordScreen .dr-search svg{ stroke:#bbb !important; width:14px !important; height:14px !important; }
+#divineRecordScreen .dr-search input{ font-size:13px !important; color:#1a1a1a !important; }
+#divineRecordScreen .dr-search input::placeholder{ color:#d0d0d0 !important; }
+#divineRecordScreen .dr-filter-row{ display:flex !important; padding:0 22px 24px 22px !important; border-bottom:none !important; margin-bottom:20px !important; gap:10px !important; overflow:visible !important; }
+#divineRecordScreen .dr-filter{ padding:6px 16px !important; border-radius:20px !important; background:#f7f7f7 !important; font-size:12px !important; color:#666 !important; letter-spacing:.5px !important; border:none !important; }
+#divineRecordScreen .dr-filter.on{ background:#1a1a1a !important; color:#fff !important; font-weight:300 !important; }
+ 
+#divineRecordScreen .dr-card{ border:0.5px solid #f0f0f0 !important; border-radius:12px !important; padding:18px !important; box-shadow:0 2px 10px rgba(0,0,0,0.01) !important; margin-bottom:16px !important; }
+#divineRecordScreen .dr-card .dr-time{ font-size:11px !important; color:#bbb !important; font-family:Georgia,serif !important; }
+ 
+#divineRecordScreen .dr-q{ font-size:15px !important; font-weight:300 !important; margin:8px 0 14px !important; letter-spacing:.5px !important; }
+#divineRecordScreen .dr-card .dr-cards{ margin-top:10px !important; gap:8px !important; padding:0 !important; }
+#divineRecordScreen .dr-card .tarot{ border-radius:8px !important; border:0.5px solid rgba(0,0,0,0.1) !important; }
+#divineRecordScreen .dr-add-read{ border:0.5px solid rgba(0,0,0,.15) !important; border-radius:8px !important; padding:12px 0 !important; font-size:13px !important; font-weight:300 !important; color:#666 !important; background:transparent !important; margin-top:16px !important; transition:all .18s; }
+#divineRecordScreen .dr-add-read:active{ background:#fafafa !important; color:#1a1a1a !important; }
 </style>
 </head>
 <body>
@@ -10706,13 +10782,6 @@ window.__APP_VERSION__ = '0.1.0';
 		  <div class="me-row" data-func="about">
 			<span class="num">06</span><span class="name">关于</span><span class="en">ABOUT</span><span class="arr">→</span>
 		  </div>
-  		  <div class="me-row" data-func="update">
-			<span class="num">07</span><span class="name">更新</span><span class="en">UPDATE</span><span class="arr">→</span>
-		  </div>
-		  <div class="me-row" data-func="refresh">
-			<span class="num">08</span><span class="name">刷新</span><span class="en">REFRESH</span><span class="arr">→</span>
-		  </div>
-
 		</div>
 	  </div>
 	</div>
@@ -11019,8 +11088,16 @@ window.__APP_VERSION__ = '0.1.0';
         <span class="num">03</span><span class="name">已拉黑</span>
         <span class="val" id="setBlockedCount">0</span><span class="en">BLOCKED</span><span class="arr">→</span>
       </div>
+      <div class="set-row" data-set="update">
+        <span class="num">04</span><span class="name">更新</span>
+        <span class="val">查看更新</span><span class="en">UPDATE</span><span class="arr">→</span>
+      </div>
+      <div class="set-row" data-set="refresh">
+        <span class="num">05</span><span class="name">刷新</span>
+        <span class="val">强制刷新</span><span class="en">REFRESH</span><span class="arr">→</span>
+      </div>
       <div class="set-row" data-set="wipe">
-        <span class="num">04</span><span class="name">清除全部数据</span>
+        <span class="num">06</span><span class="name">清除全部数据</span>
         <span class="val">不可恢复</span><span class="en">WIPE</span><span class="arr">→</span>
       </div>
 
@@ -11092,7 +11169,7 @@ window.__APP_VERSION__ = '0.1.0';
     <div class="sec-title">NOTICE</div>
     <div class="sec-title-cn">借 鉴 声 明</div>
     <div class="notice">
-      <p>本网站的部分功能（包含但不限于时间段字卡、天气字卡等功能），均为本人构思的设计，借鉴使用我的功能或想法，请标注署名，感谢理解。</p>
+      <p>本网站的部分功能（包含但不限于时间段字卡、天气字卡等功能）均为本人构思的设计，借鉴使用我的功能或想法，请标注署名。</p>
       <p style="font-size:11.5px;color:#bbb;margin-top:18px">联系作者请找：@001（小红书号 27739216821）</p>
     </div>
 
@@ -11905,14 +11982,92 @@ window.__APP_VERSION__ = '0.1.0';
   </div>
   <div class="bp-body">
 	<div class="bp-row" data-panel="theme"><span class="num">01</span><div class="r-name">主题</div><span class="r-val" id="themeVal">粉樱</span><span class="r-arr">›</span></div>
-	<div class="bp-row" data-panel="bubble"><span class="num">02</span><div class="r-name">聊天气泡</div><span class="r-arr">›</span></div>
-<div class="bp-row" data-panel="avatar"><span class="num">03</span><div class="r-name">头像方圆</div><span class="r-val" id="avatarVal">方形</span><span class="r-arr">›</span></div>
-	  <div class="bp-row" data-panel="layout"><span class="num">04</span><div class="r-name">聊天页布局</div><span class="r-val" id="layoutVal">默认</span><span class="r-arr">›</span></div>
+	<div class="bp-row" data-panel="avatar"><span class="num">02</span><div class="r-name">头像方圆</div><span class="r-val" id="avatarVal">方形</span><span class="r-arr">›</span></div>
+	<div class="bp-row" data-panel="bgimg"><span class="num">03</span><div class="r-name">上传图片</div><span class="r-arr">›</span></div>
+	<div class="bp-row" data-panel="titletext"><span class="num">04</span><div class="r-name">文字</div><span class="r-arr">›</span></div>
+	<div class="bp-row" data-panel="bubble"><span class="num">05</span><div class="r-name">聊天气泡</div><span class="r-arr">›</span></div>
+	<div class="bp-row" data-panel="layout"><span class="num">06</span><div class="r-name">聊天页布局</div><span class="r-val" id="layoutVal">默认</span><span class="r-arr">›</span></div>
 
 	</div>
   </div>
 
- <div class="sub-panel" id="spTheme">
+ <!-- 我的美化 · 独立界面 -->
+<div class="my-beauty-panel" id="myBeautyPanel">
+  <div class="bp-head">
+    <button class="bp-back" id="myBeautyBack" type="button">‹</button>
+    <div class="bp-title">美 化</div>
+    <div class="bp-head-right"></div>
+  </div>
+  <div class="bp-body">
+    <div class="bp-row" data-panel="theme"><span class="num">01</span><div class="r-name">主题</div><span class="r-val" id="myThemeVal">黑白</span><span class="r-arr">›</span></div>
+    <div class="bp-row" data-panel="avatar"><span class="num">02</span><div class="r-name">头像方圆</div><span class="r-val" id="myAvatarVal">方形</span><span class="r-arr">›</span></div>
+    <div class="bp-row" data-panel="bgimg"><span class="num">03</span><div class="r-name">上传图片</div><span class="r-arr">›</span></div>
+    <div class="bp-row" data-panel="titletext"><span class="num">04</span><div class="r-name">文字</div><span class="r-arr">›</span></div>
+  </div>
+</div>
+<!-- 我的美化 · 上传图片子页 -->
+<div class="sub-panel" id="mySpBg">
+  <div class="bp-head">
+    <button class="bp-back" id="myBgBack" type="button">‹</button>
+    <div class="bp-title">上 传 图 片</div>
+    <div class="bp-head-right"></div>
+  </div>
+  <div class="sp-body">
+    <div class="up-sec">
+      <div class="up-title">我的页面背景</div>
+      <div class="up-desc">换了以后，「我的」页那层底就变成这张图。</div>
+      <div class="up-prev" id="myBgPrev">还没上传</div>
+      <div class="up-acts">
+        <button class="up-btn primary" id="myBgUpload" type="button">上传图片</button>
+        <button class="up-btn ghost" id="myBgReset" type="button">恢复默认</button>
+      </div>
+      <div class="op-row"><span class="op-lbl">透明度</span><input type="range" class="op-range" id="myBgOpacity" min="0" max="100" value="85"><span class="op-val" id="myBgOpacityVal">85%</span></div>
+      <div class="op-row"><span class="op-lbl">模糊</span><input type="range" class="op-range" id="myBgBlur" min="0" max="20" value="0"><span class="op-val" id="myBgBlurVal">0px</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 我的美化 · 文字子页 -->
+<div class="sub-panel" id="mySpTxt">
+  <div class="bp-head">
+    <button class="bp-back" id="myTxtBack" type="button">‹</button>
+    <div class="bp-title">文 字</div>
+    <div class="bp-head-right"></div>
+  </div>
+  <div class="sp-body">
+    <div class="txt-sec">
+      <div class="txt-title">大名字下那行英文</div>
+      <div class="txt-desc">默认是「MY PROFILE」，最多 24 个字符。</div>
+      <input class="txt-input" id="myInTitleEn" value="MY PROFILE" maxlength="24">
+      <div class="txt-count"><span id="myTitleEnCount">10</span> / 24</div>
+    </div>
+    <div class="txt-sec">
+      <div class="txt-title">右上角竖排那串</div>
+      <div class="txt-desc">默认是「MY SPACE」，最多 24 个字符。</div>
+      <input class="txt-input" id="myInVert" value="MY SPACE" maxlength="24">
+      <div class="txt-count"><span id="myVertCount">8</span> / 24</div>
+    </div>
+    <div class="txt-sec">
+      <div class="txt-title">字体</div>
+      <div class="txt-desc">上传 .ttf / .otf 字体文件，全站文字都换成这个字体。</div>
+      <div class="font-box">
+        <div class="font-row">
+          <div class="font-name empty" id="myFontName">还没上传</div>
+          <button class="font-btn primary" id="myFontUpload" type="button">上传字体</button>
+          <button class="font-btn ghost" id="myFontReset" type="button">恢复默认</button>
+        </div>
+        <div class="font-hint">上传后全站生效。字体文件较大，建议 5MB 以内。</div>
+      </div>
+    </div>
+    <div class="txt-prev">
+      <div class="txt-prev-lbl">P R E V I E W</div>
+      <div class="txt-prev-cn">我</div>
+      <div class="txt-prev-en" id="myPrevTitleEn">MY PROFILE</div>
+      <div class="txt-prev-en" id="myPrevVert" style="margin-top:14px">MY SPACE</div>
+    </div>
+  </div>
+</div>
+<div class="sub-panel" id="spTheme">
   <div class="bp-head">
     <button class="bp-back" data-close type="button">‹</button>
     <div class="bp-title">主题</div>
@@ -12087,6 +12242,76 @@ window.__APP_VERSION__ = '0.1.0';
 </div>
 
 <!-- ============ 音效 子页 ============ -->
+<div class="sub-panel" id="spBgImg">
+  <div class="bp-head">
+    <button class="bp-back" data-close type="button">‹</button>
+    <div class="bp-title">上传图片</div>
+    <div class="bp-head-right"></div>
+  </div>
+  <div class="sp-body">
+    <div class="up-section">
+      <div class="up-title">聊天界面背景</div>
+      <div class="up-desc">换了以后，聊天页气泡后面那层底就变成这张图。</div>
+      <div class="up-preview" id="chatBgPreview"><span class="ph">还没上传</span></div>
+      <div class="up-acts">
+        <button class="up-btn primary" id="btnChatBgUpload" type="button">上传图片</button>
+        <button class="up-btn ghost" id="btnChatBgReset" type="button">恢复默认</button>
+      </div>
+      <div class="op-row"><span class="op-lbl">透明度</span><input type="range" class="op-range" id="chatBgOpacity" min="0" max="100" value="85"><span class="op-val" id="chatBgOpacityVal">85%</span></div>
+      <div class="op-row"><span class="op-lbl">模糊</span><input type="range" class="op-range" id="chatBgBlur" min="0" max="20" value="0"><span class="op-val" id="chatBgBlurVal">0px</span></div>
+      <div class="op-row"><span class="op-lbl">对齐</span>
+        <div class="align-tabs">
+          <button class="align-btn on" data-align="center" type="button">居中</button>
+          <button class="align-btn" data-align="top" type="button">顶部</button>
+          <button class="align-btn" data-align="bottom" type="button">底部</button>
+        </div>
+      </div>
+    </div>
+    <div class="up-section">
+      <div class="up-title">顶部栏背景</div>
+      <div class="up-desc">只换顶部那一块（标题 + 英文那行所在的区域），跟聊天背景分开。</div>
+      <div class="up-preview" id="topbarBgPreview" style="aspect-ratio:16/6;"><span class="ph">还没上传</span></div>
+      <div class="up-acts">
+        <button class="up-btn primary" id="btnTopbarBgUpload" type="button">上传图片</button>
+        <button class="up-btn ghost" id="btnTopbarBgReset" type="button">恢复默认</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sub-panel" id="spTitleText">
+  <div class="bp-head">
+    <button class="bp-back" data-close type="button">‹</button>
+    <div class="bp-title">文字</div>
+    <div class="bp-head-right"></div>
+  </div>
+  <div class="sp-body">
+    <div class="txt-section">
+      <div class="txt-title">中文标题</div>
+      <div class="txt-desc">就是顶部那两个字，默认是「彼岸」。</div>
+      <input class="txt-input" id="inTitleCn" value="彼岸" placeholder="写两个字" maxlength="8">
+      <div class="txt-count"><span id="titleCnCount">2</span> / 8</div>
+    </div>
+    <div class="txt-section">
+      <div class="txt-title">英文副标题</div>
+      <div class="txt-desc">中文旁边那串小英文，默认是「THE OTHER SIDE」。</div>
+      <input class="txt-input" id="inTitleEn" value="THE OTHER SIDE" placeholder="写点英文" maxlength="24">
+      <div class="txt-count"><span id="titleEnCount">14</span> / 24</div>
+    </div>
+    <div class="sw-row" style="padding:16px 2px">
+      <div class="sw-main"><div class="t1">浅色文字</div><div class="t2">背景图偏深时打开，文字变白更清楚</div></div>
+      <label class="switch"><input type="checkbox" id="titleTextLight"><span class="slider"></span></label>
+    </div>
+    <div class="txt-preview">
+      <div class="txt-preview-lbl">P R E V I E W</div>
+      <div class="txt-preview-inner" id="titlePreviewBox">
+        <span class="txt-preview-cn" id="prevTitleCn">彼岸</span>
+        <span class="txt-preview-en" id="prevTitleEn">THE OTHER SIDE</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="sub-panel" id="spSound">
   <div class="sp-head"><div class="bp-back" data-close>‹</div><div class="bp-title" style="font-size:15px">音效</div></div>
   <div class="sp-body">
@@ -12318,9 +12543,10 @@ window.__APP_VERSION__ = '0.1.0';
 	<div class="a-top">
 	  <button class="a-back" id="drBack" type="button">‹</button>
 	  <div class="a-title">占 卜 记 录</div>
+	  <button class="a-act" id="drSearchIcon" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></button>
 	</div>
-	<div class="dr-search dr-search-line">
-	  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#999" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+	<div class="dr-search dr-search-line" id="drSearchBox" style="display:none;">
+	  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#bbb" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
 	  <input type="text" id="drSearchInput" placeholder="搜索问题或理解…">
 	</div>
 	<div class="dr-filter-row" id="drWhoRow">
@@ -13651,6 +13877,34 @@ function getRoleById(id){ const f = getFriends().find(x=>x.id===id); return f ||
 function getRoleNameById(id){ const f = getFriends().find(x=>x.id===id); return f ? displayName(f) : '?'; }
 /* 显示名：优先备注，没有备注就用原名。被删/拉黑时，调用方会先清空 remark，自动回退到原名 */
 function displayName(role){ if(!role) return '?'; const r = role.remark; return (r && String(r).trim()) ? String(r).trim() : role.name; }
+/* 统一改备注入口：所有地方改备注都调这个，写完全站刷新 */
+function openEditRemark(roleId){
+  var rid = roleId || getCurrentRoleId();
+  var role = getRoleById(rid);
+  if(!role){ toast('找不到这个角色'); return; }
+  uniAsk({
+    title: '修改备注',
+    sub: '只有你能看到 · 留空 = 用真名',
+    value: role.remark || '',
+    placeholder: '输入备注',
+    maxlength: 20
+  }).then(function(v){
+    if(v === null) return;
+    var txt = String(v).trim();
+    var friends = getFriends();
+    var f = friends.find(function(x){ return x.id === rid; });
+    if(!f) return;
+    f.remark = txt;
+    saveFriends(friends);
+    /* 全站刷新名字 */
+    syncRoleNameEverywhere();
+    if(rid === getCurrentRoleId()){
+      var cipName = document.getElementById('cipName');
+      if(cipName) cipName.textContent = txt || f.name;
+    }
+    toast(txt ? '备注已更新' : '已清除备注');
+  });
+}
 
 const ROLE_AUTOADD_KEY = 'mj_role_autoadd_v1';
 function getRoleAutoAdd(id){ const m=lsGet(ROLE_AUTOADD_KEY,{}); return !!m[id]; }
@@ -15137,6 +15391,7 @@ function renderChatFull(forceBottom){
   })();
 
   const role = getRole();
+  const _chatRoleDisplay = displayName(role);
   const wasAtBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
   box.innerHTML = msgs.map((m, idx)=>{
 	const isUser = m.role==='user';
@@ -15149,7 +15404,7 @@ function renderChatFull(forceBottom){
 	if(!m.recalled && !m.sys){
 	  timeSep = `<div class="time-sep">${formatMsgTime(m.time)}</div>`;
 	}
-	if(m.recalled){ return `<div class="recalled-line">${isUser?userName():role.name}撤回了一条消息</div>`; }
+	if(m.recalled){ return `<div class="recalled-line">${isUser?userName():_chatRoleDisplay}撤回了一条消息</div>`; }
 	if(m.sys){
 	  if(m.pat){
 		const cls = 'pat-notice' + (m.patFromUser ? ' me' : '');
@@ -20292,36 +20547,18 @@ $$('.func-item').forEach(item=>{ item.addEventListener('click',e=>{
     closeAllThings('drawer');
     setTimeout(openReplySettings, 200);
   } else if(fn === 'beauty'){
-    /* ★ 抽屉里点「美化」要进气泡设置页，之前第一次点没反应是因为：
-       - 抽屉 .drawer.open 还挂着，正在收起
-       - #beautyPanel 是 fixed 全屏，但在抽屉的过渡期间打开会被内核吃掉一次 .show
-       修法：先把抽屉立刻关掉、并临时禁用它的 transition，
-       双 rAF 之后再 openBeauty，确保面板拿到的是干净的起始状态。 */
     (function(){
       var dc = document.getElementById('drawerContent');
       var df = document.getElementById('drawerFunc');
-      if(dc){
-        dc.style.transition = 'none';
-        dc.classList.remove('open');
-        requestAnimationFrame(function(){
-          requestAnimationFrame(function(){ dc.style.transition = ''; });
-        });
-      }
-      if(df){
-        df.style.transition = 'none';
-        df.classList.remove('open');
-        requestAnimationFrame(function(){
-          requestAnimationFrame(function(){ df.style.transition = ''; });
-        });
-      }
+      if(dc){ dc.style.transition = 'none'; dc.classList.remove('open'); requestAnimationFrame(function(){ requestAnimationFrame(function(){ dc.style.transition = ''; }); }); }
+      if(df){ df.style.transition = 'none'; df.classList.remove('open'); requestAnimationFrame(function(){ requestAnimationFrame(function(){ df.style.transition = ''; }); }); }
       contentOpen = false;
       funcOpen = false;
     })();
-
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
         if(typeof openBeauty === 'function'){
-          openBeauty('bubble');
+          openBeauty();
         } else {
           toast('美化模块还没加载好');
         }
@@ -22666,7 +22903,7 @@ function renderDivineRecords(){
 		   ${allReads.length > 1 ? `<div class="dr-reads-more" data-rec-toggle="${rec.id}">${expanded?'收起':'展开全部 '+allReads.length+' 条'}</div>` : ''}
 		 </div>`
 	  : '';
-	return `<div class="dr-card" data-rec="${rec.id}"><div class="dr-head"><span>${new Date(rec.time).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} · ${escapeHTML(rec.who==='self'?'我抽的':roleName+'抽的')}</span><button class="dr-del" data-rec-del="${rec.id}" type="button">✕</button></div><div class="dr-q-label">Q</div><div class="dr-q">${escapeHTML(rec.question)}</div><div class="dr-cards">${rec.cards.map(c=>tarotHTML(c.card,c.reversed)).join('')}</div>${readsHTML}<button class="dr-add-read" data-rec-add="${rec.id}">✦ ${hasReads?'追加新的理解':'填写答案 / 解读'}</button></div>`;
+	return `<div class="dr-card" data-rec="${rec.id}"><div class="dr-head"><span>${new Date(rec.time).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} · ${escapeHTML(rec.who==='self'?'我抽的':roleName+'抽的')}</span><button class="dr-del" data-rec-del="${rec.id}" type="button">✕</button></div><div class="dr-q">${escapeHTML(rec.question)}</div><div class="dr-cards">${rec.cards.map(c=>tarotHTML(c.card,c.reversed)).join('')}</div>${readsHTML}<button class="dr-add-read" data-rec-add="${rec.id}">✦ ${hasReads?'追加新的理解':'填写答案 / 解读'}</button></div>`;
   }).join('');
   box.querySelectorAll('[data-rec-add]').forEach(el=>{ el.addEventListener('click',e=>{ e.stopPropagation(); openReadDialog(el.dataset.recAdd); }); });
   box.querySelectorAll('[data-rec-del]').forEach(el=>{ el.addEventListener('click',e=>{ e.stopPropagation(); const id=el.dataset.recDel; if(!confirm('删除这条占卜记录？')) return; const arr=getDivineRecords(getCurrentRoleId()); const i=arr.findIndex(r=>r.id===id); if(i>=0){ arr.splice(i,1); saveDivineRecords(getCurrentRoleId(),arr); renderDivineRecords(); toast('已删除'); } }); });
@@ -23190,6 +23427,21 @@ document.addEventListener('click', function(e){
 
 on('#drBack','click',()=>{ showScreen('deskScreen'); });
 on('#drSearchInput','input',()=>renderDivineRecords());
+
+document.addEventListener('click', function(e){
+  if(e.target.closest('#drSearchIcon')){
+    e.preventDefault(); e.stopPropagation();
+    var box = document.getElementById('drSearchBox');
+    if(box){
+      if(box.style.display === 'none'){
+        box.style.display = 'flex';
+        setTimeout(function(){ document.getElementById('drSearchInput').focus(); }, 100);
+      } else {
+        box.style.display = 'none';
+      }
+    }
+  }
+}, true);
 
 /* ★ 占卜记录 · 谁抽的筛选按钮 */
 (function bindDrWhoFilter(){
@@ -24312,20 +24564,217 @@ function syncCallValLabel(){
   }
 }
 
-function openBeauty(mode){
-  if(mode === 'bubble'){
-	/* 抽屉入口：只显示气泡，隐藏其余三项 */
-	document.querySelectorAll('#beautyPanel .bp-row[data-panel="theme"]').forEach(el=>el.style.display='none');
-	document.querySelectorAll('#beautyPanel .bp-row[data-panel="bubble"]').forEach(el=>el.style.display='');
-	document.querySelectorAll('#beautyPanel .bp-row[data-panel="avatar"]').forEach(el=>el.style.display='none');
-	document.querySelectorAll('#beautyPanel .bp-row[data-panel="layout"]').forEach(el=>el.style.display='none');
-  }else{
-	/* 个人界面入口：只保留主题 / 头像方圆，气泡和聊天页布局都隐藏 */
-	document.querySelectorAll('#beautyPanel .bp-row[data-panel="theme"]').forEach(el=>el.style.display='');
-	document.querySelectorAll('#beautyPanel .bp-row[data-panel="bubble"]').forEach(el=>el.style.display='none');
-	document.querySelectorAll('#beautyPanel .bp-row[data-panel="avatar"]').forEach(el=>el.style.display='');
-	document.querySelectorAll('#beautyPanel .bp-row[data-panel="layout"]').forEach(el=>el.style.display='none');
+const MY_BG_KEY = 'mj_my_page_bg_v1';
+function getMyBgCfg(){ let c=lsGet(MY_BG_KEY,null); if(!c||typeof c!=='object')c={key:'',opacity:85,blur:0}; return c; }
+function saveMyBgCfg(c){ lsSet(MY_BG_KEY,c); }
+const MY_TITLE_KEY = 'mj_my_title_v1';
+function getMyTitleCfg(){ let c=lsGet(MY_TITLE_KEY,null); if(!c||typeof c!=='object')c={en:'MY PROFILE',vert:'MY SPACE'}; return c; }
+function saveMyTitleCfg(c){ lsSet(MY_TITLE_KEY,c); }
+const MY_FONT_KEY = 'mj_my_font_v1';
+function getMyFontCfg(){ let c=lsGet(MY_FONT_KEY,null); if(!c||typeof c!=='object')c={key:'',name:''}; return c; }
+function saveMyFontCfg(c){ lsSet(MY_FONT_KEY,c); }
+function openMyBeauty(){
+  var p = document.getElementById('myBeautyPanel');
+  if(!p){ toast('我的美化界面没加载好'); return; }
+  renderMyBeautyPanel();
+  p.classList.add('show');
+}
+function closeMyBeauty(){
+  var p = document.getElementById('myBeautyPanel');
+  if(p) p.classList.remove('show');
+}
+function renderMyBeautyPanel(){
+  var tVal = document.getElementById('myThemeVal');
+  if(tVal) tVal.textContent = '黑白';
+  var aVal = document.getElementById('myAvatarVal');
+  if(aVal) aVal.textContent = (beautyCfg.avatarShape === 'circle') ? '圆形' : '方形';
+}
+function applyMyPageBg(){
+  var c = getMyBgCfg();
+  var page = document.getElementById('page-me');
+  if(!page) return;
+  if(!c.key){
+    page.style.backgroundImage = '';
+    page.style.filter = '';
+    return;
   }
+  __idb.toURL(c.key).then(function(url){
+    if(!url) return;
+    page.style.backgroundImage = 'linear-gradient(rgba(255,255,255,'+((100-c.opacity)/100)+'),rgba(255,255,255,'+((100-c.opacity)/100)+')),url('+url+')';
+    page.style.backgroundSize = 'cover';
+    page.style.backgroundPosition = 'center';
+    page.style.backgroundRepeat = 'no-repeat';
+    page.style.filter = c.blur>0 ? ('blur('+c.blur+'px)') : '';
+  });
+}
+function applyMyTitleText(){
+  var c = getMyTitleCfg();
+  var en = document.querySelector('#page-me .me-big-en');
+  if(en) en.textContent = c.en || 'MY PROFILE';
+  var vert = document.querySelector('#page-me .me-vert');
+  if(vert) vert.textContent = c.vert || 'MY SPACE';
+}
+function applyMyFont(){
+  var c = getMyFontCfg();
+  var styleEl = document.getElementById('myFontStyle');
+  if(!styleEl){
+    styleEl = document.createElement('style');
+    styleEl.id = 'myFontStyle';
+    document.head.appendChild(styleEl);
+  }
+  if(!c.key){ styleEl.textContent = ''; return; }
+  __idb.toURL(c.key).then(function(url){
+    if(!url){ styleEl.textContent = ''; return; }
+    styleEl.textContent = '@font-face{font-family:"MyCustomFont";src:url("'+url+'");font-display:swap}'
+      + 'body,body *:not(.msg-image-bubble):not(.d-emoji):not(.d-kao){font-family:"MyCustomFont",var(--app-font) !important}';
+  });
+}
+(function bindMyBeautyRows(){
+  if(window.__myBeautyBound) return;
+  window.__myBeautyBound = true;
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || !t.closest) return;
+    if(t.closest('#myBeautyBack')){ e.preventDefault(); e.stopPropagation(); closeMyBeauty(); return; }
+    var row = t.closest('#myBeautyPanel .bp-row');
+    if(row){
+      e.preventDefault(); e.stopPropagation();
+      var p = row.dataset.panel;
+      if(p === 'theme'){ toast('主题：黑白（目前只有这一个）'); }
+      else if(p === 'avatar'){
+        var m = document.getElementById('spAvatar');
+        if(m) m.classList.add('show');
+      }
+      else if(p === 'bgimg'){
+        var sb = document.getElementById('mySpBg');
+        if(sb){ renderMyBgSub(); sb.classList.add('show'); }
+      }
+      else if(p === 'titletext'){
+        var st = document.getElementById('mySpTxt');
+        if(st){ renderMyTxtSub(); st.classList.add('show'); }
+      }
+    }
+  }, true);
+})();
+
+function renderMyBgSub(){
+  var c = getMyBgCfg();
+  var prev = document.getElementById('myBgPrev');
+  if(prev){
+    if(c.key){ __idb.toURL(c.key).then(function(u){ if(u) prev.innerHTML='<img src="'+u+'" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:10px">'; }); }
+    else prev.innerHTML = '还没上传';
+  }
+  var op = document.getElementById('myBgOpacity'); if(op) op.value = c.opacity;
+  var opv = document.getElementById('myBgOpacityVal'); if(opv) opv.textContent = c.opacity + '%';
+  var bl = document.getElementById('myBgBlur'); if(bl) bl.value = c.blur;
+  var blv = document.getElementById('myBgBlurVal'); if(blv) blv.textContent = c.blur + 'px';
+}
+(function bindMyBgSub(){
+  if(window.__myBgSubBound) return;
+  window.__myBgSubBound = true;
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || !t.closest) return;
+    if(t.closest('#myBgBack')){ e.preventDefault(); e.stopPropagation(); document.getElementById('mySpBg').classList.remove('show'); return; }
+    if(t.closest('#myBgUpload')){ e.preventDefault(); e.stopPropagation(); var f=document.getElementById('myBgFile'); if(f){f.value='';f.click();} return; }
+    if(t.closest('#myBgReset')){ e.preventDefault(); e.stopPropagation(); var c=getMyBgCfg(); if(c.key)__idb.del(c.key).catch(function(){}); c.key=''; saveMyBgCfg(c); applyMyPageBg(); renderMyBgSub(); toast('已恢复默认'); return; }
+  }, true);
+  document.addEventListener('input', function(e){
+    var t = e.target;
+    if(!t || !t.id) return;
+    if(t.id === 'myBgOpacity'){ var c=getMyBgCfg(); c.opacity=parseInt(t.value,10)||0; saveMyBgCfg(c); var v=document.getElementById('myBgOpacityVal'); if(v)v.textContent=c.opacity+'%'; applyMyPageBg(); }
+    if(t.id === 'myBgBlur'){ var c2=getMyBgCfg(); c2.blur=parseInt(t.value,10)||0; saveMyBgCfg(c2); var v2=document.getElementById('myBgBlurVal'); if(v2)v2.textContent=c2.blur+'px'; applyMyPageBg(); }
+  }, true);
+  document.addEventListener('change', function(e){
+    var t = e.target;
+    if(!t || t.id !== 'myBgFile') return;
+    var file = t.files && t.files[0]; t.value='';
+    if(!file) return;
+    var key = 'mybg_' + Date.now().toString(36);
+    __idb.set(key, file).then(function(){
+      var c = getMyBgCfg();
+      if(c.key) __idb.del(c.key).catch(function(){});
+      c.key = key; saveMyBgCfg(c);
+      applyMyPageBg();
+      renderMyBgSub();
+      toast('已上传');
+    }).catch(function(err){ console.error(err); toast('上传失败'); });
+  }, true);
+})();
+
+function renderMyTxtSub(){
+  var c = getMyTitleCfg();
+  var ien = document.getElementById('myInTitleEn'); if(ien) ien.value = c.en;
+  var iv = document.getElementById('myInVert'); if(iv) iv.value = c.vert;
+  var ce = document.getElementById('myTitleEnCount'); if(ce) ce.textContent = Array.from(c.en||'').length;
+  var cv = document.getElementById('myVertCount'); if(cv) cv.textContent = Array.from(c.vert||'').length;
+  var pe = document.getElementById('myPrevTitleEn'); if(pe) pe.textContent = c.en||'MY PROFILE';
+  var pv = document.getElementById('myPrevVert'); if(pv) pv.textContent = c.vert||'MY SPACE';
+  var fc = getMyFontCfg();
+  var fn = document.getElementById('myFontName');
+  if(fn){
+    if(fc.name){ fn.textContent = fc.name; fn.classList.remove('empty'); }
+    else { fn.textContent = '还没上传'; fn.classList.add('empty'); }
+  }
+}
+(function bindMyTxtSub(){
+  if(window.__myTxtSubBound) return;
+  window.__myTxtSubBound = true;
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || !t.closest) return;
+    if(t.closest('#myTxtBack')){ e.preventDefault(); e.stopPropagation(); document.getElementById('mySpTxt').classList.remove('show'); return; }
+    if(t.closest('#myFontUpload')){ e.preventDefault(); e.stopPropagation(); var f=document.getElementById('myFontFile'); if(f){f.value='';f.click();} return; }
+    if(t.closest('#myFontReset')){
+      e.preventDefault(); e.stopPropagation();
+      var fc = getMyFontCfg();
+      if(fc.key) __idb.del(fc.key).catch(function(){});
+      saveMyFontCfg({key:'',name:''});
+      applyMyFont();
+      renderMyTxtSub();
+      toast('已恢复默认字体');
+      return;
+    }
+  }, true);
+  document.addEventListener('input', function(e){
+    var t = e.target;
+    if(!t || !t.id) return;
+    if(t.id === 'myInTitleEn'){
+      var c = getMyTitleCfg(); c.en = t.value; saveMyTitleCfg(c); applyMyTitleText();
+      var ce = document.getElementById('myTitleEnCount'); if(ce) ce.textContent = Array.from(t.value).length;
+      var pe = document.getElementById('myPrevTitleEn'); if(pe) pe.textContent = t.value||'MY PROFILE';
+    }
+    if(t.id === 'myInVert'){
+      var c2 = getMyTitleCfg(); c2.vert = t.value; saveMyTitleCfg(c2); applyMyTitleText();
+      var cv = document.getElementById('myVertCount'); if(cv) cv.textContent = Array.from(t.value).length;
+      var pv = document.getElementById('myPrevVert'); if(pv) pv.textContent = t.value||'MY SPACE';
+    }
+  }, true);
+  document.addEventListener('change', function(e){
+    var t = e.target;
+    if(!t || t.id !== 'myFontFile') return;
+    var file = t.files && t.files[0]; t.value='';
+    if(!file) return;
+    var key = 'myfont_' + Date.now().toString(36);
+    __idb.set(key, file).then(function(){
+      var fc = getMyFontCfg();
+      if(fc.key) __idb.del(fc.key).catch(function(){});
+      saveMyFontCfg({key:key, name:file.name});
+      applyMyFont();
+      renderMyTxtSub();
+      toast('字体已上传');
+    }).catch(function(err){ console.error(err); toast('上传失败'); });
+  }, true);
+})();
+(function ensureMyFiles(){
+  if(document.getElementById('myBgFile')) return;
+  var a = document.createElement('input'); a.type='file'; a.accept='image/*'; a.id='myBgFile'; a.style.display='none'; document.body.appendChild(a);
+  var b = document.createElement('input'); b.type='file'; b.accept='.ttf,.otf,.woff,.woff2,font/*'; b.id='myFontFile'; b.style.display='none'; document.body.appendChild(b);
+})();
+setTimeout(function(){ try{ applyMyPageBg(); applyMyTitleText(); applyMyFont(); }catch(e){} }, 1200);
+function openBeauty(mode){
+  /* 抽屉美化：六项全部显示，不再按入口藏行 */
+  document.querySelectorAll('#beautyPanel .bp-row[data-panel]').forEach(el=>el.style.display='');
   renderBeautyPanel();
 
   /* ============================================================
@@ -24443,12 +24892,153 @@ $$('.bp-row[data-panel]').forEach(row=>{
 	if(target) $(target).classList.add('show');
   });
 });
-$$('.sub-panel [data-close]').forEach(el=>{
-  el.addEventListener('click', ()=>{
-	const panel = el.closest('.sub-panel');
-	if(panel) panel.classList.remove('show');
+/* ===== 上传图片 · 聊天背景 / 顶部栏背景 ===== */
+const CHAT_BG_KEY = 'mj_chat_bg_v1';
+const TOPBAR_BG_KEY = 'mj_topbar_bg_v1';
+function getChatBgCfg(){ let c=lsGet(CHAT_BG_KEY,null); if(!c||typeof c!=='object')c={key:'',opacity:85,blur:0,align:'center'}; return c; }
+function saveChatBgCfg(c){ lsSet(CHAT_BG_KEY,c); }
+function getTopbarBgCfg(){ let c=lsGet(TOPBAR_BG_KEY,null); if(!c||typeof c!=='object')c={key:''}; return c; }
+function saveTopbarBgCfg(c){ lsSet(TOPBAR_BG_KEY,c); }
+function applyChatBg(){
+  const c = getChatBgCfg();
+  const list = document.getElementById('chatList');
+  if(!list) return;
+  if(!c.key){ list.style.backgroundImage=''; list.style.backgroundSize=''; list.style.backgroundPosition=''; list.style.filter=''; return; }
+  __idb.toURL(c.key).then(function(url){
+    if(!url) return;
+    list.style.backgroundImage='linear-gradient(rgba(255,255,255,'+((100-c.opacity)/100)+'),rgba(255,255,255,'+((100-c.opacity)/100)+')),url('+url+')';
+    list.style.backgroundSize='cover';
+    list.style.backgroundPosition = c.align==='top'?'center top':(c.align==='bottom'?'center bottom':'center center');
+    list.style.backgroundRepeat='no-repeat';
+    list.style.filter = c.blur>0?('blur('+c.blur+'px)'):'';
   });
-});
+}
+function applyTopbarBg2(){
+  const c = getTopbarBgCfg();
+  const bar = document.getElementById('chatTopbar');
+  if(!bar) return;
+  if(!c.key){ bar.style.backgroundImage=''; return; }
+  __idb.toURL(c.key).then(function(url){
+    if(!url) return;
+    bar.style.backgroundImage='linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.88)), url('+url+')';
+    bar.style.backgroundSize='cover';
+    bar.style.backgroundPosition='center';
+  });
+}
+function renderBgImgPanel(){
+  const cc = getChatBgCfg(), tc = getTopbarBgCfg();
+  const cp = document.getElementById('chatBgPreview');
+  if(cp){
+    if(cc.key){ __idb.toURL(cc.key).then(function(u){ if(u) cp.innerHTML='<img src="'+u+'">'; }); }
+    else cp.innerHTML='<span class="ph">还没上传</span>';
+  }
+  const op = document.getElementById('chatBgOpacity'); if(op){ op.value=cc.opacity; }
+  const opv = document.getElementById('chatBgOpacityVal'); if(opv) opv.textContent=cc.opacity+'%';
+  const bl = document.getElementById('chatBgBlur'); if(bl){ bl.value=cc.blur; }
+  const blv = document.getElementById('chatBgBlurVal'); if(blv) blv.textContent=cc.blur+'px';
+  document.querySelectorAll('.align-btn').forEach(function(b){ b.classList.toggle('on', b.dataset.align===cc.align); });
+  const tp = document.getElementById('topbarBgPreview');
+  if(tp){
+    if(tc.key){ __idb.toURL(tc.key).then(function(u){ if(u) tp.innerHTML='<img src="'+u+'">'; }); }
+    else tp.innerHTML='<span class="ph">还没上传</span>';
+  }
+}
+(function ensureBgFileInput(){
+  if(document.getElementById('bgImgPicker')) return;
+  var inp = document.createElement('input');
+  inp.type='file'; inp.accept='image/*'; inp.id='bgImgPicker'; inp.style.display='none';
+  document.body.appendChild(inp);
+})();
+var _bgUploadTarget = '';
+document.addEventListener('click', function(e){
+  var t = e.target;
+  if(!t || !t.closest) return;
+  if(t.closest('#btnChatBgUpload')){ e.preventDefault(); _bgUploadTarget='chat'; var f=document.getElementById('bgImgPicker'); if(f){f.value='';f.click();} return; }
+  if(t.closest('#btnTopbarBgUpload')){ e.preventDefault(); _bgUploadTarget='topbar'; var f2=document.getElementById('bgImgPicker'); if(f2){f2.value='';f2.click();} return; }
+  if(t.closest('#btnChatBgReset')){ e.preventDefault(); var c=getChatBgCfg(); if(c.key){__idb.del(c.key).catch(function(){});} c.key=''; saveChatBgCfg(c); applyChatBg(); renderBgImgPanel(); toast('已恢复默认'); return; }
+  if(t.closest('#btnTopbarBgReset')){ e.preventDefault(); var c2=getTopbarBgCfg(); if(c2.key){__idb.del(c2.key).catch(function(){});} c2.key=''; saveTopbarBgCfg(c2); applyTopbarBg2(); renderBgImgPanel(); toast('已恢复默认'); return; }
+  var ab = t.closest('.align-btn');
+  if(ab){ e.preventDefault(); var c3=getChatBgCfg(); c3.align=ab.dataset.align; saveChatBgCfg(c3); renderBgImgPanel(); applyChatBg(); return; }
+}, true);
+document.addEventListener('change', function(e){
+  var t = e.target;
+  if(!t || t.id!=='bgImgPicker') return;
+  var file = t.files && t.files[0]; t.value='';
+  if(!file) return;
+  var key = 'bg_' + _bgUploadTarget + '_' + Date.now().toString(36);
+  __idb.set(key, file).then(function(){
+    if(_bgUploadTarget==='chat'){
+      var c = getChatBgCfg();
+      if(c.key) __idb.del(c.key).catch(function(){});
+      c.key = key; saveChatBgCfg(c); applyChatBg(); renderBgImgPanel();
+    } else {
+      var c2 = getTopbarBgCfg();
+      if(c2.key) __idb.del(c2.key).catch(function(){});
+      c2.key = key; saveTopbarBgCfg(c2); applyTopbarBg2(); renderBgImgPanel();
+    }
+    toast('已上传');
+  }).catch(function(err){ console.error(err); toast('上传失败'); });
+}, true);
+document.addEventListener('input', function(e){
+  var t = e.target;
+  if(!t || !t.id) return;
+  if(t.id==='chatBgOpacity'){ var c=getChatBgCfg(); c.opacity=parseInt(t.value,10); saveChatBgCfg(c); var v=document.getElementById('chatBgOpacityVal'); if(v)v.textContent=c.opacity+'%'; applyChatBg(); }
+  if(t.id==='chatBgBlur'){ var c2=getChatBgCfg(); c2.blur=parseInt(t.value,10); saveChatBgCfg(c2); var v2=document.getElementById('chatBgBlurVal'); if(v2)v2.textContent=c2.blur+'px'; applyChatBg(); }
+}, true);
+
+/* ===== 文字子页 ===== */
+const TITLE_TEXT_KEY = 'mj_title_text_v1';
+function getTitleTextCfg(){ let c=lsGet(TITLE_TEXT_KEY,null); if(!c||typeof c!=='object')c={cn:'彼岸',en:'THE OTHER SIDE',light:false}; return c; }
+function saveTitleTextCfg(c){ lsSet(TITLE_TEXT_KEY,c); }
+function applyTitleText(){
+  const c = getTitleTextCfg();
+  const cn = document.querySelector('#chatTopbar .topbar-title .cn');
+  const en = document.querySelector('#chatTopbar .topbar-title .en');
+  if(cn){ cn.textContent = c.cn || '彼岸'; cn.style.color = c.light?'#fff':'#1a1a1a'; }
+  if(en){ en.textContent = c.en || 'THE OTHER SIDE'; en.style.color = c.light?'rgba(255,255,255,.6)':'#bbb'; }
+}
+function renderTitleTextPanel(){
+  const c = getTitleTextCfg();
+  const icn = document.getElementById('inTitleCn'); if(icn) icn.value = c.cn;
+  const ien = document.getElementById('inTitleEn'); if(ien) ien.value = c.en;
+  const cc = document.getElementById('titleCnCount'); if(cc) cc.textContent = Array.from(c.cn||'').length;
+  const ec = document.getElementById('titleEnCount'); if(ec) ec.textContent = Array.from(c.en||'').length;
+  const l = document.getElementById('titleTextLight'); if(l) l.checked = !!c.light;
+  const pcn = document.getElementById('prevTitleCn'); if(pcn) pcn.textContent = c.cn||'彼岸';
+  const pen = document.getElementById('prevTitleEn'); if(pen) pen.textContent = c.en||'THE OTHER SIDE';
+  const pbox = document.getElementById('titlePreviewBox'); if(pbox) pbox.classList.toggle('light', !!c.light);
+}
+document.addEventListener('input', function(e){
+  var t = e.target;
+  if(!t || !t.id) return;
+  if(t.id==='inTitleCn'){
+    var c=getTitleTextCfg(); c.cn=t.value; saveTitleTextCfg(c); applyTitleText();
+    var cc=document.getElementById('titleCnCount'); if(cc)cc.textContent=Array.from(t.value).length;
+    var pcn=document.getElementById('prevTitleCn'); if(pcn)pcn.textContent=t.value||'彼岸';
+  }
+  if(t.id==='inTitleEn'){
+    var c2=getTitleTextCfg(); c2.en=t.value; saveTitleTextCfg(c2); applyTitleText();
+    var ec=document.getElementById('titleEnCount'); if(ec)ec.textContent=Array.from(t.value).length;
+    var pen=document.getElementById('prevTitleEn'); if(pen)pen.textContent=t.value||'THE OTHER SIDE';
+  }
+}, true);
+document.addEventListener('change', function(e){
+  var t = e.target;
+  if(t && t.id==='titleTextLight'){
+    var c=getTitleTextCfg(); c.light=t.checked; saveTitleTextCfg(c); applyTitleText(); renderTitleTextPanel();
+  }
+}, true);
+(function hookBeautyPanelOpen(){
+  var bp = document.getElementById('beautyPanel');
+  if(!bp) return;
+  bp.addEventListener('click', function(e){
+    var row = e.target.closest('.bp-row[data-panel]');
+    if(!row) return;
+    if(row.dataset.panel==='bgimg'){ setTimeout(renderBgImgPanel, 60); }
+    if(row.dataset.panel==='titletext'){ setTimeout(renderTitleTextPanel, 60); }
+  }, true);
+})();
+setTimeout(function(){ try{ applyChatBg(); applyTopbarBg2(); applyTitleText(); }catch(e){} }, 800);
 
 
 
@@ -29748,6 +30338,8 @@ document.addEventListener('click', function(e){
     }
     else if(key === 'fullscreen') toggleFullscreen();
     else if(key === 'blocked') openHiddenList('blocked');
+    else if(key === 'update')  openUpdatePanel();
+    else if(key === 'refresh') forceRefreshApp();
     else if(key === 'about')   showScreen('aboutScreen');
     else if(key === 'wipe')    wipeAllData();
     return;
@@ -30754,7 +31346,7 @@ function renderChatSearch(kw){
   list.innerHTML = hits.map(m => {
     const who = m.role === 'user'
       ? userName()
-      : ((role.remark && String(role.remark).trim()) ? String(role.remark).trim() : role.name);
+      : displayName(role);
     /* 类型小标签 */
     const t = csMsgType(m);
     let tag = '';
@@ -31000,11 +31592,9 @@ else if(k==='relation'){ relationKeyword=''; const ri=$('#relSearchInput'); if(r
 $$('#page-me .me-row').forEach(el=>{ el.addEventListener('click',()=>{
   const fn = el.dataset.func;
   if(fn==='card') openCardLib();
-  else if(fn==='beauty') openBeauty();
+  else if(fn==='beauty') openMyBeauty();
   else if(fn==='settings') openSettingsPanel();
   else if(fn==='about') showScreen('aboutScreen');
-  else if(fn==='update') openUpdatePanel();
-  else if(fn==='refresh') forceRefreshApp();
   else toast(fn + ' · 下一步补');
 }); });
 
@@ -36504,30 +37094,7 @@ if(m.owner !== 'me' && !areFriends(m.owner, rid)) return;            // 角色�
       try { role = getRole(); } catch(err){ console.error(err); toast('读取角色失败'); return; }
       if(!role) return;
 
-      uniAsk({
-        title: '修改备注',
-        sub: '只有你能看到 · 留空 = 用真名',
-        value: role.remark || '',
-        placeholder: '输入备注',
-        maxlength: 20
-      }).then(function(v){
-        if(v === null) return;
-        var txt = String(v).trim();
-        var friends = getFriends();
-        var f = friends.find(function(x){ return x.id === getCurrentRoleId(); });
-        if(!f) return;
-        f.remark = txt;
-        saveFriends(friends);
-        var cipName = document.getElementById('cipName');
-        if(cipName) cipName.textContent = txt || f.name;
-        if(typeof syncRoleNameEverywhere === 'function'){
-          try { syncRoleNameEverywhere(); } catch(err){ console.error(err); }
-        } else {
-          try { renderFriends(); } catch(err){}
-          try { renderChat(); } catch(err){}
-        }
-        toast(txt ? '备注已更新' : '已清除备注');
-      });
+      openEditRemark();
     }, 0);
   }, true);
 })();
