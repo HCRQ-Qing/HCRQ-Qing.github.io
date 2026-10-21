@@ -1300,10 +1300,12 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
 /* ===== 卡片风顶部栏 · 对岸 ===== */
 .chat-topbar{
   flex:none;position:relative;padding:20px 22px 16px;
-  background:#ffffff;
+  background:rgba(255,255,255,.35);
+  backdrop-filter:blur(15px);
+  -webkit-backdrop-filter:blur(15px);
   border:none;box-shadow:none;outline:none;
   overflow:visible;z-index:10;background-size:cover;background-position:center;
-  border-bottom:0.7px solid #f0f0f0;
+  border-bottom:0.5px solid rgba(255,255,255,.5);
 }
 
 
@@ -1703,9 +1705,6 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
 .voice-bubble{
   display:flex;align-items:center;gap:8px;
   padding:8px 12px;
-  background:rgba(0,0,0,.04);
-  border:none;
-  box-shadow:none;
   border-radius:16px 16px 16px 4px;
   cursor:pointer;max-width:200px;
 }
@@ -6940,7 +6939,7 @@ body[data-bubble="custom"] .preview-bubble{
 #page-chat.minimal-mode{background:#FDFDF0}
 #page-chat.minimal-mode #chatList{background:transparent}
 #page-chat.minimal-mode .split-side{display:none}
-#page-chat.minimal-mode .chat-topbar{background:#FDFDF0;border-bottom:0.7px solid #e5e5e5;padding:18px 22px 14px}
+#page-chat.minimal-mode .chat-topbar{background:rgba(253,253,240,.35);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border-bottom:0.5px solid rgba(255,255,255,.5);padding:18px 22px 14px}
 #page-chat.minimal-mode .split-main{background:#FDFDF0}
 #page-chat.minimal-mode #chatList{padding:26px 22px 30px;gap:30px}
 #page-chat.minimal-mode .msg{gap:0;align-items:flex-start}
@@ -15383,7 +15382,8 @@ function renderChatFull(forceBottom){
 	if(m.kind === 'pinyin'){
 	  body = `<div class="bubble">${esc(m.pinyin||'')}</div><div class="py-tag"><span class="pfx">单字字卡：</span><b><span class="py-word">${esc(m.han||'')}</span></b></div>`;
 	}else if(m.voice){
-	  body = `<div class="voice-bubble" data-url="${m.voiceUrl||''}" data-dur="${m.voice}" data-idbkey="${m.voiceIdbKey||''}"><div class="vb-play"><svg class="icon-play" viewBox="0 0 12 12"><path d="M3 1.5 L10 6 L3 10.5 Z"/></svg><svg class="icon-pause" viewBox="0 0 12 12"><rect x="3" y="2" width="2.5" height="8" rx="1"/><rect x="6.5" y="2" width="2.5" height="8" rx="1"/></svg></div><div class="vb-wave"><span></span><span></span><span></span><span></span><span></span><span></span></div><span class="vb-dur">${m.voice}"</span></div>`;
+	  const vBubbleCls = isUser ? 'message-sent message-bubble-user' : 'message-received message-bubble-char';
+	  body = `<div class="voice-bubble ${vBubbleCls}" data-side="${isUser?'user':'char'}" data-url="${m.voiceUrl||''}" data-dur="${m.voice}" data-idbkey="${m.voiceIdbKey||''}"><div class="vb-play"><svg class="icon-play" viewBox="0 0 12 12"><path d="M3 1.5 L10 6 L3 10.5 Z"/></svg><svg class="icon-pause" viewBox="0 0 12 12"><rect x="3" y="2" width="2.5" height="8" rx="1"/><rect x="6.5" y="2" width="2.5" height="8" rx="1"/></svg></div><div class="vb-wave"><span></span><span></span><span></span><span></span><span></span><span></span></div><span class="vb-dur">${m.voice}"</span></div>`;
 	}else if(m.sticker){
 	  const stickerBubbleCls = isUser ? 'message-sent message-bubble-user' : 'message-received message-bubble-char';
 	  body = `<div class="bubble ${stickerBubbleCls}" data-side="${isUser?'user':'char'}" style="padding:4px"><img src="${m.sticker}" style="max-width:140px;border-radius:12px;display:block"></div>`;
