@@ -25255,24 +25255,11 @@ $$('#spLayout .layout-opt').forEach(btn=>{
 const cropState = { naturalW:0, naturalH:0, scale:1, baseScale:1, tx:0, ty:0, frameW:0, frameH:0, onDone:null };
 function openCrop(file, ratio, titleText, onDone){
   if(!file) return;
-  const useTitle = titleText || '调整图片';
-  const r = new FileReader();
-  r.onload = e=>{
-	const img = new Image();
-	img.onload = ()=>{
-	  cropState.naturalW = img.width;
-	  cropState.naturalH = img.height;
-	  cropState.onDone = onDone || null;
-	  const mask = $('#cropMask');
-	  $('#cropTitle').textContent = useTitle;
-	  const cimg = $('#cropImg');
-	  cimg.src = e.target.result;
-	  cimg.onload = ()=>{
-		initCropLayout();
-	  };
-	  mask.classList.add('show');
-	};
-	img.src = e.target.result;
+  var r = new FileReader();
+  r.onload = function(e){
+    if(typeof onDone === 'function'){
+      try{ onDone(e.target.result); }catch(err){ console.error('图片回调失败', err); }
+    }
   };
   r.readAsDataURL(file);
 }
