@@ -34778,31 +34778,23 @@ function renderFriends(){
    最后补两次延时重绘，兜住部分安卓内核吃掉第一帧的情况。
    原来这 4 段一模一样的代码，现在统一走这里。 */
 function forceRepaintChat(reason){
-  try{
-    try{ msgs = loadMsgs(); }catch(e){}
-    if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
-    if(typeof renderChatFull === 'function'){
-      renderChatFull(true);
-    } else if(typeof renderChat === 'function'){
-      renderChat(true);
-    }
-  }catch(e){ console.error('强制重绘失败(' + (reason||'') + ')', e); }
-
-  setTimeout(function(){
+  
+  function _doRepaint(){
     try{
+      try{ msgs = loadMsgs(); }catch(e){}
       if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
-      if(typeof renderChatFull === 'function'){ renderChatFull(true); }
-      else if(typeof renderChat === 'function'){ renderChat(true); }
-    }catch(e){}
-  }, 60);
+      if(typeof renderChatFull === 'function'){
+        renderChatFull(true);
+      } else if(typeof renderChat === 'function'){
+        renderChat(true);
+      }
+    }catch(e){ console.error('强制重绘失败(' + (reason||'') + ')', e); }
+  }
 
-  setTimeout(function(){
-    try{
-      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
-      if(typeof renderChatFull === 'function'){ renderChatFull(true); }
-      else if(typeof renderChat === 'function'){ renderChat(true); }
-    }catch(e){}
-  }, 200);
+  _doRepaint();
+  setTimeout(_doRepaint, 60);
+  setTimeout(_doRepaint, 200);
+
 }
 
 function refreshChatRole(){
