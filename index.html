@@ -1213,7 +1213,7 @@ body{font-family:var(--app-font);background:var(--th-bg0,#0a0a0a);color:var(--th
   stroke:#1a1a1a;
 }
 
-.toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:var(--th-accent);color:#fff;font-size:12.5px;letter-spacing:1px;padding:9px 18px;border-radius:10px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:4000}
+ 
 
  
 .toast.show{opacity:1}
@@ -2245,7 +2245,38 @@ body[data-bubble="bracket"] .msg.user .bubble::after{content:"」";color:#1a1a1a
 .friend-menu-btn{width:30px;height:30px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;color:#1a1a1a;background:transparent;border:none;cursor:pointer;font-size:14px;font-weight:300;opacity:.35}
 .empty{text-align:center;color:#bbb;padding:34px 20px;font-size:13px;line-height:1.8;font-family:inherit;font-weight:300}
 
-.cl-top{padding:26px 22px 0;flex:none;display:block;margin-bottom:0}
+/* ============ 大改A · 全站二级页顶部栏（唯一标准） ============ */
+.a-top{
+  position:relative;
+  padding:16px 16px 12px;
+  border-bottom:0.7px solid #ececec;
+  flex:none;
+  box-sizing:border-box;
+}
+.a-back{
+  position:absolute;left:10px;top:14px;
+  width:26px;height:26px;
+  border:none;background:transparent;color:#1a1a1a;
+  font-size:18px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  padding:0 0 2px;font-family:inherit;cursor:pointer;opacity:.4;
+}
+.a-back:active{opacity:1}
+.a-title{
+  font-size:11px;font-weight:400;letter-spacing:6px;
+  text-align:center;color:#999;
+  -webkit-font-smoothing:antialiased;
+  text-indent:6px;
+}
+.a-act{
+  position:absolute;right:10px;top:14px;
+  width:26px;height:26px;
+  border:none;background:transparent;color:#1a1a1a;
+  font-size:16px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  padding:0;cursor:pointer;font-family:inherit;opacity:.4;
+}
+.a-act:active{opacity:1}
 .cl-top-row{display:block;flex:1 1 100%;position:relative;width:100%;height:34px;margin-bottom:0}
 .cl-back{position:absolute;left:0;top:-20;width:34px;height:34px;border:none;background:transparent;color:#1a1a1a;font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 0 4px;font-family:inherit;box-shadow:none;opacity:.5;transition:opacity .18s ease;border-radius:0;z-index:2}
 .cl-back:active{opacity:1}
@@ -4581,48 +4612,7 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 .chk-row .nm{flex:1;font-size:12.5px;color:var(--th-text)}
 
 /* ===== 确认删除弹窗 · 和清空聊天记录同款 ===== */
-.confirm-clear-sheet{
-  position:relative;z-index:1;
-  width:100%;max-width:300px;
-  background:#ffffff;
-  border-radius:16px;
-  box-shadow:0 2px 14px rgba(0,0,0,.05);
-  padding:24px 22px 20px;
-  text-align:center;
-  animation:pop .24s cubic-bezier(.22,1,.36,1);
-}
-.confirm-clear-sheet .cc-ic{
-  width:44px;height:44px;border-radius:12px;
-  background:#f7f7f7;
-  display:flex;align-items:center;justify-content:center;
-  margin:0 auto 16px;
-}
-.confirm-clear-sheet .cc-ic svg{
-  width:20px;height:20px;
-  stroke:#1a1a1a;fill:none;stroke-width:1.3;
-  stroke-linecap:round;stroke-linejoin:round;
-}
-.confirm-clear-sheet .cc-tt{
-  font-size:15px;font-weight:400;letter-spacing:3px;
-  color:#1a1a1a;text-indent:3px;
-}
-.confirm-clear-sheet .cc-sb{
-  font-size:12px;color:#999;line-height:1.75;letter-spacing:.5px;
-  margin-top:12px;font-weight:300;
-}
-.confirm-clear-sheet .cc-sb b{color:#1a1a1a;font-weight:400}
-.confirm-clear-sheet .cc-acts{display:flex;gap:10px;margin-top:26px}
-.confirm-clear-sheet .cc-acts button{
-  flex:1;padding:12px 0;border-radius:10px;
-  font-size:13px;font-family:inherit;letter-spacing:2px;text-indent:2px;
-  cursor:pointer;border:none;font-weight:300;
-}
-.confirm-clear-sheet .cc-cancel{
-  background:transparent;border:0.7px solid rgba(0,0,0,.12);color:#999;
-}
-.confirm-clear-sheet .cc-ok{
-  background:#1a1a1a;color:#fff;font-weight:400;
-}
+ 
 /* ===== 删除好友弹窗 · 方案3 头像横向版 ===== */
 .del-dlg{position:relative;z-index:1;width:100%;max-width:340px;background:#ffffff !important;border:0.7px solid rgba(0,0,0,.08) !important;border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.18);padding:22px 20px 16px;text-align:left;animation:pop .28s cubic-bezier(.22,1,.36,1);box-sizing:border-box}
 
@@ -4663,7 +4653,8 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 #mConfirmClear{z-index:2000;background:var(--mask-bg) !important}
 #mConfirmClear .overlay{backdrop-filter:var(--mask-blur);-webkit-backdrop-filter:var(--mask-blur)}
 #mConfirmClear .overlay{background:transparent !important}
-#mConfirmClear .confirm-clear-sheet{
+/* 纯文字确认弹窗 · 全站唯一外壳（清空聊天记录 / 删除收藏 / 回收站共用） */
+.confirm-clear-sheet{
   position:relative;z-index:1;
   width:100%;max-width:300px;
   background:#ffffff;
@@ -4673,47 +4664,49 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
   text-align:center;
   animation:pop .24s cubic-bezier(.22,1,.36,1);
 }
-#mConfirmClear .cc-ic{
+/* 纯文字确认弹窗 · 内部元素（cc-ic / cc-tt / cc-sb / cc-acts）全站共用 */
+.confirm-clear-sheet .cc-ic{
   width:44px;height:44px;border-radius:12px;
   background:#f7f7f7;
   display:flex;align-items:center;justify-content:center;
   margin:0 auto 16px;
 }
-#mConfirmClear .cc-ic svg{
+.confirm-clear-sheet .cc-ic svg{
   width:20px;height:20px;
   stroke:#1a1a1a;fill:none;stroke-width:1.3;
   stroke-linecap:round;stroke-linejoin:round;
 }
-#mConfirmClear .cc-tt{
+.confirm-clear-sheet .cc-tt{
   font-size:15px;font-weight:400;letter-spacing:3px;
   color:#1a1a1a;text-indent:3px;
 }
-#mConfirmClear .cc-sb{
+.confirm-clear-sheet .cc-sb{
   font-size:12px;color:#999;line-height:1.75;letter-spacing:.5px;
   margin-top:12px;font-weight:300;
 }
-#mConfirmClear .cc-sb b{color:#1a1a1a;font-weight:400}
-#mConfirmClear .cc-acts{display:flex;gap:10px;margin-top:26px}
-#mConfirmClear .cc-acts button{
+.confirm-clear-sheet .cc-sb b{color:#1a1a1a;font-weight:400}
+.confirm-clear-sheet .cc-acts{display:flex;gap:10px;margin-top:26px}
+.confirm-clear-sheet .cc-acts button{
   flex:1;padding:12px 0;border-radius:10px;
   font-size:13px;font-family:inherit;letter-spacing:2px;text-indent:2px;
   cursor:pointer;border:none;font-weight:300;
 }
-#mConfirmClear .cc-cancel{
+.confirm-clear-sheet .cc-cancel{
   background:transparent;border:0.7px solid rgba(0,0,0,.12);color:#999;
 }
-#mConfirmClear .cc-ok{
+.confirm-clear-sheet .cc-ok{
   background:#1a1a1a;color:#fff;font-weight:400;
 }
-.confirm-sheet .ic{width:52px;height:52px;border-radius:50%;margin:0 auto 14px;background:var(--th-accent-soft-2);border:1.5px solid var(--th-accent-line);display:flex;align-items:center;justify-content:center}
-.confirm-sheet .ic svg{width:24px;height:24px;stroke:var(--th-accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.confirm-sheet .tt{font-size:16px;font-weight:700;color:var(--th-text);margin-bottom:8px}
-.confirm-sheet .sb{font-size:12.5px;color:var(--th-text-soft);line-height:1.7;margin-bottom:18px}
-.confirm-sheet .sb b{color:var(--th-accent);font-weight:700}
-.confirm-sheet .acts{display:flex;gap:10px}
-.confirm-sheet .acts button{flex:1;padding:12px 0;border-radius:12px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:700;letter-spacing:1.5px}
-.confirm-sheet .acts .cancel-btn{border:1.5px solid var(--th-accent-line);background:transparent;color:var(--th-accent)}
-.confirm-sheet .acts .ok-btn{border:none;background:var(--th-accent);color:#fff}
+/* 删除分组确认框 · 对齐通用确认外壳 */
+.confirm-sheet .ic{width:44px;height:44px;border-radius:12px;margin:0 auto 16px;background:#f7f7f7;border:none;display:flex;align-items:center;justify-content:center}
+.confirm-sheet .ic svg{width:20px;height:20px;stroke:#1a1a1a;fill:none;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.confirm-sheet .tt{font-size:15px;font-weight:400;letter-spacing:3px;text-indent:3px;color:#1a1a1a;margin-bottom:0}
+.confirm-sheet .sb{font-size:12px;color:#999;line-height:1.75;letter-spacing:.5px;margin-top:12px;margin-bottom:0;font-weight:300}
+.confirm-sheet .sb b{color:#1a1a1a;font-weight:400}
+.confirm-sheet .acts{display:flex;gap:10px;margin-top:26px}
+.confirm-sheet .acts button{flex:1;padding:12px 0;border-radius:10px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:300;letter-spacing:2px;text-indent:2px}
+.confirm-sheet .acts .cancel-btn{border:0.7px solid rgba(0,0,0,.12);background:transparent;color:#999}
+.confirm-sheet .acts .ok-btn{border:none;background:#1a1a1a;color:#fff;font-weight:400}
 
 .field-count{display:flex;justify-content:space-between;font-size:11px;color:var(--th-text-mute);margin-top:5px}
 .field-count b{color:var(--th-accent);font-family:Georgia,serif}
@@ -5255,13 +5248,13 @@ body.sel-mode-on .cd-tab .cd-tab-del{display:flex}
 }
 .cip-confirm-mask.show{display:flex}
 .cip-confirm-sheet{
-  width:100%;max-width:320px;
+  width:100%;max-width:300px;
   background:#ffffff;
-  border-radius:18px;
-  border:0.7px solid #e0e0e0;
-  box-shadow:0 12px 40px rgba(0,0,0,.18);
-  padding:22px 20px 16px;
-  animation:cipConfirmPop .22s cubic-bezier(.22,1,.36,1);
+  border-radius:16px;
+  box-shadow:0 2px 14px rgba(0,0,0,.05);
+  padding:24px 22px 20px;
+  text-align:center;
+  animation:pop .24s cubic-bezier(.22,1,.36,1);
 }
 @keyframes cipConfirmPop{
   from{opacity:0;transform:scale(.92) translateY(8px)}
@@ -7868,7 +7861,7 @@ body[data-bubble="custom"] .preview-bubble{
 
 /* ===== 收藏页 ===== */
 #collectScreen{
-  background:#ffffff;
+  background:#f7f7f7;
   flex-direction:column;
   z-index:100;
 }
@@ -7877,23 +7870,27 @@ body[data-bubble="custom"] .preview-bubble{
   -webkit-overflow-scrolling:touch;
 }
 .col-body{
-  display:flex;
-  flex-direction:column;
+  display:block;
   padding:0 16px 40px;
   background:#f7f7f7;
 }
 .col-item{
   background:#fff;
   border-radius:12px;
-  padding:14px;
   margin-bottom:12px;
   box-shadow:0 1px 6px rgba(0,0,0,.02);
   position:relative;
   display:flex;
-  gap:10px;
-  align-items:flex-start;
+  flex-direction:column;
+  overflow:hidden !important;
 }
 .col-item.press{background:#fafafa}
+.col-item-top{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  padding:14px 14px 0 14px;
+}
 .col-item .col-av{
   width:28px;
   height:28px;
@@ -7902,11 +7899,15 @@ body[data-bubble="custom"] .preview-bubble{
   overflow:hidden;
   position:relative;
   margin-top:1px;
+  border-radius:8px;
 }
 .col-item .col-av svg{position:absolute;inset:0;width:100%;height:100%}
 .col-item .col-av .silhouette{fill:#d4d4d4}
 .col-item .col-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0.85}
-.col-item .col-main{flex:1;min-width:0;}
+.col-item .col-main{
+  flex:1;
+  min-width:0;
+}
 .col-item .col-txt{
   font-size:12.5px;
   color:#333;
@@ -7916,13 +7917,67 @@ body[data-bubble="custom"] .preview-bubble{
   white-space:pre-wrap;
   font-weight:300;
 }
-.col-item .col-meta{
+.col-item .col-meta-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:8px;
+  padding-bottom:14px;
+  flex-wrap:wrap;
+}
+.col-item .col-group-tag{
+  background:#f5f5f5;
+  color:#888;
+  font-size:10px;
+  padding:1px 6px;
+  border-radius:10px;
+  letter-spacing:.3px;
+  white-space:nowrap;
+}
+.col-item .col-time{
   font-size:9.5px;
   color:#c8c8c8;
   font-family:Georgia,serif;
-  letter-spacing:.5px;
+  letter-spacing:.3px;
   font-weight:300;
+  white-space:nowrap;
 }
+.col-item .col-acts{
+  margin-left:auto;
+  display:flex;
+  flex-direction:row;
+  gap:12px;
+  align-items:center;
+}
+.col-item .col-act-btn{
+  width:auto;
+  height:auto;
+  border:none;
+  background:transparent;
+  color:#bbb;
+  padding:0;
+  border-radius:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:color .18s ease;
+  touch-action:manipulation;
+}
+.col-item .col-act-btn svg{
+  width:13px;
+  height:13px;
+  stroke:currentColor;
+  fill:none;
+  stroke-width:1.5;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  pointer-events:none;
+  display:block;
+}
+.col-item .col-act-btn:active{color:#1a1a1a}
+.col-item .col-act-btn.col-del{color:#bbb}
+.col-item .col-act-btn.col-del:active{color:#1a1a1a}
 
 
 /* ===== 收藏页 · 右上角「…」按钮 ===== */
@@ -8306,21 +8361,30 @@ body[data-bubble="custom"] .preview-bubble{
 }
 .cmt-collapsed:active svg{stroke:#1a1a1a}
 
-/* ===== 评论区（方案 C · 全宽铺满） ===== */
-.cmt-a{
-  margin-top:6px;
-  margin-left:-50px;
-  padding-top:6px;
-  border-top:0.6px solid rgba(0,0,0,.05);
+/* ===== 评论区 · 方案 A 通铺灰底 ===== */
+.col-item .cmt-a{
+  margin-top:10px !important;
+  margin-left:-14px !important;
+  margin-right:-14px !important;
+  margin-bottom:-14px !important;
+  padding:8px 14px !important;
+  background:#fafafa !important;
+  border-bottom-left-radius:12px !important;
+  border-bottom-right-radius:12px !important;
 }
-.col-item{overflow:visible !important}
+.col-item{
+  overflow:hidden !important;
+  padding-bottom:0 !important;
+}
 
 .cmt-a .cmt-empty{
-  font-size:11px;
-  color:#c8c8c8;
+  font-size:10.5px;
+  color:#d0d0d0;
   padding:0;
   letter-spacing:.5px;
   font-weight:300;
+  margin-bottom:6px;
+  line-height:1.6;
 }
 .cmt-a .cmt-row{
   font-size:12px;
@@ -8350,8 +8414,8 @@ body[data-bubble="custom"] .preview-bubble{
 .cmt-a .cmt-open{
   display:inline-block;
   margin-top:4px;
-  font-size:11px;
-  color:#999;
+  font-size:11.5px;
+  color:#bbb;
   letter-spacing:.5px;
   font-weight:300;
   cursor:pointer;
@@ -8472,7 +8536,7 @@ body[data-bubble="custom"] .preview-bubble{
 }
 /* 卡片不能 overflow:hidden，否则负边距会被裁掉。
    这里加一条兜底规则，确保收藏卡片允许溢出 */
-.col-item{overflow:visible !important}
+ 
 
 /* 空状态 */
 .cmt-a .cmt-empty{
@@ -8610,22 +8674,10 @@ body[data-bubble="custom"] .preview-bubble{
 .col-item .col-sticker{
   margin:2px 0;
 }
-
-/* ===== 收藏页 · 右侧常驻按钮 · 方案A 极简线条 ===== */
-/* ★ 移除了原本给右侧按钮留的 88px 内边距，这样正文就能铺满 */
 .col-item{
   position:relative;
-  /* 这里原先是 padding-right:88px，现在删了，因为按钮去底部了 */
 }
-/* ★ 底部操作按钮：不用绝对定位，靠 margin-left 推到最右边 */
-.col-act-wrap{
-  display:flex !important;
-  flex-direction:row !important;
-  flex-wrap:nowrap !important;
-  gap:12px;
-  align-items:center;
-  margin-left:auto;
-}
+ 
 .col-act-btn{
   width:32px;
   height:32px;
@@ -8642,11 +8694,6 @@ body[data-bubble="custom"] .preview-bubble{
   justify-content:center;
   transition:color .18s ease, background .18s ease;
   touch-action:manipulation;
-}
-.col-act-btn svg{
-  width:14px;
-  height:14px;
-  pointer-events:none;
 }
 .col-act-btn svg{
   width:13px;
@@ -8685,7 +8732,7 @@ body[data-bubble="custom"] .preview-bubble{
   line-height:18px;
   text-align:center;
 }
-.col-item.sel-mode .col-act-wrap{display:none}
+ 
 .col-item.sel-mode .col-note{pointer-events:none}
 
 /* 多选工具条：默认隐藏，进入多选时显示 */
@@ -8694,8 +8741,7 @@ body[data-bubble="custom"] .preview-bubble{
 
 /* 我的收藏：✕ 已改为常驻按钮，干掉旧的 hover 逻辑 */
 .col-item .col-del{opacity:1 !important;transform:none !important;pointer-events:auto !important}
-/* 消息长按菜单里的「收藏」项 */
-.msg-menu .it.collect-item{color:#1a1a1a;font-weight:600}
+ 
 /* ===== 拍一拍 ===== */
 .pat-notice{
   width:100%;
@@ -10676,27 +10722,19 @@ window.__APP_VERSION__ = '0.1.0';
 </div>
 
 <div class="screen" id="cardLibScreen">
-  <div class="cl-top">
-	<div class="cl-top-row">
-	  <button class="cl-back" id="clBack" type="button">‹</button>
-	  <div class="cl-title">字 卡</div>
-	</div>
+  <div class="a-top">
+    <button class="a-back" id="clBack" type="button">‹</button>
+    <div class="a-title">字 卡</div>
   </div>
   <div class="owner-chips" id="ownerChips"></div>
   <div class="group-list" id="groupList"></div>
 </div>
 
 <div class="screen" id="cardDetailScreen">
-  <div class="cl-top">
-	<div class="cl-top-row cl-top-row-detail">
-	  <button class="cl-back" id="cdBack" type="button">‹</button>
-	  <div class="cl-spacer"></div>
-	  <button class="cd-more" id="cdMore" type="button">⋯</button>
-	</div>
-	<div class="cl-big-title" id="cdTitleWrap">
-	  <div class="cn" id="cdTitle">字卡</div>
-	  <div class="en">DYNAMIC CARDS</div>
-	</div>
+  <div class="a-top">
+    <button class="a-back" id="cdBack" type="button">‹</button>
+    <div class="a-title" id="cdTitle">字卡</div>
+    <button class="a-act" id="cdMore" type="button">⋯</button>
   </div>
   <div class="sel-bar" id="selBar">
 	<div class="sel-count" id="selCountWrap">已选 <b id="selCount">0</b> 条</div>
@@ -10735,12 +10773,10 @@ window.__APP_VERSION__ = '0.1.0';
 </div>
 
 <div class="screen" id="moodScreen">
-  <div class="cl-top">
-	<div class="cl-top-row">
-	  <button class="cl-back" id="moodBack" type="button">‹</button>
-	  <div class="cl-title">心 情 字 卡</div>
-	  <button class="cd-more" id="moodSettingsBtn" type="button">⚙</button>
-	</div>
+  <div class="a-top">
+    <button class="a-back" id="moodBack" type="button">‹</button>
+    <div class="a-title">心 情 字 卡</div>
+    <button class="a-act" id="moodSettingsBtn" type="button">⚙</button>
   </div>
   <div class="mood-preview">
 	<div class="mp-av-wrap">
@@ -10853,10 +10889,9 @@ window.__APP_VERSION__ = '0.1.0';
 </div>
 <div class="screen" id="memoScreen">
   <div class="memo-wrap">
-    <div class="memo-top">
-      <button class="memo-back" id="memoBack" type="button">‹</button>
-      <div class="memo-title">备 忘</div>
-      <div class="memo-top-right"></div>
+    <div class="a-top">
+      <button class="a-back" id="memoBack" type="button">‹</button>
+      <div class="a-title">备 忘</div>
     </div>
 
     <div class="memo-tabs">
@@ -10890,10 +10925,10 @@ window.__APP_VERSION__ = '0.1.0';
 
 <div class="screen" id="behaviorScreen">
   <div class="behavior-wrap">
-	<div class="bh-top">
-	  <button class="bh-back" id="bhBack" type="button">‹</button>
-	  <div class="bh-title">角 色 行 为</div>
-	  <button class="bh-set" id="bhSet" type="button">⚙</button>
+	<div class="a-top">
+	  <button class="a-back" id="bhBack" type="button">‹</button>
+	  <div class="a-title">角 色 行 为</div>
+	  <button class="a-act" id="bhSet" type="button">⚙</button>
 	</div>
 	<div class="bh-search">
 	  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--th-accent)" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
@@ -10912,10 +10947,10 @@ window.__APP_VERSION__ = '0.1.0';
 
 <div class="screen" id="relationScreen">
   <div class="rel-wrap">
-	<div class="rel-top">
-	  <button class="rel-back" id="relBack" type="button">‹</button>
-	  <div class="rel-title">关 系 网</div>
-	  <button class="rel-set" id="relSet" type="button">⚙</button>
+	<div class="a-top">
+	  <button class="a-back" id="relBack" type="button">‹</button>
+	  <div class="a-title">关 系 网</div>
+	  <button class="a-act" id="relSet" type="button">⚙</button>
 	</div>
 	<div class="rel-search">
 	  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--th-accent)" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
@@ -11057,7 +11092,7 @@ window.__APP_VERSION__ = '0.1.0';
     <div class="sec-title">NOTICE</div>
     <div class="sec-title-cn">借 鉴 声 明</div>
     <div class="notice">
-      <p>本网站的部分功能（包含但不限于单字字卡、时间段字卡、天气字卡等功能），均为本人构思的设计，虽然做出的时间较晚，但曾在自己的评论区透露出不少灵感。功能本身没有专利，灵感也可能撞车。但不管怎么样，如果借鉴使用我的功能或想法，请标注署名，感谢理解！</p>
+      <p>本网站的部分功能（包含但不限于时间段字卡、天气字卡等功能），均为本人构思的设计，借鉴使用我的功能或想法，请标注署名，感谢理解。</p>
       <p style="font-size:11.5px;color:#bbb;margin-top:18px">联系作者请找：@001（小红书号 27739216821）</p>
     </div>
 
@@ -11103,20 +11138,19 @@ window.__APP_VERSION__ = '0.1.0';
 
 <!-- ============ 群聊列表 ============ -->
 <div class="screen" id="groupListScreen">
-  <div class="gc-top">
-    <button class="gc-back" id="gcBack" type="button">‹</button>
-    <div class="gc-title">群 聊</div>
-    <button class="gc-add" id="gcAdd" type="button">＋</button>
+  <div class="a-top">
+    <button class="a-back" id="gcBack" type="button">‹</button>
+    <div class="a-title">群 聊</div>
+    <button class="a-act" id="gcAdd" type="button">＋</button>
   </div>
   <div class="gc-body" id="gcBody"></div>
 </div>
 
 <!-- ============ 新建群聊 ============ -->
 <div class="screen" id="groupCreateScreen">
-  <div class="gc-top">
-    <button class="gc-back" id="gccBack" type="button">‹</button>
-    <div class="gc-title">新 建 群 聊</div>
-    <div class="gc-add" style="opacity:0;pointer-events:none">＋</div>
+  <div class="a-top">
+    <button class="a-back" id="gccBack" type="button">‹</button>
+    <div class="a-title">新 建 群 聊</div>
   </div>
   <div class="gcc-body">
     <div class="nf-form-row">
@@ -11181,9 +11215,9 @@ window.__APP_VERSION__ = '0.1.0';
 <!-- ============ 群聊详情 ============ -->
 <div class="gchd-mask" id="gchdMask">
   <div class="gchd-sheet">
-    <div class="gchd-head">
-      <div class="gchd-title">群 聊 详 情</div>
-      <button class="gchd-x" id="gchdClose" type="button">✕</button>
+    <div class="a-top" style="border-bottom:0;padding:0 0 16px;">
+      <div class="a-title">群 聊 详 情</div>
+      <button class="a-act" id="gchdClose" type="button">✕</button>
     </div>
     <div class="gchd-body">
       <div class="gchd-row" id="gchdAvatarRow">
@@ -11339,10 +11373,10 @@ window.__APP_VERSION__ = '0.1.0';
 <div class="cat-panel-mask" id="cardTrashMask">
   <div class="trash-desk">
     <div class="trash-desk-inner">
-      <div class="trash-top">
-        <button class="trash-back" id="cardTrashBack" type="button">‹</button>
-        <div class="trash-title">回 收 站</div>
-        <div class="trash-all" id="cardTrashAll">全选</div>
+      <div class="a-top">
+        <button class="a-back" id="cardTrashBack" type="button">‹</button>
+        <div class="a-title">回 收 站</div>
+        <div class="a-act" id="cardTrashAll" style="font-size:12px;width:auto;padding:0 6px;">全选</div>
       </div>
       <div class="trash-list" id="cardTrashList"></div>
     </div>
@@ -12281,10 +12315,9 @@ window.__APP_VERSION__ = '0.1.0';
 
 <div class="screen" id="divineRecordScreen">
   <div class="dr-wrap">
-	<div class="dr-top dr-top-a">
-	  <button class="dr-back dr-back-a" id="drBack" type="button">‹</button>
-	  <div class="dr-title dr-title-a">占 卜 记 录</div>
-	  <div class="dr-top-right"></div>
+	<div class="a-top">
+	  <button class="a-back" id="drBack" type="button">‹</button>
+	  <div class="a-title">占 卜 记 录</div>
 	</div>
 	<div class="dr-search dr-search-line">
 	  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#999" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
@@ -14828,7 +14861,7 @@ function avatarHTML(a){
     inner = `<img src="${a}" style="border-radius:inherit;width:100%;height:100%;object-fit:cover;display:block;">`;
   } else {
     /* 没有头像时，画一个灰色的默认小人，并且跟随方圆设置 */
-    inner = `<svg viewBox="0 0 100 100" style="width:100%;height:100%;display:block;"><circle fill="#e0e0e0" cx="50" cy="38" r="19"/><path fill="#e0e0e0" d="M12 100 C12 74 28 62 50 62 C72 62 88 74 88 100 Z"/></svg>`;
+    inner = `<svg viewBox="0 0 100 100" style="width:100%;height:100%;display:block;"><circle fill="#d4d4d4" cx="50" cy="38" r="19"/><path fill="#d4d4d4" d="M12 100 C12 74 28 62 50 62 C72 62 88 74 88 100 Z"/></svg>`;
   }
   
   return `<div style="width:100%;height:100%;border-radius:${shape};background:#f2f2f2;overflow:hidden;display:flex;align-items:center;justify-content:center;">${inner}</div>`;
@@ -16309,7 +16342,7 @@ function renderCollectScreen(tab){
 
     const groupText = it.group ? String(it.group).trim() : '';
     const groupLine = groupText
-      ? ('<div class="col-group-tag" data-group-tag="' + it.id + '">分组：' + escapeHTML(groupText) + '</div>')
+      ? ('<div class="col-group-tag" data-group-tag="' + it.id + '">' + escapeHTML(groupText) + '</div>')
       : '';
 
     const iconShare =
@@ -16330,16 +16363,14 @@ function renderCollectScreen(tab){
       '</svg>';
 
     const actBtns =
-      '<div class="col-act-wrap">' +
-        '<button class="col-act-btn col-share" data-share="' + it.id + '" type="button" title="分享">' + iconShare + '</button>' +
-        '<button class="col-act-btn col-note-btn" data-note-btn="' + it.id + '" type="button" title="备注">' + iconNote + '</button>' +
-        (tab === 'mine' ? '<button class="col-act-btn col-del" data-del="' + it.id + '" type="button" title="删除">' + iconDel + '</button>' : '') +
-      '</div>';
+      '<button class="col-act-btn col-share" data-share="' + it.id + '" type="button" title="分享">' + iconShare + '</button>' +
+      '<button class="col-act-btn col-note-btn" data-note-btn="' + it.id + '" type="button" title="备注">' + iconNote + '</button>' +
+      (tab === 'mine' ? '<button class="col-act-btn col-del" data-del="' + it.id + '" type="button" title="删除">' + iconDel + '</button>' : '');
 
     let contentHTML = '';
     if(it.kind === 'voice' && it.voiceIdbKey){
       contentHTML =
-        '<div class="col-voice voice-bubble" data-idbkey="' + escapeHTML(it.voiceIdbKey) + '" data-dur="' + (it.voice||0) + '">' +
+        '<div class="col-voice voice-bubble" style="width:180px;margin:0;" data-idbkey="' + escapeHTML(it.voiceIdbKey) + '" data-dur="' + (it.voice||0) + '">' +
           '<div class="vb-play">' +
             '<svg class="icon-play" viewBox="0 0 12 12"><path d="M3 1.5 L10 6 L3 10.5 Z"/></svg>' +
             '<svg class="icon-pause" viewBox="0 0 12 12"><rect x="3" y="2" width="2.5" height="8" rx="1"/><rect x="6.5" y="2" width="2.5" height="8" rx="1"/></svg>' +
@@ -16348,23 +16379,33 @@ function renderCollectScreen(tab){
           '<span class="vb-dur">' + (it.voice||0) + '"</span>' +
         '</div>';
     } else if(it.kind === 'sticker' && it.sticker){
-      contentHTML = '<div class="col-sticker"><img src="' + it.sticker + '" style="max-width:120px;border-radius:10px;display:block"></div>';
+      contentHTML = '<div class="col-sticker" style="display:flex;"><img src="' + it.sticker + '" style="max-width:120px;max-height:120px;border-radius:10px;display:block;object-fit:contain;"></div>';
     } else {
-      contentHTML = '<div class="col-txt">' + escapeHTML(it.text) + '</div>';
+      /* ★ 核心修复：如果是纯文字或图片被渲染成文字，统一包一层，防撑破 */
+      let rawTxt = it.text || '';
+      if(rawTxt === '[图片]' || rawTxt === '......' || /^\.+$/.test(rawTxt)) {
+         contentHTML = '<div class="col-txt" style="word-break:break-all;">' + escapeHTML(rawTxt) + '</div>';
+      } else {
+         contentHTML = '<div class="col-txt">' + escapeHTML(rawTxt) + '</div>';
+      }
     }
 
     const commentsHTML = renderCollectCommentsHTML(it, tab);
 
     return '<div class="col-item" data-id="' + it.id + '">' +
-      '<div class="col-av" style="border-radius:' + avRadius + '">' + avHTML + '</div>' +
-      '<div class="col-main">' +
-        contentHTML +
-        noteLine +
-        groupLine +
-        '<div class="col-meta">' + escapeHTML(stamp) + '</div>' +
-        commentsHTML +
+      '<div class="col-item-top" style="margin-bottom:14px;">' +
+        '<div class="col-av" style="border-radius:' + avRadius + '">' + avHTML + '</div>' +
+        '<div class="col-main">' +
+          contentHTML +
+          noteLine +
+          '<div class="col-meta-row">' +
+            (groupText ? '<span class="col-group-tag">' + escapeHTML(groupText) + '</span>' : '') +
+            '<span class="col-time">' + escapeHTML(stamp) + '</span>' +
+            '<div class="col-acts">' + actBtns + '</div>' +
+          '</div>' +
+        '</div>' +
       '</div>' +
-      '<div class="col-act-wrap">' + actBtns + '</div>' +
+      (commentsHTML ? '<div style="margin:0 -14px -14px -14px">' + commentsHTML + '</div>' : '') +
     '</div>';
   }).join('');
 
@@ -17282,28 +17323,7 @@ function bindColNoteEvents(body, tab){
     };
   });
 
-  /* 长按收藏行 → 出现分享按钮（仅“我的收藏”） */
-  if(tab === 'mine'){
-    body.querySelectorAll('.col-item').forEach(function(item){
-      const id = item.dataset.id;
-
-      /* 动态加一个分享按钮（只在长按后显示） */
-      if(!item.querySelector('.col-share')){
-        const btn = document.createElement('button');
-        btn.className = 'col-share';
-        btn.type = 'button';
-        btn.textContent = '↗';
-        btn.dataset.share = id;
-        item.appendChild(btn);
-      }
-
-      const shareBtn = item.querySelector('.col-share');
-      shareBtn.onclick = function(e){
-        e.stopPropagation();
-        shareCollectItem(id);
-      };
-    });
-  }
+  /* 旧版分享按钮已废弃，由新样式接管 */
 }
 
 /* ===== 收藏页 · 分享一条收藏（含备注） ===== */
@@ -18257,7 +18277,7 @@ function sendMessage(){
 	  const src = inp.dataset.stickerSrc || '';
 	  inp.value = ''; inp.style.height = 'auto';
 	  delete inp.dataset.stickerSrc;
-	  closeAllDrawers();
+	  closeAllThings('drawer');
 	  if(src){
 	    dispatchUserMsg({ id: uid(), role: 'user', sticker: src, time: Date.now() });
 	  }
@@ -20247,9 +20267,9 @@ function applyMoodUI(){
 
 let contentOpen=false, funcOpen=false;
 function closeAllDrawers(){ contentOpen=false; funcOpen=false; $('#drawerContent').classList.remove('open'); $('#drawerFunc').classList.remove('open'); }
-on('#smileBtn','click',e=>{ e.stopPropagation(); const was=contentOpen; closeAllDrawers(); if(was) return; contentOpen=true; $('#drawerContent').classList.add('open'); renderEmojiDrawer(); });
+on('#smileBtn','click',e=>{ e.stopPropagation(); const was=contentOpen; closeAllThings('drawer'); if(was) return; contentOpen=true; $('#drawerContent').classList.add('open'); renderEmojiDrawer(); });
 on('#chatInput','click',()=>{ if(contentOpen || funcOpen) closeAllDrawers(); });
-on('#plusBtn','click',e=>{ e.stopPropagation(); const was=funcOpen; closeAllDrawers(); if(was) return; funcOpen=true; $('#drawerFunc').classList.add('open'); });
+on('#plusBtn','click',e=>{ e.stopPropagation(); const was=funcOpen; closeAllThings('drawer'); if(was) return; funcOpen=true; $('#drawerFunc').classList.add('open'); });
 $$('.d-tab').forEach(t=>{ t.addEventListener('click',e=>{ e.stopPropagation(); $$('.d-tab').forEach(x=>x.classList.remove('on')); t.classList.add('on'); currentTab=t.dataset.tab; pendingDelete=null; renderDrawer(); }); });
 /* ============================================================
    ★ 抽屉 → 美化（聊天气泡）修复
@@ -20269,7 +20289,7 @@ $$('.func-item').forEach(item=>{ item.addEventListener('click',e=>{
   e.stopPropagation();
   const fn = item.dataset.func;
   if(fn === 'reply'){
-    closeAllDrawers();
+    closeAllThings('drawer');
     setTimeout(openReplySettings, 200);
   } else if(fn === 'beauty'){
     /* ★ 抽屉里点「美化」要进气泡设置页，之前第一次点没反应是因为：
@@ -20308,31 +20328,31 @@ $$('.func-item').forEach(item=>{ item.addEventListener('click',e=>{
       });
     });
   } else if(fn === 'divine'){
-    closeAllDrawers();
+    closeAllThings('drawer');
     setTimeout(openDivine, 200);
   } else if(fn === 'choice'){
-    closeAllDrawers();
+    closeAllThings('drawer');
     setTimeout(openChoice, 200);
   } else if(fn === 'card'){
-    closeAllDrawers();
+    closeAllThings('drawer');
     setTimeout(openCardPicker, 200);
   } else if(fn === 'voicecall'){
-    closeAllDrawers();
+    closeAllThings('drawer');
     setTimeout(function(){
       if(typeof userCall === 'function'){ userCall('voice'); }
       else { toast('通话模块还没加载好'); }
     }, 200);
   } else if(fn === 'videocall'){
-    closeAllDrawers();
+    closeAllThings('drawer');
     setTimeout(function(){
       if(typeof userCall === 'function'){ userCall('video'); }
       else { toast('通话模块还没加载好'); }
     }, 200);
   } else if(fn === 'quiz'){
-    closeAllDrawers();
+    closeAllThings('drawer');
     setTimeout(openQuizPick, 200);
   } else if(fn === 'uploadimg'){
-    closeAllDrawers();
+    closeAllThings('drawer');
     setTimeout(function(){
       var picker = document.getElementById('chatImagePicker');
       if(picker){ picker.value = ''; picker.click(); }
@@ -30936,6 +30956,38 @@ function closeAllOverlays(){
   $$('.chat-info-panel').forEach(m=>m.classList.remove('show'));
 }
 
+/* ============================================================
+   关东西 · 总门
+   以后所有“关掉浮层 / 抽屉 / 菜单 / 弹窗”都走这一个函数。
+   kind 参数：
+     'drawer'  只关抽屉（表情抽屉、加号抽屉）
+     'menu'    只关右键小菜单
+     'overlay' 只关浮层（弹窗、全屏二级页之外的临时层）
+     'all'     全关（默认）
+   ============================================================ */
+function closeAllThings(kind){
+  const k = kind || 'all';
+
+  if(k === 'all' || k === 'menu'){
+    const menu = document.getElementById('msgMenu');
+    if(menu) menu.classList.remove('show');
+    curMsgMenu = null;
+  }
+
+  if(k === 'all' || k === 'drawer'){
+    const dc = document.getElementById('drawerContent');
+    const df = document.getElementById('drawerFunc');
+    if(dc) dc.classList.remove('open');
+    if(df) df.classList.remove('open');
+    contentOpen = false;
+    funcOpen = false;
+  }
+
+  if(k === 'all' || k === 'overlay'){
+    closeAllOverlays();
+  }
+}
+
 function showScreen(id){
   closeAllOverlays();
   $$('.screen').forEach(s=>s.classList.toggle('on', s.id===id));
@@ -32136,19 +32188,18 @@ on('#cardTrashDelete','click',()=>{
   const ids = getTrashChecked();
   if(!ids.length){ toast('请先选择要删除的字卡'); return; }
 
-  /* 自建一次性确认层，样式和站内「清空聊天记录」完全一致 */
+  /* 统一用站内纯文字确认外壳 */
   const layer = document.createElement('div');
-  layer.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px';
+  layer.className = 'modal show';
   layer.innerHTML =
-    '<div style="width:100%;max-width:300px;background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.05);padding:24px 22px 20px;text-align:center">' +
-      '<div style="width:44px;height:44px;border-radius:12px;background:#f7f7f7;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">' +
-        '<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:#1a1a1a;fill:none;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg>' +
-      '</div>' +
-      '<div style="font-size:15px;font-weight:400;letter-spacing:3px;color:#1a1a1a;text-indent:3px">确认删除？</div>' +
-      '<div style="font-size:12px;color:#999;line-height:1.75;letter-spacing:.5px;margin-top:12px;font-weight:300">将彻底删除 <b style="color:#1a1a1a;font-weight:400">' + ids.length + '</b> 条字卡。<br>删除后无法恢复。</div>' +
-      '<div style="display:flex;gap:10px;margin-top:26px">' +
-        '<button data-cancel type="button" style="flex:1;padding:12px 0;border-radius:10px;font-size:13px;font-family:inherit;letter-spacing:2px;text-indent:2px;cursor:pointer;background:transparent;border:0.7px solid rgba(0,0,0,.12);color:#999;font-weight:300">取 消</button>' +
-        '<button data-ok type="button" style="flex:1;padding:12px 0;border-radius:10px;font-size:13px;font-family:inherit;letter-spacing:2px;text-indent:2px;cursor:pointer;background:#1a1a1a;color:#fff;border:none;font-weight:400">删 除</button>' +
+    '<div class="overlay"></div>' +
+    '<div class="confirm-clear-sheet">' +
+      '<div class="cc-ic"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg></div>' +
+      '<div class="cc-tt">确认删除？</div>' +
+      '<div class="cc-sb">将彻底删除 <b>' + ids.length + '</b> 条字卡。<br>删除后无法恢复。</div>' +
+      '<div class="cc-acts">' +
+        '<button class="cc-cancel" data-cancel type="button">取 消</button>' +
+        '<button class="cc-ok" data-ok type="button">删 除</button>' +
       '</div>' +
     '</div>';
   document.body.appendChild(layer);
@@ -32171,19 +32222,18 @@ on('#cardTrashClear','click',()=>{
   const arr = getCardTrash();
   if(!arr.length){ toast('回收站已经是空的'); return; }
 
-  /* 自建一次性确认层，样式和站内「清空聊天记录」一致 */
+  /* 统一用站内纯文字确认外壳 */
   const layer = document.createElement('div');
-  layer.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px';
+  layer.className = 'modal show';
   layer.innerHTML =
-    '<div style="width:100%;max-width:300px;background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.05);padding:24px 22px 20px;text-align:center">' +
-      '<div style="width:44px;height:44px;border-radius:12px;background:#f7f7f7;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">' +
-        '<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:#1a1a1a;fill:none;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg>' +
-      '</div>' +
-      '<div style="font-size:15px;font-weight:400;letter-spacing:3px;color:#1a1a1a;text-indent:3px">确认清空？</div>' +
-      '<div style="font-size:12px;color:#999;line-height:1.75;letter-spacing:.5px;margin-top:12px;font-weight:300">将清空回收站中的 <b style="color:#1a1a1a;font-weight:400">' + arr.length + '</b> 条字卡。<br>全部彻底删除，无法恢复。</div>' +
-      '<div style="display:flex;gap:10px;margin-top:26px">' +
-        '<button data-cancel type="button" style="flex:1;padding:12px 0;border-radius:10px;font-size:13px;font-family:inherit;letter-spacing:2px;text-indent:2px;cursor:pointer;background:transparent;border:0.7px solid rgba(0,0,0,.12);color:#999;font-weight:300">取 消</button>' +
-        '<button data-ok type="button" style="flex:1;padding:12px 0;border-radius:10px;font-size:13px;font-family:inherit;letter-spacing:2px;text-indent:2px;cursor:pointer;background:#1a1a1a;color:#fff;border:none;font-weight:400">清 空</button>' +
+    '<div class="overlay"></div>' +
+    '<div class="confirm-clear-sheet">' +
+      '<div class="cc-ic"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/></svg></div>' +
+      '<div class="cc-tt">确认清空？</div>' +
+      '<div class="cc-sb">将清空回收站中的 <b>' + arr.length + '</b> 条字卡。<br>全部彻底删除，无法恢复。</div>' +
+      '<div class="cc-acts">' +
+        '<button class="cc-cancel" data-cancel type="button">取 消</button>' +
+        '<button class="cc-ok" data-ok type="button">清 空</button>' +
       '</div>' +
     '</div>';
   document.body.appendChild(layer);
@@ -34027,29 +34077,8 @@ on('#meAvFile','change',function(){
     userProfile.avatar = data;
     saveUser();
     renderMePage();
-    /* ★ 修复：改用户头像后，聊天界面旧消息头像也要跟着刷新
-       根因同角色头像：renderChat 的签名缓存没变，全量重绘被跳过。
-       做法：清签名 + 直调 renderChatFull + 两次延时重绘。 */
-    try{
-      try{ msgs = loadMsgs(); }catch(e){}
-      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
-      if(typeof renderChatFull === 'function'){ renderChatFull(true); }
-      else if(typeof renderChat === 'function'){ renderChat(true); }
-    }catch(e){ console.error('用户头像刷新失败', e); }
-    setTimeout(function(){
-      try{
-        if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
-        if(typeof renderChatFull === 'function'){ renderChatFull(true); }
-        else if(typeof renderChat === 'function'){ renderChat(true); }
-      }catch(e){}
-    }, 60);
-    setTimeout(function(){
-      try{
-        if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
-        if(typeof renderChatFull === 'function'){ renderChatFull(true); }
-        else if(typeof renderChat === 'function'){ renderChat(true); }
-      }catch(e){}
-    }, 200);
+    /* 换用户头像后，统一走公共重绘入口 */
+    forceRepaintChat('换用户头像');
     toast('头像已更新');
   });
 });
@@ -34172,17 +34201,11 @@ function renderFriends(){
   const entry=$('#entryNew'); if(entry) entry.onclick=()=>openNewFriends();
   applyBeautyCfg();
 }
-function refreshChatRole(){
-  const role=getRole();
-  $('#chatName').textContent=displayName(role);
-  $('#chatAvatar').innerHTML=avatarHTML(role.avatar);
-  const mpAv=$('#mpAv'); if(mpAv) mpAv.innerHTML=avatarHTML(role.avatar);
-  const ssAv=$('#splitAvatar'); if(ssAv) ssAv.innerHTML=avatarHTML(role.avatar);
-
-  /* ★ 修复：换头像后聊天列表里的旧头像不刷新
-     根因：renderChat() 里有渲染签名缓存（msg 数量 + 最后一条 id），
-           换头像不改这两个值，就被跳过重建，旧头像一直挂着。
-     做法：清签名缓存 + 直调 renderChatFull 全量重建 + 两次延时重绘兜底。 */
+/* 全站唯一的「重绘聊天列表」入口：
+   先清渲染签名缓存，再从 localStorage 重读 msgs，直调原版 renderChatFull。
+   最后补两次延时重绘，兜住部分安卓内核吃掉第一帧的情况。
+   原来这 4 段一模一样的代码，现在统一走这里。 */
+function forceRepaintChat(reason){
   try{
     try{ msgs = loadMsgs(); }catch(e){}
     if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
@@ -34191,30 +34214,34 @@ function refreshChatRole(){
     } else if(typeof renderChat === 'function'){
       renderChat(true);
     }
-  }catch(e){ console.error('头像刷新失败', e); }
+  }catch(e){ console.error('强制重绘失败(' + (reason||'') + ')', e); }
 
   setTimeout(function(){
     try{
-      try{ msgs = loadMsgs(); }catch(e){}
       if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
-      if(typeof renderChatFull === 'function'){
-        renderChatFull(true);
-      } else if(typeof renderChat === 'function'){
-        renderChat(true);
-      }
+      if(typeof renderChatFull === 'function'){ renderChatFull(true); }
+      else if(typeof renderChat === 'function'){ renderChat(true); }
     }catch(e){}
   }, 60);
 
   setTimeout(function(){
     try{
       if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
-      if(typeof renderChatFull === 'function'){
-        renderChatFull(true);
-      } else if(typeof renderChat === 'function'){
-        renderChat(true);
-      }
+      if(typeof renderChatFull === 'function'){ renderChatFull(true); }
+      else if(typeof renderChat === 'function'){ renderChat(true); }
     }catch(e){}
   }, 200);
+}
+
+function refreshChatRole(){
+  const role=getRole();
+  $('#chatName').textContent=displayName(role);
+  $('#chatAvatar').innerHTML=avatarHTML(role.avatar);
+  const mpAv=$('#mpAv'); if(mpAv) mpAv.innerHTML=avatarHTML(role.avatar);
+  const ssAv=$('#splitAvatar'); if(ssAv) ssAv.innerHTML=avatarHTML(role.avatar);
+
+  /* 换头像 / 改备注后，统一走公共重绘入口 */
+  forceRepaintChat('换头像');
 
   renderFriends();
   // 切角色时重置心情/状态定时器，避免上一个角色的定时器跑到新角色头上
@@ -35047,43 +35074,8 @@ on('#btnSaveEdit','click',()=>{
   /* ★ 先刷新顶部栏 / 名字 / 个人主页这些轻量的地方 */
   refreshChatRole();
 
-  /* ★ 关键修复：改头像后，把聊天列表里「所有已经存在的旧消息」的头像
-     一起刷成新头像。
-     根因：renderChat 有签名缓存（msg 数量 + 最后一条 id 没变就跳过重建），
-           改头像这两个值都没变，所以旧头像一直挂着，要手动刷页面才行。
-     做法：清签名缓存 + 直调 renderChatFull 全量重建，绕过一切缓存。 */
-  try{
-    try{ msgs = loadMsgs(); }catch(e){}
-    if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
-    if(typeof renderChatFull === 'function'){
-      renderChatFull(true);
-    } else if(typeof renderChat === 'function'){
-      renderChat(true);
-    }
-  }catch(e){ console.error('头像刷新失败', e); }
-
-  /* 再补两次延时重绘，双保险（某些安卓内核会吃掉第一帧） */
-  setTimeout(function(){
-    try{
-      try{ msgs = loadMsgs(); }catch(e){}
-      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
-      if(typeof renderChatFull === 'function'){
-        renderChatFull(true);
-      } else if(typeof renderChat === 'function'){
-        renderChat(true);
-      }
-    }catch(e){}
-  }, 60);
-  setTimeout(function(){
-    try{
-      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
-      if(typeof renderChatFull === 'function'){
-        renderChatFull(true);
-      } else if(typeof renderChat === 'function'){
-        renderChat(true);
-      }
-    }catch(e){}
-  }, 200);
+  /* 保存资料后，统一走公共重绘入口 */
+  forceRepaintChat('保存资料');
 
   closeChatInfo();
   toast('已保存');
@@ -35103,12 +35095,21 @@ function openProfileFor(roleId){
   // 状态和心情要读那个角色的
   const bakId = getCurrentRoleId();
   const bakMsgs = msgs;
-  setCurrentRoleId(roleId);
-  msgs = lsGet('mj_msgs_'+roleId, []);
-  applyMoodUI();
-  // 还原
-  setCurrentRoleId(bakId);
-  msgs = bakMsgs;
+  const bakMoodState = (function(){
+    try{
+      const m = lsGet('mj_mood_state_v1', null);
+      return (m && typeof m === 'object') ? m[roleId] : null;
+    }catch(e){ return null; }
+  })();
+  if(bakMoodState){
+    const msEl = document.getElementById('profileMood');
+    const stEl = document.getElementById('profileStatus');
+    if(msEl) msEl.textContent = bakMoodState.mood || '';
+    if(stEl){
+      const st = parseStatusEmoji(bakMoodState.status || '');
+      stEl.textContent = st.text;
+    }
+  }
   renderProfileTags(roleId);
   /* ★ 特别关心已移除，这一行删掉 */
   const _pinEl = $('#profilePin');
@@ -35176,9 +35177,9 @@ on('#splitAvatar','click',openProfile);
 $$('#splitSide .ss-ico').forEach(el=>{
   el.addEventListener('click', ()=>{
 	const act = el.dataset.act;
-	if(act==='smile'){ closeAllDrawers(); contentOpen=true; $('#drawerContent').classList.add('open'); renderEmojiDrawer(); }
-	else if(act==='divine'){ closeAllDrawers(); setTimeout(openDivine,200); }
-	else if(act==='beauty'){ closeAllDrawers(); setTimeout(()=>openBeauty('bubble'),200); }
+	if(act==='smile'){ closeAllThings('drawer'); contentOpen=true; $('#drawerContent').classList.add('open'); renderEmojiDrawer(); }
+	else if(act==='divine'){ closeAllThings('drawer'); setTimeout(openDivine,200); }
+	else if(act==='beauty'){ closeAllThings('drawer'); setTimeout(()=>openBeauty('bubble'),200); }
 	else if(act==='moments'){ if(typeof window.openMoments === 'function') window.openMoments(); }
   });
 });
@@ -35542,12 +35543,12 @@ $$('.modal, .rd-modal').forEach(m=>{ m.querySelectorAll('[data-close]').forEach(
 	  chatInput.addEventListener('click', function(){
 		chatInput.focus();
 		setTimeout(function(){ if(document.activeElement !== chatInput){ chatInput.focus(); } }, 80);
-		if(contentOpen || funcOpen) closeAllDrawers();
+		if(contentOpen || funcOpen) closeAllThings('drawer');
 	  });
 	  chatInput.addEventListener('touchstart', function(){
 		chatInput.focus();
 		setTimeout(function(){ if(document.activeElement !== chatInput){ chatInput.focus(); } }, 80);
-		if(contentOpen || funcOpen) closeAllDrawers();
+		if(contentOpen || funcOpen) closeAllThings('drawer');
 	  }, {passive:true});
 
 	  /* 点表情 / 加号 / 麦克风时，让输入框主动失焦一次，
@@ -36644,41 +36645,8 @@ function syncRoleNameEverywhere(){
     else if(typeof renderChat === 'function'){ renderChat(true); }
   }catch(err){ console.error('备注同步重绘失败', err); }
 
-  /* ★ 修复：改头像后，聊天界面里所有旧消息的气泡头像也要立刻刷新
-     根因：renderChat 有渲染签名缓存（条数 + 最后一条 id 没变就不重建），
-           只改头像不改变这两个值，所以旧头像一直挂着，必须手动刷新页面才变。
-     做法：清签名缓存 + 直调原版 renderChatFull 全量重建 + 两次延时重绘兜底。 */
-  try{
-    try{ msgs = loadMsgs(); }catch(e){}
-    if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
-    if(typeof renderChatFull === 'function'){
-      renderChatFull(true);
-    } else if(typeof renderChat === 'function'){
-      renderChat(true);
-    }
-  }catch(err){ console.error('头像同步重绘失败', err); }
-
-  setTimeout(function(){
-    try{
-      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
-      if(typeof renderChatFull === 'function'){
-        renderChatFull(true);
-      } else if(typeof renderChat === 'function'){
-        renderChat(true);
-      }
-    }catch(err){}
-  }, 60);
-
-  setTimeout(function(){
-    try{
-      if(typeof window.__forceRenderChat === 'function'){ window.__forceRenderChat(); }
-      if(typeof renderChatFull === 'function'){
-        renderChatFull(true);
-      } else if(typeof renderChat === 'function'){
-        renderChat(true);
-      }
-    }catch(err){}
-  }, 200);
+  /* 改备注 / 改头像后，统一走公共重绘入口 */
+  forceRepaintChat('改备注');
 }
 
 /* ===== 个签自动切换 · 数据层 =====
@@ -38009,158 +37977,7 @@ function switchToRole(id){
   }
 }
 
-/* ============================================================
-   ★ 后台通知开关：绑定 change 事件，点开关时请求系统通知权限
-   - 打开时：如果权限不是 granted，就主动请求
-   - 请求失败 / 被拒绝 → 开关自动弹回，并给提示
-   - 关闭时：只改本地开关，不动系统权限
-   ============================================================ */
-(function bindNotifySysSwitch(){
-  if(window.__notifySysSwitchBound) return;
-  window.__notifySysSwitchBound = true;
-
-  /* 用事件委托，防止 #notifySys 在 DOM 里被重建 */
-  document.addEventListener('change', function(e){
-    var t = e.target;
-    if(!t || t.id !== 'notifySys') return;
-    e.stopPropagation();
-
-    /* 关掉：只改本地，不动系统权限 */
-    if(!t.checked){
-      setSysNotifyOn(false);
-      if(typeof toast === 'function') toast('已关闭后台通知');
-      return;
-    }
-
-    /* 想打开：先要求浏览器支持 */
-    if(typeof Notification === 'undefined'){
-      t.checked = false;
-      setSysNotifyOn(false);
-      if(typeof toast === 'function') toast('当前浏览器不支持系统通知');
-      return;
-    }
-
-    /* 权限被拒过：无法再请求，只能去浏览器设置手动开 */
-    if(Notification.permission === 'denied'){
-      t.checked = false;
-      setSysNotifyOn(false);
-      if(typeof toast === 'function') toast('通知权限被拒绝，请到浏览器设置里手动开启');
-      return;
-    }
-
-    /* 已有权限：直接开 */
-    if(Notification.permission === 'granted'){
-      setSysNotifyOn(true);
-      if(typeof toast === 'function') toast('已开启后台通知');
-      return;
-    }
-    /* ★ 注：这里只在用户主动点开关时才进来
-       回填逻辑不经过这里，所以不会被系统权限覆盖用户选择 */
-
-    /* permission === 'default'：向系统请求权限。
-       浏览器会弹出「允许 / 取消」对话框，
-       点允许 → granted，点取消 → denied，两种都要收尾。 */
-    try{
-      var p = Notification.requestPermission();
-      if(p && typeof p.then === 'function'){
-        p.then(function(res){
-          if(res === 'granted'){
-            t.checked = true;
-            setSysNotifyOn(true);
-            if(typeof toast === 'function') toast('已开启后台通知');
-            /* 发一条测试通知，让用户确认能看到 */
-            try{
-              var n = new Notification('后台通知已开启', {
-                body: '切到别的应用时，Ta 发消息会在这里提醒你',
-                tag: 'mj-test'
-              });
-              setTimeout(function(){ try{ n.close(); }catch(err){} }, 5000);
-            }catch(err){}
-          } else {
-            /* 用户点了取消 */
-            t.checked = false;
-            setSysNotifyOn(false);
-            if(typeof toast === 'function') toast('未授权通知，无法后台提醒');
-          }
-        }).catch(function(){
-          /* 请求过程中异常 / 被浏览器拒绝 */
-          t.checked = false;
-          setSysNotifyOn(false);
-          if(typeof toast === 'function') toast('请求权限失败');
-        });
-      } else {
-        /* 老浏览器同步回调 */
-        if(Notification.permission === 'granted'){
-          t.checked = true;
-          setSysNotifyOn(true);
-        } else {
-          t.checked = false;
-          setSysNotifyOn(false);
-        }
-      }
-    }catch(err){
-      t.checked = false;
-      setSysNotifyOn(false);
-      if(typeof toast === 'function') toast('请求权限出错：' + err.message);
-    }
-  }, true);
-
-  /* ★ 每次打开通知页时，回填开关状态
-     - 本地存的是"用户最后一次手动选的状态"
-     - 系统权限是"浏览器是否允许发通知"
-     - 两者分开存，互不覆盖 */
-  document.addEventListener('click', function(e){
-    var t = e.target;
-    if(!t || !t.closest) return;
-    if(!t.closest('.set-row[data-set="notify"]')) return;
-    setTimeout(function(){
-      var cb = document.getElementById('notifySys');
-      if(!cb) return;
-      /* ★ 只读本地存的用户选择，不被系统权限覆盖 */
-      cb.checked = getSysNotifyOn();
-    }, 60);
-  }, true);
-
-  /* ★ 后台音频保活开关：change 事件 */
-  document.addEventListener('change', function(e){
-    var t = e.target;
-    if(!t || t.id !== 'notifyKeepAlive') return;
-    /* 点开 → 立刻开始播放保活音频；点关 → 停 */
-    applyKeepAliveSwitch(t.checked);
-    if(t.checked){
-      if(typeof toast === 'function') toast('已开启后台保活，切后台时定时器会继续跑');
-    } else {
-      if(typeof toast === 'function') toast('已关闭后台保活');
-    }
-  }, true);
-
-  /* ★ 直接绑到 #notifyKeepAlive 元素上：防止全局 change 委托被别的监听器吃掉 */
-  (function bindKeepAliveDirect(){
-    function bindOnce(){
-      var cb = document.getElementById('notifyKeepAlive');
-      if(!cb){
-        /* 元素还没进 DOM，稍后重试 */
-        setTimeout(bindOnce, 300);
-        return;
-      }
-      if(cb._kaBound) return;
-      cb._kaBound = true;
-
-      cb.addEventListener('change', function(e){
-        /* 避免被全局 change 委托重复触发：这里主动 stopPropagation */
-        e.stopPropagation();
-        var on = this.checked;
-        applyKeepAliveSwitch(on);
-        if(on){
-          if(typeof toast === 'function') toast('已开启后台保活，切后台时定时器会继续跑');
-        } else {
-          if(typeof toast === 'function') toast('已关闭后台保活');
-        }
-      }, false);
-    }
-    bindOnce();
-  })();
-})();
+ 
 
 /* 上线触发：应用启动后，每个角色各触发一次主动消息（只走主动消息） */
 let _onlineFireTimers = [];
@@ -38682,10 +38499,10 @@ function goToPage(name){
 </div>
 <!-- ============ 新的朋友（整页 · 方案 B） ============ -->
 <div class="screen" id="newFriendsScreen">
-  <div class="nf-top">
-    <button class="nf-back" id="nfBack" type="button">‹</button>
-    <div class="nf-title">新 的 朋 友</div>
-    <button class="nf-add" id="nfYouKnow" type="button">你可能认识</button>
+  <div class="a-top">
+    <button class="a-back" id="nfBack" type="button">‹</button>
+    <div class="a-title">新 的 朋 友</div>
+    <button class="a-act" id="nfYouKnow" type="button" style="font-size:11px;width:auto;padding:0 4px;letter-spacing:1px;">你可能认识</button>
   </div>
   <div class="nf-search">
     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#1a1a1a" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
@@ -38710,20 +38527,19 @@ function goToPage(name){
 </div>
 <!-- ============ 你可能认识 ============ -->
 <div class="screen" id="youKnowScreen">
-  <div class="nf-top">
-    <button class="nf-back" id="ykBack" type="button">‹</button>
-    <div class="nf-title">你可能认识</div>
-    <button class="nf-add" id="ykRefresh" type="button">换一批</button>
+  <div class="a-top">
+    <button class="a-back" id="ykBack" type="button">‹</button>
+    <div class="a-title">你可能认识</div>
+    <button class="a-act" id="ykRefresh" type="button" style="font-size:11px;width:auto;padding:0 4px;letter-spacing:1px;">换一批</button>
   </div>
   <div class="nf-list" id="ykList"></div>
 </div>
 
 <!-- ============ 内置角色一览 ============ -->
 <div class="screen" id="builtinListScreen">
-  <div class="nf-top">
-    <button class="nf-back" id="blBack" type="button">‹</button>
-    <div class="nf-title">内 置 角 色</div>
-    <div style="width:38px;flex:none"></div>
+  <div class="a-top">
+    <button class="a-back" id="blBack" type="button">‹</button>
+    <div class="a-title">内 置 角 色</div>
   </div>
   <div class="nf-list" id="blList"></div>
 </div>
