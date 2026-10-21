@@ -24422,13 +24422,33 @@ function applyMyFont(){
     if(row2){
       e.preventDefault(); e.stopPropagation();
       var p2 = row2.dataset.panel;
-      if(p2 === 'bgimg'){
+      if(p2 === 'theme'){
+        var s1 = document.getElementById('spTheme');
+        if(s1) s1.classList.add('show');
+      }
+      else if(p2 === 'bubble'){
+        var s2 = document.getElementById('spBubble');
+        if(s2) s2.classList.add('show');
+      }
+      else if(p2 === 'avatar'){
+        var s3 = document.getElementById('spAvatar');
+        if(s3) s3.classList.add('show');
+      }
+      else if(p2 === 'bgimg'){
         var sb2 = document.getElementById('spBgImg');
         if(sb2){ renderBgImgPanel(); sb2.classList.add('show'); }
       }
       else if(p2 === 'titletext'){
         var st2 = document.getElementById('spTitleText');
         if(st2){ renderTitleTextPanel(); st2.classList.add('show'); }
+      }
+      else if(p2 === 'layout'){
+        var s4 = document.getElementById('spLayout');
+        if(s4) s4.classList.add('show');
+      }
+      else if(p2 === 'call'){
+        var s5 = document.getElementById('spCall');
+        if(s5) s5.classList.add('show');
       }
     }
   }, true);
@@ -24670,6 +24690,28 @@ document.addEventListener('click', function(e){
   var panel = btn.closest('.sub-panel');
   if(panel) panel.classList.remove('show');
 }, true);
+
+/* 修复：聊天气泡子页（spBubble）里点击气泡卡片的逻辑 */
+document.addEventListener('click', function(e){
+  var card = e.target.closest && e.target.closest('#spBubble .bubble-soft');
+  if(!card) return;
+  e.preventDefault();
+  e.stopPropagation();
+  var target = card.dataset.bubble || 'gray';
+  if(target === 'custom' && !getCustomCss().trim()){
+    toast('先粘贴 CSS 并保存为预设吧');
+  }
+  beautyCfg.bubble = target;
+  saveBeautyCfg();
+  applyBeautyCfg();
+  getBubbleCards().forEach(el=>el.classList.toggle('on', el.dataset.bubble===beautyCfg.bubble));
+  var box = document.getElementById('bubblePreviewBox');
+  if(box) box.setAttribute('data-bubble', beautyCfg.bubble);
+  var wrap = document.getElementById('customCssWrap');
+  if(wrap) wrap.style.display = (beautyCfg.bubble === 'custom') ? 'block' : 'none';
+  if(typeof renderCssPresetList === 'function') renderCssPresetList();
+  if(typeof renderCssCurrentTip === 'function') renderCssCurrentTip();
+}, true);
 $$('.bp-row[data-panel]').forEach(row=>{
   row.addEventListener('click', ()=>{
 	const p = row.dataset.panel;
@@ -24689,7 +24731,11 @@ function applyChatBg(){
   const c = getChatBgCfg();
   const list = document.getElementById('chatList');
   if(!list) return;
-  if(!c.key){ list.style.backgroundImage=''; list.style.backgroundSize=''; list.style.backgroundPosition=''; list.style.filter=''; return; }
+  if(!c.key){ 
+    list.style.backgroundImage=''; list.style.backgroundSize=''; list.style.backgroundPosition=''; list.style.filter=''; 
+    applyTopbarBg2();
+    return; 
+  }
   __idb.toURL(c.key).then(function(url){
     if(!url) return;
     list.style.backgroundImage='linear-gradient(rgba(255,255,255,'+((100-c.opacity)/100)+'),rgba(255,255,255,'+((100-c.opacity)/100)+')),url('+url+')';
@@ -24697,19 +24743,32 @@ function applyChatBg(){
     list.style.backgroundPosition = c.align==='top'?'center top':(c.align==='bottom'?'center bottom':'center center');
     list.style.backgroundRepeat='no-repeat';
     list.style.filter = c.blur>0?('blur('+c.blur+'px)'):'';
+    applyTopbarBg2();
   });
 }
 function applyTopbarBg2(){
   const c = getTopbarBgCfg();
+  const cb = getChatBgCfg();
   const bar = document.getElementById('chatTopbar');
   if(!bar) return;
-  if(!c.key){ bar.style.backgroundImage=''; return; }
-  __idb.toURL(c.key).then(function(url){
-    if(!url) return;
-    bar.style.backgroundImage='linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.88)), url('+url+')';
-    bar.style.backgroundSize='cover';
-    bar.style.backgroundPosition='center';
-  });
+  
+  if(c.key){
+    __idb.toURL(c.key).then(function(url){
+      if(!url) return;
+      bar.style.backgroundImage='linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.88)), url('+url+')';
+      bar.style.backgroundSize='cover';
+      bar.style.backgroundPosition='center';
+    });
+  } else if(cb.key){
+    __idb.toURL(cb.key).then(function(url){
+      if(!url) return;
+      bar.style.backgroundImage='linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.88)), url('+url+')';
+      bar.style.backgroundSize='cover';
+      bar.style.backgroundPosition='center';
+    });
+  } else {
+    bar.style.backgroundImage='';
+  }
 }
 function renderBgImgPanel(){
   const cc = getChatBgCfg(), tc = getTopbarBgCfg();
@@ -24824,7 +24883,7 @@ document.addEventListener('change', function(e){
     if(row.dataset.panel==='titletext'){ setTimeout(renderTitleTextPanel, 60); }
   }, true);
 })();
-setTimeout(function(){ try{ applyChatBg(); applyTopbarBg2(); applyTitleText(); }catch(e){} }, 800);
+setTimeout(function(){ try{ applyChatBg(); applyTitleText(); }catch(e){} }, 800);
 
 
 
