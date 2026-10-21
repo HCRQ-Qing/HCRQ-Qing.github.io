@@ -34672,12 +34672,12 @@ $('#signInput').addEventListener('keydown', e=>{
 let editAvatarTmp = '';
 function renderEditAvPrev(){ const el = $('#editAvPrev'); if(el) el.innerHTML = avatarHTML(editAvatarTmp); }
 on('#editAvFile','change',function(){
-  const f = this.files[0]; this.value=''; if(!f) return;
+  var f = this.files[0]; this.value=''; if(!f) return;
 
-  const context = window.__uploadContext || '';
-  window.__uploadContext = ''; 
+  var context = window.__uploadContext || '';
+  window.__uploadContext = '';
 
-  openCrop(f, 'square', (data)=>{
+  openCrop(f, 'square', function(data){
     if(context === 'profile') {
       var pid = window.__profileViewId || getCurrentRoleId();
       saveRoleField(pid, 'avatar', data);
